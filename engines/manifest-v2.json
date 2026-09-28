@@ -1,0 +1,21 @@
+{
+  "schema_version": 2,
+  "engine": {"totalseg": "2.18.0", "torch": "2.8.0"},
+  "profiles": {},
+  "assets": {
+    "w113": {
+      "install": "weights",
+      "size": 232066830,
+      "sha256": "cf28693eec49b7a8448e2ebf0a372da41855a099a26d52d1cffe15a3c7e4b740",
+      "description": "Official TotalSegmentator ToothFairy3 dental model (Dataset113)",
+      "parts": [
+        {
+          "name": "Dataset113_ToothFairy3.zip",
+          "size": 232066830,
+          "sha256": "cf28693eec49b7a8448e2ebf0a372da41855a099a26d52d1cffe15a3c7e4b740",
+          "urls": ["https://github.com/wasserth/TotalSegmentator/releases/download/v2.5.0-weights/Dataset113_ToothFairy3.zip"]
+        }
+      ]
+    }
+  }
+}
