@@ -11,16 +11,26 @@ Guia sencilla y repositorio oficial de DSG para Blender 5.x.
 
 ## Motores y modelos
 
-DSG usa un unico indice estable:
+**DSG 9.7.3 o superior** instala el motor de IA (TotalSegmentator 2.18 + PyTorch 2.8) desde
+[engines/manifest-v2.json](engines/manifest-v2.json):
 
+- se instala una sola vez y **se reutiliza en todas las actualizaciones de DSG**;
+- descarga en paralelo, se reanuda si se corta y verifica cada archivo con SHA-256;
+- espejos: Release `engine-v2` de este repositorio y Google Drive;
+- sin tarjeta NVIDIA se instala la version CPU (mucho mas ligera).
+
+Detalles y como publicar los motores: [engines/README.md](engines/README.md).
+Novedades de cada version: [docs/CHANGELOG.md](docs/CHANGELOG.md).
+
+Las versiones antiguas (≤ 9.2) siguen usando el indice
 [manifest.json](https://raw.githubusercontent.com/xhackermax/DentalSurgicalGuide/main/manifest.json)
-
-Los archivos grandes se guardan en el Release `engine-v1`. El manifest incluye el SHA-256 de cada paquete para comprobar su integridad antes de instalarlo.
+y el Release `engine-v1`, que no se modifican.
 
 ## Fuentes y proyectos externos
 
 DSG integra o es compatible con componentes de terceros. Cada proyecto conserva su autoria y licencia original:
 
+- [TotalSegmentator](https://github.com/wasserth/TotalSegmentator) - modelos dentales ToothFairy3 (Dataset113) y craneofacial (Dataset115).
 - [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) - framework de segmentacion medica.
 - [DentalSegmentator Dataset112](https://zenodo.org/records/10829675) - modelo/dataset dental distribuido desde Zenodo.
 - [SlicerAutomatedDentalTools / UniversalLab](https://github.com/DCBIA-OrthoLab/SlicerAutomatedDentalTools) - modelo de dientes individuales.
@@ -36,4 +46,5 @@ Las licencias y avisos incluidos por los proyectos externos deben conservarse al
 
 - Addon actual: https://github.com/xhackermax/DentalSurgicalGuide/releases/latest
 - Manifest: https://raw.githubusercontent.com/xhackermax/DentalSurgicalGuide/main/manifest.json
-- Motores: https://github.com/xhackermax/DentalSurgicalGuide/releases/tag/engine-v1
+- Motores (DSG ≥ 9.7.3): https://raw.githubusercontent.com/xhackermax/DentalSurgicalGuide/main/engines/manifest-v2.json
+- Motores (DSG ≤ 9.2): https://github.com/xhackermax/DentalSurgicalGuide/releases/tag/engine-v1
