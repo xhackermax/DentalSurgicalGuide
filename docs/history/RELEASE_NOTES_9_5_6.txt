@@ -1,0 +1,11 @@
+DSG 9.5.6 - FDI Component Review Fix
+
+- Fixes the false fatal gate when TotalSegmentator reports more than one significant island for a tooth label.
+- Keeps the existing safety behavior: only the dominant connected island is materialized as the clinical tooth mesh.
+- FDI duplicates and invalid FDI numbers remain hard errors.
+- Multi-island labels now require/record the clinician's explicit visual FDI confirmation instead of cancelling the workflow.
+- Stores the acknowledged FDI list and review count in the Blender Scene for audit/debugging.
+- Resets the acknowledgement automatically whenever a new dentition is built.
+- Updates the FDI panel to show whether the disconnected-island warning is pending or clinically reviewed.
+
+Base: DSG 9.5.5 TotalSegmentator Windows Reliability Fix.

@@ -1,0 +1,62 @@
+DSG 9.2.60 · GENERATIVEFRAME FEM INTEGRATION
+=============================================
+
+Objetivo
+--------
+Integrar el motor GenerativeFrame FEM dentro del flujo real de DSG sin añadir
+complejidad visual al panel.
+
+Workflow visible
+----------------
+Paso REFUERZOS:
+    OPTIMIZAR FRAME
+        -> revisión de los refuerzos generados
+        -> APLICAR Y CONTINUAR
+
+Siguen disponibles como opciones secundarias:
+    - añadir refuerzo manualmente
+    - continuar sin refuerzo
+
+Motor FEM
+---------
+- Vigas 3D Euler-Bernoulli, 6 GDL/nodo.
+- P1..P4 como apoyos estructurales.
+- Sleeve idealizado internamente mediante nodos rígidos virtuales no renderizados.
+- Multi-load-case por sleeve: axial, lateral ±X/±Y y torque ±.
+- Tensión equivalente axial + flexión biaxial + torsión.
+- Pandeo de Euler.
+- Límite duro y objetivo de diseño de desplazamiento del sleeve.
+- Objetivo de utilización 0.75, separado del límite físico U=1.
+- Redimensionado por mecanismo dominante:
+    axial 1/2, flexión/torsión 1/3, pandeo 1/4.
+- Poda con removal-test FEM antes de eliminar una barra.
+- Crecimiento topológico solo local: un nodo nuevo se conecta únicamente a los
+  dos extremos del elemento que intenta reforzar. No existe reconexión all-to-all.
+- Los elementos virtuales del sleeve participan en K pero no generan material,
+  no se podan y no gobiernan el diseño.
+- SciPy sparse cuando está disponible; fallback NumPy denso para pequeños modelos.
+
+Geometría Blender
+-----------------
+El solver no toca bpy. frame_structural.py actúa como adaptador:
+- crea nodos desde P1..P4 y sleeves;
+- aplica keep-out del lumen y una comprobación conservadora contra el modelo pasivo;
+- ejecuta FEM;
+- convierte solo los elementos renderizables supervivientes en curvas con diámetro
+  individual;
+- las curvas quedan confirmadas pero NO fusionadas;
+- el operador existente APLICAR Y CONTINUAR conserva el punto de commit destructivo.
+
+Seguridad / KISS
+----------------
+- Si el FEM no cumple límites duros no crea geometría automática.
+- Si existen refuerzos manuales confirmados, no los sobreescribe.
+- El usuario no ve E, G, pandeo, exponentes, pruning ni load cases en la UI principal.
+- Los valores de carga/material incluidos son un perfil de diseño inicial y requieren
+  validación experimental/material antes de considerarse validación clínica.
+
+MCP
+---
+Nuevas operaciones:
+- analyze_frame_fem (read-only)
+- optimize_frame_fem (PREVIEW_MUTATION, requiere allow_geometry_write=true)

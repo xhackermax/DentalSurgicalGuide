@@ -1,0 +1,76 @@
+DSG 9.1.26 — True Two-Object Alignment Composite
+======================================================
+
+User-visible Alignment contract
+-------------------------------
+The Alignment stage now works with exactly TWO Blender mesh objects:
+
+1. IOS scan (moving source)
+2. Dental_DICOM_AlignmentComposite (fixed CBCT target)
+
+The CBCT target is created only when entering Alignment.
+
+How the CBCT composite is built
+-------------------------------
+Every current clinical segmented mesh is duplicated first:
+- all individual UniversalLab tooth meshes
+- maxilla/mandible bone mesh
+- mandibular canal safety mesh
+- future safety/semantic meshes carrying DSG safety metadata
+
+The ORIGINAL objects are never joined, transformed or remeshed.
+
+Temporary duplicates are then concatenated into ONE disposable mesh:
+    Dental_DICOM_AlignmentComposite
+
+After the unique composite exists, the intermediate duplicate objects are
+deleted. Provenance and vertex/face ranges remain stored as JSON metadata.
+
+Important dental restriction
+----------------------------
+The complete composite contains bone/canal for context, but IOS has no matching
+bone or mandibular-canal surface. Therefore the mathematical alignment uses
+ONLY the dental prefix of the same object:
+
+- target landmark raycast: in-memory BVH made from tooth faces only
+- target whole-mesh refinement: tooth vertices/edges only
+- geodesic patch expansion: tooth topology only
+- ICP: tooth patches only
+
+No third Blender target object is created. The dental BVH is memory-only.
+
+Geometry
+--------
+Tooth geometry is copied 1:1 from the original segmented meshes.
+No voxel reduction, no remesh, no evaluated Laplacian modifier.
+
+Lifecycle
+---------
+DICOM:
+    original segmented objects visible
+
+Enter Alignment:
+    duplicate every segmented mesh
+    build one composite
+    hide originals
+    IOS + composite visible
+
+Accept Alignment / enter Guide:
+    delete disposable composite
+    preserve original segmentation
+    keep aligned IOS
+
+Back to DICOM:
+    delete composite
+    restore original segmentations
+
+Audit metadata
+--------------
+DSG_alignment_source_count
+DSG_alignment_tooth_count
+DSG_alignment_dental_vertex_count
+DSG_alignment_dental_face_count
+DSG_alignment_total_vertex_count
+DSG_alignment_total_face_count
+DSG_alignment_source_signature
+DSG_alignment_components_json

@@ -1,0 +1,24 @@
+DSG 9.2.8 - LOW RAM DUAL ENGINE RECOVERY
+
+Problema corregido
+- La ruta Implante inmediato exige DentalSegmentator + UniversalLab.
+- v9.2.6 podía abortar antes de ejecutar DentalSegmentator por una estimación de RAM.
+- El guard era preventivo y convertía presión de RAM en un error clínico aunque Windows dispusiera de disco/paginación.
+
+Solución
+- El guard normal sigue protegiendo equipos con RAM suficiente.
+- Si el plan normal no cabe, DSG activa automáticamente un acumulador nnU-Net respaldado por archivo temporal.
+- Los logits fp16 C-channel y el contador de solapamiento se mapean a disco; la red puede seguir ejecutándose en CUDA.
+- Se valida espacio temporal y se reservan 3 GiB libres en la unidad TEMP.
+- Los archivos temporales se eliminan al terminar la exportación.
+- Sólo existe un error duro si ni siquiera caben el preprocesado + exportador en RAM o falta espacio temporal.
+
+Compatibilidad
+- Se conserva el runtime binario v926 porque no cambia la ABI ni las wheels.
+- No se obliga a reinstalar Torch/nnU-Net en un PC donde v9.2.6 ya los tenía correctamente.
+- DentalSegmentator y UniversalLab siguen siendo dos motores obligatorios en Implante inmediato.
+- No se degrada silenciosamente a un único motor.
+
+Nota offline
+- DentalSegmentator sigue incluido físicamente en el ZIP.
+- UniversalLab se recupera de la copia empaquetada o de un runtime DSG previo compatible, según la política de v9.2.6.

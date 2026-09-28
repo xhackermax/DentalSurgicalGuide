@@ -1,0 +1,30 @@
+DSG 9.5.7 - HIGH-ORDER DENTAL GEOMETRY FIX
+==============================================
+
+Problem
+- TotalSegmentator task=teeth was fast and preserved FDI identity, but its final
+  labelmap could show staircase/block artefacts after model-space -> CBCT-space
+  upsampling. VTK then faithfully converted those steps into a LEGO-like mesh.
+
+Fix
+- Enable TotalSegmentator 2.18 higher_order_resampling=True for task=teeth.
+- Keep resampling_order=1 for fast input interpolation.
+- Apply the same high-order output path on CUDA and on CPU fallback.
+- Keep one neural inference only. No second dental model is added.
+- Keep VTK native-grid extraction and all FDI/island safety checks unchanged.
+
+Why this is preferable to Blender smoothing
+- The smoother boundary is produced while TotalSegmentator upsamples its
+  segmentation output, before triangulation.
+- DSG does not free-sculpt or Laplacian-smooth the clinical tooth mesh after
+  the fact. Contacts, roots and FDI identity remain tied to the model output.
+
+Expected trade-off
+- Slightly more post-inference runtime and memory than standard upsampling.
+- Neural inference speed remains essentially the same; the added cost is in the
+  final segmentation upsampling/export stage.
+
+Retained from 9.5.6
+- Disconnected secondary islands are cleaned but no longer block clinician FDI
+  confirmation when the dominant tooth component is valid.
+- Duplicate/invalid FDI remains a hard safety error.

@@ -1,0 +1,38 @@
+DSG 9.1.25 — Stable Segmentation Core
+====================================
+
+Confirmed second regression
+---------------------------
+The new vestibular FDI overlay used:
+    coordinate_space="CBCT_WORLD"
+when stamping the FONT object.
+The authoritative dental asset contract only allows:
+    TEMPLATE_LOCAL, CBCT_DSG_ROOT, IOS_ALIGNED, WORLD
+
+After 9.1.23 removed a stale duplicate _create_fdi_label(), the new function
+finally executed, DentalAssetContractError was raised, and the ALL transaction
+rolled back every tooth. This is why 9.1.24 could still appear to segment nothing.
+
+9.1.25 fixes CBCT_WORLD -> WORLD and changes the transaction hierarchy:
+
+Clinical segmentation (fatal if broken)
+  UniversalLab -> teeth identity/meshes -> maxilla/mandible
+
+Auxiliary layers (non-fatal)
+  FDI FONT overlay
+  DentalSegmentator canal verifier
+  canal mesh materialisation
+  later Alignment infrastructure
+
+The ALL workflow no longer creates a legacy active BONE mask immediately after
+UniversalLab before building teeth. The integer UniversalLab labelmap feeds the
+native tooth builder directly. BONE_ONLY is prepared later, explicitly, in the
+BUILD_BONE phase.
+
+FDI labels are UI only. Tooth identity remains stored on each TOOTH object, so a
+font/layout failure records DSG_fdi_overlay_status=REVIEW but cannot rollback
+clinical meshes.
+
+The DentalSegmentator canal model is now a true verifier. If it is unavailable or
+errors, UniversalLab still runs and class 55 remains usable. Canal mesh creation
+errors are reported without deleting valid teeth or bone.

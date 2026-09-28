@@ -1,0 +1,42 @@
+DSG 9.2.37 - Native common-surface selection for immediate extraction
+
+Scope
+
+The immediate-implant workflow now creates the initial IOS crown selection by
+matching the aligned IOS against only the CBCT teeth chosen for extraction.
+This is the pre-Boolean selection used to prepare the virtual post-extraction
+IOS; it is not a registration tool and it does not alter clinical geometry.
+
+Method
+
+- bounded IOS-to-CBCT BVH proximity;
+- reciprocal CBCT-to-IOS verification, accepting the same or an adjacent IOS
+  face only;
+- two-sided normal compatibility for open/cropped scanner surfaces;
+- coverage-weighted face confidence;
+- connected, anchored-region filtering and conservative continuity growth;
+- persisted per-face confidence attribute: DSG_common_surface_confidence.
+
+Workflow
+
+1. Complete and review IOS-CBCT alignment.
+2. Choose the tooth/teeth for extraction.
+3. Press DETECT COMMON SURFACE.
+4. DSG enters Edit Mode on a disposable IOS copy with the matched region
+   selected. The panel reports selected-face count and P95 match distance.
+5. Refine only locally with Ctrl+ until the cervical groove/contact boundary is
+   clinically appropriate, then confirm the post-extraction IOS.
+
+Safety
+
+- IOS, CBCT teeth and their registration are never moved or scaled.
+- A missing/displaced CBCT reference produces no usable selection and stops the
+  workflow.
+- The selected faces remain clinician-reviewable and editable before any
+  destructive Boolean operation.
+
+Provenance
+
+The workflow requirement was inspired by GeoMatch Fusion 0.3.5 supplied by the
+user. GeoMatch Fusion is GPL-3.0-or-later; no source code from it is bundled in
+DSG. DSG uses an independently implemented native matcher.

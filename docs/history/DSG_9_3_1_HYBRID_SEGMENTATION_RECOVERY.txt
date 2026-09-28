@@ -1,0 +1,8 @@
+DSG 9.3.1 HYBRID SEGMENTATION RECOVERY
+
+- Corrige el pipeline para que un fallo CUDA/driver/VRAM no deje la segmentación sin resultado: cada motor reintenta automáticamente en CPU.
+- CPU adaptable durante inferencia GPU: 1-4 hilos según CPUs lógicas, en vez de fijar siempre 1.
+- Mantiene un único propietario CUDA para evitar contención y bloqueos.
+- Tooth Path y superficies siguen en procesos CPU paralelos después de UniversalLab.
+- Preserva CUDA_HYBRID para GPUs con VRAM limitada.
+- Funciona sin GPU CUDA mediante fallback CPU, sujeto a RAM/espacio temporal suficientes para los modelos.

@@ -1,0 +1,6 @@
+DSG v9.2.70
+
+1. Insertion-axis stage hides the IOS antagonist automatically.
+2. Immediate-extraction IOS tooth isolation now uses the aligned maxilla/mandible bone surface as negative buccal/lingual evidence in addition to mesial/distal FDI competitors.
+3. SIMPLE implant threshold STL is duplicated and separated by Blender loose islands; only the two largest components are retained as maxilla/mandible display objects. This is not FDI or semantic segmentation. The original combined STL remains untouched as the alignment reference.
+4. The active SIMPLE jaw is shown automatically when the aligned IOS becomes the guide model, while the opposing jaw is hidden.

@@ -1,0 +1,59 @@
+DSG 9.1.30 — Component-safe UniversalLab tooth segmentation
+==============================================================
+
+Clinical regression fixed
+-------------------------
+A learned UniversalLab tooth label could become one Blender object containing
+multiple disconnected tooth-sized islands. The visible failure was FDI 14
+appearing as several unrelated teeth/fragments.
+
+Root cause
+----------
+The prior BATCHDENTALSEG UniversalLab source corrects left/right identity at
+voxel level around the central-incisor mirror plane. DSG 9.1.29 had replaced
+that with a whole-label centroid remap. If a semantic label contained mixed
+components, or if its centroid crossed the midline, the complete label could be
+renamed to a counterpart that already existed. Both masks then became one FDI.
+The mesh cleanup kept every island above 2% of the largest, so the corrupted FDI
+was materialized as several disconnected teeth.
+
+Changes
+-------
+1. Laterality correction is restored to memory-bounded voxel-side correction in
+   DICOM LPS coordinates. Only voxels on the wrong side are relabelled.
+2. UniversalLab's learned upper/lower tooth identity is no longer rewritten per
+   tooth from a centroid. Arch geometry is validation-only. Conflicts fail closed
+   and the explicit INTERCAMBIAR ARCOS review action remains available.
+3. Every tooth label passes a connected-component topology gate before marching
+   cubes. A second tooth-sized component is never fused into one tooth object.
+4. Tiny islands are removed only after a single significant component has been
+   established. The prior BATCHDENTALSEG 60 mm3 island reference is combined
+   with a 10% relative-size guard to protect smaller teeth.
+5. The fast UniversalLab pass still runs without TTA for performance. If the
+   labelmap contains fragmented tooth identities, DSG automatically retries once
+   with nnU-Net mirroring TTA, which is the reference nnU-Net default, and keeps
+   the retry only when objective topology improves.
+6. If fragmentation remains after TTA/semantic correction, the affected FDI is
+   skipped, marked REVISAR, and CONFIRMAR DENTICIÓN FDI is blocked. DSG never
+   invents a Euclidean/geometric tooth identity to hide the failure.
+
+Regression tests
+----------------
+- Learned arch conflict does not mutate labels.
+- Correct arch validates unchanged.
+- DICOM LPS, not voxel/Blender Z, is the physical authority.
+- Global arch inversion is reported rather than auto-rewritten.
+- Laterality changes only wrong-side voxels, not an entire semantic label.
+- Two tooth-sized islands in Universal label 5 / FDI 14 are rejected.
+
+Training/inference provenance reviewed
+--------------------------------------
+- SlicerAutomatedDentalTools / UniversalLabDentalsegmentator
+  Dataset002_380CT, 55-class output and official mirror correction.
+- SlicerDentalSegmentator / nnU-Net coarse anatomy model.
+- SlicerCBCTToothSegmentation / legacy sliding-window tooth inference and
+  connected-component postprocessing concept.
+- DSG 8.7 proven DentalSegmentator runtime.
+
+No training weights were modified in this release. The defect was in DSG's
+inference/postprocessing semantics around an already trained model.

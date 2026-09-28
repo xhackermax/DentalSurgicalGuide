@@ -1,0 +1,33 @@
+DSG 9.2.61 · CBCT VTK FLYING EDGES + COMPACT ROI
+=================================================
+
+Objetivo
+--------
+Reducir el coste de crear las mallas dentales desde el labelmap CBCT sin cambiar
+la anatomia fuente ni hacer obligatorio un runtime nuevo.
+
+Cambios
+-------
+1. Nuevo motor puro dsg/cbct_surface_meshing.py.
+2. AUTO usa vtkFlyingEdges3D cuando VTK es importable.
+3. ComputeNormals/Gradients/Scalars OFF: DSG los recalcula/refina despues.
+4. Fallback automatico a marching_cubes Lewiner si VTK falta o falla.
+5. Cada FDI se extrae exclusivamente en su ROI compacto + halo de seguridad.
+6. Los bounding boxes del labelmap se cachean y se reutilizan al promover
+   dientes a full resolution.
+7. Preview adaptativo: step=1 para ROI pequenos; LOD solicitado para ROI grandes.
+8. Refinado CBCT sigue usando solo el mask ROI local; no se introduce SDF global.
+9. Telemetria por diente: mesher, tiempo de extraccion, ROI voxels y fallback.
+10. Telemetria global: engine_counts, roi_vs_naive_fraction, native_preview_count.
+
+Compatibilidad
+--------------
+- Blender 5.2 LTS / Python 3.13.
+- VTK es OPCIONAL. API compatible con VTK 9.6/9.7.
+- La ruta clinica nunca falla solo porque VTK no este instalado.
+- requirements_vtk_optional.txt documenta el acelerador, pero no se convierte
+  en dependencia estricta del instalador offline existente.
+
+Politica KISS
+-------------
+No se anade ningun boton. "Generar STL" elige automaticamente el mejor motor.

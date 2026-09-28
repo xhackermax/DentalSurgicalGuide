@@ -1,0 +1,12 @@
+DSG 9.1.15 — Robust Maxilla/Mandible FDI Identification
+
+FDI numbering no longer trusts Universal tooth labels blindly for arch identity.
+The correction pipeline now validates dental arch in DICOM patient LPS coordinates:
+1. Uses semantic jaw structures 53/54 when both are available.
+2. Falls back to relative dental-arch order only when both arches are present.
+3. A single arch without jaw evidence fails closed and requires review.
+4. Left/right correction runs after arch correction.
+5. Manual INTERCAMBIAR ARCOS is available during FDI review.
+6. Confirm FDI is blocked if maxilla/mandible has not been verified.
+
+Blender Z is never used as the anatomical superior/inferior authority.

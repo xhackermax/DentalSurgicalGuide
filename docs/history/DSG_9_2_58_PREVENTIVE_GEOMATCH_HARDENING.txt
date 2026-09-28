@@ -1,0 +1,10 @@
+DSG v9.2.58 - Preventive GeoMatch hardening
+
+- Continuous interproximal valley barriers using locally oriented normals and weighted shortest paths.
+- Negative-curvature refinement is less tessellation-sensitive (robust percentile threshold).
+- Faces clearly owned by neighbouring teeth become hard forbidden faces and cannot be re-added by fill/solidify.
+- Generic fallback now preserves neighbouring-tooth protection instead of forgetting competitors.
+- Added a third competitor-aware recovery pass before the generic review fallback.
+- Multi-tooth immediate extraction now uses only external neighbours of each contiguous FDI block.
+- Missing-neighbour geometric fallback is limited to the same arch and near the expected FDI position.
+- No new workflow buttons; all changes stay behind the existing minimal UI.

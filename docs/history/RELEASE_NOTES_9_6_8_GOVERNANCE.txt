@@ -1,0 +1,15 @@
+DSG 9.6.8 — ENGINEERING / AI GOVERNANCE INTEGRATION (docs-only)
+
+Code/runtime behavior is unchanged from the fixed 9.6.8 motor-progress build.
+
+Added:
+- dsg/AGENTS.md as mandatory engineering constitution for AI agents/developers.
+- dsg/README.md developer entrypoint.
+- dsg/README_AI_RUNTIME_POLICY.md.
+- dsg/specs/DSG_9.6/spec.md based on the supplied DSG 9.6 baseline specification and extended with Dental/Maxillofacial runtime scope.
+- dsg/specs/DSG_9.6/runtime_scope.md.
+- dsg/specs/DSG_9.6/acceptance.md.
+- Governance pointers in offline runtime/payload README files.
+
+Key policy:
+Every dependency/model/weight added to the default runtime must have an explicit DSG consumer. Unrelated whole-body model assets are default-deny.

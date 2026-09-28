@@ -1,0 +1,216 @@
+{
+  "schema": "dsg.clinical_source_registry.v1",
+  "version": 1,
+  "policy": {
+    "live_verification_required": true,
+    "official_local_sources_first": true,
+    "guidance_is_not_embedded_as_static_rules": true,
+    "clinician_final_decision_required": true
+  },
+  "countries": {
+    "ES": {
+      "label": "España",
+      "medication_resolver": "AEMPS_CIMA",
+      "sources": [
+        {
+          "id": "ES_AEMPS_CIMA",
+          "publisher": "Agencia Española de Medicamentos y Productos Sanitarios (AEMPS)",
+          "type": "MEDICINE_REGULATOR",
+          "url": "https://cima.aemps.es/cima/publico/home.html",
+          "api_base": "https://cima.aemps.es/cima/rest/",
+          "categories": [
+            "medication",
+            "active_ingredient",
+            "dose",
+            "route",
+            "safety_notes",
+            "product_status"
+          ]
+        },
+        {
+          "id": "ES_SECOMCYC",
+          "publisher": "Sociedad Española de Cirugía Oral y Maxilofacial y de Cabeza y Cuello (SECOMCyC)",
+          "type": "MAXILLOFACIAL_SOCIETY",
+          "url": "https://www.secomcyc.org/area-profesional/documentos-2/",
+          "categories": [
+            "oral_surgery",
+            "mronj",
+            "clinical_protocols"
+          ]
+        },
+        {
+          "id": "ES_SEPA_ONMRM",
+          "publisher": "Sociedad Española de Periodoncia y Osteointegración (SEPA)",
+          "type": "DENTAL_SCIENTIFIC_SOCIETY",
+          "url": "https://sepa.es/noticias/directrices-para-el-abordaje-de-la-osteonecrosis-de-los-maxilares-relacionada-con-antirresortivos-oseos/",
+          "categories": [
+            "mronj",
+            "antiresorptives",
+            "implants"
+          ]
+        },
+        {
+          "id": "ES_DENTAL_COUNCIL",
+          "publisher": "Consejo General de Dentistas de España",
+          "type": "DENTAL_COUNCIL",
+          "url": "https://consejodentistas.es/",
+          "categories": [
+            "dentistry",
+            "professional_guidance",
+            "consent"
+          ]
+        },
+        {
+          "id": "ES_MINISTRY_HEALTH",
+          "publisher": "Ministerio de Sanidad de España",
+          "type": "HEALTH_AUTHORITY",
+          "url": "https://www.sanidad.gob.es/",
+          "categories": [
+            "public_health",
+            "antimicrobials",
+            "clinical_guidance"
+          ]
+        }
+      ]
+    },
+    "GB": {
+      "label": "United Kingdom",
+      "medication_resolver": "MCP_LIVE_LOOKUP",
+      "sources": [
+        {
+          "id": "GB_MHRA",
+          "publisher": "Medicines and Healthcare products Regulatory Agency (MHRA)",
+          "type": "MEDICINE_REGULATOR",
+          "url": "https://www.gov.uk/government/organisations/medicines-and-healthcare-products-regulatory-agency",
+          "categories": [
+            "medication",
+            "drug_safety"
+          ]
+        },
+        {
+          "id": "GB_SDCEP",
+          "publisher": "Scottish Dental Clinical Effectiveness Programme (SDCEP)",
+          "type": "DENTAL_GUIDELINE_BODY",
+          "url": "https://www.sdcep.org.uk/",
+          "categories": [
+            "dentistry",
+            "anticoagulants",
+            "mronj",
+            "prescribing"
+          ]
+        },
+        {
+          "id": "GB_BAOMS",
+          "publisher": "British Association of Oral and Maxillofacial Surgeons (BAOMS)",
+          "type": "MAXILLOFACIAL_SOCIETY",
+          "url": "https://www.baoms.org.uk/",
+          "categories": [
+            "oral_surgery",
+            "maxillofacial"
+          ]
+        },
+        {
+          "id": "GB_NICE",
+          "publisher": "National Institute for Health and Care Excellence (NICE)",
+          "type": "GUIDELINE_BODY",
+          "url": "https://www.nice.org.uk/",
+          "categories": [
+            "medical_guidance",
+            "medication"
+          ]
+        }
+      ]
+    },
+    "US": {
+      "label": "United States",
+      "medication_resolver": "MCP_LIVE_LOOKUP",
+      "sources": [
+        {
+          "id": "US_FDA",
+          "publisher": "U.S. Food and Drug Administration (FDA)",
+          "type": "MEDICINE_REGULATOR",
+          "url": "https://www.fda.gov/drugs",
+          "categories": [
+            "medication",
+            "drug_safety"
+          ]
+        },
+        {
+          "id": "US_ADA",
+          "publisher": "American Dental Association (ADA)",
+          "type": "DENTAL_ASSOCIATION",
+          "url": "https://www.ada.org/",
+          "categories": [
+            "dentistry",
+            "medications",
+            "clinical_guidance"
+          ]
+        },
+        {
+          "id": "US_AAOMS",
+          "publisher": "American Association of Oral and Maxillofacial Surgeons (AAOMS)",
+          "type": "MAXILLOFACIAL_SOCIETY",
+          "url": "https://aaoms.org/",
+          "categories": [
+            "oral_surgery",
+            "mronj",
+            "maxillofacial"
+          ]
+        }
+      ]
+    },
+    "EU": {
+      "label": "European Union fallback",
+      "medication_resolver": "MCP_LIVE_LOOKUP",
+      "sources": [
+        {
+          "id": "EU_EMA",
+          "publisher": "European Medicines Agency (EMA)",
+          "type": "MEDICINE_REGULATOR",
+          "url": "https://www.ema.europa.eu/",
+          "categories": [
+            "medication",
+            "drug_safety"
+          ]
+        },
+        {
+          "id": "EU_EAO",
+          "publisher": "European Association for Osseointegration (EAO)",
+          "type": "IMPLANT_SOCIETY",
+          "url": "https://eao.org/",
+          "categories": [
+            "implantology",
+            "consensus"
+          ]
+        }
+      ]
+    },
+    "INT": {
+      "label": "International fallback",
+      "medication_resolver": "MCP_LIVE_LOOKUP",
+      "sources": [
+        {
+          "id": "INT_ITI",
+          "publisher": "International Team for Implantology (ITI)",
+          "type": "IMPLANT_CONSENSUS",
+          "url": "https://www.iti.org/",
+          "categories": [
+            "implantology",
+            "consensus"
+          ]
+        },
+        {
+          "id": "INT_WHO",
+          "publisher": "World Health Organization (WHO)",
+          "type": "HEALTH_AUTHORITY",
+          "url": "https://www.who.int/",
+          "categories": [
+            "medicines",
+            "public_health"
+          ]
+        }
+      ]
+    }
+  },
+  "catalog_verified_on": "2026-08-14"
+}

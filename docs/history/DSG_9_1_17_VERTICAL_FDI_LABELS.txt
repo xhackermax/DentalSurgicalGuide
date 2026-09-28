@@ -1,0 +1,13 @@
+DSG 9.1.17 — Vertical FDI labels on segmented tooth surfaces
+================================================================
+
+Fixes the CBCT FDI label placement/orientation:
+- labels are no longer dropped at the tooth centroid.
+- each label is anchored near the most coronal point of the segmented tooth.
+- labels are oriented vertically/upright instead of appearing horizontally.
+- label metadata records the anchoring mode and source tooth.
+
+Implementation notes:
+- uses the previously computed PCA tooth axis when available.
+- falls back safely if axis metadata is missing.
+- keeps FDI generation and dentition review unchanged.

@@ -1,0 +1,29 @@
+DSG v9.2.67 · SPARSE CATMULL SURFACE FRAME
+
+Objetivo
+--------
+Mantener la ruta geodésica/shortest-path de v9.2.66, pero eliminar el aspecto
+nervioso y dentado que aparece al usar muestras densas de la triangulación como
+puntos visibles de la curva.
+
+Cambios
+-------
+1. La ruta más corta sobre superficie sigue calculándose igual y respeta el
+   orden de clic de los anchors.
+2. Antes de generar el tubo, cada segmento geodésico se reduce a un polígono
+   de control Catmull mucho más disperso (~1.50 mm entre controles normales).
+3. Se conservan controles adicionales solo ante giros relevantes (>=22 grados).
+4. Los anchors del usuario siguen siendo puntos de paso exactos de Catmull-Rom.
+5. La curva final usa Catmull-Rom centrípeto alpha=0.5 para reducir overshoot.
+6. La spline se evalúa densamente (~0.30 mm) solo para fabricar un tubo liso.
+7. Cada muestra suavizada se reproyecta al modelo pasivo y se limita a un
+   corredor estrecho alrededor de la geodésica original, evitando saltos a otra
+   lámina cercana en contactos/interproximales.
+8. Sin fallback euclidiano. La booleana final sigue adaptando el cilindro a la
+   anatomía.
+
+Resultado esperado
+------------------
+Muchos menos puntos de CONTROL, menos micro-zigzag de triangulación y una
+trayectoria cilíndrica visualmente más limpia, manteniendo la intención y los
+anchors de la ruta de superficie.

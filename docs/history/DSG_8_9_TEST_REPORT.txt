@@ -1,0 +1,56 @@
+DSG 8.9.0 — ENGINEERING TEST REPORT
+====================================
+
+Alcance
+-------
+Validación fuera de Blender del refactor de ingeniería. Este entorno no ejecuta
+Blender 5.1/bpy ni dispone de una GPU NVIDIA con el checkpoint UniversalLab en
+inferencia real. Por tanto, este informe NO certifica todavía el runtime clínico
+en la estación de trabajo.
+
+Pruebas automatizadas
+---------------------
+1. Compilación estática de todos los módulos Python del addon.
+2. Mapeo UniversalLab -> FDI: 52 etiquetas dentales, biyectivo y válido.
+3. Mapa de mirroring: cobertura 1..52 e involución correcta.
+4. Bounding-box 3D: comparación contra np.argwhere como oráculo en máscaras aleatorias.
+5. Auto-crop/restauración: slicing y reposición exactos.
+6. Exportador de baja memoria: argmax idéntico al oráculo lineal en caso isotrópico.
+7. Rama anisotrópica/separate-Z: obliga al resampler configurado por nnU-Net y lo
+   invoca clase por clase, conservando el argmax exacto.
+8. Invariantes estáticas:
+   - un solo labelmap semántico en VolumeRuntime;
+   - la UI no llama a inferencia síncrona;
+   - DSG no modifica Undo global durante segmentación;
+   - existen estrategias DIRECT_AIR_CROP y SEMANTIC_LOCATOR_FALLBACK;
+   - preprocesado float32 evita copia redundante cuando el dtype ya es correcto;
+   - no hay definiciones top-level duplicadas en módulos de producción.
+
+Resultado de la última ejecución
+--------------------------------
+PASS: DSG 8.9 engineering numeric/static tests
+FDI labels: 52
+Auto-crop shape: (35, 55, 59), retained ~= 0.6162
+Low-memory exporter: argmax exacto en caso de prueba
+Estimated UniversalLab RAM sample: ~= 0.591 GiB
+
+Definition of Done pendiente en estación real
+---------------------------------------------
+- Blender 5.1 carga, activa, desactiva y recarga DSG sin traceback.
+- El mismo CBCT de referencia de DSG 8.7 mantiene calidad de hueso/segmentación.
+- UniversalLab devuelve dientes individuales y FDI correcto en contactos.
+- Blender permanece interactivo durante la inferencia.
+- CUDA se usa realmente si está disponible y se registra peak VRAM.
+- No hay paginación masiva de RAM ni congelación global del sistema.
+- Repetir segmentación es idempotente y no duplica objetos.
+- Un fallo a mitad de BUILD_TEETH revierte objetos parciales.
+- Cambiar el CBCT mientras corre la IA invalida el resultado antiguo.
+- Comparar 8.8.6 vs 8.9 con tiempo total, RAM pico y VRAM pico sobre el mismo caso.
+
+Criterio de aprobación
+----------------------
+No considerar 8.9 "validada clínicamente" hasta superar todas las pruebas de la
+Definition of Done anterior. Los tests de este paquete validan invariantes y
+mecanismos, no sustituyen una ejecución real de Blender + CUDA + modelo.
+
+External-process AST audit: PASS (no actual process-spawning imports/calls in production paths).

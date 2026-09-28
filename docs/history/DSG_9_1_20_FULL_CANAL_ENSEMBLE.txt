@@ -1,0 +1,45 @@
+DSG 9.1.20 — Full Mandibular Canal Ensemble
+=================================================
+
+Problem corrected
+-----------------
+DSG 9.1.19 converted the thin class-55 canal mask to mesh through a generic
+max_axis=640 sampling path. If the compact canal ROI exceeded 640 voxels in any
+axis, stride > 1 could erase 1-2 voxel segments and visibly truncate the canal.
+It also filtered small connected components before meshing.
+
+New pipeline
+------------
+SEGMENTAR TODO remains one visible button, but internally:
+
+1. DentalSegmentator (bundled Dataset112)
+   - class 5 = Mandibular canal
+   - full prediction is temporary
+   - only compact class-5 canal mask is retained
+
+2. UniversalLab
+   - teeth / FDI / maxilla / mandible
+   - class 55 = mandibular canal
+   - remains DSG dental semantic SSOT
+
+3. Canal ensemble
+   - UniversalLab 55 is preserved
+   - full DentalSegmentator canal components are accepted when they overlap or
+     approach UniversalLab, plus at most the two largest substantial components
+     for bilateral recovery
+   - no long path is synthesised
+   - only <=0.65 mm morphological closing is allowed for microscopic gaps
+
+4. Mesh
+   - native compact-mask resolution
+   - stride = 1 always
+   - no pre-mesh downsampling
+   - no generic component deletion
+   - no destructive smoothing/remeshing
+
+Safety
+------
+This object represents the learned bony mandibular canal, used as a proxy for
+the inferior alveolar neurovascular bundle. It is not a direct MRI
+segmentation of the nerve itself. Model disagreement and missing canal segments
+must remain visible rather than being fabricated geometrically.

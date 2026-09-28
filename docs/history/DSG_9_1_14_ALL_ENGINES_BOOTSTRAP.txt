@@ -1,0 +1,22 @@
+DSG 9.1.14 — Mandatory All-Engines Bootstrap
+================================================
+
+Cambio de arquitectura:
+DSG ya no espera a que el usuario llegue a DICOM o segmentación para descubrir
+dependencias. Tras habilitar el addon y salir de _RestrictData, ejecuta un
+preflight y, si falta algo, inicia automáticamente una instalación única y
+secuencial de todos los motores instalables.
+
+Se verifica/instala:
+1. Motor DICOM completo: pydicom + codecs JPEG/JPEG-LS/JPEG2000/RLE.
+2. Runtime científico CBCT/IA: scipy, scikit-image, psutil, torch, nnU-Net y
+   dependencias transitivas del runtime.
+3. Modelo UniversalLab cuando no esté presente.
+4. Modelo semántico dental incluido en el addon.
+5. NumPy y OpenVDB del host Blender/Mixar (se verifican; DSG no sustituye
+   binarios propios del host).
+
+El flujo clínico DICOM queda bloqueado hasta que all_required_ready=True.
+Si la instalación introduce DLLs/PyTorch nuevos, se pide un único reinicio.
+
+La instalación es idempotente: componentes ya listos no se reinstalan.

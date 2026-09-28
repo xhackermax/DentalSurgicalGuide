@@ -1,0 +1,8 @@
+DSG v9.5.4 - TotalSegmentator installer operator/cache fix
+
+- Unique installer operator: dsg.install_totalseg_v954
+- Unique RNA class names to prevent Blender from resolving a cached legacy operator.
+- Registration conflicts are no longer silently swallowed.
+- Every click writes install_click.json in the v9.5.4 runtime folder before subprocess launch.
+- Immediate bootstrap failure is detected synchronously and returned to Blender.
+- UI callers point only to the v9.5.4 operator.

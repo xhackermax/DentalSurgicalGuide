@@ -1,0 +1,10 @@
+DSG 9.2.15 ZERO-FREEZE POSTPROCESS
+
+- Root cause of 70-72% UI freeze: Competitive Tooth Path reconciliation ran inside bpy timer on Blender main thread.
+- Per-tooth deep-core EDT now runs only inside each UniversalLab tooth bbox, never the full arch.
+- Removed retained full-volume CC/seed/final-mask arrays per tooth; one shared marker and one reconciliation label buffer are used.
+- Watershed basin bounding boxes are computed once, not full-volume argwhere per tooth.
+- Tooth marching cubes + CBCT anatomy refinement + PCA are prepared outside Blender datablock commit path.
+- Main thread only commits one already-prepared tooth object per timer tick.
+- Anatomy refinement reuses one surface-normal calculation and uses one Taubin iteration for teeth.
+- Clinical behavior preserved: UniversalLab identity, DentalSegmentator support, volume-preserving rescue, competitive boundaries, CBCT-constrained surface refinement.

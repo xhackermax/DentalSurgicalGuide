@@ -1,0 +1,81 @@
+DSG 9.1.0 — Dental Mapping Compatibility
+13 August 2026
+
+BASE
+- DSG 9.0.0 Dental Asset Family.
+- Keeps dsg.dental_assets.v1 and contract_version=1.
+- Keeps published canonical role and object naming templates unchanged.
+
+P0 — CONTRACT / SSOT
+- Definitive frame: DSG_TOOTH_LOCAL_V1, right-handed, mm:
+  +X MESIAL, -X DISTAL; +Y FACIAL_BUCCAL, -Y LINGUAL_PALATAL;
+  +Z CORONAL_OCCLUSAL_INCISAL, -Z APICAL.
+- Dental assets JSON remains the single naming/role/landmark authority.
+- Explicit import-only legacy aliases:
+  CENTRAL_GROOVE_CENTER -> CENTRAL_FOSSA
+  DISTAL_CUSP_OPTIONAL -> DISTAL_CUSP
+- Additive scene migration accepts the exact previous DSG 9.0 contract hash only,
+  then stamps current metadata. Recognition payloads remain strict and must use
+  the current contract hash.
+- Canonical EOFF feature attributes:
+  VERTEX_FEATURE_LABELS (preserved) and DSG_vertex_feature_label (POINT/INT).
+
+P0 — SHARED LIBRARY
+- Native master path implemented and validated:
+  dsg/resources/dental_assets/dsg_dental_library.blend
+- Structural catalog validator checks FDI family collections, templates, frame,
+  required landmarks and emergence assets.
+- No private STL/OBJ copy is introduced.
+- No fake dental geometry is bundled. Real authored anatomy is still required.
+
+P0 — DENTAL MAPPING PIPELINE
+New dsg/dental_mapping package:
+- service.py: high-level FDI API / facade
+- library.py: canonical .blend loader and reference snapshots
+- registration.py: Template -> Ghost -> Patient coarse registration + trimmed ICP
+- landmark_transfer.py: semantic point transfer
+- landmark_refine.py: bounded local surface refinement and metrics
+- validation.py: semantic/frame/quality validation
+- derived_geometry.py: ToothFrame, cervical/occlusal/crown envelopes
+- migration.py: explicit compatibility/migration policy
+- eoff.py + eoff_core.py: conservative EOFF import and feature preservation
+
+P1 — PROSTHETIC FIT
+- anatomic_fit.py: immutable CrownTemplate -> CrownTarget with bounded symmetric
+  envelope deformation. XYZ scaling is not used as the clinical final solver.
+- proximal_fit.py: surface-based mesial/distal fit, gap/area/penetration metrics,
+  symmetric bounded translation search.
+- occlusal_fit.py: antagonist is applied only after anatomic/proximal fit;
+  transactional Boolean, topology checks and functional landmark reprojection.
+- emergence.py: emergence region/center/prosthetic axis derived from authored
+  crown semantics after final adaptation. ProstheticAxis is never equated to PCA.
+- scoring.py: hard-invalid candidates cannot be compensated by a good soft score.
+
+P2 — HIGH-LEVEL API / MCP BRIDGE
+Stable FDI-level facade:
+- get_dental_asset_contract
+- family_descriptor
+- required_landmarks
+- load_tooth_template / load_crown_template
+- map_patient_tooth
+- get_landmarks / get_tooth_frame / get_mapping_quality
+- select_crown_candidate
+- fit_crown_to_neighbors / fit_occlusion
+- get_emergence_region / get_prosthetic_axis
+- build_implant_planning_context
+
+Roadmap/MCP operations call this facade instead of parsing Blender names or
+implementing ICP/mesh operations. Geometry-writing operations require explicit
+boolean permission flags.
+
+RECOGNITION PAYLOAD
+- Remains dsg.dental_recognition.v1.
+- Additional registration, quality and per-landmark traceability live in metadata.
+- No premature v2 schema.
+
+KNOWN BOUNDARIES
+- Registration RMS and deformation limits shipped here are engineering defaults,
+  not clinically validated universal thresholds.
+- Real dsg_dental_library.blend anatomy has not been supplied, so the code refuses
+  to pretend the library is complete.
+- Blender 5.x runtime / bpy integration has not been executed in this environment.

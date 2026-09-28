@@ -1,0 +1,41 @@
+DSG 9.1.21 — Geodesic Safe Surface Anchors
+================================================
+
+Problem
+-------
+The width-gated frame engine correctly rejected a tube when a contour anchor
+lay on a surface zone too narrow/steep for the requested diameter. But it treated
+the raw clicked point as immutable and aborted the complete frame.
+
+Worse, after validating a graph endpoint it restored the exact raw click to the
+final polyline, which could reintroduce the invalid local width.
+
+New policy
+----------
+A contour click is semantic intent.
+
+requested_anchor
+    -> nearest passive-model graph vertex
+    -> local full-diameter width test
+    -> if invalid: Dijkstra-like bounded neighbourhood walk on actual mesh edges
+    -> closest width-valid surface vertex
+    -> resolved_anchor
+
+Important guarantees
+--------------------
+- relocation search follows mesh edges (surface-geodesic distance)
+- no KD/Euclidean jump across teeth, embrasures or concavities
+- no Euclidean frame fallback
+- final full route is still Dijkstra on the passive surface
+- final complete route is still hard full-diameter validated
+- automatic relocation is capped at 4.50 mm geodesically
+- if no valid endpoint exists inside that cap, DSG fails closed
+- the final frame uses the resolved endpoint and does NOT restore the bad click
+
+Audit metadata
+--------------
+DSG_frame_anchor_auto_relocated_count
+DSG_frame_anchor_auto_relocated_max_surface_mm
+DSG_frame_anchor_auto_relocated_max_euclidean_mm
+DSG_frame_anchor_resolution_json
+DSG_frame_resolved_anchor_points_json

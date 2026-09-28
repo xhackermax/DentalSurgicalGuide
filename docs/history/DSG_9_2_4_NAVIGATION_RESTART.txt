@@ -1,0 +1,17 @@
+DSG v9.2.4 · DETERMINISTIC NAVIGATION + STAGE RESTART
+
+1. ATRÁS no usa Blender Undo.
+   - DICOM: vuelve un paso clínico dentro de la ruta activa.
+   - Alineamiento: restaura posición/puntos de forma determinista y, desde el inicio, vuelve a DICOM.
+   - DSG: usa checkpoints geométricos y desde el primer paso vuelve a Alineamiento.
+
+2. Tres reinicios independientes y explícitos:
+   - REINICIAR DICOM: conserva paciente + CBCT cargado; limpia DICOM generado y todo lo posterior dependiente.
+   - REINICIAR ALINEAMIENTO: conserva DICOM + IOS de entrada; limpia puntos/ICP y DSG posterior.
+   - REINICIAR DSG: conserva DICOM + alineamiento; limpia solo la guía y vuelve al inicio de DSG.
+
+3. Los controles se centralizan en un panel estable CONTROL DEL FLUJO.
+   Se eliminan los antiguos reinicios locales duplicados y el ambiguo REINICIAR TODO.
+
+4. Jerarquía visual: ATRÁS es secundario; los tres reinicios son terciarios/compactos.
+   No se añaden colores nuevos a la paleta de tres tonos.

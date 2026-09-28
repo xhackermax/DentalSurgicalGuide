@@ -35,7 +35,7 @@ Lo medí sobre la geometría real generada en Blender 5.2.2.
 
 | Avellanado, bolsillo y membrana vistos desde dentro del sleeve | Número de orden grabado junto al sleeve |
 |---|---|
-| ![marca](img/frangible_countersink_pocket.jpg) | ![número](img/frangible_order_digit.jpg) |
+| ![marca](img/frangible_countersink_pocket.png) | ![número](img/frangible_order_digit.png) |
 
 ## 3. Errores de base encontrados y corregidos
 

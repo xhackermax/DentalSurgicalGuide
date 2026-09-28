@@ -1,0 +1,27 @@
+DSG v9.2.76 — Parallel Dual AI Workers
+
+Immediate segmentation no longer waits for DentalSegmentator before launching
+UniversalLab.
+
+Pipeline:
+1. The full-resolution CBCT is serialized once to a shared temporary directory.
+2. Worker A: isolated Blender -> DentalSegmentator.
+3. Worker B: isolated Blender -> UniversalLab.
+4. Both child processes start before DSG waits for either one.
+5. Blender foreground only polls status and remains outside Torch/nnU-Net.
+6. When both finish, DentalSegmentator is reduced immediately to compact canal,
+   bone, maxilla/mandible and upper/lower tooth support masks.
+7. UniversalLab then enters the existing off-main-thread Tooth Path and mesh
+   preparation pipeline.
+
+Adaptive safety:
+- UniversalLab starts speculatively from the direct air-cropped CBCT so it does
+  not wait for the semantic ROI.
+- If concurrent GPU/RAM pressure causes either engine to fail, DSG automatically
+  retries the failed engine alone.
+- If UniversalLab needs a retry and DentalSegmentator succeeded, the retry uses
+  the exact DentalSegmentator dental ROI with 28 mm margin.
+- Therefore capable machines get true parallel wall-clock execution while
+  constrained machines retain a correct sequential fallback.
+- No downsampling or loss of CBCT resolution is introduced.
+- SIMPLE implant route is unchanged and does not start these AI workers.

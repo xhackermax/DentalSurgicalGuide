@@ -1,0 +1,14 @@
+DSG v9.2.2 · SIMPLE STL BUILT-IN FIX
+
+CORRECCION PRINCIPAL
+- La ruta IMPLANTE SIMPLE ya no se detiene si scikit-image no esta instalado.
+- El STL confirmado usa marching cubes si el runtime cientifico ya esta disponible.
+- Si no lo esta, DSG usa un motor nativo por umbral, por bloques, basado solo en NumPy de Blender.
+- El motor nativo trabaja en la rejilla DICOM original y suelda las fronteras entre bloques.
+- No ejecuta pip, no requiere Torch, nnU-Net, SimpleITK ni Python externo para IMPLANTE SIMPLE.
+
+CORRECCION SECUNDARIA
+- dicom_module ahora puede encontrar scipy/scikit-image/SimpleITK dentro del runtime IA privado de DSG cuando este ya fue instalado para IMPLANTE INMEDIATO.
+
+FLUJO NO CAMBIADO
+PACIENTE -> CBCT -> SIMPLE/INMEDIATO -> ALINEAMIENTO -> DSG.

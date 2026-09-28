@@ -1,0 +1,2 @@
+DSG 9.1.12 legacy-clean installer
+Expected console marker: [DSG] REGISTERED v9.1.12 | legacy-clean | unified DICOM/DCM reader

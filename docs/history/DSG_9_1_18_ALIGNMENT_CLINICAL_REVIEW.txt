@@ -1,0 +1,17 @@
+DSG 9.1.18 — Alignment clinical surface review
+
+Problem fixed:
+The previous alignment review hid native-resolution segmented teeth and showed
+Dental_DICOM_AlignmentRef, a deliberately downsampled shell (max_axis ~176)
+created only for fast ICP. This looked like the segmentation had lost geometry.
+
+New behavior:
+- ICP still uses the lightweight shell internally.
+- the shell is hidden during review when individual segmented teeth exist.
+- native-resolution UniversalLab tooth meshes are shown instead.
+- a temporary non-destructive Laplacian Smooth modifier (2 iterations, low
+  strength, volume preservation when supported) improves surface readability.
+- FDI labels remain visible on the clinical teeth.
+- the smoothing modifier is disabled before entering Surgical Guide.
+- the original clinical mesh datablock is never voxel-remeshed or overwritten.
+- the no-AI DICOM STL route retains the original fallback behavior.

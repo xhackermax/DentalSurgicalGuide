@@ -1,0 +1,20 @@
+DSG v9.2.59 - Occlusal/incisal auto-alignment + tooth-interest GeoMatch
+
+ALIGNMENT PLAN A
+- CBCT roots and bone are excluded before automatic registration.
+- A shared dental-surface engine estimates the occlusal direction from tooth landmarks and face normals, without relying on Blender Z except as a last-resort LPS sign fallback.
+- Per-tooth reference patches contain only occlusal/incisal crown-end faces, using both coronal position and normal direction.
+- Incisors/canines/posteriors use different hidden geometric gates.
+- Automatic registration evaluates all available crown landmarks in addition to the three distributed validation zones.
+- Ambiguous global poses are ranked by dental landmark support across three arch sectors.
+- Plan B remains the three-zone manual fallback and is unchanged at the UI level.
+
+IOS TOOTH-OF-INTEREST SELECTION
+- GeoMatch positive and neighbour references are first reduced to IOS-supported crown surfaces; roots are no longer allowed to compete against gingiva.
+- Strong component anchors are taken from occlusal/incisal patches of the tooth(s) of interest.
+- The full visible crown is still recovered by connected GeoMatch growth, competitive neighbour ownership, negative-curvature barrier and protected hole filling.
+- If aligned IOS support is sparse, the CBCT reference falls back to a root-safe occlusal/incisal patch rather than the whole segmented tooth.
+- The precise and anatomy-locked recovery paths share the same crown definition.
+
+UI
+- No additional primary buttons. Plan A remains ALINEAR AUTOMATICAMENTE; Plan B remains 3 ZONAS.

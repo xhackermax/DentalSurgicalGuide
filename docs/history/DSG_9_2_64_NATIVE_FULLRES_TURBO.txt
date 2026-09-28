@@ -1,0 +1,51 @@
+DSG v9.2.64 · NATIVE FULL-RESOLUTION TURBO
+Build date: 2026-08-30
+Target: Blender 5.2 (keeps Blender 5.0+ compatibility)
+
+OBJECTIVE
+---------
+Maximum CBCT surface-generation speed without reducing the native voxel grid or
+sacrificing the source dental anatomy. There is no step=2 clinical dental mesh.
+
+IMPLEMENTED
+-----------
+1. Native-resolution dental geometry from the first visible mesh.
+2. One-pass vtkDiscreteFlyingEdges3D extraction for all UniversalLab tooth labels.
+3. No per-tooth binary masks on the normal VTK path.
+4. Simple-threshold route operates directly on the calibrated full-resolution scalar CBCT.
+5. Exact block min/max hierarchy for threshold pruning (Span-Space-style).
+6. Parent/leaf hierarchy for large-volume threshold routing.
+7. CUDA block classification when the installed DSG Torch runtime exposes CUDA.
+8. Native-grid Torch/CUDA Marching Cubes with sub-voxel linear edge interpolation.
+9. Automatic Taubin/MMG displacement disabled for teeth; source geometry is preserved.
+10. Normals policy is lazy/on-demand.
+11. Island cleanup moved after surface extraction; VTK RegionId is used when available.
+12. Optional process-isolated Blender surface sidecar for resilience/very large cases.
+
+ADDITIONAL PERFORMANCE WORK
+---------------------------
+- Persistent calibrated float32 density cache per DICOM case.
+- Persistent zero-copy NumPy -> VTK vtkImageData binding for repeated thresholds.
+- vtkSMPTools attempts STDThread when a wheel starts in Sequential mode.
+- Blender mesh creation uses foreach_set bulk transfer and omits redundant full mesh.validate().
+- Full-resolution skimage Lewiner fallback remains available if VTK/CUDA cannot run.
+- Selected extraction teeth may receive an explicit sub-voxel CBCT snap, but are never
+  promoted from a low-resolution preview because no low-resolution clinical mesh exists.
+
+SAFETY / ACCURACY
+-----------------
+- No downsampling is allowed on the primary clinical dental path.
+- Multi-label split reads DSG_semantic_label explicitly so vtkPolyDataConnectivityFilter
+  RegionId cannot overwrite FDI/Universal tooth identity.
+- The VTK multi-label implementation was compared against full-resolution Lewiner on
+  synthetic disjoint and touching label cases: face counts and bounds matched.
+- Threshold VTK zero-copy was compared with full-resolution Lewiner on a synthetic
+  scalar field: vertex/triangle counts and bounds matched in the validation case.
+- The Torch Marching Cubes math was exercised on the CPU Torch backend as a portability
+  test and matched Lewiner vertex/triangle counts with ~1e-5 voxel coordinate tolerance.
+
+KNOWN RUNTIME NOTE
+------------------
+This build was syntax-checked and its numerical surface engines were smoke-tested outside
+Blender. Final clinical behaviour still needs a real Blender 5.2 + CBCT case test, especially
+CUDA execution on the target RTX GPU and end-to-end timing inside Blender.

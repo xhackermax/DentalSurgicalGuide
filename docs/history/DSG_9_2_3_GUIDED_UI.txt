@@ -1,0 +1,31 @@
+DSG v9.2.3 · GUIDED SINGLE-ROUTE UI
+
+GOAL
+- Keep the user on one clinical path at a time.
+- After CBCT load, show exactly two route buttons: IMPLANTE SIMPLE / IMPLANTE INMEDIATO.
+- Once a route is chosen, hide the other route completely.
+- Draw only the current phase and its next clinically relevant action.
+
+ACTION HIERARCHY · MAXIMUM THREE TONES
+1. PRIMARY    #2F80ED  bright clinical blue: required NEXT action.
+2. SECONDARY  #5F7F9F  slate blue: optional/corrective action.
+3. TERTIARY   #8A97A5  blue-gray: review/navigation/accessory action.
+
+Blender 5.x does not expose an arbitrary background color per native operator
+button through UILayout. DSG therefore leaves the user's global theme untouched
+and draws a native color marker on each semantic action row, reinforced by
+button size and placement.
+
+SIMPLE ROUTE
+CBCT -> choose SIMPLE -> HU slider -> NEXT/CONFIRM STL -> automatic IOS -> Alignment.
+Only SIMPLE controls are visible. IMMEDIATE controls are hidden.
+
+IMMEDIATE ROUTE
+CBCT -> choose IMMEDIATE -> dual-engine segmentation -> FDI review -> select teeth + H
+-> create alveolar composites -> confirm -> automatic IOS -> Alignment.
+FDI inversion and extraction reselection are SECONDARY. Route change is TERTIARY.
+
+MAIN-PANEL NAVIGATION
+Removed the old free DICOM/Alignment/DSG stage-switch buttons from the main
+workflow. Stage changes now happen through the clinical NEXT actions. Alignment
+retains its own Back/Review controls.

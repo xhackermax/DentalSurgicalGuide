@@ -1,0 +1,15 @@
+DSG 9.1.13 — Motor DICOM completo
+====================================
+
+DSG incluye minidicom como lector de emergencia para DICOM sin compresión.
+Muchos CBCT dentales usan Pixel Data encapsulado/comprimido (JPEG, JPEG-LS,
+JPEG 2000 o RLE). Para esos estudios, pulsa «INSTALAR MOTOR DICOM» una vez.
+
+El botón instala en la carpeta privada de usuario de DSG:
+- pydicom 3.0.2
+- pylibjpeg[all] y sus codecs compatibles
+
+Después reinicia Mixar/Blender una vez. La instalación queda persistente y
+puede utilizarse sin conexión en aperturas posteriores.
+
+El Motor DICOM es independiente del Motor IA CBCT (Torch/nnU-Net).

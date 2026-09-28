@@ -1,0 +1,21 @@
+DSG v9.2.66 · SURFACE SHORTEST-PATH FRAME + STL-INDEPENDENT MPR
+
+FRAME
+- Preserves click order; no polar-angle resorting.
+- Minimum 4 anchors.
+- Exact face/barycentric anchor projection.
+- Shortest surface-distance route only.
+- Virtual endpoints connect to all vertices of their triangle.
+- SciPy compiled multi-source Dijkstra; exact fallback.
+- Continuous projected straightening constrained to the intrinsic route band.
+- Removed the 75% width gate, clearance penalties and semantic-corridor vetoes.
+- Cylindrical tube may intersect support anatomy; final DSG boolean adapts it.
+- No free-space Euclidean fallback.
+
+MPR
+- MPR requires only loaded DICOM volume/runtime, not STL generation.
+- Implant/microscrew, parents and collections are explicitly unhidden.
+- Hardware uses show_in_front so it remains readable over radiographic planes.
+
+UPDATE SAFETY
+- Cached dsg.* child modules are purged on registration to prevent stale old code after ZIP updates.

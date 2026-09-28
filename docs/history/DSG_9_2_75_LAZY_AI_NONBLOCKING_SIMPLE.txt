@@ -1,0 +1,26 @@
+DSG v9.2.75 — Lazy AI Worker + Nonblocking SIMPLE Route
+
+Root cause of v9.2.74 slowdown:
+1. CBCT_READY launched TWO heavy activities automatically:
+   - foreground Blender deep verification imported Torch/nnU-Net in a Python
+     thread, still sharing Blender's process/GIL/import lock;
+   - persistent background Blender simultaneously pre-warmed both AI models.
+   CPU, RAM, disk and GPU pressure therefore started before a route was chosen.
+2. SIMPLE_DENSITY also scheduled a solid threshold preview. The timer eventually
+   executed its mesh build on Blender's main thread, causing the delayed grey
+   / Not Responding freeze reported after choosing Implante simple.
+
+v9.2.75:
+- Patient opening performs zero Torch imports and zero CUDA/model warmup.
+- The persistent AI process starts only after IMPLANTE INMEDIATO is explicitly
+  chosen.
+- Immediate route availability uses only cheap structural/checkpoint checks.
+- The first worker request does NOT prewarm both models before inference.
+  DentalSegmentator loads on demand, remains cached, then UniversalLab loads in
+  the same persistent process.
+- SIMPLE route force-stops any old AI worker to return GPU/RAM to Blender.
+- SIMPLE threshold interaction is GPU/OpenVDB volume-only.
+- No delayed solid preview is scheduled while adjusting DENSIDAD/HU.
+- Full-resolution STL generation remains unchanged and starts only after
+  SIGUIENTE/confirm.
+- No segmentation accuracy or CBCT resolution is reduced.

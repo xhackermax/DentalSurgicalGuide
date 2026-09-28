@@ -1,0 +1,18 @@
+DSG v9.2.71
+
+Fix for Blender freezing / grey "Not Responding" window when IMPLANTE INMEDIATO
+is pressed prematurely after patient/CBCT loading.
+
+Changes:
+1. Every new CBCT invalidates the immediate-route gate.
+2. CBCT_READY stores a fresh wall-clock generation timestamp.
+3. Runtime deep verification is forced after every CBCT load (force=True).
+4. A stale verification result from addon startup or another patient cannot arm
+   IMPLANTE INMEDIATO.
+5. The button requires the current verification to finish AFTER this CBCT ready
+   timestamp, plus a 1.25 s UI-idle settling barrier.
+6. The operator poll and execute both enforce the same gate.
+7. Clicking IMPLANTE INMEDIATO only publishes IMMEDIATE_LAUNCHING and returns.
+   The heavy segmentation operator is started 250 ms later by bpy.app.timers,
+   after Blender has repainted the disabled UI and released the mouse event.
+8. Double-click/re-entry remains blocked.

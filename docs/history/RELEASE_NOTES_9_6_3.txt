@@ -1,0 +1,20 @@
+DSG 9.6.3 - ORGANIC FRAME + USER-PLACED SLEEVE WINDOW
+
+FRAME
+- Replaces the final faceted POLY sweep with a continuous AUTO Bezier sweep.
+- Keeps the solved geodesic surface route as the clinical source.
+- Reduces only redundant display controls (about 0.8-1.45 mm spacing).
+- Raises radial/longitudinal curve resolution for a smoother, more anatomical frame.
+- Stores visible-sweep metadata on DSG_Frame for debugging/audit.
+
+LATERAL SLEEVE WINDOW
+- Removes automatic final placement of the lateral drill-entry window.
+- After irrigation is resolved, the clinician clicks the curved sleeve wall on the side with the best drill access.
+- Supports one manual pick per implant/sleeve and shows an in-viewport arrow marker.
+- The opening width remains fixed to the inner sleeve diameter.
+- Fine rotation remains available after the manual pick.
+- If irrigation exists, DSG validates the picked side against the protected irrigation sector and refuses unsafe placement instead of auto-rotating or narrowing the slot.
+- Applying the opening still cuts sleeve + underlying frame in one EXACT Boolean.
+
+COMPATIBILITY
+- Legacy operators are preserved so older .blend files/keymaps still register.

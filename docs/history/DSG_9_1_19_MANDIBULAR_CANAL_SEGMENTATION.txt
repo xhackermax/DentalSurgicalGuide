@@ -1,0 +1,31 @@
+DSG 9.1.19 — Segmentación visible del canal mandibular
+===========================================================
+
+SEGMENTAR TODO sigue ejecutando una sola inferencia UniversalLab.
+
+Salida materializada:
+- clases 1..52: dientes individualizados + FDI
+- clase 53: mandíbula
+- clase 54: maxila
+- clase 55: canal mandibular, ahora como malla clínica visible
+
+Objeto:
+  Dental_DICOM_MandibularCanal
+
+Rol:
+  DICOM_MANDIBULAR_CANAL
+
+Metadatos:
+  DSG_semantic_class = 55
+  DSG_structure = MANDIBULAR_CANAL
+  DSG_safety_structure = True
+  DSG_segmentation_status = SEGMENTED
+
+El canal se genera directamente desde la máscara aprendida clase 55. DSG NO
+inventa un canal por densidad si la red no lo devuelve. Solo se filtran
+componentes minúsculos de ruido, sin forzar exactamente dos componentes para no
+eliminar variantes anatómicas o pequeños saltos de segmentación.
+
+La malla se muestra durante la revisión de alineamiento junto a los dientes
+clínicos de alta resolución. No se aplica remallado/suavizado destructivo a esta
+geometría de seguridad.

@@ -1,0 +1,42 @@
+DSG 9.5.0 · TOTALSEGMENTATOR CLEAN START
+==========================================
+
+Segmentation engine
+- TotalSegmentator 2.18.0
+- task: teeth
+- official dental model based on ToothFairy3
+- official craniofacial crop model is pre-downloaded by the DSG installer
+
+Runtime policy
+- Dedicated runtime namespace: dsg_totalsegmentator_v950_pyXY
+- TotalSegmentator package and weights are isolated from the add-on ZIP.
+- An existing ABI-compatible PyTorch/nnU-Net scientific foundation may be reused
+  to avoid downloading CUDA/PyTorch again. No previous dental predictor, model,
+  worker or checkpoint is executed or installed by DSG 9.5.
+- On a clean computer the installer falls back to a complete TotalSegmentator
+  dependency installation.
+- Installation runs in an isolated background Blender process and writes a
+  heartbeat/status file so the UI does not wait forever without state.
+
+Inference policy
+- One TotalSegmentator task=teeth inference per CBCT.
+- CUDA is preferred automatically when available; CPU is supported.
+- CUDA failure retries the same TotalSegmentator task on CPU.
+- CPU threads are assigned from the machine logical CPU count.
+- TotalSegmentator output is converted only by integer relabeling into DSG's
+  proven mesh-import contract. There is no second neural segmentation and no
+  cross-model identity reconciliation.
+- FDI comes directly from TotalSegmentator's dental labels.
+- Jawbones and inferior alveolar canals come from the same task.
+
+Privacy
+- TotalSegmentator anonymous usage statistics are disabled in the DSG-specific
+  runtime configuration.
+
+Removed from the new active engine
+- Previous dual dental inference engine.
+- Previous semantic engine vendor tree.
+- Previous persistent/process AI workers.
+- Previous remote dental-engine manifest path.
+
+DSG geometry, alignment, guide design and clinical workflow code are retained.

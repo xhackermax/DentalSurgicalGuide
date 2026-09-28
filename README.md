@@ -1,50 +1,49 @@
-# Dental Surgical Guide (DSG)
+# DSG 9.7.x — Developer / AI entrypoint
 
-Guia sencilla y repositorio oficial de DSG para Blender 5.x.
+DSG is a dental and maxillofacial clinical planning addon for Blender 5.2.
 
-## Instalar
+## Before changing code
 
-1. Descarga el ZIP desde **[Releases](https://github.com/xhackermax/DentalSurgicalGuide/releases/latest)**.
-2. En Blender abre **Edit > Preferences > Add-ons > Install from Disk**.
-3. Selecciona el ZIP sin descomprimir.
-4. Activa **DSG Dental Surgical Guide**.
+**Mandatory:** read `AGENTS.md` first. It is the engineering constitution for this repository and applies to humans and AI coding agents.
 
-## Motores y modelos
+Then read:
 
-**DSG 9.7.3 o superior** instala el motor de IA (TotalSegmentator 2.18 + PyTorch 2.8) desde
-[engines/manifest-v2.json](engines/manifest-v2.json):
+- `docs/specs/DSG_9.6/spec.md` — product/clinical behavior contract.
+- `docs/specs/DSG_9.6/runtime_scope.md` — what AI/runtime components are allowed by default.
+- `docs/specs/DSG_9.6/acceptance.md` — release acceptance gates.
 
-- se instala una sola vez y **se reutiliza en todas las actualizaciones de DSG**;
-- descarga en paralelo, se reanuda si se corta y verifica cada archivo con SHA-256;
-- espejos: Release `engine-v2` de este repositorio y Google Drive;
-- sin tarjeta NVIDIA se instala la version CPU (mucho mas ligera).
+## One-sentence architecture rule
 
-Detalles y como publicar los motores: [engines/README.md](engines/README.md).
-Novedades de cada version: [docs/CHANGELOG.md](docs/CHANGELOG.md).
+> DSG installs and executes only the dental/maxillofacial AI capability required by an explicit clinical workflow; it must not carry unrelated whole-body models or dependencies by default.
 
-Las versiones antiguas (≤ 9.2) siguen usando el indice
-[manifest.json](https://raw.githubusercontent.com/xhackermax/DentalSurgicalGuide/main/manifest.json)
-y el Release `engine-v1`, que no se modifican.
+## Core invariants
 
-## Fuentes y proyectos externos
+- No dead buttons.
+- SIMPLE_ARCHES is a genuinely smaller pipeline than FDI.
+- Heavy inference belongs in an external worker where feasible.
+- Manifest = SSOT for worker results.
+- Every destructive transition is reversible/checkpointed.
+- Long operations show visible progress/activity.
+- Every megabyte added to the runtime must have a named DSG consumer.
+- Runtime and model weights are separated and reusable across addon updates.
+- No release is stable without a real Blender 5.2 smoke test.
 
-DSG integra o es compatible con componentes de terceros. Cada proyecto conserva su autoria y licencia original:
+## Repository layout (9.7.0)
 
-- [TotalSegmentator](https://github.com/wasserth/TotalSegmentator) - modelos dentales ToothFairy3 (Dataset113) y craneofacial (Dataset115).
-- [nnU-Net](https://github.com/MIC-DKFZ/nnUNet) - framework de segmentacion medica.
-- [DentalSegmentator Dataset112](https://zenodo.org/records/10829675) - modelo/dataset dental distribuido desde Zenodo.
-- [SlicerAutomatedDentalTools / UniversalLab](https://github.com/DCBIA-OrthoLab/SlicerAutomatedDentalTools) - modelo de dientes individuales.
-- [PyTorch](https://pytorch.org/) - runtime de inferencia.
-- [pydicom](https://github.com/pydicom/pydicom) - lectura DICOM.
-- [pylibjpeg](https://github.com/pydicom/pylibjpeg) y sus plugins - codecs JPEG, JPEG-LS, JPEG 2000 y RLE.
-- [GDCM](https://github.com/malaterre/GDCM) - codecs y utilidades DICOM.
-- [MMG / MMGpy](https://github.com/kmarchais/mmgpy) - herramientas opcionales de malla.
+```text
+dsg/            the Blender add-on (the only folder that is packaged)
+  guide_export/ export quality gate + traceability report (SOLID, see docs/MEJORAS_9_7_0.md)
+tests/          pytest suite (pure tests run without Blender; `requires_bpy` tests need bpy)
+tools/          run_checks.py, blender_smoke.py, install_smoke.py, build_addon_zip.py, codemods
+docs/           specs, architecture notes, history of release notes
+```
 
-Las licencias y avisos incluidos por los proyectos externos deben conservarse al redistribuir sus archivos.
+## Everyday commands
 
-## Enlaces permanentes
+```bash
+pip install "bpy==5.2.2" pytest ruff numpy scipy   # Python 3.13, same as Blender 5.2
+python tools/run_checks.py                          # all automated release gates
+python tools/build_addon_zip.py --out dist          # installable ZIP (+ .sha256)
+```
 
-- Addon actual: https://github.com/xhackermax/DentalSurgicalGuide/releases/latest
-- Manifest: https://raw.githubusercontent.com/xhackermax/DentalSurgicalGuide/main/manifest.json
-- Motores (DSG ≥ 9.7.3): https://raw.githubusercontent.com/xhackermax/DentalSurgicalGuide/main/engines/manifest-v2.json
-- Motores (DSG ≤ 9.2): https://github.com/xhackermax/DentalSurgicalGuide/releases/tag/engine-v1
+What changed in 9.7.0 and why: `docs/MEJORAS_9_7_0.md`.

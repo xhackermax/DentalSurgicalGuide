@@ -1,0 +1,61 @@
+DSG 9.2.63 · SEMANTIC CLEARANCE CORRIDOR + CONTINUOUS SURFACE FRAME + VTK DISCRETE
+=================================================================================
+
+FRAME / RUTA DE SUPERFICIE
+--------------------------
+- Sustituye el objetivo "shortest mesh-edge geodesic" del frame por un corredor
+  semántico alrededor del contorno marcado por el clínico.
+- Los anchors ya no se fijan inmediatamente a un único vértice: se proyectan a
+  la superficie y guardan face/triangle + coordenadas baricéntricas cuando la
+  triangulación evaluada está disponible.
+- El corredor se construye por distancia intrínseca desde muestras proyectadas
+  del contorno. Si potpourri3d 1.4 está disponible, usa Heat Method robusto;
+  en caso contrario usa distancia intrínseca CSR sobre la misma topología.
+- El coste de ruta combina longitud + distancia al contorno + clearance de la
+  sección del tubo + variación local de normales/curvatura.
+- Los tests de anchura dejan de usar nearest-point lateral como criterio final.
+  Se realizan rayos a lo largo de la normal local para evitar saltos entre
+  láminas vecinas en contactos interproximales.
+- El 75% se interpreta como retención real de la semisección lateral del tubo.
+  Los puntos claramente imposibles (<45% retenido) pueden excluirse antes del
+  routing; los casos limítrofes se penalizan de forma continua.
+- La ruta elegida se hace continua a través de interiores de triángulos:
+  * potpourri3d EdgeFlipGeodesicSolver dentro de una banda estrecha del corredor,
+    si está disponible;
+  * projected curve-shortening sobre BVH, si no está disponible.
+- Validación final por sweep de sección del tubo sobre la ruta continua.
+- Si el sweep falla, se reevalúa y penaliza solo el vecindario intrínseco de los
+  puntos que fallaron. Ya no se acumula una nube de vértices prohibidos mediante
+  12 reroutes Dijkstra.
+- Sigue sin existir fallback euclidiano/free-space.
+
+VTK / CBCT
+----------
+- Para máscaras discretas binarias/labelmaps, AUTO usa vtkDiscreteFlyingEdges3D
+  cuando está disponible. vtkFlyingEdges3D queda como compatibilidad.
+- Configura una sola vez vtkSMPTools: si el wheel arranca en Sequential y
+  STDThread está disponible, activa STDThread y limita el máximo a 8 hilos.
+- Preview ROI mantiene step=2 (o el LOD solicitado) incluso en ROI pequeños.
+  El full-resolution step=1 se reserva a dientes seleccionados clínicamente.
+- Guarda diagnóstico del backend VTK SMP y número estimado de hilos.
+- Lewiner sigue siendo fallback completo si VTK falta/falla.
+
+DEPENDENCIA OPCIONAL
+--------------------
+- offline_runtime/requirements_geometry_optional.txt:
+    potpourri3d==1.4.0
+- No es obligatoria. Sin ella, DSG usa CSR intrínseco + projected curve-shortening.
+
+VALIDACIÓN REALIZADA FUERA DE BLENDER
+-------------------------------------
+- Compilación Python de todo el add-on.
+- Smoke test del solver de corredor ponderado en malla triangular sintética.
+- VTK 9.6.2: vtkDiscreteFlyingEdges3D operativo.
+- VTK SMP cambió de Sequential a STDThread (5 hilos estimados en el entorno de prueba).
+- Full-resolution step=1: bbox VTK discrete == bbox Lewiner en pruebas sintéticas.
+
+PENDIENTE DE VALIDACIÓN EN BLENDER 5.2
+--------------------------------------
+- Interacción exacta de BVHTree ray_cast con IOS reales densos y transformados.
+- potpourri3d dentro del Python embebido de Blender si se instala el wheel opcional.
+- Casos clínicos con contactos interproximales muy estrechos y superficies no manifold.

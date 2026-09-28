@@ -1,0 +1,45 @@
+DSG 9.1.23 — Native-resolution DICOM geometry in Alignment
+===============================================================
+
+Root cause
+----------
+Each UniversalLab tooth was already created with native marching cubes:
+    step_size = 1
+
+But the alignment handoff discarded that precision and generated:
+    Dental_DICOM_AlignmentRef
+with:
+    max_axis ~= 176
+    stride = ceil(max(occupied dental ROI) / max_axis)
+
+The landmark raycast intersected that reduced shell, and geodesic ICP patches
+were subsequently extracted from that same reduced topology. Viewport smoothing
+of the original tooth objects could therefore never fix landmark precision.
+
+New segmented-CBCT path
+-----------------------
+Individual native tooth meshes
+    -> exact concatenation of original vertices/triangles
+    -> Dental_DICOM_AlignmentRef
+       quality = NATIVE_TOOTH_COMPOSITE
+       stride = 1
+    -> landmark raycast
+    -> geodesic patch extraction
+    -> ICP
+
+No voxel resampling is performed in this path.
+
+The target is built from tooth.data (the original segmentation mesh), not the
+evaluated Laplacian display modifier. During landmark picking the duplicate
+smoothed tooth overlay is temporarily hidden so the surface the clinician sees
+is exactly the surface that receives the raycast.
+
+The old sampled reference is retained only for legacy/degraded cases without
+individual segmented teeth. When individual teeth exist, DSG fails closed if a
+native target cannot be constructed.
+
+Additional fix
+--------------
+9.1.22 accidentally contained two definitions of _create_fdi_label(). The stale
+second definition overrode the new vestibular FDI implementation at runtime.
+9.1.23 removes that duplicate.

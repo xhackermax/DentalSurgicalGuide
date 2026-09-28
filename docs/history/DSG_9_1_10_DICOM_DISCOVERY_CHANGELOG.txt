@@ -1,0 +1,10 @@
+DSG 9.1.10 — DICOM study discovery
+
+- Recovery from any non-image DICOM now searches recursively, not only a file literally named DICOMDIR.
+- Bounded search extends to sibling study directories through parent/grandparent roots without scanning a drive root.
+- File discovery is extension-agnostic: extensionless/numeric DICOM files are probed by content.
+- DICOMDIR ReferencedFileID records are resolved first when available.
+- Classic series are grouped by StudyInstanceUID + SeriesInstanceUID across physical subdirectories.
+- Recovered source file lists are preserved, so loading no longer falls back to only siblings of a representative file.
+- Failure messages report scanned files, readable DICOM objects, image-bearing objects, and roots searched.
+- Ambiguous multiple medical image series still fail closed and request explicit series selection.

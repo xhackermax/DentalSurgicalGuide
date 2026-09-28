@@ -1,0 +1,9 @@
+DSG 9.6.7 — VISIBLE ENGINE INSTALL PROGRESS
+
+- Barra de progreso visible dentro del panel principal DSG durante la instalación de motores.
+- Porcentaje numérico 0–100% siempre visible.
+- Fase actual visible (BOOT, BUILD_RUNTIME, BUILD_WEIGHTS, VERIFY, READY, etc.).
+- Mensaje detallado bajo la barra.
+- Redibujado del panel cada 0.35 s mientras el worker está activo.
+- Mantiene el instalador core de 9.6.6 y cambia a un ID RNA versionado v967 para evitar caché de Blender.
+- Nuevo runtime schema dsg_ts967 para no reutilizar estados de progreso obsoletos.

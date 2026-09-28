@@ -1,0 +1,29 @@
+DSG v9.2.88 — Segmentation Recovery Baseline
+
+Purpose:
+Restore a known-good clinical segmentation path before attempting further speed
+work. The multi-process experiments from 9.2.73-9.2.87 are bypassed for active
+segmentation.
+
+Immediate route is now deliberately sequential:
+1. DentalSegmentator on the proven in-process background worker thread.
+2. Compact dental/canal verifier masks and ROI are retained.
+3. UniversalLab runs next on the same proven worker architecture.
+4. Tooth Path + full-resolution tooth mesh preparation uses the known-good
+   v9.2.72 single background postprocess thread.
+5. Blender commits prepared teeth, maxilla, mandible and canal incrementally.
+
+Disabled/bypassed for segmentation:
+- persistent AI server
+- second-Blender isolated inference worker
+- dual DentalSegmentator + UniversalLab process orchestration
+- multi-process postprocess workers
+
+Experimental workers are explicitly cancelled before starting IMMEDIATE.
+
+No clinical model, FDI rule, CBCT resolution, immediate extraction workflow,
+alignment workflow or final animation is removed. This is a reliability rollback
+of the segmentation execution architecture only.
+
+Once this baseline is confirmed to segment correctly again, performance can be
+reintroduced one worker at a time with a measurable benchmark after each step.

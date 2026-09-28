@@ -1,0 +1,46 @@
+DSG v9.2.5 · DICOM LATERALITY / MIRROR FIX
+===========================================
+
+ROOT CAUSE FOUND
+----------------
+The CBCT geometry was being reflected a second time inside DSG.
+
+DICOM already provides patient-space orientation through
+ImageOrientationPatient. However, dicom_module._dicom_display_signs_xyz()
+returned (-1, +1, +1), forcing an additional X reflection before the mesh
+was parented to the DICOM orientation root. This has determinant -1 and is a
+true mirror, not a rotation.
+
+The same sign helper was used by:
+- SIMPLE threshold STL generation
+- marching-cubes surfaces
+- semantic DentalSegmentator meshes
+- UniversalLab tooth/maxilla/mandible/canal meshes
+- CBCT density sampling / projection helpers
+
+The axial and coronal direct MPR arrays were also reversed horizontally to
+compensate for that artificial reflection.
+
+FIX
+---
+1. _dicom_display_signs_xyz() now returns (+1,+1,+1).
+2. Axial/coronal direct MPR slices keep native DICOM column order.
+3. DICOM ImageOrientationPatient remains the single physical authority.
+4. Existing optional in-plane normalization can still reverse X and Y
+   together. That is a 180-degree rotation and remains right-handed.
+5. No object Scale=-1 is used, so normals, ICP, booleans and STL export stay
+   in one consistent coordinate frame.
+6. UniversalLab laterality correction is intentionally retained because it
+   only corrects tooth LABEL IDENTITY in DICOM-LPS space; it does not mirror
+   mesh geometry.
+
+UI
+--
+Primary workflow marker updated to #19A3C2. Secondary and tertiary tones are
+unchanged, preserving the three-level blue/gray hierarchy.
+
+REGRESSION POLICY
+-----------------
+Never repair DICOM laterality with object.scale = -1 or by flipping a single
+patient axis. All CBCT-derived geometry must share the native voxel frame and
+DICOM direction-cosine root.

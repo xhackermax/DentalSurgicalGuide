@@ -1,0 +1,20 @@
+{
+  "schema": "dsg.guide_assets.v1",
+  "files": {
+    "microscrew_visual_template.b85": {
+      "sha256": "2d6ef502f5195bc74d028a27dabd6cae097fa09d8a99f5927a565457d7fbf024",
+      "chars": 294303,
+      "symbol": "_MICROSCREW_VISUAL_TEMPLATE_B85"
+    },
+    "drill_visual_template.b85": {
+      "sha256": "7a1a4330ccbf36ddbe80bf037d2ab8c9d74363ff9c027e3ebf5c1c6785361c0c",
+      "chars": 228570,
+      "symbol": "_DRILL_VISUAL_TEMPLATE_B85"
+    },
+    "implant_template.b85": {
+      "sha256": "0e96fa18c388ad6bd14b7cfb251e11681a997ceef7352a5e14a9476f168940ec",
+      "chars": 179969,
+      "symbol": "_IMPLANT_TEMPLATE_B85"
+    }
+  }
+}

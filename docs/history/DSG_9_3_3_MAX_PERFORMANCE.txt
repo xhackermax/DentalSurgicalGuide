@@ -1,0 +1,14 @@
+DSG 9.3.3 MAX PERFORMANCE
+
+Base: v9.3.2 WORKER BOOT FIX (known-good segmentation).
+
+Changes:
+- Keeps the fixed external-worker bootstrap from 9.3.2.
+- CUDA inference feeder/preprocessing budget raised to up to 8 logical CPU threads / ~50% CPU.
+- Pure CPU inference can use all logical CPUs except one (or all on <=2-thread systems).
+- Parallel Tooth Path + surface workers divide nearly all available logical CPUs between them.
+- Removed BELOW_NORMAL priority from CPU postprocess workers.
+- CUDA remains single-owner to avoid VRAM/CUDA contention and segmentation regressions.
+- CUDA_HYBRID remains enabled on <=8.5 GB VRAM GPUs to use GPU for network compute and system RAM for large accumulators.
+
+Goal: aggressive utilization without intentionally oversubscribing every library/process, which is usually slower and can exhaust RAM.

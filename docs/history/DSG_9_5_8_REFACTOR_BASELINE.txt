@@ -1,0 +1,22 @@
+DSG 9.5.8 REFACTOR BASELINE
+
+Architecture policy:
+- Keep TotalSegmentator task=teeth as the single neural inference.
+- Keep clinical gates fail-closed where they were already fail-closed.
+- Reduce edit surface before adding more features.
+- Delete only dead code with a demonstrated no-consumer/no-read path.
+- Preserve useful morphology/geometry even when legacy naming is misleading.
+- Do not reintroduce persistent AI servers, dual neural workers or multi-model
+  "verification" without a tested clinical reason.
+
+Heavy-code map:
+- dsg/guide_module.py -> dsg/_guide_parts/*.py
+- dsg/dicom_module.py -> dsg/_dicom_parts/*.py
+- dsg/alignment_module.py -> dsg/_alignment_parts/*.py
+- dsg/source_parts.py -> ordered fragment loader preserving one namespace.
+
+Next refactor stage (after Blender smoke tests):
+1. Add bpy integration smoke tests around register/unregister and operator IDs.
+2. Extract one low-coupling guide domain at a time into a true Python module.
+3. Replace print/except-pass diagnostics incrementally with one logger.
+4. Re-run dead-code reachability after each real module boundary is established.

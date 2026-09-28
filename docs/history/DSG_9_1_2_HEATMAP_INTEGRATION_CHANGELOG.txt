@@ -1,0 +1,24 @@
+DSG 9.1.2 — Implant Bone Support Heatmap integration
+
+Kept unchanged:
+- Official CBCT sampler in dicom_module is the single source of voxel values.
+- BoneSupportScore remains topology-independent axial x angular sampling.
+- Out-of-FOV samples remain excluded through the official validity mask.
+- Values remain RELATIVE_CBCT_GRAY_NOT_HU.
+
+Added from the reviewed heatmap prototype where it materially improves DSG:
+1. Five-stop blue -> cyan -> green -> yellow -> red auditable palette.
+2. Surface-normal visualization sampling mode with inverse-transpose normal transform.
+3. Multi-ring visualization averaging (default 0.25, 0.50, 1.00 mm) using only valid CBCT samples.
+4. Baked FLOAT scalar + FLOAT_COLOR attributes remain separated.
+5. Active color attribute is set when Blender supports it.
+6. Mild emission in the heatmap material for readable Material Preview/Rendered display.
+7. Heatmap response reports surface min/mean/max, sampling mode and valid fraction.
+8. Legacy AXIS_RADIAL visualization mode remains available.
+
+Deliberately not adopted:
+- duplicate trilinear sampler;
+- density_min/density_max normalization that ignores DSG auto range;
+- treating out-of-FOV as low-density bone;
+- using per-vertex values as the MCP BoneSupportScore;
+- irreversible material replacement.

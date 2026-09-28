@@ -1,0 +1,90 @@
+DSG 9.5.8 - REFACTOR BASELINE + ZOMBIE CLEANUP
+================================================
+
+Goal
+----
+Make the active 9.5.x codebase easier and safer to edit without changing the
+clinical workflow or reintroducing the unstable multi-engine architecture from
+9.2.x.
+
+1) Heavy source split, compatibility first
+-------------------------------------------
+The three heaviest editable modules are now small facades that load ordered
+source fragments into the SAME historical module namespace:
+
+- guide_module.py: 50,403 lines -> 24-line facade + 16 ordered domain fragments.
+- dicom_module.py: 16,827 lines -> small facade + 9 ordered domain fragments.
+- alignment_module.py: 5,168 lines -> small facade + 2 ordered domain fragments.
+
+No fragment exceeds 5,000 lines. Functions/classes still report the historical
+module namespace (for example dsg.guide_module), so Blender operator IDs,
+registration lists and cross-module imports are not intentionally changed.
+
+This is a transitional split, not yet a hard package-boundary refactor. It is
+specifically designed to remove the 50k-line editing bottleneck first, before
+moving symbols between independent Python module namespaces.
+
+2) Active TotalSegmentator pipeline: removed confirmed zombie I/O
+-----------------------------------------------------------------
+Removed from the 9.5.x active path:
+
+- Full-volume totalseg_support_labels.npy duplicate semantic map.
+- upper_support.npy generation/write.
+- lower_support.npy generation/write.
+- canal_support.npy generation/write.
+- upper_support_path / lower_support_path request fields that run_teeth_task()
+  never consumed.
+- canal_verifier_stats metadata implying an independent verifier that did not
+  exist in 9.5.x.
+- Byte-for-byte duplicate "corrected" TotalSegmentator labelmap written by the
+  teeth worker even though corrected=False.
+
+The TotalSegmentator compatibility labelmap is now the postprocess SSOT for:
+- teeth (Universal compatibility IDs -> FDI),
+- maxilla (54),
+- mandible (53),
+- mandibular canal (55).
+
+3) Canal behavior preserved while removing misleading verification semantics
+---------------------------------------------------------------------------
+The previous fuse_canal() name suggested two independent models. In 9.5.x both
+inputs came from the same TotalSegmentator task=teeth result.
+
+The useful geometry operation has NOT been deleted: the historical 0.65 mm
+binary closing is preserved as refine_single_source_canal(). Metadata now says
+independent_verifier=False explicitly.
+
+4) Other confirmed dead code removed
+------------------------------------
+- common_surface_match.select_legacy_compatible_ios_seed(): zero production
+  references.
+- common_surface_match._reference_bvh_with_curvature(): zero references.
+- RUNTIME.semantic_labels_path: write/reset-only field, zero reads.
+
+Potentially dynamic Blender helpers were intentionally NOT removed solely on a
+static "one reference" count. Clinical/runtime safety takes precedence over an
+aggressive line-count purge.
+
+5) Regression protection added
+-------------------------------
+New pure tests cover:
+- TotalSegmentator -> single compatibility labelmap translation.
+- FDI/pulp exclusion contract.
+- Absence of orphan support-map request paths in the active pipeline.
+- No duplicate corrected labelmap write.
+- Single-source canal refinement provenance and preservation of source voxels.
+- Heavy facade/fragment integrity.
+- Maximum fragment size <= 5,000 lines.
+- Explicit future-annotations compiler behavior for DICOM fragments.
+
+Validation performed for this package:
+- compileall: PASS.
+- 16 pure regression tests: PASS, 0 failures.
+- Existing FDI fail-closed tests: PASS.
+
+Important validation boundary
+-----------------------------
+This environment does not execute Blender 5.2/bpy, so the package still needs a
+Blender smoke test: enable addon -> open case -> segmentation -> FDI confirm ->
+MPR -> guide flow -> save/reload. The split intentionally preserves source order
+and module globals to minimize that risk.

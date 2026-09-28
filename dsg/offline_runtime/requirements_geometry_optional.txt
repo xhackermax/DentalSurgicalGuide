@@ -1,0 +1,3 @@
+# Optional continuous surface routing acceleration / geometry-central bindings.
+# DSG remains functional without it and falls back to projected curve-shortening.
+potpourri3d==1.4.0

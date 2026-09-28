@@ -1,0 +1,38 @@
+{
+  "schema": "dsg.offline_evidence_manifest.v1",
+  "repository_schema": "dsg.offline_evidence_repository.v1",
+  "repository_version": "2026.08.14.1",
+  "bundled_at": "2026-08-14T20:13:00+02:00",
+  "last_literature_search": "2026-08-14",
+  "offline_mode_supported": true,
+  "contains_full_text_articles": false,
+  "copyright_policy": "Bibliographic metadata and DSG-authored evidence summaries only; no bundled copyrighted full texts.",
+  "update_policy": "Live MCP search may propose additions/changes. Bundled active rules are never silently overwritten; clinician approval or a new addon release is required.",
+  "authority_policy": "Author prominence affects watch priority only, never evidence weight.",
+  "reference_count": 32,
+  "rule_count": 18,
+  "journal_count": 9,
+  "expert_watch_count": 21,
+  "files": {
+    "references.json": {
+      "sha256": "8110a7bcda6dc4b619a35782cdb1eee673f579695a9ef992d5c50af851496c88",
+      "bytes": 35255
+    },
+    "rules.json": {
+      "sha256": "d5c160ce7a52e7a76ca7c87a09ac6bbc64e9da2714c84dd1f7309c0a26a3b721",
+      "bytes": 12433
+    },
+    "journals.json": {
+      "sha256": "ca98b8b3e775b9273aa801e17f1d5810120372f722e857638a2003f76200ae26",
+      "bytes": 2372
+    },
+    "expert_watchlist.json": {
+      "sha256": "0a4887af9e5480279ba3839d3ebb72ced3f67d7f2b4618e633167528a8f6b619",
+      "bytes": 3854
+    },
+    "search_queries.json": {
+      "sha256": "3f93a0491e2cf51ab5b948ad3465d2c7e0c3b3c2a899d3ac82c89623d60f9d2c",
+      "bytes": 913
+    }
+  }
+}

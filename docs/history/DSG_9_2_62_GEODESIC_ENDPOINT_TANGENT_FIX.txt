@@ -1,0 +1,31 @@
+DSG 9.2.62 · GEODESIC ENDPOINT TANGENT FIX
+==========================================
+
+Observed failure:
+  segment N: resolved contour anchor cannot preserve the central 75% support
+  band after intrinsic endpoint rerouting.
+
+Root cause:
+- SAFE SURFACE SNAP validates each closed-frame anchor using the semantic
+  contour tangent defined by its previous and next anchors.
+- Segment width validation later re-tested that exact endpoint using a one-sided
+  tangent derived only from the current Dijkstra segment.
+- At a closed-loop corner those are not the same tangent. A valid resolved
+  anchor could therefore be rejected solely because the validation frame was
+  rotated by the triangulation / segment departure.
+
+Fix:
+- Cache the semantic closed-loop tangent for every anchor.
+- Use that same tangent only at the exact segment endpoints during 75/25 width
+  validation.
+- Keep intrinsic route tangents for every departure/interior sample.
+- Keep all central-75% support constraints unchanged.
+- Keep Euclidean fallback disabled.
+- Keep intrinsic bottleneck rerouting unchanged.
+- Improve the final diagnostic: a residual near-end failure is reported as an
+  endpoint-corridor failure, not as a contradictory anchor failure.
+
+Clinical invariant:
+- No Euclidean replacement was introduced.
+- Accepted centrelines remain 100% on the evaluated passive/IOS mesh graph.
+- The central 75% support band remains mandatory.

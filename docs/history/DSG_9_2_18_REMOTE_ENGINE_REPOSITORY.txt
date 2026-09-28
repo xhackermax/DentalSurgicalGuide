@@ -1,0 +1,15 @@
+DSG 9.2.18 — Remote Engine Repository
+
+- Un único botón minimalista INSTALAR MOTORES / REPARAR MOTORES.
+- Manifest JSON remoto como SSOT para runtimes/modelos.
+- Descarga en worker: no bloquea el hilo UI de Blender.
+- SHA256 por asset y por parte.
+- GitHub Release assets >2 GiB soportados mediante partes reensambladas localmente.
+- Perfiles Windows CPython 3.11 y 3.13; CUDA 12.6 o CPU.
+- Runtime DICOM completo: pydicom, pylibjpeg codecs y GDCM.
+- Runtime IA: Torch + dependencias binarias de la ruta nnU-Net.
+- Modelos: DentalSegmentator Dataset112 y UniversalLab Dataset002_380CT.
+- Solo descarga componentes ausentes o detectados como rotos por el preflight real.
+- Verificación profunda Torch/nnU-Net evita declarar sano un runtime con DLL rota.
+- URL del manifest recordada en configuración persistente de Blender/Mixar para sobrevivir a futuras actualizaciones del addon.
+- Estado/progreso únicamente en barra inferior, sin texto explicativo añadido al panel DSG.

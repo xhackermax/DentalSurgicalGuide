@@ -1,0 +1,98 @@
+{
+  "schema": "dsg.evidence_journals.v1",
+  "journals": [
+    {
+      "id": "JCP",
+      "title": "Journal of Clinical Periodontology",
+      "priority": "A",
+      "topics": [
+        "PERIODONTOLOGY",
+        "PERI_IMPLANT",
+        "CONSENSUS"
+      ],
+      "url": "https://onlinelibrary.wiley.com/journal/1600051x"
+    },
+    {
+      "id": "COIR",
+      "title": "Clinical Oral Implants Research",
+      "priority": "A",
+      "topics": [
+        "IMPLANTOLOGY",
+        "PERI_IMPLANT",
+        "CONSENSUS"
+      ],
+      "url": "https://onlinelibrary.wiley.com/journal/16000501"
+    },
+    {
+      "id": "JOP",
+      "title": "Journal of Periodontology",
+      "priority": "A",
+      "topics": [
+        "PERIODONTOLOGY",
+        "PERI_IMPLANT"
+      ],
+      "url": "https://aap.onlinelibrary.wiley.com/journal/19433670"
+    },
+    {
+      "id": "CIDRR",
+      "title": "Clinical Implant Dentistry and Related Research",
+      "priority": "A",
+      "topics": [
+        "IMPLANTOLOGY"
+      ],
+      "url": "https://onlinelibrary.wiley.com/journal/17088208"
+    },
+    {
+      "id": "JPD",
+      "title": "Journal of Prosthetic Dentistry",
+      "priority": "A",
+      "topics": [
+        "PROSTHODONTICS",
+        "IMPLANT_PROSTHETICS"
+      ],
+      "url": "https://www.thejpd.org/"
+    },
+    {
+      "id": "JOMI",
+      "title": "International Journal of Oral & Maxillofacial Implants",
+      "priority": "B",
+      "topics": [
+        "IMPLANTOLOGY",
+        "BIOMECHANICS"
+      ],
+      "url": "https://www.quintessence-publishing.com/"
+    },
+    {
+      "id": "IJPRD",
+      "title": "International Journal of Periodontics & Restorative Dentistry",
+      "priority": "B",
+      "topics": [
+        "PERIODONTICS",
+        "RESTORATIVE",
+        "SOFT_TISSUE"
+      ],
+      "url": "https://www.quintessence-publishing.com/"
+    },
+    {
+      "id": "PERIO2000",
+      "title": "Periodontology 2000",
+      "priority": "B",
+      "topics": [
+        "REVIEWS",
+        "PERIODONTOLOGY",
+        "PERI_IMPLANT"
+      ],
+      "url": "https://onlinelibrary.wiley.com/journal/16000757"
+    },
+    {
+      "id": "JERD",
+      "title": "Journal of Esthetic and Restorative Dentistry",
+      "priority": "B",
+      "topics": [
+        "EMERGENCE_PROFILE",
+        "RESTORATIVE"
+      ],
+      "url": "https://onlinelibrary.wiley.com/journal/17088240"
+    }
+  ]
+}

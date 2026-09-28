@@ -1,0 +1,505 @@
+{
+  "project": {
+    "name": "DSG",
+    "purpose": "Addon de Blender para segmentación CBCT/IOS, planificación implantaria y diseño de guías quirúrgicas",
+    "design_principles": [
+      "KISS",
+      "SOLID",
+      "DRY",
+      "YAGNI",
+      "Separation of Concerns",
+      "Composition over Inheritance",
+      "Law of Demeter",
+      "Single Source of Truth",
+      "Separation of Mechanism and Policy",
+      "Rule of Three",
+      "Tell, Don't Ask",
+      "Command-Query Separation",
+      "Encapsulation",
+      "High Cohesion, Low Coupling",
+      "Inversion of Control",
+      "GRASP",
+      "Orthogonality",
+      "Convention over Configuration",
+      "Fail Fast",
+      "Defensive Programming",
+      "Design by Contract",
+      "Idempotencia",
+      "Immutability",
+      "Make Illegal States Unrepresentable",
+      "Principle of Least Privilege",
+      "Graceful Degradation",
+      "Principle of Least Astonishment",
+      "Occam's Razor",
+      "Premature Optimization is the Root of All Evil",
+      "Boy Scout Rule",
+      "Chesterton's Fence",
+      "Steelmanning",
+      "Falsifiability",
+      "Red Team",
+      "Definition of Done objetiva",
+      "Blind Review",
+      "Second-Order Thinking",
+      "Pre-mortem",
+      "Disagree and Commit",
+      "Argument from Authority is not evidence",
+      "Calibración",
+      "Externalidad del feedback"
+    ]
+  },
+  "clinical_goals": {
+    "segmentation_is_not_visual_only": true,
+    "primary_uses": [
+      {
+        "name": "Planificación postextracción",
+        "objective": "Individualizar dientes para simular extracción virtual, analizar alveolo, hueso residual y planificar implantes inmediatos."
+      },
+      {
+        "name": "Planificación de guías quirúrgicas",
+        "objective": "Usar anatomía segmentada para posicionar implantes, validar distancias anatómicas y generar la guía."
+      },
+      {
+        "name": "Planificador implantario futuro",
+        "objective": "Permitir que un futuro agente MCP solicite o sugiera diámetro, longitud, posición y angulación del implante."
+      }
+    ]
+  },
+  "cbct_segmentation": {
+    "main_model_strategy": {
+      "reference_model": "DentalSegmentator / Dataset112",
+      "role": "Segmentación semántica clínica de referencia para hueso, dientes agrupados y canal mandibular.",
+      "universal_model": "UniversalLabDentalsegmentator",
+      "role_universal": "Individualización de dientes y asignación de etiquetas dentarias."
+    },
+    "universal_labels": {
+      "background": 0,
+      "permanent_teeth": "1-32",
+      "primary_teeth": "33-52",
+      "mandible": 53,
+      "maxilla": 54,
+      "mandibular_canal": 55
+    },
+    "tooth_separation": {
+      "method": "La red UniversalLab produce directamente una segmentación multiclase con cada diente como etiqueta independiente.",
+      "does_not_use_as_primary_method": [
+        "watershed",
+        "connected components para separar dientes",
+        "ordenación geométrica izquierda-derecha"
+      ],
+      "reason": "Los dientes pueden estar en contacto físico y seguir teniendo etiquetas distintas porque la separación la aprende la red."
+    },
+    "labelmap_ssot": {
+      "type": "uint8",
+      "concept": "Un único labelmap 3D como fuente de verdad para toda la anatomía segmentada.",
+      "avoid": "Crear 32 volúmenes completos independientes en RAM."
+    },
+    "mesh_generation": {
+      "preferred_strategy": "Lazy / bajo demanda",
+      "reason": "No generar automáticamente todas las mallas dentarias si no son necesarias.",
+      "workflow": [
+        "seleccionar estructura o FDI",
+        "calcular bounding box local",
+        "crear máscara local",
+        "limpieza conservadora de islas",
+        "marching cubes",
+        "crear objeto Blender"
+      ]
+    }
+  },
+  "fdi_numbering": {
+    "identity_source": "CBCT / UniversalLab",
+    "ios_role": "Alineamiento posterior, no renumeración FDI.",
+    "mapping": {
+      "1": 18,
+      "2": 17,
+      "3": 16,
+      "4": 15,
+      "5": 14,
+      "6": 13,
+      "7": 12,
+      "8": 11,
+      "9": 21,
+      "10": 22,
+      "11": 23,
+      "12": 24,
+      "13": 25,
+      "14": 26,
+      "15": 27,
+      "16": 28,
+      "17": 38,
+      "18": 37,
+      "19": 36,
+      "20": 35,
+      "21": 34,
+      "22": 33,
+      "23": 32,
+      "24": 31,
+      "25": 41,
+      "26": 42,
+      "27": 43,
+      "28": 44,
+      "29": 45,
+      "30": 46,
+      "31": 47,
+      "32": 48
+    },
+    "audit_fields": [
+      "DSG_universal_label",
+      "DSG_model_fdi_number",
+      "DSG_fdi_number",
+      "DSG_fdi_user_override"
+    ],
+    "orientation_check": "Comprobación de lateralidad/mirroring usando orientación DICOM, no sólo coordenadas Blender."
+  },
+  "dental_anatomy_store": {
+    "concept": "Modelo anatómico computable que sirve como fuente de verdad para todos los módulos.",
+    "fields": [
+      "CBCT original",
+      "spatial_transform / affine DICOM",
+      "labels",
+      "teeth / FDI",
+      "maxilla",
+      "mandible",
+      "nerves",
+      "sinuses",
+      "nasal_floor",
+      "bone_quality_map",
+      "IOS",
+      "uncertainty"
+    ],
+    "principle": "Los módulos de planificación no deben conocer detalles de PyTorch, nnU-Net ni de cómo se obtuvo la segmentación."
+  },
+  "nerve_and_canal_segmentation": {
+    "targets": [
+      "canal mandibular",
+      "foramen mentoniano",
+      "bucle anterior",
+      "canal incisivo mandibular",
+      "canal nasopalatino"
+    ],
+    "recommended_architecture": {
+      "strategy": "Modelos especializados pequeños sobre ROI anatómico, reutilizando el mismo runtime nnU-Net/PyTorch.",
+      "avoid": "Ampliar UniversalLab con nuevas clases si obliga a reentrenar y revalidar todo el modelo.",
+      "mental_incisive_roi": "Derivado de mandíbula, canal mandibular y región premolar.",
+      "nasopalatine_roi": "Derivado de maxila, 11, 21, línea media y suelo nasal."
+    },
+    "output_representation": {
+      "ssot": "mask uint8",
+      "derived": [
+        "probability/confidence map",
+        "centerline",
+        "endpoints",
+        "branches",
+        "optional mesh"
+      ]
+    },
+    "topology": "Preservar bifurcaciones y ramas mediante skeleton/graph; no forzar una única curva.",
+    "safety": "La segmentación nerviosa automática debe requerir revisión MPR antes de ser considerada confirmada para planificación."
+  },
+  "sinus_and_nasal_segmentation": {
+    "recommended_now": [
+      "seno maxilar derecho",
+      "seno maxilar izquierdo",
+      "suelo del seno",
+      "cavidad / suelo nasal"
+    ],
+    "defer_for_now": [
+      "seno frontal",
+      "seno esfenoidal",
+      "etmoides completo"
+    ],
+    "sinusitis_problem": {
+      "issue": "Con engrosamiento mucoso u opacificación, segmentar sólo aire puede fallar anatómicamente.",
+      "solution": "Separar envolvente ósea, suelo sinusal, aire, mucosa/opacificación y confianza.",
+      "clinical_policy": "No diagnosticar sinusitis sólo desde la segmentación; marcar revisión cuando la confianza sea baja o la anatomía esté alterada."
+    },
+    "planner_use": [
+      "distancia ápice del implante al suelo sinusal",
+      "altura ósea residual",
+      "penetración en seno",
+      "relación con septos",
+      "restricciones de implantes anteriores respecto al suelo nasal"
+    ]
+  },
+  "bone_quality": {
+    "goal": "Usar la información radiográfica para favorecer zonas de mejor soporte óseo.",
+    "critical_caveat": "Los valores de gris CBCT no deben tratarse automáticamente como HU verdaderas.",
+    "recommended_name": "BoneQualityMap",
+    "possible_metrics": [
+      "calidad radiográfica relativa",
+      "densidad relativa media",
+      "densidad cortical",
+      "espesor cortical",
+      "densidad apical",
+      "homogeneidad"
+    ],
+    "policy": "La calidad ósea nunca debe compensar una violación anatómica o protésica."
+  },
+  "implant_planner": {
+    "core_rule": "Primero restricciones duras; después optimización.",
+    "hard_constraints_examples": [
+      "no invadir nervio",
+      "no salir del volumen óseo permitido",
+      "no colisionar con raíces",
+      "no invadir seno o cavidad nasal según política",
+      "respetar límites protésicos",
+      "usar sólo implantes existentes en el catálogo seleccionado"
+    ],
+    "optimization_objectives": [
+      "alineación protésica",
+      "emergencia favorable",
+      "soporte óseo circunferencial",
+      "calidad ósea",
+      "espesor cortical favorable",
+      "estabilidad geométrica",
+      "distancia anatómica",
+      "evitar fenestración/dehiscencia"
+    ],
+    "mechanism_vs_policy": {
+      "mechanism": "Calcular distancias, colisiones, volumen óseo, posición y orientación.",
+      "policy": "Decidir márgenes de seguridad clínicos y criterios de aceptación."
+    },
+    "output": "Varias propuestas válidas con métricas y justificación, nunca una colocación automática irreversible."
+  },
+  "prosthetic_planning": {
+    "principle": "Primero dónde debe estar el diente; después dónde puede estar el implante.",
+    "context_inputs": [
+      "FDI objetivo",
+      "tipo de diente",
+      "vecino mesial",
+      "vecino distal",
+      "antagonista",
+      "espacio mesiodistal",
+      "espacio vestibulolingual",
+      "espacio interoclusal",
+      "plano oclusal",
+      "curva de arcada",
+      "corona objetivo",
+      "zona de emergencia",
+      "eje protésico preferido"
+    ],
+    "tooth_classes": {
+      "INCISOR": [
+        11,
+        12,
+        21,
+        22,
+        31,
+        32,
+        41,
+        42
+      ],
+      "CANINE": [
+        13,
+        23,
+        33,
+        43
+      ],
+      "PREMOLAR": [
+        14,
+        15,
+        24,
+        25,
+        34,
+        35,
+        44,
+        45
+      ],
+      "MOLAR": [
+        16,
+        17,
+        18,
+        26,
+        27,
+        28,
+        36,
+        37,
+        38,
+        46,
+        47,
+        48
+      ]
+    },
+    "fdi_as_ssot": true,
+    "derived_properties": [
+      "tooth_class",
+      "arch",
+      "side"
+    ],
+    "initial_restoration_scenarios": [
+      "HEALED_SITE",
+      "IMMEDIATE_EXTRACTION"
+    ]
+  },
+  "crown_library": {
+    "purpose": "Simular la anatomía protésica y la emergencia ideal del tornillo utilizando la geometría de implantes ya presente en DSG.",
+    "initial_scope": "28 coronas permanentes FDI 11-47, excluyendo terceros molares inicialmente.",
+    "template_contents": [
+      "mesh de corona",
+      "sistema de coordenadas local",
+      "landmarks",
+      "emergence_region",
+      "prosthetic_axis",
+      "cervical_profile"
+    ],
+    "preferred_source_order": [
+      "corona real sana del paciente",
+      "contralateral espejada",
+      "biblioteca FDI"
+    ],
+    "adaptation_inputs": [
+      "dientes vecinos",
+      "antagonista",
+      "espacio protésico",
+      "plano oclusal"
+    ],
+    "allowed_adaptation": [
+      "escala mesiodistal",
+      "escala vestibulolingual",
+      "altura",
+      "posición",
+      "rotación"
+    ],
+    "avoid_initially": "Deformación libre compleja de malla.",
+    "resource_layout": {
+      "blend_file": "resources/prosthetics/crowns.blend",
+      "metadata_file": "resources/prosthetics/crowns.json"
+    },
+    "emergence_model": {
+      "preferred": "Región de emergencia + corredor angular",
+      "avoid": "Un único punto rígido",
+      "classification": [
+        "IDEAL",
+        "ACEPTABLE",
+        "DESFAVORABLE",
+        "INVALID"
+      ],
+      "calculation": "Proyectar el eje real del implante sobre la corona y comparar el punto de salida con la región de emergencia."
+    }
+  },
+  "implant_catalog": {
+    "separate_from_crown_library": true,
+    "purpose": "Proveer sólo diámetros y longitudes realmente disponibles del sistema implantario.",
+    "rule": "El planificador no debe inventar medidas que no existan en el catálogo."
+  },
+  "api_and_mcp": {
+    "decision": "Arquitectura híbrida",
+    "internal_api": {
+      "role": "Núcleo determinista dentro del addon.",
+      "examples": [
+        "anatomy.get_tooth(fdi)",
+        "anatomy.get_maxillary_sinus(side)",
+        "anatomy.distance_to_nerve(candidate)",
+        "planner.propose_implant(site)",
+        "planner.validate(candidate)",
+        "guide.create(candidate)"
+      ],
+      "avoid": "Montar una API HTTP compleja dentro de Blender si no es necesaria."
+    },
+    "mcp": {
+      "role": "Capa de lenguaje natural, UX y orquestación.",
+      "examples": [
+        "Planifica un implante en 26",
+        "Muéstrame el nervio",
+        "Compara dos implantes",
+        "Centra el MPR en 46"
+      ],
+      "must_not_do": [
+        "calcular geometría clínica por aproximación lingüística",
+        "aprobar automáticamente un implante",
+        "saltar validaciones deterministas"
+      ]
+    },
+    "approval_states": [
+      "PROPOSED",
+      "CONFIRMED"
+    ],
+    "rule": "Sólo un implante confirmado por el clínico puede pasar a la generación final de guía."
+  },
+  "sinus_ai_external_api": {
+    "possible_future_use": "Segunda opinión multimodal para interpretación de hallazgos sinusales complejos.",
+    "inputs": [
+      "vistas axial/coronal/sagital",
+      "MPR localizado",
+      "máscara sinusal"
+    ],
+    "allowed_output": [
+      "posible engrosamiento mucoso",
+      "opacificación",
+      "advertencia de revisión"
+    ],
+    "not_allowed_as_core": "Usar la API multimodal para devolver coordenadas quirúrgicas definitivas."
+  },
+  "suggested_internal_modules": {
+    "anatomy": [
+      "dental_anatomy.py"
+    ],
+    "canals": [
+      "service.py",
+      "roi.py",
+      "topology.py",
+      "centerline.py"
+    ],
+    "prosthetics": [
+      "crown_library.py",
+      "crown_fit.py",
+      "emergence.py",
+      "policy.py"
+    ],
+    "planner": [
+      "implant_planner.py",
+      "constraints.py",
+      "scoring.py",
+      "implant_catalog.py"
+    ]
+  },
+  "future_user_flow_example": {
+    "request": "MCP, planifica un implante en 46",
+    "sequence": [
+      "resolver FDI y clase dental",
+      "obtener vecinos y antagonistas",
+      "construir ProstheticContext",
+      "resolver corona objetivo",
+      "calcular región de emergencia y eje ideal",
+      "obtener SurgicalContext desde CBCT",
+      "validar nervio, hueso, raíces y otras estructuras",
+      "probar implantes del catálogo",
+      "descartar candidatos inválidos",
+      "puntuar candidatos válidos",
+      "mostrar varias propuestas",
+      "revisión MPR",
+      "confirmación clínica",
+      "generación de guía"
+    ]
+  },
+  "definition_of_done": {
+    "segmentation": [
+      "dientes correctamente individualizados",
+      "FDI correcto",
+      "ausencias no inventadas",
+      "contactos no fusionan identidades",
+      "coordenadas DICOM preservadas"
+    ],
+    "nerve_sinus": [
+      "continuidad anatómica",
+      "distancias validadas",
+      "confidence/uncertainty disponible",
+      "revisión MPR requerida en estructuras críticas"
+    ],
+    "planner": [
+      "todas las restricciones duras verificables",
+      "resultados reproducibles",
+      "distancias calculadas por motor geométrico",
+      "no usar texto del LLM como sustituto de geometría",
+      "sólo candidatos del catálogo real",
+      "propuesta reversible antes de confirmación"
+    ],
+    "prosthetics": [
+      "corona adaptada a vecinos y antagonista",
+      "emergencia calculable",
+      "eje protésico explícito",
+      "deformaciones dentro de límites",
+      "origen de plantilla auditado"
+    ]
+  }
+}

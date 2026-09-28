@@ -1,0 +1,26 @@
+DSG 9.2.36 - Controlled local blockout relief
+
+The seating-audit workflow now includes a controlled local relief action.
+
+Workflow
+
+1. Calculate the blockout from the desired insertion view.
+2. Review the teal display-only blockout surface and its seating audit.
+3. If a limited contact zone needs more clearance, enter Edit Mode on
+   DSG_Blockout and select its teal-region vertices.
+4. Set Local relief and apply it. DSG advances only the selected vertices and
+   their one-ring transition along the stored insertion axis.
+5. DSG immediately repeats its algorithmic seating audit. Confirm the
+   retentive model only when the audit passes and after clinician review.
+
+Safety guarantees
+
+- The source IOS never changes.
+- The correction is axial only; a non-axial candidate fails the audit.
+- The selected area is softened with a half-strength one-ring transition rather
+  than a sharp step.
+- The action participates in Blender Undo.
+
+This feature is intended for conservative, clinician-directed contact relief.
+It does not replace print/material calibration, fit verification on the model,
+or clinical responsibility.

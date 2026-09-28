@@ -1,0 +1,45 @@
+DSG 9.1.33 - Tooth Path Continuity
+=================================
+
+Goal
+----
+Repair the failure mode where one UniversalLab tooth label contains disconnected
+parts of neighbouring teeth or where one real tooth is split/incomplete.
+
+Principle
+---------
+Use the same philosophy that repaired mandibular-canal continuity:
+- UniversalLab = identity seed / FDI authority.
+- DentalSegmentator = independent anatomical support.
+- Native-resolution topology follows the anatomical structure rather than
+  trusting disconnected label islands.
+
+Dental adaptation
+-----------------
+A tooth is not a simple tube. The path can branch into multiple roots.
+DSG therefore uses marker-controlled 3-D watershed inside the grouped upper/lower
+DentalSegmentator tooth support, with one robust UniversalLab seed per tooth.
+All seeds compete simultaneously, so every recovered voxel belongs to at most
+one tooth.
+
+Safety gates
+------------
+- No geometric FDI invention.
+- Missing UniversalLab identity is not created automatically.
+- Fragmented labels choose a seed using neighbouring learned-tooth continuity,
+  not blindly the largest disconnected island when two neighbours exist.
+- Excessive lateral growth, excessive axial extension or large centroid shift
+  rejects automatic reconstruction and falls back to the primary seed.
+- The mandibular canal class 55 is excluded from tooth growth.
+- If DentalSegmentator support is unavailable, UniversalLab remains untouched.
+
+Regression tests
+----------------
+1. FDI 14-equivalent label fragmented into three disconnected islands, including
+   pieces stolen from adjacent teeth -> reconstructed as one central tooth.
+2. Multi-root tooth with one missing root branch -> branch recovered into the same
+   tooth instance.
+3. No verifier support -> original UniversalLab labelmap remains unchanged.
+
+All three pure numeric tests pass. Blender bpy execution still requires an
+interactive clinical CBCT test.

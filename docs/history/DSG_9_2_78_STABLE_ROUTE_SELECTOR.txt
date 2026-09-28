@@ -1,0 +1,13 @@
+DSG v9.2.78 — Stable Route Selector
+
+Fix:
+- IMPLANTE INMEDIATO can no longer disappear from the route-choice UI after CBCT loading.
+- Once DSG publishes CBCT_READY, BOTH route buttons are rendered deterministically.
+- If the immediate route is temporarily not ready, the button remains visible but disabled.
+- A compact line below the button explains the exact wait reason.
+- The button text itself no longer changes to PREPARANDO IA / ESPERA.
+- Clearly stale PATIENT/empty route state is self-healed to CBCT_READY when the
+  CBCT volume is already fully loaded and the workflow is still in DICOM.
+
+This changes UI/state robustness only. It preserves the v9.2.77 multi-worker
+segmentation and postprocess architecture.

@@ -1,0 +1,14 @@
+DSG v9.2.65 · ADAPTIVE INTRINSIC FRAME ROUTING + MPR RECOVERY
+
+1. Semantic frame corridor is now adaptive rather than a fixed hard tunnel.
+2. Clearance is a strong soft cost before it becomes a hard exclusion.
+3. Exact barycentric endpoints get a small intrinsic launch zone so one bad
+   vertex ring cannot isolate an otherwise valid contour anchor.
+4. Corridor expands intrinsically up to 18 mm when required. No Euclidean path
+   is ever accepted.
+5. Hard bans are introduced only after the actual continuous tube sweep proves
+   a local region severely unsupported.
+6. DICOM MPR review repairs stale generated_surface_name/surface_ready state by
+   resolving maxilla, mandible, or native dental alignment composite.
+7. Existing v9.2.64 Native Full-Resolution Turbo, VTK/CUDA paths, FEM and all
+   previous workflow changes are retained.

@@ -1,0 +1,30 @@
+DSG 9.2.6 — DEFINITIVE RUNTIME RECOVERY
+========================================
+
+Objetivos de esta build:
+- Mantener las dos rutas clínicas SIMPLE e INMEDIATO.
+- Mantener DentalSegmentator + UniversalLab como motores distintos.
+- Mantener Tooth Path Continuity de la rama 9.1.33.
+- No mezclar DLL/Torch de runtimes con ABI Python diferente.
+- Recuperar automáticamente un runtime 9.1.x compatible si ya existe.
+- Buscar runtimes también en USER/LOCAL/SYSTEM, versiones hermanas de Blender y Mixar.
+- Recuperar UniversalLab de un runtime anterior aunque el nuevo namespace cambie.
+- No ejecutar descargas de modelos ni pip contra Internet desde el workflow clínico.
+- Si existe wheelhouse local, pip usa --no-index, --only-binary y --find-links.
+- Preflight estricto: no declarar IA lista si faltan dependencias transitivas.
+- La ruta SIMPLE no queda bloqueada por la ausencia de UniversalLab ni por codecs DICOM opcionales.
+- Un DICOM comprimido sí exige el runtime DICOM completo y falla de forma explícita si falta.
+
+ESTADO FÍSICO DE ESTE ZIP
+-------------------------
+DentalSegmentator Dataset112: REMOTO/PERSISTENTE desde v9.2.19.
+UniversalLab Dataset002: NO INCLUIDO físicamente en esta build.
+Wheelhouses Windows cp311/cp313: estructura preparada, binarios NO INCLUIDOS físicamente.
+
+Por tanto, en un PC donde DSG 9.1.x ya funcionó, esta build intenta recuperar de forma
+segura el runtime y UniversalLab existentes. En un PC completamente limpio, la ruta SIMPLE
+funciona con los componentes incluidos del host/add-on, pero la ruta INMEDIATO no puede ser
+considerada FULL OFFLINE hasta incorporar el checkpoint UniversalLab y los wheelhouses Windows.
+DSG 9.2.6 no descargará silenciosamente esos componentes: mostrará exactamente qué falta.
+
+Consulta resources/runtime/OFFLINE_RUNTIME_MANIFEST.json para hashes y rutas esperadas.

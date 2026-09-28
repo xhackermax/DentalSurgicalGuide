@@ -1,0 +1,27 @@
+DSG 9.2.17 — RESPONSIVE CBCT OPEN + EXACT RUNTIME PREFLIGHT
+
+PERFORMANCE
+- Patient-folder DICOM discovery is streaming: no recursive list/sort of thousands of slices before the first probe.
+- Classic-series sibling discovery/header parsing moved to the DICOM background worker.
+- Enhanced multi-frame PerFrameFunctionalGroupsSequence is omitted from the UI-thread probe and parsed only in the worker when needed.
+- DICOM pixel decoding runs off Blender UI thread via modal worker.
+- pydicom 3 path-based pixel_array is used when available to minimize memory/reparse overhead.
+- Classic-series metadata is cached/reused; PixelData-bearing Dataset objects are not retained per slice.
+- Full DICOM header text serialization was removed; only a bounded metadata summary is written.
+- MPR-first opening. OpenVDB fog preview is not built automatically.
+- Torch/nnU-Net is never imported while selecting/opening a CBCT.
+
+DICOM PREFLIGHT
+- Exact TransferSyntax validation before pixel decode.
+- Standard CT/CBCT coverage checks: native LE, big-endian/deflated via pydicom, JPEG/JPEG-LS via libjpeg/GDCM, JPEG2000/HTJ2K via openjpeg/GDCM, RLE via pydicom.
+- Expected offline codec stack is pinned in offline_runtime/requirements_dicom.txt.
+- OpenVDB is optional for core CBCT opening and segmentation.
+
+AI PREFLIGHT
+- Dataset112 DentalSegmentator is supplied by the persistent remote engine repository.
+- UniversalLab Dataset002 model is validated/recovered if physically available.
+- A deep Torch + nnU-Net inference-import self-test starts only AFTER CBCT opening, in a background thread, so DLL/ABI/transitive dependency failures are found without becoming the CBCT-open bottleneck.
+- No network installation is performed by the clinical workflow.
+
+PACKAGING TRUTH
+Dataset112 DentalSegmentator is bundled. UniversalLab and Windows DICOM/AI binary wheelhouses are verified/recovered when present, but this ZIP cannot claim a fresh-PC fully-offline UniversalLab/codec runtime until those physical binaries are actually included.

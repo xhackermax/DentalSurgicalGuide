@@ -1,0 +1,13 @@
+DSG v9.2.64 NUMERICAL VALIDATION REPORT
+Date: 2026-08-30
+
+PASS | VTK multilabel vs Lewiner (islands) | engine=VTK_DISCRETE_FLYING_EDGES_MULTILABEL_NATIVE, t=0.0224s
+PASS | Touching semantic labels preserve tooth boundaries | triangles=7992
+PASS | Scalar threshold native zero-copy vs Lewiner | VTK_FLYING_EDGES_NATIVE_ZERO_COPY, 0.0077s, index=0.0088s
+PASS | Exact block min/max does not miss crossing cells | crossing=652, active_blocks=16, misses=0
+PASS | Torch native-grid Marching Cubes math | verts=1884, faces=3764, max_nn=1.05e-05 voxel
+
+Overall: PASS
+VTK: 9.6.2
+NumPy: 2.3.5
+Torch: 2.10.0+cpu (CUDA available in validation environment: False)

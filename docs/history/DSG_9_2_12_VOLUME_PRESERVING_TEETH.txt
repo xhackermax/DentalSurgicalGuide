@@ -1,0 +1,14 @@
+DSG 9.2.12 - VOLUME PRESERVING TEETH
+
+Fixes regression where rejected competitive tooth paths were materialized as the eroded interior seed.
+
+Rules:
+- Deep/eroded core is a watershed marker only, never final geometry.
+- growth_ratio vs seed is diagnostic only; no hard <=10 rejection.
+- Compare final volume against original UniversalLab tooth.
+- If path is implausible, rescue the seed-connected raw anatomy with competitive neighbour trimming.
+- Never erase a present tooth merely because its path QA fails.
+- Replace only labels for which a final mask exists.
+- Neighbour-midpoint seed heuristic disabled to avoid crowding/rotation shrinkage.
+
+Retains 9.2.11 runtime, no-hard-RAM-guard, DICOM laterality fix, dual-engine immediate route, guided UI, and stage restarts.

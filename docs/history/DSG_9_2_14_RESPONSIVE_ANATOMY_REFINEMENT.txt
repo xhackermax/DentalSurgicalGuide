@@ -1,0 +1,28 @@
+DSG 9.2.14 - RESPONSIVE CBCT ANATOMY REFINEMENT
+
+Problem fixed
+- 9.2.13 introduced CBCT-constrained anatomy refinement directly inside the Blender timer/main-thread mesh build.
+- Tooth SDF refinement built two full 3-D Euclidean distance transforms plus a 3-D gradient for each tooth crop.
+- The BUILD_BONE phase then materialised combined bone, maxilla, mandible and canal in a single timer callback.
+- Together these could starve Blender's event loop and look like a complete freeze.
+
+Changes
+1. Removed volumetric EDT/SDF from the automatic refinement path.
+2. Replaced it with a local learned-mask cage: five samples along each mesh normal find the nearest 0.5 mask crossing.
+3. The CBCT remains the sub-voxel refinement source, but every moved vertex is re-seated against the learned segmentation mask.
+4. The combined compatibility bone surface is no longer redundantly refined in the immediate route; maxilla and mandible are the clinical refined outputs.
+5. BUILD_BONE is now staged over separate Blender timer ticks: BONE_MAIN -> MAXILLA -> MANDIBLE -> CANAL -> FINALIZE.
+6. Anatomy refinement records per-stage timings in DSG_anatomy_refine_json for future profiling.
+7. Existing volume and displacement guards remain active. Unsafe refinements fall back to source geometry.
+
+Synthetic performance check
+- Ellipsoid crop: 160 x 160 x 160 = 4,096,000 voxels, ~39,806 vertices.
+- Old 3-D SDF construction: ~0.738 s on the build host.
+- New local mask cage projection: ~0.031 s on the same host.
+- This is only a synthetic engineering benchmark; clinical timing depends on CBCT size and hardware.
+
+Clinical geometry policy
+- Learned segmentation mask remains the hard anatomical cage.
+- Original CBCT may refine a boundary sub-voxel, never freely sculpt it.
+- No unbounded Laplacian smoothing.
+- No geometry invented outside the segmentation/CBCT evidence band.

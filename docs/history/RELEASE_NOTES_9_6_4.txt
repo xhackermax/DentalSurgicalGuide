@@ -1,0 +1,16 @@
+DSG 9.6.4 - ROBUST AUTOMATIC DENTAL ALIGNMENT
+
+PLAN A
+- Replaces cusp-only global matching with a root-safe connected coronal crown shell.
+- Keeps occlusal/incisal landmarks as the anatomical anchors while adding buccal, lingual and proximal crown-wall geometry.
+- Bone and roots remain excluded from automatic IOS/CBCT registration.
+- Adds bounded target-driven translation recentering to compensate for IOS gingiva and uneven scan borders before ICP; the coarse recenter uses a capped deterministic sample to stay responsive without SciPy.
+- Scores candidates across anterior + right posterior + left posterior sectors so a local molar coincidence cannot dominate the whole arch.
+- Refines more PCA hypotheses (14) and adds a tiny score-guarded point-to-plane finish.
+- If the raw mesh winner fails distributed dental anatomy, a nearby geometrically plausible candidate may be promoted only when it passes all available sector/landmark gates.
+- Ambiguous or low-confidence cases still fail closed to the existing 3-zone Plan B.
+
+AUDIT / UX
+- Stores the new crown-shell reference mode and richer alignment diagnostics in the aligned IOS object.
+- No new primary buttons or alignment steps.
+- Existing Plan B 3-zone workflow remains intact.

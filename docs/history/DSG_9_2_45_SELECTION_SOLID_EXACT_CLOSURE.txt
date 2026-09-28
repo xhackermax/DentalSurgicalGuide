@@ -1,0 +1,25 @@
+DSG 9.2.45 — Solid common-surface selection + exact local closure
+
+Main changes
+============
+1. Automatic alignment ambiguity
+   - Three automatically distributed dental zones now disambiguate near-tied whole-arch poses before Plan B.
+   - FDI validation seeds are crown/occlusal-biased rather than full-tooth-centroid/root-biased.
+   - Plan B remains the safe fallback only when the geometry is genuinely unresolved.
+
+2. IOS common-surface selection
+   - Geometry-first precise GeoMatch remains Plan A.
+   - A relaxed precise pass is tried before the broad legacy fallback.
+   - Topological pinholes/narrow black cracks are filled automatically.
+   - Fully enclosed unselected islands are filled without blindly growing the cervical border.
+   - The same solidification is repeated at confirmation time, so manual review cannot leave small internal holes unnoticed.
+
+3. Local extraction closure
+   - The cervical extraction loop is closed first as an exact ordered loop, then triangulated.
+   - Existing triangle_fill / holes_fill / edgenet_fill / contextual_create remain as fallbacks.
+   - If a Blender fill leaves a partial residual hole, DSG reconstructs the actual local residual boundary and closes that loop exactly.
+   - Pre-existing basal/open IOS boundaries are explicitly excluded from residual repair.
+
+UI philosophy
+=============
+No new clinical buttons. The extra logic runs behind the existing KISS workflow.

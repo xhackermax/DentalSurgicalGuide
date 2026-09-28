@@ -1,0 +1,21 @@
+DSG v9.2.73
+
+Fixes the remaining Blender grey-screen / Not Responding bottleneck when the
+IMPLANTE INMEDIATO route starts.
+
+The previous asynchronous implementation used a Python thread inside Blender.
+That returned from the operator quickly, but PyTorch/nnU-Net import, model
+initialization, preprocessing and CPU scheduling still shared Blender's Python
+process and could starve the UI.
+
+v9.2.73 creates a hard process boundary:
+- The foreground Blender process serializes the current CBCT on a daemon thread.
+- The same Blender executable is launched in --background mode as an isolated
+  inference worker.
+- The worker runs the exact existing full-resolution DSG AI pipeline.
+- Progress is exchanged through tiny JSON status files.
+- The final integer labelmap is returned via .npy and then the existing Blender
+  surface-building pipeline continues unchanged.
+- No preview, downsampling or alternative segmentation algorithm is introduced.
+- If an isolated process cannot be launched, DSG automatically falls back to
+  the proven in-process asynchronous worker.

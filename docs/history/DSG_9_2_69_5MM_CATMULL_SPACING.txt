@@ -1,0 +1,5 @@
+DSG v9.2.69
+
+Surface frame Catmull control points are now spaced at 5.00 mm by default.
+The geodesic route remains dense and precise; only the Catmull control polygon is made substantially sparser to produce a cleaner cylindrical frame path.
+Safe Immediate Route Gate and STL-independent MPR behavior are preserved from previous versions.

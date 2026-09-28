@@ -1,0 +1,50 @@
+DSG 9.2.43 - Immediate post-extraction IOS workflow repair
+
+Problem
+
+The immediate route contained the required common-surface matcher and the
+anatomy-safe model-closure functions, but the Alignment panel still presented
+CONTINUE immediately after a successful 3-zone registration. That contradicted
+the clinical workflow because the post-extraction IOS had not yet been created.
+The crown-deletion step also allowed the Boolean stage to continue even when the
+local IOS opening could not be verified as closed.
+
+Deterministic workflow
+
+1. Clinician selects the extraction tooth/teeth in the segmented CBCT.
+2. DSG creates the alignment composite without those teeth; the original
+   segmented extraction teeth remain available as hidden geometric references.
+3. IOS is aligned and the three-zone validation must pass.
+4. DETECT COMMON SURFACE uses only the selected segmented extraction teeth as
+   references and selects their corresponding unsegmented crown surface on a
+   disposable aligned-IOS copy.
+5. Clinician reviews/refines the cervical/contact boundary in Edit Mode.
+6. APPLY EXTRACTION + CLOSE performs, transactionally where possible:
+   - deletion of the reviewed IOS crown surface;
+   - topology-only closure of only the new local crown opening(s);
+   - verification that those local boundaries are closed;
+   - Exact Boolean subtraction with the selected full-resolution CBCT teeth;
+   - disconnected Boolean-debris cleanup;
+   - secondary scan-hole repair while preserving the principal basal opening;
+   - automatic anatomy-locked basal closure using the existing DSG closed-model
+     pipeline.
+7. Only a verified manifold post-extraction IOS can continue to DSG guide design.
+
+UI/KISS
+
+The Alignment panel is now context-sensitive. In an immediate case it shows one
+primary action at a time:
+
+DETECT COMMON SURFACE -> APPLY EXTRACTION + CLOSE -> CONTINUE
+
+If the Boolean succeeds but automatic closure fails, the button becomes
+RETRY MODEL CLOSURE and reuses the Boolean result instead of repeating the
+destructive extraction.
+
+Safety
+
+- Common-surface detection requires successful three-zone alignment validation.
+- Source IOS and source CBCT teeth are never edited by the common-surface step.
+- The local crown filler never receives the principal basal IOS opening.
+- Branched/non-simple local extraction boundaries fail closed for manual review.
+- A failed final closure never permits transition to guide design.

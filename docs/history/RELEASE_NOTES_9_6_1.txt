@@ -1,0 +1,17 @@
+DSG 9.6.1 - VERSION SSOT INSTALL HOTFIX
+
+Fixes the Blender installation failure:
+  DSG mixed-version module cache detected: package=(9, 6, 0) guide_module=(9, 5, 8)
+
+Root cause:
+- The 9.6.0 package metadata was updated, but the namespace-preserving guide fragment still carried the 9.5.8 bl_info version.
+- The safety guard correctly refused to register the inconsistent package.
+
+Changes:
+- Added package-level DSG_VERSION as the single source of truth for the public release version.
+- Package bl_info and guide_module metadata now consume that same tuple.
+- The guide fragment no longer owns an independent release number.
+- The mismatch error now describes an internal/partial installation mismatch instead of assuming stale cache.
+- Added pure regression tests that fail if package and guide metadata diverge again.
+
+Clinical workflow, TotalSegmentator behavior, SIMPLE_ARCHES, FDI, rollback, alignment, and guide geometry are unchanged from 9.6.0.

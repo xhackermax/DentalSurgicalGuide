@@ -1,0 +1,9 @@
+DSG 9.2.20 - Repository first-run setup
+
+- INSTALAR MOTORES no falla si el repositorio todavía no está configurado.
+- En el primer uso abre un diálogo mínimo de una sola línea.
+- Acepta USUARIO/REPOSITORIO, URL GitHub o URL directa de manifest.json.
+- Convierte automáticamente GitHub a raw.githubusercontent.com/.../manifest.json.
+- Guarda la URL en Blender CONFIG/dsg/engine_repository.json, fuera del addon.
+- Las futuras versiones DSG reutilizan la misma configuración.
+- La interfaz permanente sigue sin texto explicativo adicional.

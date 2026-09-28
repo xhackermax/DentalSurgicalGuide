@@ -1,0 +1,20 @@
+DSG v9.2.74 — Persistent Warm AI Worker
+
+Architecture:
+- A single Blender --background process starts automatically after a patient
+  CBCT reaches CBCT_READY.
+- It remains alive until DSG is disabled/Blender closes.
+- Torch/nnU-Net are imported once.
+- UniversalLab and DentalSegmentator are pre-warmed. Up to two predictors stay
+  resident when memory permits; adaptive fallback retains one if VRAM is tight.
+- The first immediate-route model (DentalSegmentator) is deliberately warmed
+  last so it remains resident on one-model GPUs.
+- Semantic and Universal jobs are sent to the same warm process over localhost
+  with a random authentication token.
+- Large CBCT arrays are written once into a patient cache and reused by the
+  second engine, instead of re-serializing the scan between semantic/universal.
+- Progress travels over the local socket while Blender's foreground process
+  remains interactive.
+- No downsampling, preview mask or alternative inference algorithm is used.
+- Existing isolated one-shot process and in-process thread remain compatibility
+  fallbacks when a persistent worker cannot be launched.

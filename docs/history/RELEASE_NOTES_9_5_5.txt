@@ -1,0 +1,14 @@
+DSG 9.5.5 - TotalSegmentator Windows Reliability Fix
+
+- Uses a short Windows runtime path to avoid MAX_PATH extraction failures.
+- Propagates TotalSegmentator dependencies to Blender child processes.
+- Limits Windows resampling workers to prevent memory-related worker crashes.
+- Makes worker status writes resilient to transient Windows file locks.
+- Repairs MCP segmentation status after Blender add-on reloads.
+- Uses a unique v9.5.5 installation operator to avoid stale registrations.
+- Activates SciPy from the bundled runtime before importing segmented geometry.
+- Adds CBCT_TOTALSEGMENTATOR to the canonical dental asset contract.
+
+Validated with Blender 5.2 and TotalSegmentator 2.18.0 on a 640x704x704 CBCT:
+GPU inference, 28 FDI teeth, maxilla, mandible and mandibular canal meshes.
+The complete Blender import was also validated with 32 generated mesh objects.

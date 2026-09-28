@@ -1,0 +1,195 @@
+{
+  "schema": "dsg.evidence_expert_watchlist.v1",
+  "experts": [
+    {
+      "name": "Giovanni Zucchelli",
+      "country": "IT",
+      "focus": [
+        "MUCOSOFT_TISSUE",
+        "PLASTIC_PERIODONTAL_SURGERY"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Francesco Cairo",
+      "country": "IT",
+      "focus": [
+        "PERIODONTAL_PLASTIC_SURGERY",
+        "IMPLANT_SOFT_TISSUE"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Philippe Bouchard",
+      "country": "FR",
+      "focus": [
+        "PERIODONTOLOGY",
+        "IMPLANTOLOGY"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Virginie Monnet-Corti",
+      "country": "FR",
+      "focus": [
+        "MUCOSOFT_TISSUE",
+        "PERIODONTOLOGY"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Frank Schwarz",
+      "country": "DE",
+      "focus": [
+        "PERI_IMPLANTITIS",
+        "REGENERATION"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Søren Jepsen",
+      "country": "DE",
+      "focus": [
+        "PERIODONTOLOGY",
+        "REGENERATION"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Hom-Lay Wang",
+      "country": "US",
+      "focus": [
+        "PERI_IMPLANT_PHENOTYPE",
+        "REGENERATION"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "William V Giannobile",
+      "country": "US",
+      "focus": [
+        "REGENERATION",
+        "PRECISION_DENTISTRY"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Lorenzo Tavelli",
+      "country": "US",
+      "focus": [
+        "SOFT_TISSUE",
+        "PERI_IMPLANT_PHENOTYPE"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Gustavo Avila-Ortiz",
+      "country": "US",
+      "focus": [
+        "PERI_IMPLANT_PHENOTYPE",
+        "REGENERATION"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Anton Sculean",
+      "country": "CH",
+      "focus": [
+        "REGENERATION",
+        "PERIODONTOLOGY"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Ronald E Jung",
+      "country": "CH",
+      "focus": [
+        "RECONSTRUCTIVE_IMPLANTOLOGY",
+        "EMERGENCE"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Mariano Sanz",
+      "country": "ES",
+      "focus": [
+        "CONSENSUS",
+        "PERIODONTOLOGY",
+        "IMPLANTOLOGY"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "David Herrera",
+      "country": "ES",
+      "focus": [
+        "CONSENSUS",
+        "PERIODONTOLOGY"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Tord Berglundh",
+      "country": "SE",
+      "focus": [
+        "PERI_IMPLANT_DISEASE",
+        "BIOLOGY"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Stefan Renvert",
+      "country": "SE",
+      "focus": [
+        "PERI_IMPLANTITIS",
+        "MAINTENANCE"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Nikos Donos",
+      "country": "GB",
+      "focus": [
+        "REGENERATION",
+        "IMPLANTOLOGY",
+        "CONSENSUS"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Jan Cosyn",
+      "country": "BE",
+      "focus": [
+        "IMMEDIATE_IMPLANT",
+        "SOFT_TISSUE"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Lisa Heitz-Mayfield",
+      "country": "AU",
+      "focus": [
+        "PERI_IMPLANT_DISEASE",
+        "MAINTENANCE"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Shinya Murakami",
+      "country": "JP",
+      "focus": [
+        "PERIODONTAL_REGENERATION"
+      ],
+      "watch_priority": "HIGH"
+    },
+    {
+      "name": "Ki-Tae Koo",
+      "country": "KR",
+      "focus": [
+        "ALVEOLAR_REGENERATION",
+        "IMPLANTOLOGY"
+      ],
+      "watch_priority": "HIGH"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+DSG 9.1.3 validation report
+Date: 2026-08-14
+
+Static validation
+- Python compileall: PASS
+- Pure clinical_core tests: 4/4 PASS
+- Clinical source registry JSON parse/schema: PASS
+- Existing DSG 9.1.2 code retained except explicit integration patches.
+
+Clinical architecture validation
+- Direct identifier fields are not part of patient context schema.
+- Patient context hash excludes updated_at, preventing false stale invalidation.
+- Changing material patient context invalidates stored clinical guidance/review.
+- Guidance result must match request_sha256 and country_code.
+- Guidance result requires verified_at and at least one source.
+- Every applicable guidance/risk/recommendation/conflict claim requires a source_id.
+- Clinician review confirmation is Blender UI only; no MCP bridge op can confirm it.
+- Medication lookup request transmits medication term only, not patient context.
+- Unregistered countries explicitly require live discovery of regulator/dental/maxillofacial/national guidance.
+
+External MCP CaseEngine v2.2
+- PYTHONPATH=. pytest -q: 10/10 PASS
+- clinical.read and clinical.write are explicit scopes.
+- CaseEngine stores only clinical hashes/status flags, not full patient context, in generic case.data.
+
+Not validated in this environment
+- Interactive Blender 5.x RNA registration/UI rendering.
+- Live external clinical-research agent execution.
+- Network access from Blender is intentionally not required; live research belongs to MCP.

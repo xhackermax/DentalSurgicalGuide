@@ -1,0 +1,30 @@
+DSG 9.2.35 - Blockout seating audit
+
+New guide-fit safeguards
+
+- The view-parallel blockout is now audited automatically against the evaluated IOS.
+- DSG verifies equal source/candidate topology, axial-only displacement and
+  sampled residual axial locks before the blockout can be confirmed as the
+  fitting model.
+- The added blockout area is exposed as a teal, display-only review overlay.
+- The panel presents a direct seating state: passed, review required or failed.
+- "Recheck seating" repeats the audit without modifying the patient model.
+- Blockout generation and confirmation participate in Blender Undo.
+
+Clinical scope
+
+This is an algorithmic geometry quality control. It does not certify a perfect
+clinical fit, replace printed-guide verification, compensate for acquisition or
+printing errors, or replace the clinician's pre-surgical trial seating.
+
+Design references
+
+- Blender for Dental, "The Flipper Nobody Respects: Designing a One-Tooth
+  Partial Denture That Actually Seats". Used as interaction/design inspiration
+  for an insertion-axis survey and local relief review, not as a direct
+  parameter source for surgical guides.
+- Blue Sky Plan User Manual, Surgical guides section. Confirms the established
+  digital-guide pattern of an offset surface derived from the oral model.
+- Tahmaseb et al., Clinical Oral Implants Research (2018), systematic review
+  of static computer-aided implant surgery. Guide design does not remove the
+  need for safety margins and clinical verification.

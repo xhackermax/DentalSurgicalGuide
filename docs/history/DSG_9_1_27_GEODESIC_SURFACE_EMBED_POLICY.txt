@@ -1,0 +1,17 @@
+DSG 9.1.27 — Geodesic Surface Embed Policy
+============================================
+
+The geodesic centreline remains 100% on the passive-model mesh. No Euclidean
+fallback is introduced.
+
+The width validator samples both sides at 50%, 75%, and 100% of tube radius.
+A conflict only at 100% is accepted, allowing the outer 25% radial band to
+overlap/embed into the support model. A conflict at 75% or 50% remains a hard
+bottleneck and triggers intrinsic Dijkstra rerouting.
+
+This changes the former HARD_FULL_DIAMETER all-or-nothing rule into:
+    GEODESIC_SURFACE_EMBED_25_PERCENT
+
+It applies consistently to contour anchors and every route sample.
+The generated object stores the minimum retained ratio, allowed embed ratio and
+number of samples that used the tolerance.

@@ -1,0 +1,25 @@
+{
+  "schema": "dsg.evidence_search_queries.v1",
+  "queries": [
+    "implant-tooth distance",
+    "interimplant distance",
+    "buccal bone thickness dental implant",
+    "lingual bone thickness dental implant",
+    "keratinized mucosa width implant",
+    "soft tissue thickness implant",
+    "supracrestal tissue height implant",
+    "peri-implant phenotype",
+    "critical contour subcritical contour implant",
+    "emergence profile angle implant",
+    "implant platform diameter prosthetic space",
+    "implant connection diameter fatigue",
+    "platform switching marginal bone",
+    "immediate implant chronic periapical infection",
+    "immediate loading insertion torque ISQ",
+    "narrow diameter implants interdental space",
+    "surgical guide rigidity deformation",
+    "finite element surgical guide",
+    "topology optimization dental surgical guide",
+    "MRONJ dental implant antiresorptive"
+  ]
+}

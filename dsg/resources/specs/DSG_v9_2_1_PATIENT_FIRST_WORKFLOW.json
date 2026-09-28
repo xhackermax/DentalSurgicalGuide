@@ -1,0 +1,146 @@
+{
+  "schema": "dsg.patient_first_clinical_workflow.v1",
+  "version": "9.2.1",
+  "name": "DSG PATIENT FIRST · SIMPLE / IMMEDIATE",
+  "patient_folder": {
+    "principle": "La carpeta elegida al inicio es la SSOT del caso para imports y exports.",
+    "first_action": "ELEGIR PACIENTE",
+    "automatic_import_order": [
+      "CBCT/DICOM desde la carpeta del paciente",
+      "IOS/STL al entrar en alineamiento"
+    ],
+    "exports": [
+      "DSG_CBCT_SIMPLE.stl",
+      "DSG_IMMEDIATE_MAXILLA.stl",
+      "DSG_IMMEDIATE_MANDIBLE.stl",
+      "DSG_Guide_<caso>.stl"
+    ]
+  },
+  "principles": [
+    "KISS: primero paciente, luego CBCT, luego una de dos rutas clínicas independientes",
+    "Las rutas SIMPLE e IMMEDIATE tienen secuencias de botones propias; no se reutiliza el menú antiguo bloqueando acciones",
+    "DentalSegmentator y UniversalLab son motores distintos y se conservan ambos",
+    "FDI pertenece a la segmentación CBCT; el IOS no renumera dientes",
+    "En implante inmediato la preparación del alvéolo ocurre antes del alineamiento",
+    "El nervio mandibular nunca se une por Ctrl+J a maxilar/mandíbula+dientes",
+    "La selección clínica de dientes a extraer es explícita mediante selección + H"
+  ],
+  "engine_routing": {
+    "SIMPLE_CBCT_STL": {
+      "engine": "adaptive density / marching cubes",
+      "ai_required": false,
+      "starting_threshold": "umbral automático de tejido óseo de las versiones previas",
+      "user_control": "barra DENSIDAD/HU editable con previsualización sólida",
+      "confirmation": "CONFIRMAR STL → ALINEAR"
+    },
+    "IMMEDIATE_FULL": {
+      "engines": [
+        "DentalSegmentator 8.7 / Dataset112",
+        "UniversalLab"
+      ],
+      "DentalSegmentator": {
+        "classes": {
+          "1": "maxila/cráneo superior; soporte/fallback óseo",
+          "2": "mandíbula; soporte/fallback óseo",
+          "3": "dientes superiores agrupados; soporte Tooth Path",
+          "4": "dientes inferiores agrupados; soporte Tooth Path",
+          "5": "canal mandibular; verificador de continuidad"
+        }
+      },
+      "UniversalLab": {
+        "classes": {
+          "1-52": "dientes individuales / identidad dentaria y FDI",
+          "53": "mandíbula específica",
+          "54": "maxila específica",
+          "55": "canal mandibular"
+        }
+      },
+      "tooth_reconciliation": "Tooth Path Continuity de DSG 9.1.33: corona → cuello → raíz → ápice",
+      "jaw_objects_for_immediate_route": "Preferir UniversalLab 54/53 para maxila/mandíbula puras; fallback DentalSegmentator 1/2",
+      "canal": "UniversalLab 55 con verificación DentalSegmentator 5"
+    }
+  },
+  "routes": {
+    "SIMPLE": {
+      "display_name_es": "Implante simple",
+      "button_line": [
+        "IMPLANTE SIMPLE",
+        "DENSIDAD/HU",
+        "CONFIRMAR STL → ALINEAR"
+      ],
+      "flow": [
+        "ELEGIR PACIENTE",
+        "Importar automáticamente el CBCT/DICOM de la carpeta",
+        "Pulsar IMPLANTE SIMPLE",
+        "Crear automáticamente una superficie/STL de CBCT con el umbral automático preestablecido",
+        "Permitir modificar DENSIDAD/HU y actualizar la previsualización 3D",
+        "Confirmar el STL",
+        "Exportar DSG_CBCT_SIMPLE.stl a la carpeta del paciente",
+        "Importar automáticamente los STL IOS de la carpeta",
+        "Alineamiento: 3 pares de puntos/zonas → prealineamiento rígido → ICP robusto",
+        "Confirmar alineamiento",
+        "Continuar con el flujo DSG previo"
+      ]
+    },
+    "IMMEDIATE": {
+      "display_name_es": "Implante inmediato",
+      "button_line": [
+        "IMPLANTE INMEDIATO",
+        "INVERTIR FDI",
+        "FDI CORRECTO → DIENTES",
+        "DIENTES H → UNIR",
+        "CONFIRMAR → ALINEAR"
+      ],
+      "flow": [
+        "ELEGIR PACIENTE",
+        "Importar automáticamente el CBCT/DICOM de la carpeta",
+        "Pulsar IMPLANTE INMEDIATO",
+        "Ejecutar segmentación completa con DentalSegmentator + UniversalLab",
+        "Crear maxila, mandíbula, nervio/canal y dientes individuales numerados FDI",
+        "Revisar FDI; si las arcadas están invertidas usar INVERTIR FDI; si está correcto continuar sin corrección",
+        "Seleccionar uno o varios dientes que serán extraídos / sitios de implantes inmediatos",
+        "Pulsar H para ocultar dichos dientes",
+        "Al pulsar SIGUIENTE, duplicar y unir con comportamiento Ctrl+J: maxila + dientes superiores visibles",
+        "Duplicar y unir con comportamiento Ctrl+J: mandíbula + dientes inferiores visibles",
+        "Excluir de ambas uniones los dientes ocultos con H",
+        "Mantener el nervio mandibular como objeto independiente, nunca unido",
+        "Mostrar los alvéolos abiertos donde se ocultaron los dientes",
+        "Confirmar los modelos alveolares",
+        "Exportar DSG_IMMEDIATE_MAXILLA.stl y DSG_IMMEDIATE_MANDIBLE.stl a la carpeta del paciente",
+        "Importar automáticamente los STL IOS de la carpeta",
+        "Alineamiento: 3 pares de puntos/zonas → prealineamiento rígido → ICP robusto",
+        "Confirmar alineamiento",
+        "Continuar con el flujo DSG previo"
+      ]
+    }
+  },
+  "alignment_contract": {
+    "order": [
+      "importar IOS automáticamente",
+      "seleccionar 3 pares de puntos o zonas correspondientes",
+      "prealineamiento rígido",
+      "ICP robusto",
+      "revisión y confirmación clínica"
+    ],
+    "identity_owner": "CBCT segmentado / FDI, nunca IOS"
+  },
+  "prosthetic_first_roadmap": {
+    "principle": "Primero dónde debe estar el diente; después dónde puede estar el implante",
+    "crown_source_priority": [
+      "corona real sana preextracción",
+      "contralateral FDI espejada",
+      "biblioteca FDI"
+    ],
+    "target_chain": "CROWN_TEMPLATE → CROWN_GHOST → TOOTH → ToothFrame/landmarks → CROWN_TARGET → EMERGENCE_REGION → PROSTHETIC_AXIS → IMPLANT",
+    "status_in_9_2_1": "roadmap downstream conservado; no sustituye las confirmaciones clínicas"
+  },
+  "non_negotiable_rules": [
+    "No pedir FDI objetivo antes de la segmentación inmediata",
+    "No ejecutar la extracción virtual después del alineamiento; el hueco alveolar se prepara antes",
+    "No unir maxila con dientes inferiores ni mandíbula con dientes superiores",
+    "No unir el nervio mandibular",
+    "No obligar a usar IA en la ruta simple",
+    "No renumerar dientes a partir del IOS",
+    "No reutilizar un runtime Python externo 3.11 como requisito de DentalSegmentator"
+  ]
+}

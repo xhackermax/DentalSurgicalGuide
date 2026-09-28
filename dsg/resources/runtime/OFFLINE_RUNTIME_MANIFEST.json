@@ -1,0 +1,87 @@
+{
+  "schema": "dsg.offline_runtime_manifest.v1",
+  "dsg_version": "9.2.17",
+  "policy": "offline-first; responsive CBCT open; exact DICOM TransferSyntax preflight; no network from clinical workflow",
+  "supported_host_abis": [
+    "cp311-win_amd64",
+    "cp313-win_amd64"
+  ],
+  "runtime_namespace_pattern": "dsg_ai_runtime_v926_py<major><minor> (intentionally preserved for ABI-compatible reuse)",
+  "models": {
+    "DentalSegmentator": {
+      "dataset": "Dataset112_DentalSegmentator_v100",
+      "bundled": true,
+      "checkpoint_sha256": "a3a91ae0f8d7ab403d8662e47d2f0bdf7fc51e7783b46632841274dff8266c32"
+    },
+    "UniversalLab": {
+      "dataset": "Dataset002_380CT",
+      "bundled_expected_path": "cbct_semantic_engine/nnUNet_results/Dataset002_380CT/nnUNetTrainer__nnUNetPlans__3d_fullres",
+      "checkpoint_sha256": "c967bb566c60470c6a85c8dc4c674aeec895f2c20dbe451ec08f8b60ddfda81d",
+      "dataset_json_sha256": "8dbed7d097fc2ccca67ec1ff8a92a25b2f914a5b466c587486439990c4b4b3ac",
+      "plans_json_sha256": "46136ab5ac5a0418ba199ae19f3bc8b2316b76601715bbb9ee94c5deecaafa4c",
+      "recovery": "packaged -> current runtime -> ABI-independent legacy model",
+      "bundled": false,
+      "official_checkpoint_size_bytes": 819880677
+    }
+  },
+  "strict_imports": [
+    "torch",
+    "scipy",
+    "skimage",
+    "psutil",
+    "SimpleITK",
+    "nibabel",
+    "acvl_utils",
+    "batchgenerators",
+    "batchgeneratorsv2",
+    "dynamic_network_architectures",
+    "sklearn",
+    "tifffile",
+    "imagecodecs",
+    "yacs",
+    "einops",
+    "blosc2",
+    "tqdm",
+    "pandas",
+    "requests",
+    "graphviz",
+    "matplotlib",
+    "seaborn"
+  ],
+  "dicom": {
+    "requirements": [
+      "pydicom==3.0.2",
+      "pylibjpeg==2.1.0",
+      "pylibjpeg-libjpeg==2.4.0",
+      "pylibjpeg-openjpeg==2.5.0",
+      "pylibjpeg-rle==2.2.0"
+    ],
+    "coverage": {
+      "native": "Implicit/Explicit VR Little Endian via bundled reader or full pydicom",
+      "big_endian_deflated": "full pydicom",
+      "jpeg_jpegls": "pylibjpeg-libjpeg; GDCM/pyjpegls accepted when recovered",
+      "jpeg2000_htj2k": "pylibjpeg-openjpeg; GDCM accepted when recovered",
+      "rle": "pydicom native decoder; pylibjpeg-rle optional accelerator"
+    },
+    "verification": "module/DLL import + selected TransferSyntaxUID checked before pixel decode"
+  },
+  "offline_layout": {
+    "cp311_ai": "offline_runtime/win_py311/wheels",
+    "cp311_dicom": "offline_runtime/win_py311/dicom_wheels",
+    "cp313_ai": "offline_runtime/win_py313/wheels",
+    "cp313_dicom": "offline_runtime/win_py313/dicom_wheels",
+    "wheelhouses_physically_populated": false
+  },
+  "recovery_sources": [
+    "current DSG v9.2.6 runtime",
+    "ABI-compatible dsg_ai_runtime* under Blender/Mixar USER/LOCAL/SYSTEM script roots",
+    "sibling Blender version script roots",
+    "DSG_AI_ENGINE_REAL venv when Python ABI is compatible"
+  ],
+  "low_ram_mode": {
+    "strategy": "file-backed fp16 nnU-Net logits + overlap counter in OS TEMP",
+    "activates": "automatically only when normal physical-RAM plan fails",
+    "network_device": "CUDA remains available; accumulator moves to disk-backed CPU storage",
+    "safety": "requires enough RAM for preprocessing/export and at least 3 GiB disk reserve"
+  }
+}

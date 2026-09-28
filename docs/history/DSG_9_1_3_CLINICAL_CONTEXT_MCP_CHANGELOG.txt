@@ -1,0 +1,43 @@
+DSG 9.1.3 - Clinical Context + Country-Aware MCP Guidance
+==========================================================
+
+New
+---
+- dsg.clinical_core: pure-Python normalization, hashing, guidance-topic discovery,
+  missing-information analysis and sourced-result validation.
+- dsg.clinical_context: Blender scene storage + UI + MCP bridge integration.
+- Patient clinical context intentionally excludes direct identifier fields.
+- Country-aware source registry under resources/clinical/source_registry.json.
+- Spain source priority includes AEMPS/CIMA, SECOMCyC, SEPA, Consejo General de
+  Dentistas and Ministerio de Sanidad.
+- Extensible data-only country registry with GB, US, EU and international fallbacks.
+- Unregistered countries trigger explicit live discovery of the country's medicine
+  regulator, dental professional body, oral/maxillofacial society and national guidance.
+- AEMPS CIMA REST lookup request descriptor for Spanish medication reconciliation.
+- New MCP bridge operations:
+  get_patient_clinical_context
+  set_patient_clinical_context
+  clear_patient_clinical_context
+  get_clinical_source_registry
+  build_medication_lookup_request
+  build_clinical_guidance_request
+  get_clinical_guidance_request
+  apply_clinical_guidance_result
+  get_clinical_guidance_result
+  build_preoperative_context
+- build_full_implant_context now includes clinical status summary.
+- Patient/procedure request and returned clinical guidance are cryptographically bound
+  with request_sha256 to reject stale guidance after clinical data changes.
+- Sourced clinical guidance claims must reference source IDs. At least one source is
+  mandatory. The addon stores guidance as advisory evidence, not as automatic clearance.
+- Clinical review confirmation is deliberately clinician-only in Blender UI and is not
+  exposed as an MCP mutation tool.
+
+Safety / architecture
+---------------------
+- DSG does not hard-code changing drug-holiday, antibiotic, anticoagulant, MRONJ or
+  other medical treatment rules.
+- MCP must perform live current-country verification before advising on delicate cases.
+- Medication lookup requests send the drug term only; they do not transmit patient context.
+- Geometry remains deterministic in DSG; medical interpretation remains sourced and
+  auditable in MCP; final clinical decision remains with the treating clinician.

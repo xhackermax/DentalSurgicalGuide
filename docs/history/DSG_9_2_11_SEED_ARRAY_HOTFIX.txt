@@ -1,0 +1,7 @@
+DSG 9.2.11 - SEED ARRAY HOTFIX
+
+Fix:
+- Restores _seed_array() in dicom_module.py.
+- Prevents NameError during MPR/segmentation overlay refresh and addon update.
+- Keeps 9.2.10 competitive tooth territories, dual-engine pipeline, disk-backed nnU-Net accumulator, DICOM laterality fix, guided workflow and stage restart/back logic unchanged.
+- No __pycache__ or .pyc files included.

@@ -1,0 +1,9 @@
+DSG 9.2.16
+
+- Immediate segmentation creates only Dental_DICOM_Maxilla and Dental_DICOM_Mandible; the duplicate combined Dental_DICOM_Bone is no longer generated/prepared.
+- Stale Dental_DICOM_Bone is removed before jaw materialization.
+- The DICOM OpenVDB FOG_VOLUME and MPR/box displays are hidden automatically after segmentation while CBCT data remains loaded.
+- Restored persistent vertical stage rail: DICOM / ALINEAR / DSG, with the current stage visibly depressed/highlighted.
+- Removed the separate workflow-control text panel; Back and all three independent stage-reset actions remain as compact buttons.
+- Core DICOM/route and Alignment shells are button-first/minimal. Explanations, progress and numeric data are sent to Blender's bottom status bar.
+- Guide shell removes permanent header/progress/gate explanatory text while retaining clinical controls.

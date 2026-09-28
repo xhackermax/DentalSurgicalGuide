@@ -1,0 +1,26 @@
+DSG 8.8 · third-party dental AI notice
+
+1) Bundled CBCT semantic model
+DSG can use the Dataset112_DentalSegmentator_v100 nnU-Net checkpoint that is
+already present in DSG 8.7. It is retained as the clinical-equivalence fallback
+for semantic CBCT segmentation (maxilla/skull, mandible, upper/lower teeth and
+mandibular canal).
+
+2) UniversalLab individual-tooth model
+DSG 8.8 adds an in-Blender installer for the UniversalLabDentalSegmentator
+model used by DCBIA-OrthoLab SlicerAutomatedDentalTools/BATCHDENTALSEG. The
+model files are not silently re-labelled as DSG training data. The installer
+retrieves the upstream release assets checkpoint_final.pth, dataset.json and
+plans.json and stores them in DSG's user runtime directory.
+
+UniversalLab's learned labels are used directly: permanent teeth 1..32,
+primary teeth 33..52, mandible 53, maxilla 54 and mandibular canal 55. DSG maps
+those explicit tooth labels deterministically to FDI/ISO 3950 and requires a
+clinical review/confirmation before alignment.
+
+3) Runtime
+nnU-Net and its scientific Python dependencies are installed into a DSG-owned
+site-packages directory from Blender. The clinical inference path does not
+start Slicer, WSL, Conda, another Python interpreter or nnUNetv2_predict.
+
+Retain upstream licenses/notices when redistributing model/runtime assets.

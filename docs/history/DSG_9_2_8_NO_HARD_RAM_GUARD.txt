@@ -1,0 +1,16 @@
+DSG 9.2.8 - NO HARD RAM GUARD
+
+ROOT CAUSE FIXED
+- 9.2.7 still required the conservative residual-RAM estimate of the disk-backed path to pass _memory_budget_ok().
+- That meant the exact same "DSG RAM guard duro" could still abort DentalSegmentator before nnU-Net ran.
+
+9.2.8 POLICY
+- RAM estimates are advisory routing data, never a clinical stop condition.
+- If the in-memory plan does not fit, nnU-Net uses a file-backed fp16 accumulator in TEMP.
+- The disk-backed path is allowed to run even when the conservative residual-RAM estimate is higher than currently free physical RAM. Windows can page mapped file-backed pages.
+- The only pre-inference blocker is objectively insufficient free TEMP disk space for the mapped accumulator.
+- CUDA_FULL is never rejected because of host-RAM estimates; nnU-Net may fall back to CPU if GPU memory is exhausted.
+
+CLINICAL ROUTING UNCHANGED
+- SIMPLE: HU -> native STL -> IOS -> alignment -> DSG.
+- IMMEDIATE: DentalSegmentator -> release network -> UniversalLab -> Tooth Path Continuity -> FDI -> H extraction -> alveolar model -> IOS -> alignment -> DSG.

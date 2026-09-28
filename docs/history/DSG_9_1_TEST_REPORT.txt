@@ -1,0 +1,47 @@
+DSG 9.1.0 — Test report
+13 August 2026
+
+EXECUTED IN THIS ENVIRONMENT
+PASS — targeted py_compile:
+  dsg/__init__.py
+  dental_assets.py
+  dental_asset_blender.py
+  roadmap_module.py
+  cbct_dental_module.py
+  tooth_analysis.py
+  all dsg/dental_mapping/*.py
+
+PASS — pure contract regression:
+- schema remains dsg.dental_assets.v1 / contract_version=1
+- current contract sidecar SHA-256 matches JSON
+- published v9.0 role set unchanged
+- published v9.0 object naming templates unchanged
+- canonical frame signs/units/handedness exact
+- import-only landmark aliases migrate to canonical values
+- canonical normalizer rejects legacy names
+- recognition v1 metadata round-trip with landmark traceability
+- synthetic EOFF explicit VERTEX_FEATURE_LABELS preservation
+- no subprocess/os.system/Popen in dental_mapping package
+- legacy aliases occur only in explicit contract/import/migration code
+
+CURRENT CONTRACT SHA-256
+a328d92f1ad2461482c1c2049ddcd64cf0b7d51e9bfb7759f4530c188ba8bd0f
+
+TESTS INCLUDED FOR USER ENVIRONMENT
+- dsg/tests_numeric/test_dental_assets_contract.py
+- dsg/tests_blender/dental_mapping_smoke.py
+
+NOT EXECUTED / NOT CLAIMED AS VALIDATED
+- Real Blender 5.x bpy runtime.
+- Real Template -> Ghost -> Patient registration/ICP on the user's dental assets.
+- Real occlusal Boolean and topology rollback in Blender.
+- Real EOFF files from the user's authoring engine beyond the explicit section
+  contract implemented here.
+- Library smoke test, because no authored dsg_dental_library.blend was supplied.
+- Clinical validation of registration RMS thresholds or crown deformation limits.
+
+DEFINITION OF DONE STATUS
+Engineering compatibility layer: implemented.
+Complete clinical/library compatibility: NOT YET DONE until the real canonical
+library is authored/inserted and Blender integration tests pass on representative
+incisor, canine, premolar and molar families plus real CBCT/IOS cases.

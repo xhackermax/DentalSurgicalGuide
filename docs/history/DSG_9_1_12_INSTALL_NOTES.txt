@@ -1,0 +1,7 @@
+DSG 9.1.12 INSTALL NOTES
+
+This package intentionally remains a legacy Blender add-on named `dsg` because the Mixar integration currently imports that module name directly.
+For Blender/Mixar 5.x use Preferences > Add-ons/Extensions > Install from Disk.
+If an older `dsg` is enabled, disable/uninstall it and restart Mixar before installing.
+This build omits __pycache__, pytest caches, and test suites from the install archive.
+The CBCT model weights and required nnUNet runtime sources are retained.

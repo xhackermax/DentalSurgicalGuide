@@ -1,0 +1,31 @@
+DSG 9.0.0 — Test report
+
+Executed in the build environment:
+
+PASS — py_compile for all 16 top-level DSG Python modules.
+PASS — JSON parse/validation of resources/dental_assets/asset_contract_v1.json.
+PASS — FDI validation across 32 permanent + 20 primary teeth.
+PASS — permanent/primary tooth-class mapping, including primary molars 54/55/64/65/74/75/84/85.
+PASS — canonical arch and patient-side derivation.
+PASS — 2,236 generated object names and asset IDs checked for collisions: none.
+PASS — exact compatibility names retained for DSG_Tooth_FDI_XX and DSG_FDI_XX.
+PASS — recognition payload round-trip validation for FDI 46.
+PASS — contract SHA-256 mismatch is rejected fail-fast.
+PASS — roadmap no longer references removed dsg_dental_ai / DSG_dental_ai_locator / current_tooth_mcp_payload APIs.
+PASS — ZIP integrity test after packaging (see final build output).
+
+Not executed here:
+
+- Real Blender 5.x RNA registration/runtime.
+- bpy.data library loading with the future dsg_dental_library.blend, because no tooth/crown geometry has been supplied yet.
+- Real CUDA/UniversalLab inference on the user's NVIDIA GPU.
+- Clinical validation of anatomical landmarks or emergence regions. The contract standardizes names and interchange; it does not claim that landmark positions are clinically validated.
+
+Definition of Done for the shared contract:
+
+1. One SSOT JSON manifest.
+2. Deterministic FDI family IDs and object names.
+3. Exact landmark vocabulary shared by DSG and external recognition engine.
+4. Hash/version mismatch rejected.
+5. Existing CBCT tooth names remain backward compatible.
+6. Roadmap consumes the current CBCT dentition SSOT.

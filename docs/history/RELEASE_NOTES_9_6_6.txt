@@ -1,0 +1,8 @@
+DSG v9.6.6 — CORE MOTOR INSTALLER FIX — 2026-09-04
+
+- INSTALLAR MOTORES no depende ya del registro de runtime_bootstrap.
+- Nuevo operador dsg_suite.install_engines_core_v966 registrado en core.py antes de módulos secundarios.
+- El primer clic deja prueba persistente en Scene y muestra estado/report inmediatamente.
+- El instalador llama directamente a totalseg_runtime.start_install() y devuelve el error concreto si el worker no puede arrancar.
+- Ambos botones (panel principal y panel DICOM) usan el mismo operador core.
+- Se conserva el instalador 9.6.5 como compatibilidad interna, pero ya no es la ruta UI principal.

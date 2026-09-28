@@ -1,0 +1,39 @@
+DSG 9.1.28 — Segmentación con barra de progreso por fases
+=============================================================
+
+Objetivo
+--------
+Evitar que una inferencia larga parezca un bloqueo de Blender/Mixar.
+
+La barra NO inventa un porcentaje interno de nnU-Net. El predictor actual no
+expone de forma fiable el número total de ventanas procesadas al panel DSG.
+Por ello el porcentaje representa fases reales del workflow.
+
+Fases aproximadas
+-----------------
+  1%   Inicio
+  4–18%  Verificador opcional DentalSegmentator
+ 20–70%  UniversalLab
+ 72–90%  Creación real de dientes, con avance index/total
+ 92%      Maxila/mandíbula
+ 96%      Canal mandibular
+ 99%      Finalización
+100%      Segmentación completada
+
+Durante la fase larga de red neuronal el porcentaje puede permanecer estable.
+El contador de segundos sigue actualizándose, dejando claro que el job continúa
+activo y Blender permanece operativo.
+
+UI
+--
+Mientras SEGMENTAR TODO está activo aparece un panel prominente:
+
+SEGMENTACIÓN EN CURSO
+[████████░░░░░░] 45% · Segmentando dientes con IA
+Segmentando CBCT · CUDA FULL…
+Trabajando · 87 s transcurridos · Blender sigue operativo
+
+También se utiliza WindowManager.progress_begin/update/end para que Blender
+muestre progreso en su propia barra de estado cuando esté disponible.
+
+No se modifica ningún algoritmo clínico de segmentación en esta versión.

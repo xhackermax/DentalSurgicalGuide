@@ -1,0 +1,37 @@
+DSG 9.1.22 — FDI vestibular + CUDA AUTO
+=============================================
+
+FDI visualisation
+-----------------
+Previous 9.1.17+ logic had three weaknesses visible in real Mixar testing:
+1. label anchor was chosen mainly from the most coronal tooth point, causing
+   maxillary and mandibular labels to crowd the occlusal/inter-arch space.
+2. orientation followed a tooth-derived frame but did not explicitly face the
+   vestibular surface, so some numbers appeared edge-on or rotated.
+3. label objects were parented to DICOM_ROOT, producing long Blender relationship
+   lines converging near the dataset origin.
+
+9.1.22:
+- builds every tooth first, then computes each complete arch centre.
+- vestibular direction = radial direction away from that arch centre, projected
+  perpendicular to the learned tooth long axis.
+- anchor = most vestibular vertex restricted to the coronal half of the tooth,
+  plus 0.55 mm outward offset.
+- glyph normal faces vestibular.
+- glyph vertical axis follows patient superior (+Z in DICOM LPS world space).
+- compact 2.15 mm label size.
+- each label is parented to its tooth, not DICOM_ROOT.
+- manual FDI edits, arch swaps and tooth deletion automatically rebuild layout.
+
+CUDA
+----
+Immediately after a valid DICOM is selected:
+- DSG imports its installed PyTorch runtime once.
+- queries torch.cuda.is_available().
+- on multi-GPU NVIDIA systems chooses the adapter with most free VRAM.
+- stores GPU name and free/total VRAM.
+- sets ai_device_preference = CUDA when CUDA is usable.
+- otherwise selects CPU.
+- NVIDIA-driver + CPU-only Torch is reported as a runtime repair condition.
+
+Cycles CUDA/OptiX settings remain unrelated; DSG segmentation uses PyTorch.

@@ -1,0 +1,60 @@
+DSG 8.9.0 — Engineering Refactor
+================================
+
+Objetivo: reducir bloqueos y memoria sin sustituir modelos que ya funcionan ni
+crear otra arquitectura «por si acaso».
+
+CAMBIOS DE ARQUITECTURA
+- Un único labelmap semántico CBCT activo en memoria (SSOT). Eliminadas cachés de
+  labelmaps completos por modelo que podían retener varios volúmenes simultáneos.
+- La interfaz no inicia inferencias pesadas de forma implícita. Consulta de caché
+  y comando de inferencia están separados (CQS).
+- Inferencia UniversalLab directa sobre air-crop cuando el plan medido es seguro;
+  DentalSegmentator como localizador de arcada sólo si el presupuesto RAM/VRAM
+  obliga a reducir más el ROI. Se evita una segunda red 3D innecesaria.
+- FDI sigue siendo identidad aprendida por UniversalLab desde CBCT. El IOS queda
+  fuera de la asignación de identidad.
+- Mirroring UniversalLab centralizado en tooth_analysis.py.
+- Roles/protocolo/idioma compartidos centralizados en core.py.
+- Bootstrap robusto de Blender 5.x conservado: carga perezosa y exacta por ruta.
+  No se eliminó porque nació de fallos reales de recarga/circular import.
+
+MEMORIA Y RENDIMIENTO
+- Exportador multiclase de baja memoria: un canal a la vez y labelmap final
+  uint8/uint16. Evita trasladar todos los logits CUDA a RAM.
+- Fast path trilineal float32 sólo cuando el plan nnU-Net no requiere separate-Z.
+  En anisotropía se usa el resampler configurado por nnU-Net, también por canal.
+- Eliminados np.argwhere de rutas de bounding-box grandes; las cajas se calculan
+  mediante proyecciones de ocupación O(Z+Y+X).
+- Referencia ICP dental se crea desde el ROI compacto de dientes, no desde un
+  np.isin booleano del FOV completo.
+- Preprocesador nnU-Net evita una copia completa redundante cuando la entrada ya
+  es float32 (copy=False). La entrada de inferencia DSG es un buffer temporal.
+- Colecciones dentales/ViewLayer se sincronizan una sola vez antes del bucle de
+  mallas, no una vez por diente.
+- PCA convierte a float64 sólo la muestra limitada, no todos los vértices.
+- PyTorch limita temporalmente hilos intra-op y restaura el valor anterior al
+  terminar o fallar; no se cambia set_num_interop_threads globalmente.
+- Métricas reales de model load, preprocessing, network, export, RAM y CUDA peak.
+
+ROBUSTEZ
+- Resultado IA se descarta si cambia el CBCT durante la inferencia.
+- Fallo durante creación incremental de dientes revierte objetos parciales pero
+  conserva el labelmap válido para reintentar sin repetir la red.
+- Correcciones manuales FDI conservan model_fdi y user_override para auditoría.
+- Registro cbct_dental transaccional y recuperación de clases RNA obsoletas.
+- Centralización de bbox/roles y eliminación de cuatro funciones legacy sin
+  referencias probadas.
+
+DECISIONES DELIBERADAS
+- No se convirtió UniversalLab a ONNX/TorchScript: todavía no existe una prueba
+  de equivalencia clínica que demuestre que preprocessing/export produce el mismo
+  resultado. Hacerlo ahora sería optimización prematura.
+- No se dividió guide_module.py masivamente: es deuda técnica real, pero un
+  refactor de ~47k líneas sin Blender/bpy integration tests tiene más riesgo que
+  beneficio. Se retiró sólo código muerto demostrable.
+- No se podó el repositorio nnU-Net de entrenamiento: el predictor resuelve
+  dinámicamente clases de trainer/arquitectura. El ahorro sería pequeño frente al
+  checkpoint y la poda podría romper la carga del modelo.
+- DSG no modifica Undo Steps/Memory Limit del usuario. Sólo cambia temporalmente
+  MATERIAL/RENDERED a SOLID durante IA y restaura el estado exacto.

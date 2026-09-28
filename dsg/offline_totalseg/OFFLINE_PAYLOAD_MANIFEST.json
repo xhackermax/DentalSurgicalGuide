@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "bundle": "DSG TotalSegmentator Offline",
+  "dsg_version": "9.5.5",
+  "totalsegmentator_version": "2.18.0",
+  "platform": "win_amd64",
+  "python_abi": "py313",
+  "policy": "NO_NETWORK",
+  "files": {
+    "runtime_archive": {
+      "path": "payload/runtime/runtime_win64_py313_cuda_totalseg218.zip",
+      "size": 0,
+      "sha256": "",
+      "description": "Preinstalled site-packages: PyTorch CUDA + nnUNetv2 + TotalSegmentator 2.18.0 + runtime dependencies."
+    },
+    "dataset113": {
+      "path": "payload/weights/Dataset113_ToothFairy3.zip",
+      "size": 232066830,
+      "sha256": "cf28693eec49b7a8448e2ebf0a372da41855a099a26d52d1cffe15a3c7e4b740",
+      "description": "Official TotalSegmentator ToothFairy3 dental model."
+    },
+    "dataset115": {
+      "path": "payload/weights/Dataset115_mandible.zip",
+      "size": 230321497,
+      "sha256": "",
+      "description": "Official TotalSegmentator craniofacial crop model used by task=teeth."
+    }
+  }
+}

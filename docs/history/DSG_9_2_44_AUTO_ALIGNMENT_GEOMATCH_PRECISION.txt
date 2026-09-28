@@ -1,0 +1,59 @@
+DSG 9.2.44 — Automatic dental alignment + precise IOS common-surface workflow
+===============================================================================
+
+Alignment
+---------
+Plan A is now automatic and is the primary Alignment action. It uses dental-only
+CBCT geometry, proper PCA hypotheses, target-driven trimmed rigid ICP, ambiguity
+rejection, automatic distributed dental zones, local patch ICP, robust reciprocal
+refinement and the existing three-zone clinical validation gates.
+
+If more than one global pose is plausible or confidence is insufficient, DSG
+fails closed and keeps the existing three-zone workflow as Plan B. No reflection,
+non-uniform scale or anatomical deformation is used.
+
+Immediate cases
+---------------
+The visible immediate jaw composite may contain bone + teeth, but alignment now
+uses the original segmented teeth only in memory, excluding the clinician-selected
+extraction FDI values. This restores the dental-only mathematical contract of the
+older alignment composite without adding a third visible Blender object.
+
+Common IOS surface
+------------------
+The post-extraction selector now tries a precision GeoMatch pass first:
+- reciprocal surface distance
+- normal compatibility (two-sided)
+- local curvature/context
+- reference-to-IOS anchors
+- connected component ranking
+- coherent surface growth
+- confidence gap fill and weak-spike trimming
+
+Tolerance follows the measured alignment p95. Difficult cases automatically fall
+back to the broad 9.2.32-compatible review seed rather than blocking the workflow.
+
+Local crown closure
+-------------------
+Fixed the false/fragile 'local closure left N open edges' logic. The closure now
+tracks the exact selection-interface BMEdge objects, not every later open edge that
+happens to share perimeter vertices. It retries only those local edges using
+triangle_fill / holes_fill / contextual_create and never sends the main IOS basal
+opening into the local crown filler.
+
+Precision refinement added after review
+---------------------------------------
+Before IOS scoring, each segmented CBCT tooth is now reduced in memory to its
+largest coherent surface patch that is actually supported by the aligned IOS.
+This suppresses root/cervical false matches without requiring IOS tooth
+segmentation. The strict GeoMatch pass now uses the module defaults (55° normal
+window, 0.62 confidence threshold) rather than the broader compatibility values.
+
+Closure safety refinement
+-------------------------
+Before deleting any IOS faces, DSG now regularises the selected region so its
+interface forms one or more closed cycles and does not terminate on a pre-existing
+open IOS border. Only unsafe boundary faces are eroded; the interior common-surface
+selection is left intact. The exact resulting interface is then filled and audited.
+This prevents the former 18-edge error from being raised merely because the
+selection touched an unrelated/open scan boundary.

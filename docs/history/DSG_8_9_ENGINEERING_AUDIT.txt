@@ -1,0 +1,58 @@
+DSG 8.9.0 — Evaluación de ingeniería
+====================================
+
+Ámbito revisado
+- Bootstrap y ciclo register/unregister.
+- DICOM/runtime y estado semántico.
+- Motor nnU-Net, RAM/VRAM, CPU/CUDA, crop, preprocessing y export.
+- UniversalLab -> dientes individuales -> FDI -> mallas.
+- Alineamiento y handoff DICOM/IOS/DSG.
+- guide_module: revisión estática amplia y limpieza sólo de dead code probado.
+- Vendor nnU-Net: dependencias necesarias para inferencia y un parche de copia
+  float32 exacto; no se reescribió la red.
+
+Hallazgos críticos resueltos
+1. Varias copias completas del labelmap semántico podían coexistir en RAM.
+2. Una query podía iniciar una inferencia síncrona pesada en el hilo de Blender.
+3. UniversalLab pagaba siempre otra inferencia DentalSegmentator para localizar ROI.
+4. Exportar ~56 clases podía presionar RAM y PCIe innecesariamente.
+5. Resampling rápido no distinguía adquisiciones anisotrópicas/separate-Z.
+6. np.argwhere en máscaras volumétricas podía crear matrices N×3 int64 enormes.
+7. La referencia dental de ICP creaba un booleano del tamaño del CBCT completo.
+8. PyTorch dejaba modificado globalmente el presupuesto de threads.
+9. Una excepción a mitad de BUILD_TEETH podía dejar una dentición parcial creíble.
+10. La edición FDI no conservaba explícitamente la identidad predicha original.
+
+Deuda técnica no ocultada
+- guide_module.py sigue siendo monolítico (~47k líneas) y acumula muchos bloques
+  try/except amplios. Fragmentarlo sin pruebas Blender reales no cumple Definition
+  of Done, por lo que no se hizo una cirugía arquitectónica ciega.
+- dicom_module.py también es grande (~13k líneas). Las fronteras AI ya están
+  separadas en cbct_ai_runtime/cbct_dental_module/tooth_analysis, pero el visor y
+  STL todavía podrían modularizarse en una versión posterior con regression tests.
+- Las estimaciones de memoria son guardas conservadoras, no sustituyen la medición
+  real. 8.9 registra timings/picos para basar la siguiente optimización en datos.
+
+Definition of Done para validación clínica real
+- Blender 5.1 carga/activa/desactiva el addon sin traceback.
+- Mismo CBCT de referencia que DSG 8.7: hueso no empeora visualmente/geométricamente.
+- UniversalLab devuelve dientes separados y FDI correcto aunque contacten.
+- FDI revisado/confirmado antes de Alignment; IOS no cambia los números.
+- UI sigue respondiendo durante red; no hay paginación masiva del sistema.
+- En NVIDIA, el panel confirma CUDA real y registra peak VRAM/timing.
+- Repetir Segmentación no duplica dentición; fallo de BUILD_TEETH no deja parciales.
+- Cambio de CBCT durante IA descarta el resultado.
+- Comparar tiempo total y RAM/VRAM pico de 8.8.6 vs 8.9 en el mismo caso.
+
+Certeza
+- Alta: invariantes numéricos/estáticos comprobados fuera de Blender.
+- Media: reducción de picos RAM por eliminación de copias/argwhere (mecanismo claro,
+  pero el ahorro exacto depende del FOV).
+- No certificada aquí: ejecución Blender 5.1 + bpy + GPU NVIDIA + checkpoint
+  UniversalLab real. Esa prueba requiere la estación del usuario.
+- Reproducibilidad CUDA: el instalador usa actualmente la build `torch` disponible
+  en el índice oficial cu128 en lugar de fijar una versión exacta. Se mantiene así
+  deliberadamente hasta validar una combinación concreta Blender 5.1 + Python 3.13
+  + NVIDIA + UniversalLab en una estación real. Después de esa prueba debe fijarse
+  la versión probada; pinchar una versión ahora sin esa evidencia sería falsa
+  reproducibilidad.

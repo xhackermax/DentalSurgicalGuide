@@ -1,0 +1,11 @@
+DSG 9.1.31 - INTRINSIC CORRIDOR REROUTE
+
+Geodesic frame fix:
+- keeps the mandatory central 75% support band
+- keeps Euclidean fallback disabled
+- replaces Euclidean KD bottleneck dilation with intrinsic graph-radius dilation
+- narrows each exclusion and increases reroute attempts
+- estimates width-test tangents over an intrinsic arc-length window to avoid triangulation zig-zag false failures
+- preserves all 9.1.30 segmentation fixes
+
+Clinical invariant: accepted frame centrelines remain on the evaluated passive/IOS mesh graph.

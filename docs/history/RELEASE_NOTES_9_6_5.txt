@@ -1,0 +1,11 @@
+DSG 9.6.5 - BLENDER 5.2 MOTOR INSTALLER RECOVERY
+
+Fixes:
+- INSTALAR MOTORES uses a new RNA operator id (v965), avoiding stale cached operators.
+- TotalSegmentator runtime is stored under Blender USER scripts/dsg_runtime, never C:\ root.
+- Installer no longer runs ensurepip --upgrade or upgrades pip inside Program Files.
+- Persistent install_status.json is polled even after add-on reload, so progress/errors remain visible.
+- Fresh runtime schema dsg_ts965 avoids contamination from failed older installs.
+- Keeps all DSG 9.6.4 automatic alignment and guide geometry changes.
+
+Target: Blender 5.2 / Python 3.13 / Windows.

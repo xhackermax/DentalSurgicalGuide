@@ -1,0 +1,29 @@
+DSG v9.2.1 · PATIENT FIRST · SIMPLE / IMMEDIATE
+
+Base combinada:
+- DSG 8.7.0: DentalSegmentator Dataset112 y lógica semántica estable.
+- DSG 9.1.33: UniversalLab, FDI individual y Tooth Path Continuity.
+- Runtime IA privado DSG v9.2.1 para evitar depender de un Python 3.11 externo.
+
+Cambio de arquitectura principal:
+1. ELEGIR PACIENTE y guardar carpeta del caso.
+2. Cargar CBCT automáticamente desde esa carpeta.
+3. Elegir una de dos rutas con secuencias de botones independientes.
+
+SIMPLE:
+IMPLANTE SIMPLE -> DENSIDAD/HU -> CONFIRMAR STL -> IOS automático -> 3 puntos -> rigid -> ICP -> DSG.
+
+IMMEDIATE:
+IMPLANTE INMEDIATO -> dual-engine full segmentation -> revisar FDI -> seleccionar dientes + H -> Ctrl+J por arcada excluyendo ocultos -> nervio separado -> confirmar -> IOS automático -> 3 puntos -> rigid -> ICP -> DSG.
+
+Archivos automáticos del caso:
+- DSG_CBCT_SIMPLE.stl
+- DSG_IMMEDIATE_MAXILLA.stl
+- DSG_IMMEDIATE_MANDIBLE.stl
+- DSG_Guide_<caso>.stl
+
+Validación incluida en build:
+- py_compile/compileall del código Python DSG.
+- validación JSON del contrato patient-first.
+- comprobación CRC del ZIP final.
+- no equivale a una prueba clínica de inferencia dentro de Blender/Mixar.

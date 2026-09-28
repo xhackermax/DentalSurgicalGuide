@@ -1,0 +1,33 @@
+DSG v9.2.77 — Multi-Worker Postprocess + Parallel Surfaces
+
+Objective:
+Apply 'divide y vencerás' after the dual AI stage. Once DentalSegmentator and
+UniversalLab finish, Blender no longer does a single monolithic postprocess job.
+
+What now runs in parallel:
+1) Teeth worker
+   - copies the UniversalLab labelmap,
+   - runs tooth-path reconciliation using DentalSegmentator upper/lower tooth support,
+   - extracts the full-resolution tooth meshes.
+
+2) Surface worker
+   - prepares maxilla,
+   - prepares mandible,
+   - prepares the fused mandibular canal surface.
+
+Design:
+- Both workers run as isolated background Blender processes.
+- The full UniversalLab labelmap is written once to a shared temporary job folder.
+- Blender foreground only polls status.
+- Existing BUILD_TEETH and BUILD_BONE commit logic is preserved so the clinical
+  workflow and object naming remain stable.
+
+Why this version matters:
+- v9.2.76 parallelized inference.
+- v9.2.77 parallelizes the next suspected bottleneck: reconciliation + meshing
+  versus jaw/canal surface preparation.
+
+Tradeoff:
+Materializing Blender objects still occurs on the main process because bpy data
+must remain on Blender's safe thread. This version attacks the numeric and
+surface-preparation bottleneck first without destabilizing scene commits.

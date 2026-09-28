@@ -1,0 +1,13 @@
+DSG v9.2.72
+
+Immediate-implant final animation now starts with the extracted tooth animation:
+1. DSG duplicates the virtually extracted tooth (or immediate-extraction FDI set).
+2. The duplicate moves coronally/incisally along its estimated long-axis extraction direction.
+3. The direction is forced root -> crown by comparing cross-sectional width at both ends, so the motion never goes apically.
+4. The extracted tooth then disappears.
+5. Only after that does the pre-existing final sequence begin unchanged: guide seating, screws, drill/implant pairs, reverse screw removal, and guide retraction.
+
+Other notes:
+- The original hidden tooth remains untouched.
+- Sequence bounds now include the extraction prelude.
+- Rebuilding the sequence first clears any previous animated extraction duplicates.

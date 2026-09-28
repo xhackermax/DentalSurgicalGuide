@@ -1,0 +1,18 @@
+DSG 9.2.38 - Immediate-extraction IOS tooth isolation
+
+The common-surface matcher is now explicitly an extraction-tooth isolation
+step, not merely an overlap visualisation.
+
+- The selected FDI tooth/teeth segmented from CBCT are the only references.
+- The aligned IOS copy is the only editable target.
+- One selected FDI retains one connected IOS tooth island; multiple FDI values
+  retain the corresponding limited number of connected islands.
+- Nearby interproximal matches cannot create additional retained islands for a
+  single-tooth extraction.
+- The clinician refines only the cervical/contact boundary with Ctrl+.
+- On confirmation, DSG deletes that selected IOS tooth island, closes its
+  boundary, then performs the existing CBCT socket Boolean and closed-model
+  cleanup protocol.
+
+Neither IOS nor CBCT source geometry is moved, scaled or edited during common
+surface selection.

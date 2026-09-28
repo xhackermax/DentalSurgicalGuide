@@ -1,0 +1,7 @@
+DSG 9.6.8 FIXED — VERSION SSOT REPAIR
+
+- Fixed internal version mismatch that prevented Blender 5.2 from enabling DSG.
+- dsg/__init__.py bl_info version = (9, 6, 8).
+- dsg/version.py DSG_VERSION = (9, 6, 8).
+- guide_module consumes the same DSG_VERSION source of truth.
+- Keeps the v9.6.8 heartbeat/progress installer changes.

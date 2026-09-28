@@ -1,0 +1,106 @@
+{
+  "schema": "dsg.generative_frame.v1",
+  "contract_version": 2,
+  "purpose": "Machine-readable structural context for MCP-assisted DSG frame analysis and generative reinforcement.",
+  "support_nodes": [
+    "P1",
+    "P2",
+    "P3",
+    "P4"
+  ],
+  "support_policy": "Four primary supports placed on the IOS passive/blockout surface; semantic identity is persistent.",
+  "surface_edges": [
+    [
+      "P1",
+      "P2"
+    ],
+    [
+      "P2",
+      "P3"
+    ],
+    [
+      "P3",
+      "P4"
+    ],
+    [
+      "P4",
+      "P1"
+    ]
+  ],
+  "single_sleeve_topology": {
+    "route_groups": [
+      [
+        "P1",
+        "SLEEVE",
+        "P3"
+      ],
+      [
+        "P2",
+        "SLEEVE",
+        "P4"
+      ]
+    ],
+    "directed_branches": [
+      "P1->SLEEVE",
+      "P3->SLEEVE",
+      "P2->SLEEVE",
+      "P4->SLEEVE"
+    ],
+    "forbidden_direct_diagonals": [
+      "P1->P3",
+      "P2->P4"
+    ]
+  },
+  "keep_out_regions": [
+    "SLEEVE_LUMEN",
+    "DRILL_PATH",
+    "IRRIGATION_CHANNEL",
+    "LATERAL_OPENING",
+    "FRANGIBLE_WALL"
+  ],
+  "branch_invariant": "Every support-to-sleeve branch terminates on the sleeve structural envelope and never crosses the lumen.",
+  "analysis": {
+    "mode": "GEOMETRIC_PRECHECK_PLUS_FEM_V2",
+    "metrics": [
+      "geodesic_span_mm",
+      "distance_to_nearest_sleeve_envelope_mm",
+      "local_thickness_mm",
+      "span_to_diameter_ratio",
+      "relative_need_0_1"
+    ],
+    "clinical_threshold_policy": "No pass/fail threshold is invented. Thresholds are applied only when explicitly supplied by clinician/MCP policy."
+  },
+  "future": [
+    "multi_sleeve coupled loading calibration",
+    "adjoint displacement sensitivity",
+    "material/process validated presets",
+    "experimental validation"
+  ],
+  "fem": {
+    "schema": "dsg.generative_frame_fem.v1",
+    "element": "3D Euler-Bernoulli beam, 6 DOF/node",
+    "load_cases": [
+      "axial",
+      "lateral +X",
+      "lateral -X",
+      "lateral +Y",
+      "lateral -Y",
+      "torque +",
+      "torque -"
+    ],
+    "constraints": [
+      "working stress",
+      "Euler buckling",
+      "sleeve displacement"
+    ],
+    "design_target_utilization": 0.75,
+    "sleeve_displacement_target_mm": 0.15,
+    "sleeve_displacement_hard_limit_mm": 0.2,
+    "optimization": [
+      "mechanism-aware radius update",
+      "safe removal test",
+      "local triangle growth"
+    ],
+    "geometry_commit": "preview curves first; existing reinforcement APPLY step commits geometry"
+  }
+}

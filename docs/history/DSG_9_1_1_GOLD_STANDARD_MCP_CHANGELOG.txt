@@ -1,0 +1,69 @@
+DSG 9.1.1 — Gold Standard + MCP Integration
+============================================
+
+Scope
+-----
+This release keeps DSG as the geometric/CBCT engine and adds the missing orchestration
+needed by the Architect Gold Standard, Dental Mapper and MCP CaseEngine.
+
+Dental mapping
+--------------
+- Canonical coronal mapping is now CROWN_TEMPLATE -> CROWN_GHOST -> patient TOOTH.
+- map_patient_crown() is the primary service; map_patient_tooth() remains a compatibility alias.
+- TOOTH_TEMPLATE / TOOTH_GHOST remain available only as optional complete-CBCT references.
+- Patient landmarks transferred from the crown Gold Standard are stamped as INFERRED with
+  inference source ARCHITECT_GOLD_STANDARD.
+- Gold Standard revision/SHA data can be read from the canonical CrownTemplate.
+
+Library compatibility
+---------------------
+- CROWN_TEMPLATE + canonical LANDMARKS + TOOTH_FRAME + EMERGENCE_CENTER +
+  EMERGENCE_REGION + PROSTHETIC_AXIS are the required prosthetic mapping assets.
+- TOOTH_TEMPLATE is no longer mandatory for prosthetic/coronal mapping.
+- Current dsg.dental_assets.v1 contract remains the authority and still accepts the
+  previous contract SHA for migration.
+
+Implant planning context
+------------------------
+- build_full_implant_context(): joins prosthetic context with surgical context.
+- prepare_implant_axis_from_prosthetic_context(): creates a REVIEW controller aligned
+  from final CrownTarget emergence/prosthetic axis; it does not commit an implant.
+- evaluate_implant_candidate(): objective metrics only. No hidden clinical weights.
+  Explicit user/MCP constraints may be applied.
+
+Existing CBCT engine orchestration
+----------------------------------
+- Public world-space CBCT density sampling facade over the existing DSG trilinear sampler.
+- Sampling now optionally returns a field-of-view validity mask.
+- Bone support analysis excludes samples outside the CBCT FOV and reports valid_fraction.
+- Values are explicitly RELATIVE_CBCT_GRAY_NOT_HU.
+- Optional reversible implant heatmap writes Blender-native mesh attributes/material
+  from the existing CBCT sampler; no trabecular segmentation engine is added.
+
+Neighbor/root safety
+--------------------
+- Neighbor safety is measured directly against segmented patient TOOTH geometry.
+- World-space evaluated BVHs are used explicitly.
+- Intersections are detected before non-intersecting distance estimation.
+- Non-intersecting minimum separation is labelled as bidirectional vertex-to-surface
+  approximation; no hidden safe-distance threshold is invented.
+
+MCP bridge
+----------
+Whitelisted bridge operations include:
+- get_gold_standard
+- map_patient_crown (map_patient_tooth compatibility alias)
+- fit_crown_to_neighbors
+- fit_occlusion
+- analyze_implant_bone_support
+- analyze_implant_neighbor_clearance
+- apply_implant_bone_support_heatmap / clear_implant_bone_support_heatmap
+- build_full_implant_context
+- prepare_implant_axis_from_prosthetic_context
+- evaluate_implant_candidate
+
+Clinical boundary
+-----------------
+This integration does not claim autonomous clinical validation. Gold Standard authoring
+remains human-controlled, final implant acceptance remains a clinical review action, and
+no safety threshold is silently invented by this release.

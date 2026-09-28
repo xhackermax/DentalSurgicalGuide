@@ -1,0 +1,23 @@
+DSG v9.3.0 — Process Pipeline Engine
+
+Architecture
+- Blender UI does not run Torch, nnU-Net, Tooth Path or VTK during IMMEDIATE.
+- Full CBCT input is written once as mmap-friendly NPY files while DICOM is already decoding.
+- No native-threshold warmup runs automatically after patient load.
+- One direct Python process owns CUDA and runs DentalSegmentator then UniversalLab sequentially.
+- DentalSegmentator ROI is reused by UniversalLab.
+- After GPU work, two CPU Python workers run concurrently:
+  1) Universal semantic correction + Tooth Path + all-tooth VTK multilabel extraction.
+  2) Maxilla + mandible + mandibular canal surface preparation.
+- CPU thread budgets prevent oversubscription.
+- Worker processes use BELOW_NORMAL priority on Windows.
+- Large labelmaps and geometry arrays are file-backed/memory-mapped; Blender imports one prepared object per timer tick.
+- If a CPU child fails, the external supervisor retries that task itself, never inside Blender.
+- Blender sees only small JSON heartbeat/status files and final mmap descriptors.
+
+Clinical policy
+- Full CBCT resolution retained.
+- DentalSegmentator and UniversalLab retained.
+- UniversalLab tooth identities/FDI retained.
+- Tooth Path retained.
+- No simultaneous CUDA model processes.

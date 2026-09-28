@@ -1,0 +1,66 @@
+DSG 9.1.0 — Mapping implementation notes
+
+OBJECTIVE
+DSG and the external Dental Mapping / Implant Engine use one semantic and
+geometric family. FDI is identity, dsg.dental.assets.v1 is SSOT, the native .blend
+is the geometry master, a ghost is temporary registration state, and landmarks
+are the stable semantic interface.
+
+CANONICAL PIPELINE — EXISTING PATIENT TOOTH
+1. Resolve explicit FDI from the patient TOOTH object. Never guess FDI again.
+2. Read immutable TOOTH_TEMPLATE family semantics from the shared .blend.
+3. Create canonical TOOTH_GHOST.
+4. Coarse align using centroid/PCA candidates, proper signed permutations and
+   bounded uniform scale.
+5. Refine by trimmed point-to-surface ICP.
+6. Transfer canonical landmarks from TEMPLATE_LOCAL into patient WORLD space.
+7. Locally project/refine each point against the patient tooth surface.
+8. Validate required landmarks, frame semantics and registration quality.
+9. Persist canonical landmark Empties + ToothFrame + derived geometry.
+10. Store registration transform/RMS/per-landmark metrics for auditability.
+11. VALID mappings hide/delete the ghost; REVIEW/LOW_CONFIDENCE keeps it visible.
+
+CANONICAL PIPELINE — MISSING TOOTH / CROWN TARGET
+1. FDI remains the target family identity.
+2. Resolve mapped mesial/distal neighbors and an explicit/derived site ToothFrame.
+3. Load canonical CROWN_TEMPLATE.
+4. Copy it to an immutable-reference CROWN_TARGET instance.
+5. Apply bounded symmetric AnatomicFit; preserve family anatomy.
+6. Apply ProximalFit using real local surface regions around semantic contacts.
+7. Rebuild active ToothFrame/derived envelopes.
+8. Apply antagonist only as OcclusalFit final phase.
+9. Reproject affected functional landmarks after Boolean.
+10. Derive EmergenceRegion, EmergenceCenter and ProstheticAxis from the adapted
+    target using authored library semantics. Do not use PCA as prosthetic axis.
+
+SSOT / ACTIVE SEMANTICS
+Patient mapping evidence is retained as JSON on the original patient TOOTH. The
+currently active family landmark objects can then represent the working CrownTarget
+without losing the original recognition evidence. This avoids duplicate canonical
+LANDMARK object IDs while preserving audit data.
+
+LIBRARY BEHAVIOUR
+Persistent objects loaded directly are only TOOTH_TEMPLATE and CROWN_TEMPLATE.
+Landmarks/frame/emergence reference objects are appended temporarily, converted to
+pure snapshots relative to the selected template anchor, and removed immediately.
+This prevents the library reference and patient state from creating two canonical
+objects with the same family asset ID in one scene.
+
+FAIL-FAST RULES
+- exact current hash for recognition payloads
+- additive migration only for explicitly accepted previous DSG 9.0 scene hash
+- FDI/family/role/name/property consistency
+- declared coordinate space and millimetres
+- right-handed canonical ToothFrame
+- no duplicate canonical asset ID
+- missing required library semantics -> error
+- excessive mapping error -> REVIEW/LOW_CONFIDENCE/INVALID, never silent validity
+- invalid occlusal topology -> rollback
+- missing authored emergence semantics -> error, never guessed axis
+
+EOFF
+EOFF parsing is intentionally conservative. Only an explicit
+VERTEX_FEATURE_LABELS section is promoted to feature-label data. DSG stores both
+that original-named POINT/INT attribute and the normalized
+DSG_vertex_feature_label attribute. Integer values are not interpreted as semantic
+landmarks until an explicit format mapping exists.

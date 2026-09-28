@@ -1,0 +1,9 @@
+DSG 9.1.32 - Segmentation Visible Recovery
+
+- Fixes regression introduced in 9.1.30 where a multi-component tooth label was skipped entirely.
+- UniversalLab output is materialized immediately; no automatic hidden TTA re-inference.
+- Per tooth, upstream BATCHDENTALSEG 60 mm3 island threshold is used.
+- If several >=60 mm3 disconnected components share one learned label, only the largest component is materialized as the clinical tooth object.
+- The FDI is marked REVIEW_MULTICOMPONENT_PRIMARY_SELECTED and confirmation remains gated for manual review.
+- Disconnected components are never merged into one DSG_Tooth_FDI_XX object.
+- Keeps DSG 9.1.31 intrinsic geodesic corridor rerouting.

@@ -1,0 +1,826 @@
+{
+  "schema": "dsg.evidence_references.v1",
+  "references": [
+    {
+      "id": "TARNOW_2000_INTERIMPLANT",
+      "title": "The effect of inter-implant distance on the height of inter-implant bone crest",
+      "authors": [
+        "Dennis P Tarnow",
+        "Steven C Cho",
+        "Stephen S Wallace"
+      ],
+      "year": 2000,
+      "journal": "Journal of Periodontology",
+      "publication_type": "CLINICAL_STUDY",
+      "evidence_tier": "OBSERVATIONAL",
+      "pmid": "10807116",
+      "doi": "10.1902/jop.2000.71.4.546",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/10807116/",
+      "topics": [
+        "INTERIMPLANT_DISTANCE",
+        "INTERIMPLANT_BONE"
+      ],
+      "summary_es": "Trabajo clásico que observó mayor pérdida de cresta interimplantaria cuando la separación entre implantes era de 3 mm o menor frente a más de 3 mm. Es el origen principal de la referencia clínica de 3 mm.",
+      "limitations_es": "Estudio observacional clásico; la geometría de conexiones modernas y platform switching puede modificar el patrón de remodelado.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "VELA_2012_IMPLANT_TOOTH",
+      "title": "Crestal bone changes on platform-switched implants and adjacent teeth when the tooth-implant distance is less than 1.5 mm",
+      "authors": [
+        "Xavier Vela",
+        "Xavier Méndez",
+        "José Rodríguez",
+        "Antonio Segalà"
+      ],
+      "year": 2012,
+      "journal": "International Journal of Periodontics & Restorative Dentistry",
+      "publication_type": "CLINICAL_STUDY",
+      "evidence_tier": "OBSERVATIONAL",
+      "pmid": "22292143",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22292143/",
+      "topics": [
+        "IMPLANT_TOOTH_DISTANCE",
+        "PLATFORM_SWITCHING"
+      ],
+      "summary_es": "Analiza distancias implante-diente inferiores a 1,5 mm en implantes platform-switched y recuerda la recomendación clásica de mantener aproximadamente 1,5 mm para preservar hueso adyacente.",
+      "limitations_es": "No convierte 1,5 mm en un umbral biológico universal; el resultado depende de conexión, posición y contexto.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "ELIAN_2011_INTERIMPLANT",
+      "title": "Effect of interimplant distance (2 and 3 mm) on the height of interimplant bone crest: a histomorphometric evaluation",
+      "authors": [
+        "N Elian",
+        "S Bloom",
+        "D Dard",
+        "S C Cho",
+        "D P Tarnow"
+      ],
+      "year": 2011,
+      "journal": "Journal of Periodontology",
+      "publication_type": "PRECLINICAL",
+      "evidence_tier": "PRECLINICAL",
+      "pmid": "21513475",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/21513475/",
+      "topics": [
+        "INTERIMPLANT_DISTANCE",
+        "PLATFORM_SWITCHING"
+      ],
+      "summary_es": "Encontró que con una unión implante-pilar horizontalmente desplazada podían mantenerse niveles óseos similares con 2 y 3 mm en el modelo estudiado.",
+      "limitations_es": "Evidencia preclínica/experimental; no invalida por sí sola la referencia clínica de 3 mm.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "RODRIGUEZ_CIURANA_2009_INTERIMPLANT_PS",
+      "title": "The effect of interimplant distance on the height of the interimplant bone crest when using platform-switched implants",
+      "authors": [
+        "X Rodríguez-Ciurana",
+        "X Vela-Nebot",
+        "A Segalà-Torres",
+        "E Rodado-Alonso",
+        "X Méndez-Blanco",
+        "J Mata-Bugueroles"
+      ],
+      "year": 2009,
+      "journal": "International Journal of Periodontics & Restorative Dentistry",
+      "publication_type": "CLINICAL_STUDY",
+      "evidence_tier": "OBSERVATIONAL",
+      "pmid": "19408476",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/19408476/",
+      "topics": [
+        "INTERIMPLANT_DISTANCE",
+        "PLATFORM_SWITCHING"
+      ],
+      "summary_es": "Explora si platform switching puede modificar la pérdida ósea entre implantes colocados a menos de 3 mm.",
+      "limitations_es": "Diseño observacional y dependiente del sistema implantario.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "ITI_2018_NARROW_DIAMETER",
+      "title": "Narrow-Diameter Implants - ITI Consensus Statement",
+      "authors": [
+        "Eik Schiegnitz",
+        "Bilal Al-Nawas"
+      ],
+      "year": 2018,
+      "journal": "ITI Consensus Database",
+      "publication_type": "CONSENSUS",
+      "evidence_tier": "CONSENSUS",
+      "pmid": "",
+      "doi": "",
+      "url": "https://academy.iti.org/academy/consensus-database/consensus-statement/-/consensus/narrow-diameter-implants/1807",
+      "topics": [
+        "IMPLANT_DIAMETER",
+        "NARROW_IMPLANTS",
+        "IMPLANT_TOOTH_DISTANCE",
+        "INTERIMPLANT_DISTANCE"
+      ],
+      "summary_es": "ITI considera los implantes estrechos una opción en rebordes estrechos y espacios interdentales reducidos; recomienda cautela mecánica y selección según situación clínica.",
+      "limitations_es": "La clasificación y evidencia dependen de categoría de diámetro e indicación; no justifica escoger el implante más pequeño sin considerar biomecánica.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "ITI_2018_PLACEMENT_LOADING",
+      "title": "Implant Placement and Loading Protocols - ITI Consensus Statement",
+      "authors": [
+        "ITI Consensus Conference contributors"
+      ],
+      "year": 2018,
+      "journal": "ITI Consensus Database",
+      "publication_type": "CONSENSUS",
+      "evidence_tier": "CONSENSUS",
+      "pmid": "",
+      "doi": "",
+      "url": "https://academy.iti.org/academy/consensus-database/consensus-statement/-/consensus/implant-placement-and-loading-protocols/1802",
+      "topics": [
+        "IMMEDIATE_LOADING",
+        "PRIMARY_STABILITY",
+        "IMMEDIATE_IMPLANT"
+      ],
+      "summary_es": "Define protocolos de colocación/carga. Para Type 1A describe criterios favorables, incluyendo estabilidad primaria, torque 25–40 Ncm y/o ISQ >70, pared facial y tejidos favorables.",
+      "limitations_es": "Los valores de torque/ISQ son criterios de protocolos concretos, no umbrales universales para todos los implantes y situaciones.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "ITI_2023_TYPE1A_SELECTION",
+      "title": "Selection Criteria for Immediate Implant Placement and Immediate Loading for Single Tooth Replacement in the Maxillary Esthetic Zone",
+      "authors": [
+        "Adam Hamilton",
+        "Luiz Henrique Gonzaga",
+        "Karina Gonzalez Amorim",
+        "Julia-Gabriela Wittneben",
+        "Dean Morton",
+        "William Christopher Martin",
+        "German Gallucci",
+        "Daniel Wismeijer"
+      ],
+      "year": 2023,
+      "journal": "ITI Consensus Database",
+      "publication_type": "CONSENSUS",
+      "evidence_tier": "CONSENSUS",
+      "pmid": "",
+      "doi": "",
+      "url": "https://academy.iti.org/academy/consensus-database/consensus-statement/-/consensus/selection-criteria-for-immediate-implant-placement-and-immediate-loading-for-single-tooth-replacement-in-the-maxillary-esthetic-zone/2305",
+      "topics": [
+        "IMMEDIATE_IMPLANT",
+        "IMMEDIATE_LOADING",
+        "INFECTION",
+        "FACIAL_GAP",
+        "SOFT_TISSUE_PHENOTYPE"
+      ],
+      "summary_es": "Type 1A es predecible en pacientes/sitios seleccionados. Una infección periapical crónica no es contraindicación si se puede desbridar, no hay fístula y existe hueso para estabilidad. Recomienda idealmente gap facial >2 mm al hombro; tejidos/hueso finos aumentan complejidad.",
+      "limitations_es": "Aplicación principal: reemplazo unitario en maxila estética y poblaciones altamente seleccionadas.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "WAASDORP_2010_INFECTED_SITES",
+      "title": "Immediate placement of implants into infected sites: a systematic review of the literature",
+      "authors": [
+        "J A Waasdorp",
+        "J Evian",
+        "R Mandracchia"
+      ],
+      "year": 2010,
+      "journal": "Journal of Periodontology",
+      "publication_type": "SYSTEMATIC_REVIEW",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "20192616",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20192616/",
+      "topics": [
+        "IMMEDIATE_IMPLANT",
+        "INFECTION"
+      ],
+      "summary_es": "La evidencia disponible apoyaba la posibilidad de implantes inmediatos en sitios con infección periapical/periodontal seleccionados con desbridamiento exhaustivo.",
+      "limitations_es": "Revisión antigua y heterogénea; debe interpretarse junto a consensos actuales y signos clínicos de infección aguda.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "CHRCANOVIC_2015_INFECTED_SITES",
+      "title": "Immediate placement of implants into infected sites: a systematic review",
+      "authors": [
+        "Bruno Ramos Chrcanovic",
+        "Tomas Albrektsson",
+        "Ann Wennerberg"
+      ],
+      "year": 2015,
+      "journal": "Clinical Implant Dentistry and Related Research",
+      "publication_type": "SYSTEMATIC_REVIEW",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "23815434",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/23815434/",
+      "topics": [
+        "IMMEDIATE_IMPLANT",
+        "INFECTION"
+      ],
+      "summary_es": "Revisa resultados de colocación inmediata en sitios con patología/infección y contribuye a matizar que la infección no es una contraindicación absoluta en casos seleccionados.",
+      "limitations_es": "Heterogeneidad de definiciones de infección y protocolos de descontaminación.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "MONJE_2023_BUCCAL_BONE",
+      "title": "Influence of buccal bone wall thickness on the peri-implant hard and soft tissue dimensional changes: A systematic review",
+      "authors": [
+        "Alberto Monje",
+        "et al."
+      ],
+      "year": 2023,
+      "journal": "Clinical Oral Implants Research",
+      "publication_type": "SYSTEMATIC_REVIEW",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "36626118",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36626118/",
+      "topics": [
+        "BUCCAL_BONE_THICKNESS",
+        "PERI_IMPLANT_PHENOTYPE"
+      ],
+      "summary_es": "La pared ósea vestibular fina se asocia con mayor cambio dimensional de tejidos duros y blandos periimplantarios.",
+      "limitations_es": "Los umbrales exactos dependen del momento de colocación, localización y metodología de medición.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "JENSEN_2023_BONE_DIMENSIONS",
+      "title": "The role of bone dimensions and soft tissue augmentation in implant dentistry",
+      "authors": [
+        "S S Jensen",
+        "et al."
+      ],
+      "year": 2023,
+      "journal": "Clinical Oral Implants Research",
+      "publication_type": "SYSTEMATIC_REVIEW",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "37750519",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37750519/",
+      "topics": [
+        "BUCCAL_BONE_THICKNESS",
+        "SOFT_TISSUE_AUGMENTATION"
+      ],
+      "summary_es": "Revisa cambios dimensionales de cresta y papel de aumento de tejidos en sitios implantarios cicatrizados.",
+      "limitations_es": "La magnitud de cambios depende de sitio, técnica y seguimiento.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "TAVELLI_2021_SOFT_TISSUE_PHENOTYPE",
+      "title": "Peri-implant soft tissue phenotype modification and its impact on peri-implant health: A systematic review and network meta-analysis",
+      "authors": [
+        "Lorenzo Tavelli",
+        "Shayan Barootchi",
+        "Gustavo Avila-Ortiz",
+        "Istvan A Urban",
+        "William V Giannobile",
+        "Hom-Lay Wang"
+      ],
+      "year": 2021,
+      "journal": "Journal of Periodontology",
+      "publication_type": "SYSTEMATIC_REVIEW_META_ANALYSIS",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "32710810",
+      "doi": "10.1002/JPER.19-0716",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32710810/",
+      "topics": [
+        "SOFT_TISSUE_THICKNESS",
+        "KERATINIZED_MUCOSA",
+        "SUPRACRESTAL_TISSUE_HEIGHT",
+        "SOFT_TISSUE_AUGMENTATION"
+      ],
+      "summary_es": "Define el fenotipo periimplantario mediante anchura de mucosa queratinizada, grosor mucoso y altura supracrestal; analiza cómo distintas técnicas modifican esas dimensiones y su relación con salud periimplantaria.",
+      "limitations_es": "Heterogeneidad de técnicas y resultados; no todas las asociaciones implican indicación automática de injerto.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "BRESSAN_2023_SOFT_TISSUE_THICKNESS",
+      "title": "Influence of soft tissue thickness on marginal bone level around dental implants: A systematic review with meta-analysis and trial-sequential analysis",
+      "authors": [
+        "Eriberto Bressan",
+        "Riccardo Guazzo",
+        "Cristiano Tomasi",
+        "Teresa Gutiérrez Peña",
+        "Pablo Galindo-Moreno",
+        "Vito Carlo Alberto Caponio",
+        "Luca Sbricoli",
+        "Luigi Canullo"
+      ],
+      "year": 2023,
+      "journal": "Clinical Oral Implants Research",
+      "publication_type": "SYSTEMATIC_REVIEW_META_ANALYSIS",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "36737243",
+      "doi": "10.1111/clr.14032",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36737243/",
+      "topics": [
+        "SOFT_TISSUE_THICKNESS",
+        "MARGINAL_BONE"
+      ],
+      "summary_es": "En RCT/CCT incluidos, sitios con tejido inicial ≥2 mm mostraron menor remodelado óseo marginal a corto plazo frente a <2 mm.",
+      "limitations_es": "Solo 6 estudios, heterogeneidad alta y seguimiento corto; 2 mm no debe codificarse como frontera universal.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "MONJE_2023_SOFT_TISSUE_CHARACTERISTICS",
+      "title": "Impact of peri-implant soft tissue characteristics on health and esthetics: A systematic review and meta-analysis",
+      "authors": [
+        "Alberto Monje",
+        "et al."
+      ],
+      "year": 2023,
+      "journal": "Clinical Oral Implants Research",
+      "publication_type": "SYSTEMATIC_REVIEW_META_ANALYSIS",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "36650691",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36650691/",
+      "topics": [
+        "KERATINIZED_MUCOSA",
+        "SOFT_TISSUE_THICKNESS",
+        "PERI_IMPLANT_HEALTH"
+      ],
+      "summary_es": "Relaciona características de tejidos blandos periimplantarios con salud, confort e indicadores clínicos; una KMW <2 mm se ha asociado con molestias durante higiene y otros resultados desfavorables.",
+      "limitations_es": "Las asociaciones no implican por sí solas indicación quirúrgica universal.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "ZHANG_2025_KERATINIZED_MUCOSA",
+      "title": "The relationship between adequate keratinized mucosa and peri-implant disease: a systematic review and meta-analysis",
+      "authors": [
+        "Zheng Zhang",
+        "Zhenyu Zhang",
+        "Pengcheng Wang",
+        "Youli Zheng",
+        "Zhitao Wang",
+        "Zuomin Wang"
+      ],
+      "year": 2025,
+      "journal": "BMC Oral Health",
+      "publication_type": "SYSTEMATIC_REVIEW_META_ANALYSIS",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "40050830",
+      "doi": "10.1186/s12903-025-05680-5",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40050830/",
+      "topics": [
+        "KERATINIZED_MUCOSA",
+        "PERI_IMPLANT_HEALTH"
+      ],
+      "summary_es": "Una anchura de mucosa queratinizada ≥2 mm se asoció con menor placa, inflamación y pérdida ósea en el metaanálisis.",
+      "limitations_es": "Heterogeneidad significativa; asociación no equivale a una obligación universal de injertar por debajo de 2 mm.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "SU_2010_CRITICAL_SUBCRITICAL",
+      "title": "Considerations of implant abutment and crown contour: critical contour and subcritical contour",
+      "authors": [
+        "Huan Su",
+        "Oscar Gonzalez-Martin",
+        "Arnold Weisgold",
+        "Ernesto Lee"
+      ],
+      "year": 2010,
+      "journal": "International Journal of Periodontics & Restorative Dentistry",
+      "publication_type": "CLINICAL_CONCEPT",
+      "evidence_tier": "EXPERT_CONCEPT",
+      "pmid": "20664835",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20664835/",
+      "topics": [
+        "CRITICAL_CONTOUR",
+        "SUBCRITICAL_CONTOUR",
+        "EMERGENCE_PROFILE"
+      ],
+      "summary_es": "Artículo fundacional que separa el contorno transmucoso en zonas crítica y subcrítica para manejar arquitectura de tejidos y restauración.",
+      "limitations_es": "Marco clínico/conceptual, no un ensayo que establezca ángulos universales.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "GONZALEZ_MARTIN_2020_CONTOUR",
+      "title": "Contour Management of Implant Restorations for Optimal Emergence Profiles: Guidelines for Immediate and Delayed Provisional Restorations",
+      "authors": [
+        "Oscar González-Martín",
+        "Ernesto Lee",
+        "Arnold Weisgold",
+        "Mario Veltri",
+        "Huan Su"
+      ],
+      "year": 2020,
+      "journal": "International Journal of Periodontics & Restorative Dentistry",
+      "publication_type": "CLINICAL_GUIDELINE_CONCEPT",
+      "evidence_tier": "EXPERT_CONCEPT",
+      "pmid": "31815974",
+      "doi": "10.11607/prd.4422",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31815974/",
+      "topics": [
+        "CRITICAL_CONTOUR",
+        "SUBCRITICAL_CONTOUR",
+        "EMERGENCE_PROFILE"
+      ],
+      "summary_es": "Desarrolla guías de manejo del contorno crítico/subcrítico en provisionales inmediatos y diferidos para influir margen, zenit, volumen facial y color gingival.",
+      "limitations_es": "Guía clínica conceptual; debe combinarse con mediciones reales de tejidos y hueso.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "MATTHEOS_2021_SUPRACRESTAL_COMPLEX",
+      "title": "The Implant Supracrestal Complex and Its Significance for Long-Term Successful Clinical Outcomes",
+      "authors": [
+        "Nikos Mattheos",
+        "I Vergoullis",
+        "M Janda",
+        "A Miseli"
+      ],
+      "year": 2021,
+      "journal": "International Journal of Prosthodontics",
+      "publication_type": "REVIEW_CONCEPT",
+      "evidence_tier": "REVIEW",
+      "pmid": "33570524",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33570524/",
+      "topics": [
+        "SUPRACRESTAL_COMPLEX",
+        "EMERGENCE_PROFILE",
+        "ABUTMENT_HEIGHT"
+      ],
+      "summary_es": "Integra implante, pilar/restauración y tejidos supracrestales como un complejo funcional relevante para estabilidad a largo plazo.",
+      "limitations_es": "Marco integrador; no prescribe por sí solo valores geométricos universales.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "RUNGTANAKIAT_2024_EMERGENCE",
+      "title": "Association of Peri-Implant Mucosa Dimensions With Prosthetic Emergence Profile in the Esthetic Zone",
+      "authors": [
+        "P Rungtanakiat",
+        "et al."
+      ],
+      "year": 2024,
+      "journal": "Journal of Esthetic and Restorative Dentistry",
+      "publication_type": "CLINICAL_STUDY",
+      "evidence_tier": "OBSERVATIONAL",
+      "pmid": "39039934",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39039934/",
+      "topics": [
+        "EMERGENCE_ANGLE",
+        "SOFT_TISSUE_DIMENSIONS"
+      ],
+      "summary_es": "Encontró asociación entre diseño protésico y dimensiones de mucosa periimplantaria; ángulos de emergencia mayores se asociaron con menor dimensión mucosa en el estudio.",
+      "limitations_es": "Asociación clínica observacional; no establece un corte angular universal.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "PIRC_2026_EMERGENCE_REVIEW",
+      "title": "Emergence Profile Angle Matters-Restoring Peri-Implant Health by Adjusting Prosthetics-A Narrative Review",
+      "authors": [
+        "Miha Pirc",
+        "Jonathan Esquivel",
+        "Andrea Patrizzi",
+        "Ronald E Jung",
+        "Franz J Strauss"
+      ],
+      "year": 2026,
+      "journal": "Journal of Esthetic and Restorative Dentistry",
+      "publication_type": "NARRATIVE_REVIEW",
+      "evidence_tier": "NARRATIVE_REVIEW",
+      "pmid": "41618482",
+      "doi": "10.1111/jerd.70109",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41618482/",
+      "topics": [
+        "EMERGENCE_ANGLE",
+        "EMERGENCE_PROFILE",
+        "ABUTMENT_HEIGHT",
+        "SUPRACRESTAL_COMPLEX"
+      ],
+      "summary_es": "Revisión contemporánea que relaciona contorno, altura de pilar y geometría de emergencia con adaptación de tejidos y mantenimiento óseo, favoreciendo diseños biológicamente compatibles y limpiables.",
+      "limitations_es": "Revisión narrativa; útil para diseño e interpretación, no para umbrales rígidos.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "CHANG_2026_POSTERIOR_EMERGENCE",
+      "title": "Emergence angles of posterior implant-supported fixed restorations according to edentulous space width, implant diameter, and placement depth",
+      "authors": [
+        "C C Chang",
+        "et al."
+      ],
+      "year": 2026,
+      "journal": "Journal of Prosthetic Dentistry",
+      "publication_type": "GEOMETRIC_CLINICAL_ANALYSIS",
+      "evidence_tier": "OBSERVATIONAL",
+      "pmid": "41047319",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41047319/",
+      "topics": [
+        "PLATFORM_SELECTION",
+        "IMPLANT_DIAMETER",
+        "PROSTHETIC_SPACE",
+        "EMERGENCE_ANGLE",
+        "IMPLANT_DEPTH"
+      ],
+      "summary_es": "Relaciona ancho del espacio edéntulo, diámetro implantario y profundidad de colocación con los ángulos de emergencia posteriores; mayor relación espacio/diámetro tiende a exigir mayor ángulo y mayor profundidad puede reducirlo.",
+      "limitations_es": "No define por sí solo una plataforma ideal para todos los sistemas; debe combinarse con tejidos, conexión y biomecánica.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "ANG_2024_CONNECTION_FATIGUE",
+      "title": "Rotational Load Fatigue Performance of a One-Size Implant-Abutment Connection System",
+      "authors": [
+        "Kai Yuit Ang",
+        "Christopher Quek",
+        "Frank Lee Kong Fei",
+        "Yoong Liang Seetoh",
+        "Li Wen Tan",
+        "Keson Beng Choon Tan"
+      ],
+      "year": 2024,
+      "journal": "International Journal of Oral & Maxillofacial Implants",
+      "publication_type": "IN_VITRO_FATIGUE",
+      "evidence_tier": "IN_VITRO",
+      "pmid": "38717354",
+      "doi": "10.11607/jomi.10907",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38717354/",
+      "topics": [
+        "PLATFORM_SELECTION",
+        "IMPLANT_DIAMETER",
+        "CONNECTION_MECHANICS",
+        "FATIGUE"
+      ],
+      "summary_es": "En el sistema estudiado, aumentar el diámetro corporal sin aumentar la plataforma/conexión no mejoró la fatiga; una plataforma ancha en implantes anchos rindió mejor.",
+      "limitations_es": "Estudio in vitro y específico de un sistema de conexión; no generalizable automáticamente a todos los catálogos.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "CANULLO_2010_PLATFORM_SWITCH",
+      "title": "Platform switching and marginal bone-level alterations: the results of a randomized-controlled trial",
+      "authors": [
+        "Luigi Canullo",
+        "et al."
+      ],
+      "year": 2010,
+      "journal": "Clinical Oral Implants Research",
+      "publication_type": "RANDOMIZED_CONTROLLED_TRIAL",
+      "evidence_tier": "RCT",
+      "pmid": "20070752",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20070752/",
+      "topics": [
+        "PLATFORM_SWITCHING",
+        "MARGINAL_BONE"
+      ],
+      "summary_es": "RCT clásico que evaluó platform switching y cambios de hueso marginal, aportando evidencia favorable a la preservación ósea en ese contexto.",
+      "limitations_es": "Resultados dependen de sistema, conexión, profundidad y seguimiento.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "MISHRA_2021_PLATFORM_SWITCH_META",
+      "title": "Platform-Switching Concept in Dental Implants: A Systematic Review and Meta-analysis of Randomized Controlled Trials with a Minimum Follow-up of 3 Years",
+      "authors": [
+        "Sunil K Mishra",
+        "Reetika Gaddale",
+        "Nithin K Sonnahalli",
+        "Ramesh Chowdhary"
+      ],
+      "year": 2021,
+      "journal": "International Journal of Oral & Maxillofacial Implants",
+      "publication_type": "SYSTEMATIC_REVIEW_META_ANALYSIS",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "34698714",
+      "doi": "10.11607/jomi.8911",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34698714/",
+      "topics": [
+        "PLATFORM_SWITCHING",
+        "MARGINAL_BONE"
+      ],
+      "summary_es": "Metaanálisis de RCTs con seguimiento ≥3 años encontró menor pérdida ósea marginal con platform switching, sin diferencia relevante de supervivencia.",
+      "limitations_es": "Heterogeneidad de sistemas, mismatches y protocolos; no significa que platform switching sea siempre clínicamente superior.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "TOMAR_2025_PLATFORM_SWITCH_REVIEW",
+      "title": "Marginal bone loss around implants with platform switching and platform matched connection: A systematic review",
+      "authors": [
+        "Sidhartha Tomar",
+        "Deepesh Saxena",
+        "Navpreet Kaur"
+      ],
+      "year": 2025,
+      "journal": "Journal of Prosthetic Dentistry",
+      "publication_type": "SYSTEMATIC_REVIEW",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "37863757",
+      "doi": "10.1016/j.prosdent.2023.09.009",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37863757/",
+      "topics": [
+        "PLATFORM_SWITCHING",
+        "MARGINAL_BONE"
+      ],
+      "summary_es": "Revisión de estudios de 5–10 años que encontró tendencia favorable de platform switching para retener hueso crestal.",
+      "limitations_es": "Número reducido de estudios incluidos y heterogeneidad clínica.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "ZUCCHELLI_2020_AUTOGENOUS_GRAFT",
+      "title": "Autogenous soft tissue grafting for periodontal and peri-implant plastic surgical reconstruction",
+      "authors": [
+        "Giovanni Zucchelli",
+        "Lorenzo Tavelli",
+        "Michael K McGuire",
+        "Giulio Rasperini",
+        "Hom-Lay Wang",
+        "William V Giannobile",
+        "et al."
+      ],
+      "year": 2020,
+      "journal": "Journal of Periodontology",
+      "publication_type": "STATE_OF_THE_ART_REVIEW",
+      "evidence_tier": "REVIEW",
+      "pmid": "31461778",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31461778/",
+      "topics": [
+        "SOFT_TISSUE_AUGMENTATION",
+        "GINGIVAL_THICKNESS",
+        "PERI_IMPLANT_PHENOTYPE"
+      ],
+      "summary_es": "Revisión de estado del arte sobre injertos autólogos y reconstrucción plástica periodontal/periimplantaria.",
+      "limitations_es": "No debe transformarse en indicación automática de injerto sin integrar fenotipo, higiene, estética y procedimiento.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "STEFANINI_2023_SOFT_TISSUE_STABILITY",
+      "title": "Do soft tissue augmentation techniques provide stable and favorable peri-implant conditions in the medium and long term?",
+      "authors": [
+        "Martina Stefanini",
+        "et al."
+      ],
+      "year": 2023,
+      "journal": "Clinical Oral Implants Research",
+      "publication_type": "SYSTEMATIC_REVIEW",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "37750532",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37750532/",
+      "topics": [
+        "SOFT_TISSUE_AUGMENTATION",
+        "PERI_IMPLANT_HEALTH"
+      ],
+      "summary_es": "Revisión que evalúa estabilidad y condiciones periimplantarias tras aumento de tejidos blandos a medio/largo plazo.",
+      "limitations_es": "La indicación depende de objetivo (KMW, grosor, recesión) y técnica.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "CHRCANOVIC_2017_REPLACEMENT_FAILED",
+      "title": "Survival of dental implants placed in sites of previously failed implants: a systematic review",
+      "authors": [
+        "Bruno Ramos Chrcanovic",
+        "Tomas Albrektsson",
+        "Ann Wennerberg"
+      ],
+      "year": 2017,
+      "journal": "Clinical Oral Implants Research",
+      "publication_type": "SYSTEMATIC_REVIEW",
+      "evidence_tier": "SYSTEMATIC_REVIEW",
+      "pmid": "27743398",
+      "doi": "",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/27743398/",
+      "topics": [
+        "IMPLANT_FAILURE",
+        "RESCUE_FLEXIBILITY"
+      ],
+      "summary_es": "Los implantes colocados en sitios de implantes previamente fallidos mostraron supervivencia inferior a la descrita para primeros intentos. Apoya tratar el rescate como contexto estratégico, no como garantía.",
+      "limitations_es": "No demuestra una regla universal de reservar siempre un diámetro mayor.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "GCCG_2026_GROUP1",
+      "title": "Consensus Report of Group 1 of the 1st Global Consensus for Clinical Guidelines for the Rehabilitation of the Edentulous Maxilla: Number of Implants, Timing of Implant Placement and Loading",
+      "authors": [
+        "Nikos Donos",
+        "Ethan Ng",
+        "Claudio Mendes Pannuti",
+        "Giuseppe Alexandre Romito",
+        "Helena Cristina Oliveira Francisco",
+        "Samir Abou-Ayash",
+        "Gustavo Avila-Ortiz",
+        "et al."
+      ],
+      "year": 2026,
+      "journal": "Clinical Oral Implants Research",
+      "publication_type": "GLOBAL_CONSENSUS",
+      "evidence_tier": "CONSENSUS",
+      "pmid": "",
+      "doi": "10.1111/clr.70063",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/clr.70063",
+      "topics": [
+        "IMPLANT_NUMBER",
+        "IMPLANT_TIMING",
+        "LOADING_PROTOCOLS",
+        "EDENTULOUS_MAXILLA"
+      ],
+      "summary_es": "Primer consenso global estructurado para rehabilitación de maxila edéntula; formula recomendaciones sobre número de implantes, momento de colocación y carga.",
+      "limitations_es": "Ámbito principal: maxila edéntula; no sustituye consensos específicos para implante unitario u otras indicaciones.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "AAOMS_2022_MRONJ",
+      "title": "Medication-Related Osteonecrosis of the Jaw - 2022 Update (Position Paper)",
+      "authors": [
+        "American Association of Oral and Maxillofacial Surgeons"
+      ],
+      "year": 2022,
+      "journal": "AAOMS Position Paper",
+      "publication_type": "POSITION_PAPER",
+      "evidence_tier": "GUIDELINE",
+      "pmid": "",
+      "doi": "",
+      "url": "https://aaoms.org/publications/position-papers/white-papers/",
+      "topics": [
+        "MRONJ",
+        "ANTIRESORPTIVE",
+        "ANTIANGIOGENIC"
+      ],
+      "summary_es": "Documento de referencia de AAOMS sobre MRONJ, prevención, estratificación de riesgo y manejo. El riesgo depende especialmente de indicación terapéutica y exposición.",
+      "limitations_es": "Debe contrastarse con guías nacionales y actualizaciones posteriores; no codificar drug holidays universales.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "SEPA_2025_ONMRM",
+      "title": "Posicionamiento multidisciplinar de expertos sobre la prevención y manejo de la osteonecrosis de los maxilares relacionada con antirresortivos óseos (ONMRM)",
+      "authors": [
+        "SEPA",
+        "SEIOMM",
+        "SECOMCyC",
+        "SEOM"
+      ],
+      "year": 2025,
+      "journal": "Documento multidisciplinar español",
+      "publication_type": "NATIONAL_POSITION_PAPER",
+      "evidence_tier": "GUIDELINE",
+      "pmid": "",
+      "doi": "",
+      "url": "https://sepa.es/noticias/directrices-para-el-abordaje-de-la-osteonecrosis-de-los-maxilares-relacionada-con-antirresortivos-oseos/",
+      "topics": [
+        "MRONJ",
+        "ANTIRESORPTIVE",
+        "SPAIN"
+      ],
+      "summary_es": "Posicionamiento español multidisciplinar con orientaciones prácticas para prevención y manejo de osteonecrosis asociada a antirresortivos.",
+      "limitations_es": "Aplicación nacional española; comprobar versión vigente y contexto de medicamento/indicación.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    },
+    {
+      "id": "SECOMCYC_MRONJ_CURRENT",
+      "title": "Actualización en osteonecrosis de los maxilares inducida por medicamentos: diagnóstico, prevención y tratamiento",
+      "authors": [
+        "SECOMCyC"
+      ],
+      "year": 2025,
+      "journal": "SECOMCyC Documentos profesionales",
+      "publication_type": "NATIONAL_GUIDANCE",
+      "evidence_tier": "GUIDELINE",
+      "pmid": "",
+      "doi": "",
+      "url": "https://www.secomcyc.org/area-profesional/documentos-2/",
+      "topics": [
+        "MRONJ",
+        "SPAIN",
+        "ORAL_MAXILLOFACIAL_SURGERY"
+      ],
+      "summary_es": "Documento profesional español de cirugía oral y maxilofacial sobre osteonecrosis medicamentosa.",
+      "limitations_es": "El repositorio offline conserva la referencia, pero MCP debe comprobar si existe una versión posterior cuando haya Internet.",
+      "country_scope": "INTERNATIONAL",
+      "verified_online_at": "2026-08-14"
+    }
+  ]
+}

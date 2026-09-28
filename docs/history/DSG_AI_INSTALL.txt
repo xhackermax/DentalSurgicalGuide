@@ -1,0 +1,33 @@
+DSG 8.9.0 — Motor IA CBCT dentro de Blender
+============================================
+
+1. Instala el ZIP del addon DSG normalmente en Blender 5.x.
+2. Abre el paso 1 DICOM y deja «Cálculo IA» en AUTO (recomendado).
+3. Si aparece «Dependencia IA pendiente», pulsa INSTALAR MOTOR IA.
+4. DSG instala el runtime científico en su carpeta privada de usuario de Blender
+   y descarga UniversalLab si falta. No usa Slicer, Conda, WSL, BAT, subprocess
+   ni un segundo intérprete Python para segmentar.
+5. Con NVIDIA, «REVISAR / ACTIVAR CUDA» instala la build CUDA del runtime DSG si
+   una instalación previa dejó PyTorch CPU-only. Si Blender pide reinicio, hazlo
+   una vez: las DLL de PyTorch no se recargan en caliente.
+6. Usa «SEGMENTAR + NUMERAR FDI». UniversalLab produce las instancias dentales y
+   FDI desde el CBCT; el IOS no reasigna la identidad dental.
+7. Revisa la dentición y pulsa «CONFIRMAR DENTICIÓN FDI» antes del alineamiento.
+
+RECURSOS
+--------
+«AUTO» intenta CUDA cuando está disponible. DSG decide entre resultados en VRAM
+(CUDA FULL) o acumulación protegida en RAM (CUDA HYBRID); CPU es el fallback.
+Durante la inferencia sólo los viewports MATERIAL/RENDERED se cambian temporalmente
+a SOLID y luego se restauran. DSG NO altera Global Undo, Undo Steps ni Undo Memory
+Limit porque esos ajustes globales no son una garantía de liberar el historial ya
+existente y modificar preferencias del usuario sería una optimización especulativa.
+
+CUDA/OptiX en Editar > Preferencias > Sistema corresponde a Cycles. UniversalLab
+usa CUDA directamente mediante PyTorch y no depende de la selección de Cycles.
+
+MODELOS
+-------
+Dataset112 DentalSegmentator de DSG 8.7 se conserva para hueso por equivalencia
+clínica. UniversalLab se usa para dientes individuales/FDI y se guarda en el
+runtime privado de DSG si no viene empaquetado físicamente en el addon.

@@ -1,0 +1,28 @@
+DSG 9.2.13 - CBCT-CONSTRAINED ANATOMY REFINEMENT
+
+Goal
+- Improve the visible/printable anatomy of segmented teeth, maxilla and mandible.
+- The segmentation mask and original CBCT remain the source of truth.
+- Never free-sculpt or invent anatomy.
+
+Pipeline
+1. Segmentation (DentalSegmentator + UniversalLab + Tooth Path/competitive recovery).
+2. Marching cubes source mesh.
+3. Optional MMG surface remesh only when a compatible mmgpy wheel is importable.
+4. Small Taubin pass instead of Blender Laplacian Smooth.
+5. Tooth SDF reprojection to the original binary segmentation boundary.
+6. Local CBCT edge snap inside a sub-voxel uncertainty band.
+7. Volume and displacement guard; unsafe result falls back to source mesh.
+
+Safety
+- Teeth cannot shrink more than 0.2% by the automatic native refinement.
+- Teeth cannot expand more than 3% without falling back.
+- Jaw refinement stays within a narrow source-vertex displacement band.
+- Strong CBCT edge required before any radiographic snap is accepted.
+- Refinement failure never invalidates or deletes a segmentation.
+
+MMG
+- The user supplied add-on-mmgpy-v0.16.2-linux-x64.zip was used as API/design reference.
+- Its Linux wheels are not bundled into the Windows DSG package.
+- DSG 9.2.13 does not require MMG to function; the native CBCT-constrained backend is offline.
+- If a compatible Windows mmgpy cp311/cp313 wheel is installed later, tooth refinement uses MMG automatically and projects the result back into the CBCT/SDF cage.

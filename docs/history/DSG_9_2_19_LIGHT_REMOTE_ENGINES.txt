@@ -1,0 +1,11 @@
+DSG 9.2.19 — LIGHT REMOTE ENGINES
+
+Objetivo:
+- El add-on contiene lógica clínica/UI, no modelos pesados ni runtimes binarios.
+- Dataset112 DentalSegmentator se instala una sola vez en dsg_ai_runtime_v926_pyXX/models.
+- Dataset002 UniversalLab se instala una sola vez en el mismo runtime persistente.
+- Torch/stack científico y codecs DICOM se instalan desde el manifest remoto.
+- Las actualizaciones del add-on reutilizan esos recursos persistentes.
+
+Este paquete NO incluye checkpoint_final.pth de Dataset112.
+El botón INSTALAR MOTORES debe descargarlo desde el repositorio DSG configurado.

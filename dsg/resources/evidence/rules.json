@@ -1,0 +1,273 @@
+{
+  "schema": "dsg.evidence_rules.v1",
+  "rules": [
+    {
+      "id": "IMPLANT_TOOTH_CLEARANCE",
+      "title_es": "Distancia implante-diente",
+      "topic": "IMPLANT_TOOTH_DISTANCE",
+      "status": "CONTEXTUAL_REFERENCE",
+      "default_display": {
+        "value_mm": 1.5
+      },
+      "recommendation_es": "Usar aproximadamente 1,5 mm como referencia clásica de planificación entre superficie implantaria y diente vecino, pero evaluar la geometría real a lo largo de toda la trayectoria y permitir que la Evidence Layer/criterio clínico modifique el objetivo según sistema y contexto.",
+      "must_not": "No tratar 1,5 mm como ley universal ni seleccionar diámetro solo por una medición coronaria.",
+      "reference_ids": [
+        "VELA_2012_IMPLANT_TOOTH",
+        "ITI_2018_NARROW_DIAMETER"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "INTERIMPLANT_CLEARANCE",
+      "title_es": "Distancia entre implantes",
+      "topic": "INTERIMPLANT_DISTANCE",
+      "status": "CONTEXTUAL_REFERENCE",
+      "default_display": {
+        "value_mm": 3.0
+      },
+      "recommendation_es": "3 mm sigue siendo una referencia clásica para preservar la cresta interimplantaria, especialmente cuando importa la papila; conexiones modernas y platform switching pueden modificar el comportamiento y deben considerarse.",
+      "must_not": "No reducir automáticamente la distancia porque un estudio o sistema concreto lo permita.",
+      "reference_ids": [
+        "TARNOW_2000_INTERIMPLANT",
+        "ELIAN_2011_INTERIMPLANT",
+        "RODRIGUEZ_CIURANA_2009_INTERIMPLANT_PS"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "BUCCAL_BONE_WALL",
+      "title_es": "Grosor de pared ósea vestibular",
+      "topic": "BUCCAL_BONE_THICKNESS",
+      "status": "EVIDENCE_SUPPORTED_CONTEXT",
+      "default_display": {
+        "target_mm": 1.5
+      },
+      "recommendation_es": "Favorecer una envolvente ósea vestibular suficiente; la literatura y consensos actuales relacionan paredes finas con mayor remodelado. El objetivo exacto depende de momento de colocación, sitio y necesidad de regeneración.",
+      "must_not": "No usar un único umbral para todos los tipos de colocación y zonas anatómicas.",
+      "reference_ids": [
+        "MONJE_2023_BUCCAL_BONE",
+        "JENSEN_2023_BONE_DIMENSIONS",
+        "ITI_2023_TYPE1A_SELECTION"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "IMMEDIATE_TYPE1A_SELECTION",
+      "title_es": "Selección para implante inmediato + restauración/carga inmediata",
+      "topic": "IMMEDIATE_IMPLANT",
+      "status": "CONSENSUS_GUIDED",
+      "recommendation_es": "Type 1A requiere selección estricta, planificación restauradora 3D, estabilidad primaria y condiciones anatómicas favorables. Infección periapical crónica puede ser compatible si se desbrida completamente, no hay fístula y queda hueso suficiente.",
+      "must_not": "No inferir infección aguda ni elegibilidad solo desde CBCT; integrar datos clínicos.",
+      "reference_ids": [
+        "ITI_2023_TYPE1A_SELECTION",
+        "WAASDORP_2010_INFECTED_SITES",
+        "CHRCANOVIC_2015_INFECTED_SITES"
+      ],
+      "review_interval_days": 120
+    },
+    {
+      "id": "IMMEDIATE_FACIAL_GAP",
+      "title_es": "Gap facial en implante inmediato",
+      "topic": "FACIAL_GAP",
+      "status": "CONSENSUS_GUIDED",
+      "default_display": {
+        "ideal_min_mm": 2.0
+      },
+      "recommendation_es": "En Type 1A anterior, ITI recomienda idealmente >2 mm de gap facial a nivel del hombro, interpretado junto con diámetro, socket y carga.",
+      "must_not": "No extrapolar sin contexto a todos los sectores o protocolos.",
+      "reference_ids": [
+        "ITI_2023_TYPE1A_SELECTION"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "IMMEDIATE_LOADING_STABILITY",
+      "title_es": "Estabilidad para carga inmediata",
+      "topic": "IMMEDIATE_LOADING",
+      "status": "CONTEXTUAL_REFERENCE",
+      "default_display": {
+        "torque_ncm_range": [
+          25,
+          40
+        ],
+        "isq_gt": 70
+      },
+      "recommendation_es": "Los consensos ITI han utilizado torque de inserción 25–40 Ncm y/o ISQ >70 como criterios favorables en protocolos Type 1A seleccionados.",
+      "must_not": "No convertir torque o ISQ en umbral universal independiente del diseño implantario, hueso, oclusión y protocolo.",
+      "reference_ids": [
+        "ITI_2018_PLACEMENT_LOADING",
+        "ITI_2023_TYPE1A_SELECTION"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "NARROW_IMPLANT_USE",
+      "title_es": "Uso de implantes estrechos",
+      "topic": "NARROW_IMPLANTS",
+      "status": "CONSENSUS_GUIDED",
+      "recommendation_es": "Considerar NDI en espacios interdentales o crestas estrechas cuando permitan mantener distancias adecuadas y reducir morbilidad, equilibrando riesgo mecánico y diseño protésico.",
+      "must_not": "No elegir el diámetro menor o mayor automáticamente.",
+      "reference_ids": [
+        "ITI_2018_NARROW_DIAMETER"
+      ],
+      "review_interval_days": 365
+    },
+    {
+      "id": "IMPLANT_DIAMETER_SELECTION",
+      "title_es": "Selección de diámetro corporal",
+      "topic": "IMPLANT_DIAMETER",
+      "status": "MULTICRITERIA",
+      "recommendation_es": "Seleccionar el diámetro mínimo suficiente que satisfaga prótesis, estabilidad, hueso y distancias, conservando flexibilidad futura cuando no perjudique el caso actual.",
+      "must_not": "No maximizar diámetro automáticamente ni convertir la reserva de rescate en regla universal.",
+      "reference_ids": [
+        "ITI_2018_NARROW_DIAMETER",
+        "CHRCANOVIC_2017_REPLACEMENT_FAILED",
+        "ANG_2024_CONNECTION_FATIGUE"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "PLATFORM_SELECTION",
+      "title_es": "Selección de plataforma/conexión",
+      "topic": "PLATFORM_SELECTION",
+      "status": "MULTICRITERIA",
+      "recommendation_es": "Evaluar plataforma por separado del diámetro corporal: espacio protésico, CrownTarget, running room, profundidad, emergencia, conexión y demanda mecánica.",
+      "must_not": "No asumir que la plataforma más ancha o el cuerpo más ancho es siempre mecánicamente mejor.",
+      "reference_ids": [
+        "CHANG_2026_POSTERIOR_EMERGENCE",
+        "ANG_2024_CONNECTION_FATIGUE",
+        "MATTHEOS_2021_SUPRACRESTAL_COMPLEX"
+      ],
+      "review_interval_days": 120
+    },
+    {
+      "id": "PLATFORM_SWITCHING",
+      "title_es": "Platform switching",
+      "topic": "PLATFORM_SWITCHING",
+      "status": "EVIDENCE_SUPPORTED_CONTEXT",
+      "recommendation_es": "Platform switching puede reducir pérdida ósea marginal en determinados sistemas y seguimientos; tratarlo como variable de diseño, no como una mejora universal.",
+      "must_not": "No asumir beneficio independiente de conexión, profundidad y sistema.",
+      "reference_ids": [
+        "CANULLO_2010_PLATFORM_SWITCH",
+        "MISHRA_2021_PLATFORM_SWITCH_META",
+        "TOMAR_2025_PLATFORM_SWITCH_REVIEW"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "PERI_IMPLANT_PHENOTYPE",
+      "title_es": "Fenotipo periimplantario",
+      "topic": "PERI_IMPLANT_PHENOTYPE",
+      "status": "EVIDENCE_SUPPORTED_CONTEXT",
+      "recommendation_es": "Representar por separado grosor mucoso (MT), anchura de mucosa queratinizada (KMW) y altura supracrestal (STH), además de hueso vestibular/palatino.",
+      "must_not": "No colapsar el fenotipo a una etiqueta binaria fino/grueso si existen medidas continuas.",
+      "reference_ids": [
+        "TAVELLI_2021_SOFT_TISSUE_PHENOTYPE",
+        "MONJE_2023_SOFT_TISSUE_CHARACTERISTICS"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "SOFT_TISSUE_THICKNESS",
+      "title_es": "Grosor de tejido blando",
+      "topic": "SOFT_TISSUE_THICKNESS",
+      "status": "ASSOCIATION_NOT_HARD_THRESHOLD",
+      "default_display": {
+        "reference_mm": 2.0
+      },
+      "recommendation_es": "Tejidos iniciales ≥2 mm se han asociado con menor remodelado óseo marginal a corto plazo en metaanálisis; usar como contexto continuo y no como umbral binario absoluto.",
+      "must_not": "No ordenar injerto automáticamente por estar por debajo de 2 mm.",
+      "reference_ids": [
+        "BRESSAN_2023_SOFT_TISSUE_THICKNESS",
+        "TAVELLI_2021_SOFT_TISSUE_PHENOTYPE"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "KERATINIZED_MUCOSA_WIDTH",
+      "title_es": "Anchura de mucosa queratinizada",
+      "topic": "KERATINIZED_MUCOSA",
+      "status": "ASSOCIATION_NOT_HARD_THRESHOLD",
+      "default_display": {
+        "reference_mm": 2.0
+      },
+      "recommendation_es": "KMW ≥2 mm se asocia en metaanálisis recientes con menor placa/inflamación y pérdida ósea; la indicación de aumento debe considerar higiene, molestias, estética y contexto.",
+      "must_not": "No usar KMW <2 mm como indicación automática de injerto.",
+      "reference_ids": [
+        "ZHANG_2025_KERATINIZED_MUCOSA",
+        "MONJE_2023_SOFT_TISSUE_CHARACTERISTICS",
+        "TAVELLI_2021_SOFT_TISSUE_PHENOTYPE"
+      ],
+      "review_interval_days": 120
+    },
+    {
+      "id": "CRITICAL_SUBCRITICAL_CONTOUR",
+      "title_es": "Perfil crítico y subcrítico",
+      "topic": "EMERGENCE_PROFILE",
+      "status": "BIOLOGIC_PROSTHETIC_DESIGN",
+      "recommendation_es": "Separar critical contour (margen/zenit/arquitectura coronal) de subcritical contour (volumen, concavidad/soporte y transición a plataforma), ajustándolos al fenotipo, hueso y running room.",
+      "must_not": "No imponer un ángulo fijo o una concavidad estándar a todos los pacientes.",
+      "reference_ids": [
+        "SU_2010_CRITICAL_SUBCRITICAL",
+        "GONZALEZ_MARTIN_2020_CONTOUR",
+        "MATTHEOS_2021_SUPRACRESTAL_COMPLEX",
+        "PIRC_2026_EMERGENCE_REVIEW"
+      ],
+      "review_interval_days": 120
+    },
+    {
+      "id": "EMERGENCE_ANGLE",
+      "title_es": "Ángulo/perfil de emergencia",
+      "topic": "EMERGENCE_ANGLE",
+      "status": "CONTINUOUS_RISK_FACTOR",
+      "recommendation_es": "Tratar el ángulo de emergencia como variable continua relacionada con espacio protésico, profundidad, plataforma y tejidos; favorecer diseños limpiables y biológicamente compatibles.",
+      "must_not": "No codificar 30° u otro valor como corte universal sin contexto.",
+      "reference_ids": [
+        "RUNGTANAKIAT_2024_EMERGENCE",
+        "PIRC_2026_EMERGENCE_REVIEW",
+        "CHANG_2026_POSTERIOR_EMERGENCE"
+      ],
+      "review_interval_days": 120
+    },
+    {
+      "id": "SOFT_TISSUE_AUGMENTATION",
+      "title_es": "Aumento de tejidos blandos",
+      "topic": "SOFT_TISSUE_AUGMENTATION",
+      "status": "INDICATION_DEPENDENT",
+      "recommendation_es": "Elegir técnica según objetivo: grosor, KMW, recesión, estética y salud; CTG/FGG y sustitutos tienen resultados diferentes.",
+      "must_not": "No recomendar injerto solo por una cifra aislada.",
+      "reference_ids": [
+        "TAVELLI_2021_SOFT_TISSUE_PHENOTYPE",
+        "ZUCCHELLI_2020_AUTOGENOUS_GRAFT",
+        "STEFANINI_2023_SOFT_TISSUE_STABILITY"
+      ],
+      "review_interval_days": 180
+    },
+    {
+      "id": "MRONJ_MEDICATION_RISK",
+      "title_es": "Riesgo de MRONJ por medicación",
+      "topic": "MRONJ",
+      "status": "LIVE_COUNTRY_GUIDANCE_REQUIRED",
+      "recommendation_es": "Usar el repositorio offline como respaldo y contexto, pero resolver siempre fármaco, indicación, dosis, vía, duración y guía vigente del país antes de recomendar cirugía invasiva.",
+      "must_not": "No codificar drug holidays universales ni considerar todos los antirresortivos equivalentes.",
+      "reference_ids": [
+        "AAOMS_2022_MRONJ",
+        "SEPA_2025_ONMRM",
+        "SECOMCYC_MRONJ_CURRENT"
+      ],
+      "review_interval_days": 90
+    },
+    {
+      "id": "GLOBAL_EDENTULOUS_MAXILLA_GUIDANCE",
+      "title_es": "Maxila edéntula: consenso global",
+      "topic": "EDENTULOUS_MAXILLA",
+      "status": "GLOBAL_CONSENSUS",
+      "recommendation_es": "Para rehabilitación de maxila edéntula, priorizar las recomendaciones del primer Global Consensus 2026 y sus actualizaciones.",
+      "must_not": "No extrapolar automáticamente sus recomendaciones a casos unitarios.",
+      "reference_ids": [
+        "GCCG_2026_GROUP1"
+      ],
+      "review_interval_days": 120
+    }
+  ]
+}

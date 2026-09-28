@@ -1,0 +1,446 @@
+{
+  "schema": "dsg.dental_assets.v1",
+  "contract_version": 1,
+  "namespace": "DSG",
+  "numbering_system": "FDI_ISO_3950",
+  "family_pattern": "FDI_{fdi:02d}",
+  "asset_id_pattern": "FDI.{fdi:02d}.{role}",
+  "coordinate_frame": {
+    "name": "DSG_TOOTH_LOCAL_V1",
+    "origin_policy": "CERVICAL_CENTER when available; otherwise template origin defined by authoring tool",
+    "+X": "MESIAL",
+    "-X": "DISTAL",
+    "+Y": "FACIAL_BUCCAL",
+    "-Y": "LINGUAL_PALATAL",
+    "+Z": "CORONAL_OCCLUSAL_INCISAL",
+    "-Z": "APICAL",
+    "units": "millimetres",
+    "standard": "DSG_TOOTH_LOCAL_V1",
+    "handedness": "RIGHT_HANDED"
+  },
+  "property_keys": {
+    "schema": "DSG_asset_schema",
+    "contract_version": "DSG_asset_contract_version",
+    "contract_hash": "DSG_asset_contract_sha256",
+    "family_id": "DSG_family_id",
+    "asset_id": "DSG_asset_id",
+    "asset_role": "DSG_asset_role",
+    "asset_source": "DSG_asset_source",
+    "asset_revision": "DSG_asset_revision",
+    "fdi": "DSG_fdi_number",
+    "tooth_class": "DSG_tooth_class",
+    "arch": "DSG_tooth_arch",
+    "side": "DSG_tooth_side",
+    "coordinate_space": "DSG_coordinate_space",
+    "landmark_name": "DSG_landmark_name",
+    "landmark_confidence": "DSG_landmark_confidence",
+    "units": "DSG_units",
+    "frame_standard": "DSG_tooth_frame_standard"
+  },
+  "roles": {
+    "TOOTH": "Patient tooth instance from CBCT/IOS/segmentation",
+    "TOOTH_TEMPLATE": "Canonical full-tooth library reference used by the recognition engine",
+    "TOOTH_GHOST": "Temporary aligned template used to transfer/map anatomical landmarks",
+    "CROWN_TEMPLATE": "Canonical prosthetic crown library reference",
+    "CROWN_TARGET": "Patient-adapted prosthetic target crown",
+    "LANDMARK": "Named anatomical landmark point",
+    "TOOTH_FRAME": "Canonical local coordinate frame for a tooth family",
+    "EMERGENCE_REGION": "Preferred/acceptable screw-access surface region",
+    "EMERGENCE_CENTER": "Reference center for the emergence region",
+    "PROSTHETIC_AXIS": "Preferred prosthetic axis associated with the crown",
+    "CERVICAL_PROFILE": "Critical/subcritical cervical reference profile",
+    "FDI_LABEL": "Non-clinical visible FDI text label"
+  },
+  "naming": {
+    "TOOTH": "DSG_Tooth_FDI_{fdi:02d}",
+    "TOOTH_TEMPLATE": "DSG_ToothTemplate_FDI_{fdi:02d}",
+    "TOOTH_GHOST": "DSG_ToothGhost_FDI_{fdi:02d}",
+    "CROWN_TEMPLATE": "DSG_CrownTemplate_FDI_{fdi:02d}",
+    "CROWN_TARGET": "DSG_CrownTarget_FDI_{fdi:02d}",
+    "LANDMARK": "DSG_Landmark_FDI_{fdi:02d}__{landmark}",
+    "TOOTH_FRAME": "DSG_ToothFrame_FDI_{fdi:02d}",
+    "EMERGENCE_REGION": "DSG_EmergenceRegion_FDI_{fdi:02d}",
+    "EMERGENCE_CENTER": "DSG_EmergenceCenter_FDI_{fdi:02d}",
+    "PROSTHETIC_AXIS": "DSG_ProstheticAxis_FDI_{fdi:02d}",
+    "CERVICAL_PROFILE": "DSG_CervicalProfile_FDI_{fdi:02d}",
+    "FDI_LABEL": "DSG_FDI_{fdi:02d}"
+  },
+  "coordinate_spaces": [
+    "TEMPLATE_LOCAL",
+    "CBCT_DSG_ROOT",
+    "IOS_ALIGNED",
+    "WORLD"
+  ],
+  "sources": [
+    "CBCT_UNIVERSALLAB",
+    "CBCT_TOTALSEGMENTATOR",
+    "IOS_RECOGNITION",
+    "LIBRARY",
+    "CONTRALATERAL_MIRROR",
+    "USER",
+    "DERIVED"
+  ],
+  "tooth_class_by_position": {
+    "1": "INCISOR",
+    "2": "INCISOR",
+    "3": "CANINE",
+    "4": "PREMOLAR",
+    "5": "PREMOLAR",
+    "6": "MOLAR",
+    "7": "MOLAR",
+    "8": "MOLAR"
+  },
+  "initial_prosthetic_library": {
+    "included_permanent_fdi": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47
+    ],
+    "deferred_permanent_fdi": [
+      18,
+      28,
+      38,
+      48
+    ]
+  },
+  "landmarks": {
+    "MESIAL_CONTACT": {
+      "group": "UNIVERSAL",
+      "kind": "POINT",
+      "description_es": "Centro de la zona de contacto proximal mesial."
+    },
+    "DISTAL_CONTACT": {
+      "group": "UNIVERSAL",
+      "kind": "POINT",
+      "description_es": "Centro de la zona de contacto proximal distal."
+    },
+    "FACIAL_EQUATOR": {
+      "group": "UNIVERSAL",
+      "kind": "POINT",
+      "description_es": "Máxima convexidad de la cara facial/vestibular."
+    },
+    "LINGUAL_EQUATOR": {
+      "group": "UNIVERSAL",
+      "kind": "POINT",
+      "description_es": "Máxima convexidad de la cara lingual/palatina."
+    },
+    "FACIAL_CERVICAL": {
+      "group": "UNIVERSAL",
+      "kind": "POINT",
+      "description_es": "Punto cervical de referencia en la cara facial/vestibular."
+    },
+    "LINGUAL_CERVICAL": {
+      "group": "UNIVERSAL",
+      "kind": "POINT",
+      "description_es": "Punto cervical de referencia en la cara lingual/palatina."
+    },
+    "MESIAL_CERVICAL": {
+      "group": "UNIVERSAL",
+      "kind": "POINT",
+      "description_es": "Punto cervical de referencia en la cara proximal mesial."
+    },
+    "DISTAL_CERVICAL": {
+      "group": "UNIVERSAL",
+      "kind": "POINT",
+      "description_es": "Punto cervical de referencia en la cara proximal distal."
+    },
+    "MESIOINCISAL": {
+      "group": "INCISOR",
+      "kind": "POINT",
+      "description_es": "Extremo mesial del borde incisal."
+    },
+    "DISTOINCISAL": {
+      "group": "INCISOR",
+      "kind": "POINT",
+      "description_es": "Extremo distal del borde incisal."
+    },
+    "CINGULUM_CENTER": {
+      "group": "ANTERIOR",
+      "kind": "POINT",
+      "description_es": "Centro anatómico del cíngulo."
+    },
+    "CUSP_TIP": {
+      "group": "CANINE",
+      "kind": "POINT",
+      "description_es": "Vértice de la cúspide del canino."
+    },
+    "MESIAL_CUSP_RIDGE_END": {
+      "group": "CANINE",
+      "kind": "POINT",
+      "description_es": "Extremo mesial de la cresta cuspídea del canino."
+    },
+    "DISTAL_CUSP_RIDGE_END": {
+      "group": "CANINE",
+      "kind": "POINT",
+      "description_es": "Extremo distal de la cresta cuspídea del canino."
+    },
+    "BUCCAL_CUSP_TIP": {
+      "group": "PREMOLAR",
+      "kind": "POINT",
+      "description_es": "Vértice de la cúspide vestibular del premolar."
+    },
+    "LINGUAL_PALATAL_CUSP_TIP": {
+      "group": "PREMOLAR",
+      "kind": "POINT",
+      "description_es": "Vértice de la cúspide lingual/palatina del premolar."
+    },
+    "CENTRAL_FOSSA": {
+      "group": "POSTERIOR",
+      "kind": "POINT",
+      "description_es": "Centro de la fosa central oclusal."
+    },
+    "MESIAL_FOSSA": {
+      "group": "MOLAR",
+      "kind": "POINT",
+      "description_es": "Centro de la fosa mesial oclusal."
+    },
+    "DISTAL_FOSSA": {
+      "group": "MOLAR",
+      "kind": "POINT",
+      "description_es": "Centro de la fosa distal oclusal."
+    },
+    "MESIAL_MARGINAL_RIDGE": {
+      "group": "POSTERIOR",
+      "kind": "POINT",
+      "description_es": "Punto de referencia central de la cresta marginal mesial."
+    },
+    "DISTAL_MARGINAL_RIDGE": {
+      "group": "POSTERIOR",
+      "kind": "POINT",
+      "description_es": "Punto de referencia central de la cresta marginal distal."
+    },
+    "OCC_MESIOBUCCAL": {
+      "group": "POSTERIOR",
+      "kind": "POINT",
+      "description_es": "Punto de referencia del límite oclusal mesiovestibular."
+    },
+    "OCC_DISTOBUCCAL": {
+      "group": "POSTERIOR",
+      "kind": "POINT",
+      "description_es": "Punto de referencia del límite oclusal distovestibular."
+    },
+    "OCC_DISTOLINGUAL": {
+      "group": "POSTERIOR",
+      "kind": "POINT",
+      "description_es": "Punto de referencia del límite oclusal distolingual/palatino."
+    },
+    "OCC_MESIOLINGUAL": {
+      "group": "POSTERIOR",
+      "kind": "POINT",
+      "description_es": "Punto de referencia del límite oclusal mesiolingual/palatino."
+    },
+    "MB_CUSP": {
+      "group": "MOLAR",
+      "kind": "POINT",
+      "description_es": "Vértice de la cúspide mesiovestibular."
+    },
+    "DB_CUSP": {
+      "group": "MOLAR",
+      "kind": "POINT",
+      "description_es": "Vértice de la cúspide distovestibular."
+    },
+    "MP_CUSP": {
+      "group": "MAXILLARY_MOLAR",
+      "kind": "POINT",
+      "description_es": "Vértice de la cúspide mesiopalatina del molar superior."
+    },
+    "DP_CUSP": {
+      "group": "MAXILLARY_MOLAR",
+      "kind": "POINT",
+      "description_es": "Vértice de la cúspide distopalatina del molar superior."
+    },
+    "ML_CUSP": {
+      "group": "MANDIBULAR_MOLAR",
+      "kind": "POINT",
+      "description_es": "Vértice de la cúspide mesiolingual del molar inferior."
+    },
+    "DL_CUSP": {
+      "group": "MANDIBULAR_MOLAR",
+      "kind": "POINT",
+      "description_es": "Vértice de la cúspide distolingual del molar inferior."
+    },
+    "DISTAL_CUSP": {
+      "group": "MANDIBULAR_MOLAR",
+      "kind": "POINT",
+      "required": false,
+      "description_es": "Vértice de cúspide distal adicional cuando esté presente."
+    }
+  },
+  "landmark_sets": {
+    "UNIVERSAL": [
+      "MESIAL_CONTACT",
+      "DISTAL_CONTACT",
+      "FACIAL_EQUATOR",
+      "LINGUAL_EQUATOR",
+      "FACIAL_CERVICAL",
+      "LINGUAL_CERVICAL",
+      "MESIAL_CERVICAL",
+      "DISTAL_CERVICAL"
+    ],
+    "INCISOR": [
+      "MESIOINCISAL",
+      "DISTOINCISAL",
+      "CINGULUM_CENTER"
+    ],
+    "CANINE": [
+      "CUSP_TIP",
+      "MESIAL_CUSP_RIDGE_END",
+      "DISTAL_CUSP_RIDGE_END",
+      "CINGULUM_CENTER"
+    ],
+    "PREMOLAR": [
+      "BUCCAL_CUSP_TIP",
+      "LINGUAL_PALATAL_CUSP_TIP",
+      "CENTRAL_FOSSA",
+      "MESIAL_MARGINAL_RIDGE",
+      "DISTAL_MARGINAL_RIDGE",
+      "OCC_MESIOBUCCAL",
+      "OCC_DISTOBUCCAL",
+      "OCC_DISTOLINGUAL",
+      "OCC_MESIOLINGUAL"
+    ],
+    "MOLAR": [
+      "CENTRAL_FOSSA",
+      "MESIAL_FOSSA",
+      "DISTAL_FOSSA",
+      "MESIAL_MARGINAL_RIDGE",
+      "DISTAL_MARGINAL_RIDGE",
+      "OCC_MESIOBUCCAL",
+      "OCC_DISTOBUCCAL",
+      "OCC_DISTOLINGUAL",
+      "OCC_MESIOLINGUAL",
+      "MB_CUSP",
+      "DB_CUSP"
+    ],
+    "MAXILLARY_MOLAR": [
+      "MP_CUSP",
+      "DP_CUSP"
+    ],
+    "MANDIBULAR_MOLAR": [
+      "ML_CUSP",
+      "DL_CUSP"
+    ],
+    "MANDIBULAR_MOLAR_OPTIONAL": [
+      "DISTAL_CUSP"
+    ]
+  },
+  "prosthetic_assets": {
+    "required": [
+      "TOOTH_FRAME",
+      "EMERGENCE_REGION",
+      "EMERGENCE_CENTER",
+      "PROSTHETIC_AXIS"
+    ],
+    "optional": [
+      "CERVICAL_PROFILE"
+    ]
+  },
+  "recognition_payload": {
+    "schema": "dsg.dental_recognition.v1",
+    "required_fields": [
+      "schema",
+      "asset_schema",
+      "contract_version",
+      "contract_sha256",
+      "family_id",
+      "fdi",
+      "source",
+      "coordinate_space",
+      "landmarks"
+    ],
+    "landmark_fields": [
+      "name",
+      "xyz",
+      "confidence"
+    ]
+  },
+  "compatibility": {
+    "legacy_tooth_object_pattern": "DSG_Tooth_FDI_{fdi:02d}",
+    "legacy_fdi_label_pattern": "DSG_FDI_{fdi:02d}",
+    "policy": "Existing DSG tooth and FDI-label names are retained as canonical names to avoid breaking saved Blender scenes.",
+    "accepted_previous_hashes": [
+      "7d8101f897ca7c1185ecaa78e8c7d52b20c6d1bbbb0ccc6d03deb0719b99b903"
+    ],
+    "migration_policy": "Additive v1 scene metadata may be restamped to the current hash only when schema/version/FDI/role/canonical naming remain valid. External recognition payloads must use the current hash."
+  },
+  "primary_tooth_class_by_position": {
+    "1": "INCISOR",
+    "2": "INCISOR",
+    "3": "CANINE",
+    "4": "MOLAR",
+    "5": "MOLAR"
+  },
+  "library_layout": {
+    "blend_filename": "dsg_dental_library.blend",
+    "root_collection": "DSG_Dental_Library",
+    "family_collection_pattern": "DSG_DentalFamily_FDI_{fdi:02d}",
+    "policy": "One geometry library for DSG and the recognition engine. Object names inside the .blend must match the canonical naming table exactly.",
+    "units": "millimetres",
+    "native_master": true
+  },
+  "mesh_attributes": {
+    "eoff_vertex_feature_original": "VERTEX_FEATURE_LABELS",
+    "vertex_feature_label": "DSG_vertex_feature_label",
+    "domain": "POINT",
+    "data_type": "INT"
+  },
+  "legacy_import_aliases": {
+    "landmarks": {
+      "CENTRAL_GROOVE_CENTER": "CENTRAL_FOSSA",
+      "DISTAL_CUSP_OPTIONAL": "DISTAL_CUSP"
+    },
+    "policy": "Aliases are accepted only by explicit import/migration helpers. New DSG objects and recognition payloads must use canonical names."
+  },
+  "derived_geometry": {
+    "OCCLUSAL_ENVELOPE": {
+      "persistence": "MEMORY_OR_OPTIONAL_CURVE"
+    },
+    "CROWN_ENVELOPE": {
+      "persistence": "DERIVED"
+    },
+    "PROXIMAL_REGION": {
+      "persistence": "DERIVED_FROM_CONTACT"
+    },
+    "CERVICAL_LOOP": {
+      "persistence": "MEMORY_OR_OPTIONAL_CURVE"
+    },
+    "DEFORMATION_MODEL": {
+      "persistence": "METADATA"
+    },
+    "REFERENCE_SHAPE": {
+      "persistence": "CROWN_TEMPLATE"
+    }
+  },
+  "mapping_quality_states": [
+    "VALID",
+    "REVIEW",
+    "LOW_CONFIDENCE",
+    "INVALID"
+  ],
+  "mapping_metadata_schema": "dsg.dental_mapping.metadata.v1"
+}

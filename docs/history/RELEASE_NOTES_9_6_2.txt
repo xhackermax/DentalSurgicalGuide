@@ -1,0 +1,7 @@
+DSG 9.6.2 - INSTALLATION RECOVERY HOTFIX
+
+- Adds a real dsg/version.py single source of truth.
+- guide_module no longer owns a second bl_info/version; it reuses package metadata.
+- core.register now removes stale Scene.dsg_suite_settings and stale core RNA classes left by an older in-place ZIP update, matching the recovery already used by DICOM/Alignment/Guide.
+- Installation validator now requires version.py and source_parts.py.
+- No changes to segmentation, geometry, FDI, alignment, checkpoints, or clinical gates.

@@ -1,0 +1,48 @@
+DSG 9.6.0 · MODERN UI + FAST SIMPLE ARCHES + REVERSIBLE WORKFLOW
+
+1. SIMPLE route is now genuinely minimal after the neural inference:
+   - one TotalSegmentator task=teeth inference
+   - raw model labels collapse directly to a minimal 1=upper / 2=lower route map
+   - no DSG FDI compatibility map is built for SIMPLE
+   - exactly two visible meshes: upper arch and lower arch
+   - upper = upper jawbone + every upper tooth
+   - lower = lower jawbone + every lower tooth
+   - no individual FDI meshes, no tooth labels, no canal mesh, no FDI review
+   - skips FDI disk export and both full-route CPU child workers
+   - visible colors only: sand yellow and sky blue
+   - one hidden non-clinical combined mesh is created only as the IOS alignment target
+
+2. Reversible workflow:
+   - DICOM checkpoint captured before SIMPLE/IMMEDIATE segmentation
+   - checkpoint copies are protected from self-deletion during rollback
+   - Back during async segmentation cancels safely and restores the previous DICOM state
+   - async failure also restores the checkpoint instead of leaving a dead SEGMENTING screen
+   - async completion pushes an explicit Blender Undo state
+   - route SSOT is restored together with the scene state
+   - Back during running alignment requests a safe modal rollback
+   - Ctrl+Z during running alignment rolls back the active ICP transaction
+   - existing DSG per-step geometry checkpoints remain active
+
+3. Menu refresh:
+   - five semantic blue tones: primary, secondary, alternate, soft and tertiary
+   - compact colored swatch markers make secondary route depth visible
+   - SIMPLE route reduced to one action, one progress screen and one two-color review
+   - secondary/corrective actions use different blue depths
+   - persistent Back rail is enabled inside reversible DICOM substeps
+   - Blender theme selected-state styling is restored on add-on disable
+
+4. Dead-button prevention:
+   - pure regression audit checks custom literal operator references have implementations
+   - class-backed button references resolve to defined classes
+   - custom button operator classes are present in an explicit registration contract
+   - registration remains transactional, so a partial register cannot leave a half-live menu
+   - obsolete SIMPLE HU/FDI/full-segmentation option buttons are not exposed
+
+5. Authorship/version:
+   - visible author normalized to Max Tiburcio
+   - version 9.6.0
+
+Validation outside Blender:
+   - python compileall: PASS
+   - 18 standalone pure tests for new/refactored paths: PASS
+   - Blender 5.2/bpy interactive smoke test is still required on a real workstation

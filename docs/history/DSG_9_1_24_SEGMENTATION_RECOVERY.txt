@@ -1,0 +1,53 @@
+DSG 9.1.24 — Segmentation Recovery
+===================================
+
+Confirmed 9.1.23 regression
+---------------------------
+build_native_tooth_alignment_reference() used json.dumps() but
+cbct_dental_module.py did not import json.
+
+Runtime sequence:
+UniversalLab succeeds
+-> native tooth meshes created
+-> FDI labels created
+-> alignment reference builder runs
+-> NameError: json is not defined
+-> BUILD_TEETH transaction aborts
+-> rollback deletes all tooth objects
+
+Therefore the user sees "nothing segmented" even though inference and most mesh
+creation actually succeeded.
+
+Fix 1
+-----
+json is explicitly imported.
+
+Fix 2: transaction boundary
+---------------------------
+A more important architectural correction removes alignment-target creation from
+SEGMENTAR TODO entirely.
+
+SEGMENTAR TODO now owns:
+- DentalSegmentator canal verifier
+- UniversalLab
+- teeth + FDI
+- maxilla / mandible
+- mandibular canal
+
+CONTINUAR A ALINEAMIENTO owns:
+- native tooth composite
+- landmark raycast target
+- ICP infrastructure
+
+Thus a future alignment-preparation error can never erase a completed clinical
+segmentation.
+
+Fix 3: diagnostics
+------------------
+Scene properties:
+DSG_last_segmentation_error
+DSG_last_segmentation_error_phase
+DSG_alignment_reference_pending
+DSG_alignment_reference_status
+
+A native_alignment_code_preflight() executes before alignment target creation.

@@ -1,0 +1,19 @@
+DSG 9.1.16 — CBCT con dos rutas
+
+SEGMENTAR TODO
+- Una única inferencia UniversalLab.
+- 1..52 dientes + FDI.
+- 53 mandíbula, 54 maxila.
+- 55 canal mandibular permanece en el labelmap para análisis.
+- Corrige maxila/mandíbula y lateralidad antes de crear mallas.
+- Crea dientes de forma incremental y luego hueso 53+54 desde el mismo resultado.
+- No ejecuta un segundo modelo para hueso.
+
+CONTINUAR CON STL DICOM · SIN SEGMENTAR
+- No ejecuta IA ni crea FDI.
+- Genera un STL DICOM HD desde el umbral mineralizado automático.
+- Usa ese STL directamente como target del alineamiento IOS-CBCT.
+- Marca DSG_cbct_segmentation_skipped=True.
+- Herramientas que necesiten FDI/dientes segmentados deberán permanecer no disponibles.
+
+Los tres modos antiguos ya no se muestran en la UI.

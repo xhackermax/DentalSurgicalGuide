@@ -1,0 +1,9 @@
+DSG v9.2.68 · SAFE IMMEDIATE ROUTE GATE
+
+- IMPLANTE INMEDIATO stays disabled until the DICOM modal has fully completed and DSG_route_step == CBCT_READY.
+- RUNTIME.is_loaded alone is no longer enough to expose the route button.
+- The button is disabled while runtime verification, engine installation, semantic segmentation, or DICOM UI finalization is active.
+- Starting the immediate route never installs/repairs/imports the heavy AI runtime on the UI thread. Engine management remains a separate action.
+- Added poll-level protection and a hard re-entrancy lock so double clicks/API calls cannot launch duplicate jobs.
+- Added IMMEDIATE_LAUNCHING state so the UI becomes disabled before segmentation startup.
+- On launch failure the workflow returns cleanly to CBCT_READY.

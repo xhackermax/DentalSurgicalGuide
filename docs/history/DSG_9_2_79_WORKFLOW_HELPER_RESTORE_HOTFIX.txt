@@ -1,0 +1,29 @@
+DSG v9.2.79 — Workflow Helper Restore + Multi-Worker Hotfix
+
+Regression fixed:
+v9.2.77 replaced the postprocess worker section too broadly and accidentally
+removed a group of existing DICOM workflow helpers located between the old
+postprocess result consumer and _cache_async_semantic_result.
+
+Restored helpers:
+- _begin_ai_performance_session
+- _restore_ai_performance_session
+- ai_performance_session_state
+- _segmentation_progress_from_ai_message
+- _set_segmentation_progress
+- _begin_segmentation_progress
+- _end_segmentation_progress
+- segmentation_progress_snapshot
+- semantic_workflow_busy
+
+This directly fixes:
+NameError: name 'semantic_workflow_busy' is not defined
+when SIMPLE calls continue_with_dicom_stl(), and also prevents later progress/
+performance NameErrors in the immediate route.
+
+Additional v9.2.77 multi-worker fixes:
+- add missing subprocess, pickle and shutil imports
+- remove undefined ADDON_DIR references in dicom_module and resolve the worker
+  path from Path(__file__).resolve().parent instead
+
+The stable route selector and multi-worker architecture remain enabled.

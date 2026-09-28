@@ -1,0 +1,11 @@
+DSG v9.5.3 OFFLINE SELF-CONTAINED STAGING
+- TotalSegmentator installer has zero network code.
+- No pip/PyPI/GitHub downloads at install time.
+- Runtime is extracted from a nested local archive.
+- Dataset113 and Dataset115 are extracted from local nested official model ZIPs.
+- Historical DSG AI runtimes are not reused.
+- SHA256/size manifest verification is supported.
+- This source package MUST NOT be called a final self-contained build until all three binary payload archives are embedded.
+
+
+9.5.3: El botón INSTALAR MOTORES ahora construye el payload ausente con progreso visible, genera el ZIP FULL_OFFLINE y continúa automáticamente con la extracción/verificación.

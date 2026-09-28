@@ -1,0 +1,16 @@
+DSG 9.0.0 — Dental Asset Family Contract
+
+- Nuevo contrato SSOT: resources/dental_assets/asset_contract_v1.json.
+- Nuevo módulo puro dental_assets.py, sin bpy, reutilizable por motores externos.
+- Nuevo adaptador dental_asset_blender.py para estampar/consultar assets familiares en Blender.
+- Convención FDI_XX compartida por diente, plantilla, fantasma, corona, landmarks, emergencia, eje y perfil cervical.
+- Frame dental canónico: +X mesial, +Y facial/bucal, +Z coronal; -Z apical.
+- Vocabulario común de landmarks para incisivos, caninos, premolares y molares.
+- Payload dsg.dental_recognition.v1 con validación estricta de schema/version/SHA-256.
+- CBCT UniversalLab ahora estampa los dientes con asset_id/family_id/role y conserva claves legacy.
+- Correcciones de FDI siguen renombrando y reestampando la misma familia de forma coherente.
+- Roadmap deja de depender de antiguos DSG_dental_ai_locator/dsg_dental_ai y consume la dentición CBCT actual.
+- Corregida llamada inexistente dicom_module.current_tooth_mcp_payload(); ahora usa cbct_dental_module.current_payload().
+- El eje propuesto desde FDI y el implante guardan DSG_target_family_id cuando existe un FDI objetivo.
+- Escenas antiguas con DSG_Tooth_FDI_XX se migran de forma no destructiva al contrato v1 al registrar el módulo.
+- Se conserva la geometría clínica y el runtime IA de 8.9; no se añaden modelos de seno/nervio ni coronas ficticias sin assets entrenados/reales.
