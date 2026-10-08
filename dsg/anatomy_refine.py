@@ -53,7 +53,7 @@ PROFILES = {
     # automatic segmentation pass.
     "TOOTH_HIGH": RefineProfile(
         # Explicit high-detail refinement may snap sub-voxel to the source CBCT
-        # but still cannot smooth/remesh away the native UniversalLab boundary.
+        # but still cannot smooth/remesh away the native normalized segmentation boundary.
         taubin_iterations=0,
         taubin_lambda=0.0,
         taubin_mu=0.0,

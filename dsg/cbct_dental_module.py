@@ -1,6 +1,6 @@
 """CBCT tooth instances and FDI review for DSG 8.9.
 
-UniversalLab already predicts one semantic label per tooth.  This module keeps
+The selected DSG engine provides or is normalized to one compatibility label per tooth.  This module keeps
 those learned instances intact; it does *not* re-split contacts with connected
 components/watershed and it does not infer FDI from IOS geometry.
 """
@@ -15,7 +15,7 @@ import json
 import time
 
 import bpy
-from bpy.props import BoolProperty, IntProperty, PointerProperty, StringProperty
+from bpy.props import BoolProperty, EnumProperty, IntProperty, PointerProperty, StringProperty
 from bpy.types import Operator, PropertyGroup
 from mathutils import Vector
 
@@ -121,7 +121,7 @@ def _tooth_labels_present(labels) -> list[int]:
     return [int(v) for v in present if 1 <= int(v) <= 52 and tooth_analysis.universal_to_fdi(v, source="CBCT")]
 
 
-# v9.2.64 native semantic meshing policy. UniversalLab remains the immutable
+# v9.2.64 native semantic meshing policy. The normalized CBCT labelmap remains the immutable
 # source of truth. Bounding boxes are cached only to crop empty background and
 # to support on-demand single-tooth refinement; clinical tooth geometry is
 # always extracted at native voxel resolution.
@@ -144,10 +144,11 @@ def _bbox_slices(labels, max_label: int = 55):
     key = _labelmap_cache_key(labels, max_label)
     if _BBOX_CACHE.get("key") == key and _BBOX_CACHE.get("boxes") is not None:
         return _BBOX_CACHE["boxes"]
-    try:
-        from scipy import ndimage
-    except ImportError as exc:
-        raise RuntimeError("Runtime IA incompleto: falta SciPy para individualizar los dientes") from exc
+    from . import dicom_module
+    ndimage = dicom_module.load_scipy_ndimage()
+    if ndimage is None:
+        detail = dicom_module.DEPENDENCY_IMPORT_ERRORS.get("scipy.ndimage", "")
+        raise RuntimeError(f"Runtime IA incompleto: SciPy no disponible para individualizar los dientes. {detail}")
     boxes = ndimage.find_objects(labels, max_label=max_label)
     _BBOX_CACHE["key"] = key
     _BBOX_CACHE["boxes"] = boxes
@@ -348,7 +349,7 @@ def prepare_universal_dentition_meshes(labels, *, preview_step_size: int = 1):
     v9.2.64 deliberately removes the preview/full-resolution duality. The first
     geometry shown to the clinician is already native-resolution clinical
     geometry. With VTK, one ``vtkDiscreteFlyingEdges3D`` pass extracts every
-    requested FDI directly from the integer UniversalLab labelmap. No per-tooth
+    requested FDI directly from the integer normalized CBCT labelmap. No per-tooth
     binary masks, no step=2, no Taubin/MMG pass and no duplicated volume scan.
     """
     np = _np()
@@ -372,7 +373,7 @@ def prepare_universal_dentition_meshes(labels, *, preview_step_size: int = 1):
 
     bounds = _dentition_crop_bounds(labels.shape, boxes, present, margin_voxels=2)
     if bounds is None:
-        raise RuntimeError("No se pudo localizar la dentición UniversalLab")
+        raise RuntimeError("No se pudo localizar la dentición segmentada")
     z0, z1, y0, y1, x0, x1 = bounds
     crop = np.ascontiguousarray(labels[z0:z1, y0:y1, x0:x1])
 
@@ -484,7 +485,7 @@ def upgrade_teeth_to_full_resolution(context, fdis) -> dict[str, Any]:
 
     The initial segmentation intentionally creates lightweight meshes for FDI
     review. Before an immediate-extraction boolean, the selected teeth must be
-    rebuilt directly from the unchanged UniversalLab labelmap at native voxel
+    rebuilt directly from the unchanged normalized labelmap at native voxel
     resolution and refined within the CBCT/mask safety cage.
     """
     np = _np()
@@ -645,6 +646,9 @@ def _commit_prepared_tooth(context, prepared, root, collection):
     obj["dental_suite_structure"] = "TOOTH_INSTANCE"
     obj["dental_suite_component"] = "DICOM"
     obj["dental_suite_role"] = dicom_module.ROLE_DICOM_TEETH
+    obj["DSG_cbct_spacing_zyx_mm"] = list(dicom_module.RUNTIME.spacing_zyx_mm)
+    # Finishing is on demand: committing a new native segmentation never runs
+    # the display filter, even when the previous result used the smooth view.
     return obj, centroid, int(faces.shape[0]), topology
 
 
@@ -968,54 +972,105 @@ def rebuild_fdi_labels(context=None, *, strict: bool = False) -> list[bpy.types.
 
 
 ALIGNMENT_VISUAL_SMOOTH_MODIFIER = "DSG_AlignmentClinicalSmooth"
+VISUAL_SMOOTHING_CHOICE_KEY = "DSG_cbct_visual_smoothing_enabled"
 
 
 def set_alignment_visual_smoothing(obj: bpy.types.Object, enabled: bool) -> None:
-    """Toggle non-destructive clinical display smoothing on a segmented tooth.
-
-    The source mesh datablock is never remeshed or overwritten.  Geometry
-    measurements continue to use the original segmentation; this modifier exists
-    only to make the high-resolution CBCT teeth easier to inspect against IOS.
-    """
+    """Toggle measured, volume-preserving surface offsets without remeshing."""
     if obj is None or getattr(obj, "type", None) != "MESH":
         return
-    try:
-        for poly in obj.data.polygons:
-            poly.use_smooth = True
-    except Exception:
-        _DSG_LOG.debug("suppressed exception", exc_info=True)
-
-    mod = obj.modifiers.get(ALIGNMENT_VISUAL_SMOOTH_MODIFIER)
-    if mod is None:
-        try:
-            mod = obj.modifiers.new(ALIGNMENT_VISUAL_SMOOTH_MODIFIER, "LAPLACIANSMOOTH")
-            if hasattr(mod, "iterations"):
-                mod.iterations = 2
-            if hasattr(mod, "lambda_factor"):
-                mod.lambda_factor = 0.12
-            if hasattr(mod, "lambda_border"):
-                mod.lambda_border = 0.03
-            if hasattr(mod, "use_volume_preserve"):
-                mod.use_volume_preserve = True
-            if hasattr(mod, "use_normalized"):
-                mod.use_normalized = True
-            mod.show_render = False
-            obj["DSG_alignment_visual_smoothing"] = "LAPLACIAN_NON_DESTRUCTIVE"
-        except Exception:
-            # Blender builds without Laplacian support still get smooth shading.
-            mod = None
-    if mod is not None:
-        try:
-            mod.show_viewport = bool(enabled)
-        except Exception:
-            _DSG_LOG.debug("suppressed exception", exc_info=True)
+    if obj.get('DSG_post_smooth_original_mesh') is not None:
+        # A post-segmentation finish already replaces the displayed mesh.
+        # Alignment review must not stack another smoother on top of it.
+        mod = obj.modifiers.get(ALIGNMENT_VISUAL_SMOOTH_MODIFIER)
+        if mod is not None:
+            mod.show_viewport = False
+        return
+    from . import dicom_module,surface_smoothing
+    spacing=obj.get("DSG_cbct_spacing_zyx_mm")
+    if enabled and spacing is None:
+        if not dicom_module.RUNTIME.is_loaded():
+            raise RuntimeError("Abre el CBCT original para recuperar la escala física de la superficie")
+        spacing=list(dicom_module.RUNTIME.spacing_zyx_mm)
+        obj["DSG_cbct_spacing_zyx_mm"]=spacing
+    surface_smoothing.set_measured_display_smoothing(
+        obj,bool(enabled),modifier_name=ALIGNMENT_VISUAL_SMOOTH_MODIFIER,
+        spacing_zyx_mm=spacing if spacing is not None else dicom_module.RUNTIME.spacing_zyx_mm,
+    )
 
 
 def set_dentition_alignment_visual_smoothing(context, enabled: bool) -> list[bpy.types.Object]:
     teeth = dentition_objects(context)
-    for tooth in teeth:
-        set_alignment_visual_smoothing(tooth, enabled)
+    objects=visual_smoothing_objects(context)
+    previous={obj.as_pointer():bool((mod:=obj.modifiers.get(ALIGNMENT_VISUAL_SMOOTH_MODIFIER)) and mod.show_viewport) for obj in objects}
+    try:
+        for obj in objects:
+            set_alignment_visual_smoothing(obj, enabled)
+    except Exception:
+        for obj in objects:
+            mod=obj.modifiers.get(ALIGNMENT_VISUAL_SMOOTH_MODIFIER)
+            if mod is not None:
+                mod.show_viewport=previous[obj.as_pointer()]
+        raise
     return teeth
+
+
+def visual_smoothing_objects(context) -> list[bpy.types.Object]:
+    """Include disposable CBCT references visible during IOS alignment."""
+    teeth = dentition_objects(context)
+    composites = [
+        obj for obj in context.scene.objects
+        if obj.type == "MESH" and obj not in teeth and (
+            bool(obj.get("DSG_alignment_duplicate_composite", False))
+            or bool(obj.get("DSG_immediate_arch_composite", False))
+            or obj.get("DSG_bone_arch") in ("MAXILLA", "MANDIBLE")
+        )
+    ]
+    return teeth + composites
+
+
+def visual_smoothing_enabled(context) -> bool:
+    objects = visual_smoothing_objects(context)
+    return bool(objects) and all(
+        (mod := obj.modifiers.get(ALIGNMENT_VISUAL_SMOOTH_MODIFIER)) is not None
+        and mod.show_viewport for obj in objects
+    )
+
+
+class DSG_OT_CBCTToggleSurfaceSmoothing(Operator):
+    bl_idname = "dsg.cbct_toggle_surface_smoothing"
+    bl_label = "Suavizar superficie CBCT"
+    bl_description = (
+        "Suaviza dientes y maxilares hasta 0,25 mm para comparar con el IOS; "
+        "conserva la malla original y la referencia del cálculo de alineación"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return bool(dentition_objects(context))
+
+    def execute(self, context):
+        enabled = not visual_smoothing_enabled(context)
+        try:
+            teeth = set_dentition_alignment_visual_smoothing(context, enabled)
+        except Exception as exc:
+            self.report({"ERROR"},f"Suavizado conservador: {exc}"[:240])
+            return {"CANCELLED"}
+        if visual_smoothing_enabled(context) != enabled:
+            self.report({"ERROR"}, "No se pudo cambiar el suavizado de todas las superficies")
+            return {"CANCELLED"}
+        context.scene[VISUAL_SMOOTHING_CHOICE_KEY] = enabled
+        for area in context.screen.areas if context.screen else ():
+            area.tag_redraw()
+        surfaces=visual_smoothing_objects(context)
+        self.report({"INFO"}, f"{len(teeth)} dientes · {len(surfaces)} superficies · vista {'suave' if enabled else 'original'}")
+        return {"FINISHED"}
+
+
+def draw_surface_smoothing(layout, context, *, show_note: bool = True) -> None:
+    from . import cbct_post_smoothing
+    cbct_post_smoothing.draw(layout, context)
 
 
 def reset_scene_state(scene=None) -> None:
@@ -1449,6 +1504,9 @@ def build_segmented_alignment_composite(
         obj["DSG_alignment_source_count"] = int(len(source_records))
         obj["DSG_alignment_tooth_count"] = int(len(teeth))
         obj["DSG_alignment_dental_vertex_count"] = int(dental_vertex_count)
+        obj["DSG_cbct_spacing_zyx_mm"] = list(dicom_module.RUNTIME.spacing_zyx_mm)
+        if bool(context.scene.get(VISUAL_SMOOTHING_CHOICE_KEY, False)):
+            set_alignment_visual_smoothing(obj, True)
         obj["DSG_alignment_dental_face_count"] = int(dental_face_count)
         obj["DSG_alignment_total_vertex_count"] = int(len(vertices))
         obj["DSG_alignment_total_face_count"] = int(len(faces))
@@ -1569,6 +1627,9 @@ def _join_immediate_arch_sources(context, *, arch: str, bone_obj, teeth, output_
         joined["dental_suite_structure"] = f"IMMEDIATE_{str(arch).upper()}"
         joined["dental_suite_alignment_reference"] = False
         joined["dental_suite_component"] = "DICOM"
+        joined["DSG_cbct_spacing_zyx_mm"] = list(dicom_module.RUNTIME.spacing_zyx_mm)
+        if bool(context.scene.get(VISUAL_SMOOTHING_CHOICE_KEY, False)):
+            set_alignment_visual_smoothing(joined, True)
         return joined
     finally:
         # If join failed, remove any orphan duplicates. If it succeeded they no
@@ -1718,10 +1779,10 @@ def iter_build_universal_dentition(
     from . import dicom_module
     labels = np.asarray(labels)
     if labels.ndim != 3:
-        raise RuntimeError("El mapa UniversalLab no es 3D")
+        raise RuntimeError("El mapa normalizado de segmentación no es 3D")
     present = _tooth_labels_present(labels)
     if not present:
-        raise RuntimeError("UniversalLab no devolvió dientes individualizados")
+        raise RuntimeError("El motor seleccionado no devolvió dientes individualizados")
 
     semantic_info = correct_universal_semantics(labels) if run_mirroring_check else {
         "arch": {"checked": False}, "laterality": {"checked": False}
@@ -1819,7 +1880,7 @@ def iter_build_universal_dentition(
     # Segmentation ends here with clinical tooth geometry. The numerical
     # alignment target belongs to the NEXT stage and is built on demand.
     # This prevents an Alignment preparation error from rolling back a valid
-    # UniversalLab segmentation.
+    # normalized segmentation.
     ref = None
 
     props = context.scene.dsg_cbct_dental
@@ -1911,6 +1972,13 @@ def current_payload(scene=None) -> dict[str, Any]:
 
 
 class DSGCBCTDentalProperties(PropertyGroup):
+    surface_finish_mode: EnumProperty(
+        name="Suavizado", default="VISUAL",
+        items=(
+            ("VISUAL", "Visual intenso", "Mayor suavidad visual y volumen de malla conservado; no valida precisión anatómica"),
+            ("CLEAN", "Fiel a la segmentación (experimental)", "Surface Nets limitado al vóxel; conserva originales donde no pasa los controles"),
+        ),
+    )
     ready: BoolProperty(default=False, options={"HIDDEN"})
     accepted: BoolProperty(default=False, options={"HIDDEN"})
     tooth_count: IntProperty(default=0, min=0, options={"HIDDEN"})
@@ -1930,7 +1998,7 @@ class DSG_OT_CBCTAcceptFDI(Operator):
             self.report({"ERROR"}, "No hay dientes CBCT individualizados")
             return {"CANCELLED"}
         # Recovery for scenes produced by 9.2.20 before the incremental builder
-        # propagated UniversalLab's already-computed arch validation to Scene.
+        # propagated the engine adapter's already-computed arch validation to Scene.
         # Re-evaluate the cached integer labelmap; never infer arch from the mesh
         # names or silently mark an ambiguous result as checked.
         if not bool(context.scene.get("DSG_cbct_arch_validation_checked", False)):
@@ -1944,7 +2012,7 @@ class DSG_OT_CBCTAcceptFDI(Operator):
                     arch_info = dict(semantic_info.get("arch") or {})
                     ambiguous = len(arch_info.get("ambiguous_labels", []) or [])
                     context.scene["DSG_cbct_arch_validation_source"] = str(
-                        arch_info.get("source", "UNIVERSALLAB_RECOVERY") or "UNIVERSALLAB_RECOVERY"
+                        arch_info.get("source", "NORMALIZED_LABEL_RECOVERY") or "NORMALIZED_LABEL_RECOVERY"
                     )
                     context.scene["DSG_cbct_arch_validation_checked"] = bool(
                         arch_info.get("checked", False)
@@ -2315,9 +2383,11 @@ def draw_review(layout, context) -> None:
         box.label(text=f"{props.tooth_count} dientes · {props.primary_count} temporales")
     else:
         box.label(text=f"{props.tooth_count} dientes individualizados")
-    box.label(text="TotalSegmentator · FDI obtenido directamente del CBCT")
+    box.label(text="FDI normalizado desde el motor CBCT seleccionado")
     if str(getattr(props, "status", "")):
         box.label(text=str(props.status)[:110])
+
+    draw_surface_smoothing(box, context)
 
     row = ui_style.secondary_action(box)
     row.operator(DSG_OT_CBCTToggleFDI.bl_idname, text="OCULTAR FDI" if props.labels_visible else "MOSTRAR FDI")
@@ -2383,61 +2453,78 @@ def draw_alignment_handoff(layout, context) -> None:
     box.label(text="FDI procedente del CBCT", icon_value=icon_manager.icon_id("status_ok" if accepted else "status_info"))
     box.label(text=f"{len(objects)} dientes · {'confirmado' if accepted else 'pendiente de revisión'}")
     box.label(text="El IOS se usa para alineamiento; no vuelve a numerar los dientes")
+    draw_surface_smoothing(box, context)
 
 
 class DSG_OT_InstallAIRuntime(Operator):
-    """Compatibility button from older DSG layouts; installs TotalSegmentator only."""
+    """Compatibility button routed to the DSG 9.10 multi-engine installer."""
     bl_idname = "dsg.install_ai_runtime"
-    bl_label = "Instalar TotalSegmentator"
-    bl_description = "Instala TotalSegmentator y los modelos task=teeth en un runtime aislado"
+    bl_label = "Instalar motores de segmentación"
+    bl_description = "Instala/verifica TotalSegmentator, ToothSeg y el adaptador U-Mamba2"
     bl_options = {"REGISTER"}
 
     def execute(self, context):
-        from . import totalseg_runtime
-        status = totalseg_runtime.quick_status()
-        if status.dependencies_ready and status.model_ready:
-            self.report({"INFO"}, f"TotalSegmentator {status.version} ya está listo · {status.device}")
-            return {"FINISHED"}
+        from . import segmentation_engines
         try:
-            started = totalseg_runtime.start_install()
+            started = segmentation_engines.start_install("ALL")
         except Exception as exc:
-            msg = f"TotalSegmentator: {type(exc).__name__}: {exc}"
-            try:
-                context.scene.dicom_wizard_pro.status = msg[:240]
-            except Exception:
-                _DSG_LOG.debug("suppressed exception", exc_info=True)
+            msg = f"Motores IA: {type(exc).__name__}: {exc}"
             self.report({"ERROR"}, msg[:240])
             return {"CANCELLED"}
-        if not started:
-            self.report({"INFO"}, "La instalación TotalSegmentator ya está en curso")
-        else:
-            pd = totalseg_runtime.payload_diagnostics()
-            complete = all(pd.get(k) for k in ("runtime_archive", "dataset113", "dataset115"))
-            self.report({"INFO"}, "Extrayendo payload local" if complete else "Construyendo payload completo + instalando")
+        self.report({"INFO"}, "Instalación de motores iniciada" if started else "La instalación ya está en curso")
         return {"FINISHED"}
 
 
 class DSG_OT_AIStatusRefresh(Operator):
     bl_idname = "dsg.ai_status_refresh"
-    bl_label = "Revisar TotalSegmentator"
+    bl_label = "Revisar motores de segmentación"
     bl_options = {"REGISTER"}
 
     def execute(self, context):
-        from . import totalseg_runtime
-        status = totalseg_runtime.quick_status()
-        context.scene.dicom_wizard_pro.status = (
-            f"TotalSegmentator {status.version} · {status.device} · task=teeth "
-            + ("✓" if status.dependencies_ready and status.model_ready else f"pendiente · {status.error}")
-        )
+        from . import segmentation_engines
+        statuses = segmentation_engines.verify_all(force=True)
+        ready = [st.label for st in statuses.values() if st.ready]
+        pending = [st.label for st in statuses.values() if not st.ready]
+        message = f"READY: {', '.join(ready) if ready else 'ninguno'}"
+        if pending:
+            message += f" · pendientes: {', '.join(pending)}"
+        context.scene.dicom_wizard_pro.status = message[:240]
         return {"FINISHED"}
 
 
+from . import cbct_post_smoothing
+from . import error_handling
+from pathlib import Path
+
+class DSG_OT_CopyPipelineDiagnostic(bpy.types.Operator):
+    bl_idname='dsg.copy_pipeline_diagnostic'
+    bl_label='Copiar diagnóstico'
+    bl_description='Copia el informe de etapas y fallbacks de la última ejecución'
+    def execute(self,context):
+        from . import cbct_pipeline_client
+        try:
+            text=cbct_pipeline_client.diagnostic_text(Path(bpy.utils.user_resource('SCRIPTS'))/'dsg_diagnostics')
+            if not text:
+                self.report({'INFO'},'Todavía no hay un diagnóstico de segmentación')
+                return {'CANCELLED'}
+            context.window_manager.clipboard=text
+        except (OSError,ValueError) as exc:
+            error_handling.log_exception(_DSG_LOG,'DSG-E240',exc,context={'phase':'copy_diagnostic'})
+            self.report({'ERROR'},'No se pudo leer el diagnóstico de segmentación')
+            return {'CANCELLED'}
+        self.report({'INFO'},'Diagnóstico copiado')
+        return {'FINISHED'}
 
 CLASSES = (
     DSGCBCTDentalProperties,
     DSG_OT_InstallAIRuntime,
     DSG_OT_AIStatusRefresh,
+    DSG_OT_CopyPipelineDiagnostic,
     DSG_OT_CBCTImproveGeometry,
+    DSG_OT_CBCTToggleSurfaceSmoothing,
+    cbct_post_smoothing.DSG_OT_PostSmoothTeeth,
+    cbct_post_smoothing.DSG_OT_CancelPostSmooth,
+    cbct_post_smoothing.DSG_OT_PostSmoothReport,
     DSG_OT_CBCTAcceptFDI,
     DSG_OT_CBCTToggleFDI,
     DSG_OT_CBCTEditFDI,
@@ -2465,7 +2552,7 @@ def _cleanup_stale_registration() -> None:
             bpy.utils.unregister_class(target)
         except RuntimeError:
             # Expected when neither the current nor a stale class is registered.
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 
@@ -2512,6 +2599,7 @@ def register():
             _REGISTERED_CLASSES.append(cls)
         bpy.types.Scene.dsg_cbct_dental = PointerProperty(type=DSGCBCTDentalProperties)
         _SCENE_PROPERTY_OWNED = True
+        cbct_post_smoothing.register_hooks()
         # IMPORTANT: do not touch bpy.data here. Blender/Mixar may still expose
         # _RestrictData while an add-on is being enabled. Existing-object
         # migration is performed by deferred_post_register() after normal
@@ -2551,6 +2639,7 @@ def deferred_post_register() -> bool:
 
 def unregister():
     global _SCENE_PROPERTY_OWNED, _DEFERRED_METADATA_MIGRATED
+    cbct_post_smoothing.unregister_hooks()
     _DEFERRED_METADATA_MIGRATED = False
     if _SCENE_PROPERTY_OWNED and hasattr(bpy.types.Scene, "dsg_cbct_dental"):
         try:
@@ -2561,5 +2650,5 @@ def unregister():
         try:
             bpy.utils.unregister_class(cls)
         except RuntimeError:
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
     _REGISTERED_CLASSES.clear()

@@ -1,0 +1,8 @@
+DSG 9.10.7 - reducción de escalones de la segmentación
+
+- Refina Windowed Sinc/Nuttall: 40 iteraciones y banda 0,02.
+- Límite físico de 1,25 vóxeles nativos, máximo 0,25 mm.
+- Incluye maxilar y mandíbula. Canal mandibular original.
+- Conserva el volumen por componente y reduce el filtro donde no pasa los controles.
+- Mantiene la topología y coordenadas originales, las etiquetas y la referencia ICP.
+- Caché y cálculo bajo demanda; no se modifica la inferencia.

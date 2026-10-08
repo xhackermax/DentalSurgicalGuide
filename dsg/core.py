@@ -32,9 +32,8 @@ ROUTE_SIMPLE = "SIMPLE"
 ROUTE_IMMEDIATE = "IMMEDIATE"
 VALID_ROUTES = {ROUTE_SIMPLE, ROUTE_IMMEDIATE}
 
-# v9.2.71: hard re-entrancy + fresh-CBCT gate for expensive route launches.
-# A stale runtime verification from a previous patient must NEVER arm these buttons.
-_SIMPLE_ROUTE_EXECUTING = False
+# v9.2.71: hard re-entrancy + fresh-CBCT gate for the expensive immediate route.
+# A stale runtime verification from a previous patient must NEVER arm this button.
 _IMMEDIATE_ROUTE_EXECUTING = False
 IMMEDIATE_GATE_READY_AT_KEY = "DSG_immediate_gate_cbct_ready_at"
 IMMEDIATE_GATE_ARMED_KEY = "DSG_immediate_gate_armed"
@@ -296,6 +295,8 @@ def reconcile_workflow_after_undo(scene=None) -> None:
     scene = scene or getattr(bpy.context, "scene", None)
     if scene is None:
         return
+    from . import workflow_history
+    if workflow_history.has_checkpoint(scene):return
     try:
         route = clinical_route(scene)
         step = str(scene.get(ROUTE_STEP_KEY, "") or "")
@@ -357,6 +358,8 @@ def _run_workflow_undo_repair():
 def dsg_workflow_undo_post(*_args) -> None:
     """Defer route reconciliation until Blender has finished swapping undo data."""
     global _WORKFLOW_UNDO_REPAIR_PENDING
+    from . import workflow_history
+    if workflow_history.has_checkpoint(bpy.context.scene):return
     if _WORKFLOW_UNDO_REPAIR_PENDING:
         return
     _WORKFLOW_UNDO_REPAIR_PENDING = True
@@ -380,7 +383,7 @@ def _unregister_workflow_undo_handler() -> None:
                 try:
                     handlers.remove(handler)
                 except ValueError:
-                    pass
+                    _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 def _is_dicom_related_object(obj) -> bool:
@@ -1211,11 +1214,6 @@ class DSG_SUITE_OT_StartSimpleRoute(Operator):
 
     @classmethod
     def poll(cls, context):
-        global _SIMPLE_ROUTE_EXECUTING
-        if _SIMPLE_ROUTE_EXECUTING:
-            try: cls.poll_message_set("Implante simple ya se esta iniciando")
-            except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-            return False
         ready, reason = _immediate_route_readiness(context)
         if not ready:
             try: cls.poll_message_set(reason)
@@ -1223,90 +1221,20 @@ class DSG_SUITE_OT_StartSimpleRoute(Operator):
         return bool(ready)
 
     def execute(self, context):
-        global _SIMPLE_ROUTE_EXECUTING
+        from . import dicom_module
         scene = context.scene
-        ready, reason = _immediate_route_readiness(context)
-        if not ready:
-            self.report({"WARNING"}, reason)
+        if not dicom_module.RUNTIME.is_loaded():
+            self.report({"ERROR"}, "Carga primero el CBCT")
             return {"CANCELLED"}
-        if _SIMPLE_ROUTE_EXECUTING:
-            self.report({"WARNING"}, "Implante simple ya se esta iniciando")
-            return {"CANCELLED"}
-        if False:
+        if dicom_module.semantic_workflow_busy():
             self.report({"WARNING"}, "Ya hay una segmentación CBCT en curso")
             return {"CANCELLED"}
         capture_dicom_route_checkpoint(context)
-        _SIMPLE_ROUTE_EXECUTING = True
         scene.dsg_suite_settings.workflow_route = ROUTE_SIMPLE
         scene[ROUTE_STEP_KEY] = "SIMPLE_SEGMENTING"
         props = scene.dicom_wizard_pro
         props.step = 3
         props.status = "Implante simple · preparando dos arcadas…"
-        try:
-            if context.screen:
-                for area in context.screen.areas:
-                    area.tag_redraw()
-        except Exception:
-            _DSG_LOG.debug("suppressed exception", exc_info=True)
-
-        scene_name = str(scene.name)
-
-        def _deferred_launch():
-            global _SIMPLE_ROUTE_EXECUTING
-            target_scene = bpy.data.scenes.get(scene_name)
-            if target_scene is None:
-                _SIMPLE_ROUTE_EXECUTING = False
-                return None
-            try:
-                from . import dicom_module
-                if not bool(dicom_module.RUNTIME.is_loaded()):
-                    raise RuntimeError("El CBCT ya no esta cargado")
-                if bool(getattr(dicom_module.RUNTIME, "update_lock", False)):
-                    return 0.20
-                if bool(dicom_module.semantic_workflow_busy()):
-                    raise RuntimeError("Ya hay una segmentacion CBCT en curso")
-                result = bpy.ops.dicom_wizard_pro.segment_all(
-                    "EXEC_DEFAULT", route_mode="SIMPLE_ARCHES")
-                if "FINISHED" not in result:
-                    raise RuntimeError("No se pudo iniciar la segmentacion simple")
-                target_scene[ROUTE_STEP_KEY] = "SIMPLE_SEGMENTING"
-                try:
-                    target_scene.dicom_wizard_pro.status = (
-                        "Segmentacion simple iniciada en segundo plano")
-                except Exception:
-                    _DSG_LOG.debug("suppressed exception", exc_info=True)
-            except Exception as exc:
-                try:
-                    target_context = bpy.context.copy()
-                    target_context["scene"] = target_scene
-                    restore_dicom_route_checkpoint(target_context)
-                except Exception:
-                    target_scene[ROUTE_STEP_KEY] = "CBCT_READY"
-                    try:
-                        target_scene.dsg_suite_settings.workflow_route = ROUTE_SIMPLE
-                    except Exception:
-                        _DSG_LOG.debug("suppressed exception", exc_info=True)
-                try:
-                    target_scene.dicom_wizard_pro.status = f"Error: {exc}"
-                except Exception:
-                    _DSG_LOG.debug("suppressed exception", exc_info=True)
-                print(f"[DSG] Simple launch cancelled: {exc}")
-            finally:
-                _SIMPLE_ROUTE_EXECUTING = False
-                try:
-                    for window in bpy.context.window_manager.windows:
-                        if window.screen:
-                            for area in window.screen.areas:
-                                area.tag_redraw()
-                except Exception:
-                    _DSG_LOG.debug("suppressed exception", exc_info=True)
-            return None
-
-        props.status = "Implante simple - preparando dos arcadas..."
-        bpy.app.timers.register(_deferred_launch, first_interval=0.25)
-        self.report({"INFO"}, "Implante simple - arranque seguro programado")
-        return {"FINISHED"}
-
         try:
             result = bpy.ops.dicom_wizard_pro.segment_all("EXEC_DEFAULT", route_mode="SIMPLE_ARCHES")
             if "FINISHED" not in result:
@@ -1358,7 +1286,7 @@ def _immediate_route_readiness(context):
     if scene is None:
         return False, "Escena no disponible"
     try:
-        from . import dicom_module, runtime_bootstrap, totalseg_runtime
+        from . import dicom_module, runtime_bootstrap, segmentation_engines
     except Exception:
         return False, "DSG todavía está cargando sus módulos"
 
@@ -1388,24 +1316,23 @@ def _immediate_route_readiness(context):
         _DSG_LOG.debug("suppressed exception", exc_info=True)
 
     try:
-        install = totalseg_runtime.install_state()
+        install = segmentation_engines.install_state()
         if bool(install.get("running")):
             return False, "Preparando motores IA"
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
 
-    # Cheap structural probe only. quick_status() checks files/checkpoints and
-    # Python module availability without importing Torch or initializing CUDA.
     try:
-        status = totalseg_runtime.quick_status()
-        if not status.dependencies_ready:
-            return False, "Runtime IA no instalado"
-        if not status.model_ready:
-            return False, "Falta TotalSegmentator task=teeth"
+        selected = str(getattr(props, "ai_segmentation_engine", "TOTALSEG") or "TOTALSEG").upper()
+        status = segmentation_engines.verify_engine(selected, force=False)
+        if not status.ready:
+            return False, f"{status.label} no está listo: {status.error}"[:180]
+        if "JAW" not in set(status.capabilities):
+            return False, f"{status.label} no aporta maxila/mandíbula para implante inmediato"
     except Exception as exc:
-        return False, f"Motores IA no listos: {exc}"[:180]
+        return False, f"Motor IA no listo: {exc}"[:180]
 
-    return True, "CBCT listo · TotalSegmentator se ejecutará en proceso aislado"
+    return True, f"CBCT listo · {status.label} se ejecutará en proceso aislado"
 
 
 
@@ -1413,7 +1340,7 @@ def _immediate_route_readiness(context):
 class DSG_SUITE_OT_StartImmediateRoute(Operator):
     bl_idname = "dsg_suite.start_immediate_route"
     bl_label = "Implante inmediato"
-    bl_description = "Inicia TotalSegmentator task=teeth cuando CBCT y motor están listos"
+    bl_description = "Inicia el motor de segmentación seleccionado cuando CBCT y anatomía requerida están listos"
     bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
@@ -3535,7 +3462,7 @@ class DSG_SUITE_OT_UseSelectedIOS(Operator):
             _DSG_LOG.debug("suppressed exception", exc_info=True)
         if previous is not obj:
             # DSG 8.8: IOS is the moving geometry only. FDI remains owned by the
-            # reviewed UniversalLab CBCT dentition.
+            # reviewed normalized CBCT dentition.
             obj["DSG_dental_identity_source"] = "CBCT"
         bind_antagonists_to_source(obj)
         set_stage(context.scene, STAGE_ALIGNMENT)
@@ -3614,7 +3541,7 @@ class DSG_SUITE_PT_Main(Panel):
                 engines_ready = bool(runtime_bootstrap.ui_engines_ready())
                 if bool(remote.get("running")):
                     row = ui_style.primary_action(body, enabled=False)
-                    row.operator(DSG_SUITE_OT_InstallEnginesCore.bl_idname, text=tr(scene, "INSTALLING ENGINES…", "INSTALANDO MOTORES…"), icon="IMPORT")
+                    row.operator(runtime_bootstrap.INSTALL_OPERATOR_ID, text=tr(scene, "INSTALLING ENGINES…", "INSTALANDO MOTORES…"), icon="IMPORT")
                     factor = max(0.0, min(1.0, float(remote.get("progress", 0.0) or 0.0)))
                     pct = int(round(factor * 100.0))
                     phase = str(remote.get("phase") or "PREPARANDO")
@@ -3639,11 +3566,13 @@ class DSG_SUITE_PT_Main(Panel):
                     row = ui_style.tertiary_action(body) if engines_ready else ui_style.primary_action(body)
                     verified = runtime_bootstrap.verification_state()
                     repair = bool(verified.get("done") and not verified.get("ready"))
-                    row.operator(
-                        DSG_SUITE_OT_InstallEnginesCore.bl_idname,
+                    install_op = row.operator(
+                        runtime_bootstrap.INSTALL_OPERATOR_ID,
                         text=(tr(scene, "ENGINES ✓", "MOTORES ✓") if engines_ready else (tr(scene, "REPAIR ENGINES", "REPARAR MOTORES") if repair else tr(scene, "INSTALL ENGINES", "INSTALAR MOTORES"))),
                         icon="CHECKMARK" if engines_ready else "IMPORT",
                     )
+                    # A repair request must bypass the runtime quick-ready short circuit.
+                    install_op.force = bool(repair)
                     if repair:
                         set_status_bar(context, str(verified.get("error") or tr(scene, "Engine verification failed.", "Falló la verificación de motores.")))
             except Exception:
@@ -3749,6 +3678,16 @@ class DSG_SUITE_PT_Main(Panel):
             return
 
         active_route = clinical_route(scene)
+        if (
+            cbct_dental_module is not None
+            and (current == STAGE_ALIGNMENT or step in {
+                "IMMEDIATE_FDI_REVIEW", "IMMEDIATE_SELECT_TEETH", "IMMEDIATE_ARCH_REVIEW"
+            })
+            and cbct_dental_module.dentition_objects(context)
+        ):
+            # Use the full panel width so the choice remains readable beside
+            # the compact workflow rail. It only changes the review surface.
+            cbct_dental_module.draw_surface_smoothing(layout, context, show_note=False)
         if active_route == ROUTE_SIMPLE and current == STAGE_DICOM:
             if step == "SIMPLE_SEGMENTING":
                 try:
@@ -3930,102 +3869,35 @@ class DSG_SUITE_OT_InstallEnginesCore(Operator):
     bl_options = {"REGISTER"}
 
     def execute(self, context):
-        stamp = f"{time.time():.6f}"
         scene = getattr(context, "scene", None)
-        if scene is not None:
-            try:
-                scene["DSG_engine_install_click_v966"] = stamp
-                scene["DSG_engine_install_status_v968"] = "CLIC RECIBIDO"
-            except Exception:
-                _DSG_LOG.debug("suppressed exception", exc_info=True)
         try:
-            set_status_bar(context, f"DSG {DSG_VERSION_STR} · clic recibido · iniciando motores…")
-        except Exception:
-            _DSG_LOG.debug("suppressed exception", exc_info=True)
-        try:
-            self.report({"INFO"}, f"DSG {DSG_VERSION_STR} · clic INSTALAR MOTORES recibido")
-        except Exception:
-            _DSG_LOG.debug("suppressed exception", exc_info=True)
-
-        # Import lazily. The operator itself is already registered even if
-        # runtime_bootstrap failed to register its own classes.
-        try:
-            from . import totalseg_runtime
-        except Exception as exc:
-            msg = f"No se puede cargar el runtime de motores: {type(exc).__name__}: {exc}"
-            if scene is not None:
-                try: scene["DSG_engine_install_status_v968"] = msg
-                except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-            try: set_status_bar(context, msg)
-            except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-            self.report({"ERROR"}, msg[:240])
-            return {"CANCELLED"}
-
-        try:
-            totalseg_runtime.record_install_click(
-                click_id=stamp,
-                operator_id=self.bl_idname,
-            )
-        except Exception as exc:
-            # A diagnostic write must never prevent the actual installer.
-            print(f"[DSG {DSG_VERSION_STR}] click diagnostic warning: {type(exc).__name__}: {exc}")
-
-        try:
-            status = totalseg_runtime.quick_status()
-            if status.dependencies_ready and status.model_ready:
-                msg = f"Motores ya listos · TotalSegmentator {status.version} · {status.device}"
-                if scene is not None:
-                    try: scene["DSG_engine_install_status_v968"] = msg
-                    except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-                try: set_status_bar(context, msg)
-                except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-                self.report({"INFO"}, msg[:240])
-                return {"FINISHED"}
-        except Exception as exc:
-            print(f"[DSG {DSG_VERSION_STR}] quick_status warning: {type(exc).__name__}: {exc}")
-
-        try:
-            totalseg_runtime.mark_install_requested(f"DSG {DSG_VERSION_STR} · preparando instalación…")
-            started = totalseg_runtime.start_install()
-            state = totalseg_runtime.install_state()
+            from . import segmentation_engines, runtime_bootstrap
+            started = segmentation_engines.start_install("ALL")
+            state = segmentation_engines.install_state()
+            runtime_bootstrap._ensure_install_ui_timer()
         except Exception as exc:
             msg = f"INSTALAR MOTORES falló: {type(exc).__name__}: {exc}"
-            try: totalseg_runtime.mark_install_error(msg)
-            except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
             if scene is not None:
-                try: scene["DSG_engine_install_status_v968"] = msg
-                except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-            try: set_status_bar(context, msg)
-            except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
+                scene["DSG_engine_install_status_v910"] = msg
             self.report({"ERROR"}, msg[:240])
             return {"CANCELLED"}
 
         err = str(state.get("error") or "")
         if err:
-            msg = f"Motor: {err}"
+            msg = f"Motores: {err}"
             if scene is not None:
-                try: scene["DSG_engine_install_status_v968"] = msg
-                except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-            try: set_status_bar(context, msg)
-            except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
+                scene["DSG_engine_install_status_v910"] = msg
             self.report({"ERROR"}, msg[:240])
             return {"CANCELLED"}
 
-        msg = "Instalación de motores iniciada" if started else "La instalación de motores ya estaba en curso"
+        msg = "Instalación de los tres motores iniciada" if started else "La instalación de motores ya estaba en curso"
         if scene is not None:
-            try: scene["DSG_engine_install_status_v968"] = msg
-            except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-        try: set_status_bar(context, msg)
-        except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-        self.report({"INFO"}, msg)
-
-        # Keep the UI responsive/progress-visible without depending on the
-        # runtime_bootstrap operator class itself.
+            scene["DSG_engine_install_status_v910"] = msg
         try:
-            from . import runtime_bootstrap
-            runtime_bootstrap._ensure_install_ui_timer()
-        except Exception as exc:
-            print(f"[DSG {DSG_VERSION_STR}] UI timer warning: {type(exc).__name__}: {exc}")
+            set_status_bar(context, msg)
+        except Exception:
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
+        self.report({"INFO"}, msg)
         return {"FINISHED"}
 
 

@@ -1,4 +1,4 @@
-"""DSG v9.2.64 optional process-isolated surface worker.
+"""DSG 9.10 optional process-isolated surface worker.
 
 This script is launched by a background Blender process only when explicitly
 requested by the surface worker client. It never creates Blender datablocks.
@@ -30,9 +30,11 @@ def main() -> int:
         sys.path.insert(0, addon_parent)
 
     import numpy as np
-    import dsg.cbct_ai_runtime as runtime
-    runtime._prepend_runtime_paths()
+    import dsg.segmentation_engines as engines
     import importlib
+    for path in reversed(engines.active_site_paths(None)):
+        if path and path not in sys.path:
+            sys.path.insert(0, path)
     importlib.invalidate_caches()
     import dsg.cbct_surface_meshing as meshing
 

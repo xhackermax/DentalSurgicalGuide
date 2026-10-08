@@ -1090,7 +1090,7 @@ def repair_core_object_pointers(props):
 def _clear_scene_object_pointers(obj):
     """Borra PointerProperty que apunten a ``obj`` antes de eliminarlo.
 
-    Blender 5.1 puede dejar un enlace inválido dentro del memfile de Undo cuando
+    Blender 5.2 puede dejar un enlace inválido dentro del memfile de Undo cuando
     se elimina un Object que todavía está referenciado por un PropertyGroup de
     Scene. El fallo no siempre aparece al eliminarlo: suele manifestarse después
     al pulsar Ctrl+Z durante ``BKE_memfile_undo_decode``.
@@ -1112,7 +1112,7 @@ def _clear_scene_object_pointers(obj):
                 if getattr(props, attr, None) is obj:
                     setattr(props, attr, None)
             except (ReferenceError, RuntimeError, TypeError):
-                pass
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
             except Exception:
                 _DSG_LOG.debug("suppressed exception", exc_info=True)
 
@@ -1120,7 +1120,7 @@ def _clear_scene_object_pointers(obj):
 def _clear_id_animation_data(id_data):
     """Detach Actions, NLA tracks and drivers before a DSG ID is retired.
 
-    Blender 5.0 can crash in the Outliner while expanding AnimData from an
+    Blender 5.2 can crash in the Outliner while expanding AnimData from an
     object that has just been replaced. Clearing the AnimData through the RNA
     API leaves the Action datablock alive and removes only the unsafe link.
     """
@@ -1172,7 +1172,7 @@ def _sanitize_dsg_object_for_id_change(obj):
 
 
 def _prepare_outliner_for_dsg_id_changes(context):
-    """Avoid Blender 5.0 expanding stale Object AnimData during DSG rebuilds.
+    """Avoid Blender 5.2 expanding stale Object AnimData during DSG rebuilds.
 
     The Object Contents filter is not clinically useful in DSG and disabling it
     prevents the Outliner from traversing Actions/Drivers while generated IDs
@@ -1207,7 +1207,7 @@ def _archive_transient_dsg_object(obj, reason='temporary_cleanup', prefix='DSG_A
 
     This is used for frequently rebuilt helpers such as emergence controllers
     and safety halos. Keeping the ID alive until Reset avoids stale Outliner and
-    Undo references in Blender 5.0.
+    Undo references in Blender 5.2.
     """
     if not _valid_obj(obj):
         return False
@@ -1354,11 +1354,8 @@ def safe_remove_by_prefix(prefix):
 
 
 def deselect_all_objects():
-    # The view-layer collection can briefly yield ``None`` right after objects
-    # were removed in the same operator (seen in Blender 5.2); skip them.
-    for o in list(bpy.context.view_layer.objects):
-        if o is not None:
-            o.select_set(False)
+    for o in bpy.context.view_layer.objects:
+        o.select_set(False)
 
 
 def set_active(context, obj):
@@ -1835,7 +1832,7 @@ def _assign_blockout_union_band_material(passive, original_obj,
 def _quiesce_blockout_boolean_modifiers():
     """Disable and remove legacy blockout Boolean modifiers without evaluation.
 
-    Blender 5.0.1 can crash natively inside ``meshintersect::boolean_trimesh``
+    Blender 5.2 can crash natively inside ``meshintersect::boolean_trimesh``
     while the dependency graph evaluates an old blockout UNION modifier.  The
     current blockout is homologous to the closed source model and no longer
     needs a Boolean modifier, so stale modifiers are disabled before any object

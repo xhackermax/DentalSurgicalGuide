@@ -1,0 +1,7 @@
+DSG 9.10.10 — Ctrl+Z en segmentación, alineación y todas las etapas DSG
+
+Añade historial a las operaciones de modelo, casquillos, canales de fresado, revisión MPR, navegación y regreso que antes omitían UNDO. Cancela modales y callbacks pendientes antes de recuperar datos. Recupera también el estado Python de planificación y descarta cachés geométricas antiguas. Completa la presentación diferida de las etapas dentro de la misma transacción. Impide el avance automático inmediato después de deshacer.
+
+No añade un atajo de rehacer. Las exportaciones ya escritas, las instalaciones y otros efectos externos no se eliminan con Ctrl+Z.
+
+Verificación en Blender 5.2.2: 20 estados de segmentación/alineación/DSG, recuperación nativa y archivada con geometría, transformaciones, materiales, punteros, FDI, labels y máscaras; creación real de un casquillo con requisitos sintéticos, limpieza real de puntos; cancelación modal, loaders anidados y timers; 35 cambios sobre una pila de 32. Las pruebas de estados no sustituyen recorrer todos los botones de un caso clínico real.

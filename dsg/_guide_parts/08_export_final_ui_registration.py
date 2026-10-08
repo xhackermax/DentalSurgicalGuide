@@ -314,24 +314,6 @@ class DSG_OT_ExportGuideSTL(Operator, ExportHelper):
                     safe_remove_object_with_data(seal)
                 seal_objects = []
 
-                # Perforation marks: countersink around every sealed outlet and the
-                # engraved opening-order digit. Material is only removed.
-                mark_cutters, mark_notes = build_export_frangible_mark_cutters(
-                    context, props, export_work)
-                seal_objects = list(mark_cutters)
-                for index, cutter in enumerate(list(mark_cutters)):
-                    ok, message = apply_difference_exact_checked(
-                        context, export_work, cutter, f'DSG_ExportMark_{index:02d}',
-                        robust_retry=True)
-                    if not ok:
-                        raise RuntimeError(
-                            f'Could not cut the perforation mark {cutter.name}: {message}')
-                    safe_remove_object_with_data(cutter)
-                seal_objects = []
-                if mark_notes:
-                    _DSG_LOG.warning('frangible marks: %s', '; '.join(mark_notes))
-                    islands_msg = (islands_msg + ' · ' if islands_msg else '') + '; '.join(mark_notes)
-
                 report = get_mesh_solid_report(export_work, max_polygons=1200000)
                 if report.get('checked') and not report.get('solid'):
                     raise RuntimeError(
@@ -344,7 +326,6 @@ class DSG_OT_ExportGuideSTL(Operator, ExportHelper):
                     export_work['DSG_export_frangible_seal_rim_thickness_mm'] = float(
                         IRRIGATION_FRANGIBLE_SEAL_RIM_THICKNESS_MM_FIXED)
                     export_work['DSG_export_frangible_seal_mode'] = IRRIGATION_FRANGIBLE_SEAL_MODE
-                    export_work['DSG_export_frangible_marker_shape'] = FRANGIBLE_MARKER_SHAPE
                 except Exception:
                     _DSG_LOG.debug("suppressed exception", exc_info=True)
                 export_obj = export_work
@@ -358,8 +339,6 @@ class DSG_OT_ExportGuideSTL(Operator, ExportHelper):
                 export_obj.hide_select = False
             except Exception:
                 _DSG_LOG.debug("suppressed exception", exc_info=True)
-            from .guide_export import blender_adapter as export_adapter
-            export_adapter.triangulate_for_stl(export_obj)
             gate_checks.extend(gate.check_solid(export_obj))
             blocking = [c for c in gate_checks if c.blocking]
             if blocking:
@@ -2718,74 +2697,8 @@ def _draw_irrigation_implant_gates(box, props):
     if any(irrigation_implant_is_sealed(item) for item in implants):
         warning = gate_box.row()
         warning.label(
-            text=_ui_text(props, 'Perforate at the countersink inside the sleeve (order digit engraved)',
-                          'Perforar en el avellanado del cilindro (nº de orden grabado)'),
+            text=_ui_text(props, 'Open at the internal cylindrical mark', 'Abrir por la huella cilíndrica interna'),
             icon_value=icon_manager.icon_id('status_warning'))
-
-def _draw_irrigation_sequential_network(box, props):
-    """Main channel + Linked sleeves: selection, opening order and state."""
-    if count_implants(props) <= 1:
-        return
-    net_box = box.box()
-    net_box.label(
-        text=_ui_text(props, 'Irrigation network · sequential opening',
-                      'Red de irrigación · apertura secuencial'),
-        icon_value=icon_manager.icon_id('irrigation'))
-    net_box.prop(props, 'irr_sequential_opening',
-                 text=_ui_text(props, 'Sequential opening', 'Apertura secuencial'))
-    if irrigation_sequential_enabled(props):
-        net_box.prop(props, 'irr_open_branch_share',
-                     text=_ui_text(props, 'Water to opened sleeve', 'Agua al cilindro abierto'),
-                     slider=True)
-
-    # Current order (read-only: roles are computed when links change).
-    members = []
-    for implant in get_all_implant_objects(props):
-        order = int(implant.get(IRR_OPEN_ORDER_KEY, 0) or 0)
-        if order > 0:
-            members.append((order, implant))
-    for order, implant in sorted(members, key=lambda item: item[0]):
-        row = net_box.row()
-        if order == 1:
-            row.label(text=_ui_text(
-                props, f'1 · {implant.name} · OPEN (start)',
-                f'1 · {implant.name} · ABIERTA (inicio)'), icon='CHECKMARK')
-        else:
-            share = float(implant.get('DSG_irrigation_predicted_share_at_opening', 0.0) or 0.0)
-            extra = f' · {share:.0%}' if share > 0 else ''
-            row.label(text=_ui_text(
-                props, f'{order} · {implant.name} · 0.10 mm wall · perforate {order}th{extra}',
-                f'{order} · {implant.name} · pared 0,10 mm · perforar {order}º{extra}'), icon='LOCKED')
-
-    if any(order > 1 for order, _implant in members):
-        preview = net_box.row(align=True)
-        preview.operator(
-            'dsg.preview_frangible_marks',
-            text=_ui_text(props, 'Preview walls & marks', 'Ver paredes y marcas'),
-            icon='HIDE_OFF')
-        clear = preview.operator('dsg.preview_frangible_marks', text='', icon='X')
-        clear.clear = True
-
-    candidates = irrigation_link_candidates(props)
-    if candidates:
-        pick = net_box.column(align=True)
-        pick.label(text=_ui_text(props, 'Link to the main channel:', 'Vincular al conducto principal:'))
-        selected = 0
-        for implant in candidates:
-            chosen = bool(implant.get(IRR_LINK_CANDIDATE_KEY, False))
-            selected += int(chosen)
-            op = pick.operator(
-                'dsg.toggle_irrigation_link_candidate',
-                text=implant.name, icon='CHECKBOX_HLT' if chosen else 'CHECKBOX_DEHLT',
-                depress=chosen)
-            op.implant_name = implant.name
-        action = _secondary_action(net_box)
-        action.enabled = selected > 0
-        action.operator(
-            'dsg.link_selected_irrigation',
-            text=_ui_text(props, f'LINK SELECTED ({selected})', f'VINCULAR SELECCIONADOS ({selected})'),
-            icon_value=icon_manager.icon_id('link'))
-
 
 def _draw_irrigation_mode_selector(box, props):
     selector = box.box()
@@ -2929,8 +2842,6 @@ def _draw_step_irrigation(layout, b, context, props):
             dimensions.prop(props, 'irr_inner_diameter', text=_ui_text(props, 'Lumen', 'Lumen'))
             dimensions.prop(props, 'irr_wall_thickness', text=_ui_text(props, 'Thickness', 'Grosor'))
         return
-
-    _draw_irrigation_sequential_network(b, props)
 
     primary = _primary_action(b)
     primary.operator(
@@ -3317,8 +3228,6 @@ CLASSES = [
     DSG_OT_ConfirmIrrigationPreview,
     DSG_OT_UpdateConfirmIrrigation,
     DSG_OT_LinkIrrigation,
-    *SEQUENTIAL_IRRIGATION_CLASSES,
-    *FRANGIBLE_CLASSES,
     DSG_OT_RemoveLastIrrigation,
     DSG_OT_CancelIrrigationPreview,
     DSG_OT_SkipIrrigation,

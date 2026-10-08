@@ -1718,7 +1718,7 @@ def _resample_polyline_with_distances(points, max_step=0.35):
 def build_irrigation_funnel_samples(points, props, implant_obj=None, include_channel_tail=False):
     """Muestras del lumen de irrigación como UN SOLO tubo tapered.
 
-    Esta es la lógica v5.0.8: no hay cono + cilindro. El cutter interno es un
+    Esta es la lógica legacy geometry note: no hay cono + cilindro. El cutter interno es un
     tubo continuo de radio variable que sigue la línea central real del tubo de
     irrigación. Cerca del sleeve tiene el Ø de salida; progresivamente se abre
     hasta el Ø del canal interno siguiendo curvas y ángulos del recorrido.
@@ -1784,7 +1784,7 @@ def build_irrigation_funnel_samples(points, props, implant_obj=None, include_cha
 def build_variable_radius_tube_object(context, name, samples, bevel_resolution=8, show_wire=True, subdiv_levels=0):
     """Crea un objeto mesh cerrado desde muestras de centro/radio.
 
-    v5.0.7: opcionalmente aplica Subdivision Surface al cutter antes de usarlo
+    legacy geometry note: opcionalmente aplica Subdivision Surface al cutter antes de usarlo
     para el booleano. Esto suaviza la unión boquilla→cono→canal sin separar
     las piezas ni crear booleanos independientes.
     """
@@ -1819,7 +1819,7 @@ def build_variable_radius_tube_object(context, name, samples, bevel_resolution=8
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
 
-    # v5.0.7 — Subdivision Surface real sobre el cutter del lumen.
+    # legacy geometry note — Subdivision Surface real sobre el cutter del lumen.
     # Se aplica ANTES del booleano para que el hueco final de la guía quede
     # más orgánico, sobre todo en la transición cono/canal.
     levels = max(0, min(2, int(subdiv_levels or 0)))
@@ -2474,7 +2474,7 @@ def clear_contour_curve(remove_data=True):
             if curve_data.users == 0:
                 bpy.data.curves.remove(curve_data)
         except (ReferenceError, RuntimeError, TypeError):
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 def consume_contour_after_frame(props):
@@ -2567,7 +2567,7 @@ def unregister_contour_draw_handler():
         try:
             bpy.types.SpaceView3D.draw_handler_remove(_CONTOUR_DRAW_HANDLER, 'WINDOW')
         except RuntimeError:
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
         _CONTOUR_DRAW_HANDLER = None
     _draw_callback_contour._current_chain = []
 
@@ -2607,7 +2607,7 @@ def unregister_irr_draw_handler():
         try:
             bpy.types.SpaceView3D.draw_handler_remove(_IRR_DRAW_HANDLER, 'WINDOW')
         except RuntimeError:
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
         _IRR_DRAW_HANDLER = None
 
 

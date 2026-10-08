@@ -1,0 +1,15 @@
+DSG 9.10.9 - Blender 5.2 / Windows Python 3.13
+
+1. Instala DSG_v9_10_8_BLENDER_5_2_POST_SEGMENTATION_SMOOTHING.zip desde Preferencias > Complementos > Instalar desde disco.
+2. Activa DSG y pulsa INSTALAR / REPARAR MOTORES en el panel DICOM.
+3. Espera a que termine. La instalación CUDA inicial descarga unos 2.6 GB.
+4. Reinicia Blender si acaba de instalar el lector DICOM.
+5. Usa TotalSegmentator o ToothSeg. Los pesos existentes se conservan.
+
+El ZIP incluye el lector DICOM y los códecs; los modelos y PyTorch se instalan
+en el runtime privado de DSG y no están incluidos en este ZIP.
+
+U-Mamba2 requiere Linux/CUDA y un checkpoint final ToothFairy3. En Windows
+aparece NO COMPATIBLE y el resumen ALL muestra PARTIAL por ese motor.
+Los resultados independientes muestran si DICOM, PyTorch y los dos motores
+compatibles están READY. No significa que los tres motores funcionen.

@@ -30,7 +30,7 @@ def as_tuple3(value: Iterable[float] | None, default=(0.0, 0.0, 0.0)) -> tuple[f
         if len(values) >= 3 and all(math.isfinite(component) for component in values[:3]):
             return values[:3]
     except (TypeError, ValueError):
-        pass
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
     return tuple(float(component) for component in default)
 
 
@@ -248,13 +248,19 @@ def read_header(
     }
     try:
         return pydicom.dcmread(filepath, force=False, **kwargs), False
-    except InvalidDicomError:
+    except InvalidDicomError as strict_error:
         if not force_fallback:
             raise
         dataset = pydicom.dcmread(filepath, force=True, **kwargs)
         identifying = ("Rows", "Columns", "Modality", "SeriesInstanceUID", "SOPClassUID")
         if not any(hasattr(dataset, keyword) for keyword in identifying):
             raise InvalidDicomError("El archivo no contiene una cabecera DICOM reconocible")
+        error_handling.log_fallback(
+            _DSG_LOG,
+            "DSG-F301",
+            reason=strict_error,
+            context={"filename": Path(filepath).name},
+        )
         return dataset, True
 
 
@@ -285,7 +291,7 @@ def pixel_spacing(dataset: Any, frame_index: int = 0) -> tuple[float | None, flo
         if row_spacing > 0.0 and column_spacing > 0.0:
             return row_spacing, column_spacing
     except (TypeError, ValueError, IndexError):
-        pass
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
     return None, None
 
 
@@ -319,7 +325,7 @@ def image_orientation(dataset: Any, frame_index: int = 0):
         if len(values) >= 6:
             return values[:6]
     except (TypeError, ValueError):
-        pass
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
     return (1.0, 0.0, 0.0, 0.0, 1.0, 0.0)
 
 
@@ -385,30 +391,75 @@ def _position_projection(dataset: Any, normal, frame_index: int = 0) -> float | 
 
 
 def _discover_series(selected_path: str, selected_header: Any) -> list[tuple[str, Any]]:
-    """Find sibling files belonging to the same classic DICOM series."""
+    """Find files belonging to the same classic DICOM series.
+
+    The common path scans only the selected directory. If that yields a single
+    slice, DSG performs a bounded extension-agnostic search around the study so
+    vendor exports split across subfolders still load without extra UI.
+    """
     series_uid = str(getattr(selected_header, "SeriesInstanceUID", "") or "")
     if not series_uid:
         return [(selected_path, selected_header)]
 
     selected = Path(selected_path)
-    candidates: list[tuple[str, Any]] = []
     selected_norm = os.path.normcase(os.path.abspath(str(selected)))
-    for path in selected.parent.iterdir():
+    candidates: list[tuple[str, Any]] = []
+    seen: set[str] = set()
+
+    def consider(path: Path) -> None:
         if not path.is_file():
-            continue
+            return
         try:
             path_norm = os.path.normcase(os.path.abspath(str(path)))
+        except Exception:
+            path_norm = str(path)
+        if path_norm in seen:
+            return
+        seen.add(path_norm)
+        try:
             if path_norm == selected_norm:
                 header = selected_header
             else:
                 header, _forced = _cached_header(str(path), force_fallback=True)
         except Exception:
-            continue
+            return
         if str(getattr(header, "SeriesInstanceUID", "") or "") != series_uid:
-            continue
+            return
         if safe_int(getattr(header, "Rows", 0), 0) <= 0 or safe_int(getattr(header, "Columns", 0), 0) <= 0:
-            continue
+            return
         candidates.append((str(path), header))
+
+    # Fast/common case: all slices live together.
+    try:
+        for path in selected.parent.iterdir():
+            consider(path)
+    except OSError:
+        consider(selected)
+
+    # Unusual vendor exports may split one SeriesInstanceUID into nested folders.
+    # Only broaden the search if the local directory did not reveal a real stack.
+    local_count = len(candidates)
+    if local_count <= 1:
+        remaining = 20000
+        for root, depth in _recovery_search_roots(selected):
+            if root == selected.parent:
+                continue
+            for path in _bounded_recursive_files(root, max_depth=depth, remaining=remaining):
+                before = len(seen)
+                consider(path)
+                if len(seen) > before:
+                    remaining -= 1
+                if remaining <= 0:
+                    break
+            if remaining <= 0:
+                break
+        if len(candidates) > local_count:
+            error_handling.log_fallback(
+                _DSG_LOG,
+                "DSG-F304",
+                reason="same SeriesInstanceUID recovered outside selected directory",
+                context={"local_slices": local_count, "recovered_slices": len(candidates)},
+            )
 
     if not candidates:
         return [(selected_path, selected_header)]
@@ -891,41 +942,69 @@ def probe_source(filepath: str) -> SourceProbe:
 
 
 def _decode_pixel_array(path: str, dataset: Any | None = None):
-    """Decode one DICOM image without reparsing/storing a full Dataset when possible.
+    """Decode one DICOM image through quiet compatibility fallbacks.
 
-    pydicom 3's ``pixels.pixel_array(path)`` reads the minimal image metadata and
-    pixel stream directly from disk.  For DSG's bundled minidicom, the cached
-    stop-before-pixels header already contains the byte offset, so it can read
-    PixelData without parsing the header a second time.
+    User-facing behaviour stays simple: one CBCT-open action. Internally DSG
+    tries pydicom's current pixel decoder stack, then a full Dataset decode,
+    then SimpleITK/GDCM when present in the existing DSG runtime.
     """
     pydicom = load_pydicom()
     if pydicom is None:
-        raise RuntimeError("pydicom no está instalado")
+        raise RuntimeError("Lector DICOM no disponible")
 
-    try:
-        if full_pydicom_available():
+    errors: list[str] = []
+
+    # Preferred path: pydicom 3 decoder registry (native + installed plugins).
+    if full_pydicom_available():
+        try:
             from pydicom.pixels import pixel_array as pd_pixel_array
             return pd_pixel_array(path)
+        except Exception as exc:
+            errors.append(f"pydicom.pixels: {type(exc).__name__}: {exc}")
+
+    # Compatibility path: bundled minidicom or Dataset.pixel_array.
+    try:
         bundled_pixel_array = getattr(pydicom, "pixel_array", None)
         if callable(bundled_pixel_array):
             return bundled_pixel_array(path, dataset=dataset)
         if dataset is None:
             dataset = pydicom.dcmread(path, force=True)
         return dataset.pixel_array
-    except Exception as first_error:
+    except Exception as exc:
+        errors.append(f"dataset.pixel_array: {type(exc).__name__}: {exc}")
+        error_handling.log_fallback(
+            _DSG_LOG,
+            "DSG-F302",
+            reason=exc,
+            context={"filename": Path(path).name},
+        )
+
+    # Last decoding fallback. SimpleITK is already part of the broader DSG
+    # scientific runtime on many installations and uses GDCM underneath for
+    # DICOM I/O. It is loaded only after the lightweight decoders actually fail.
+    sitk = load_simpleitk()
+    if sitk is not None:
         try:
-            # Last-resort compatibility path for unusual full-pydicom builds.
-            dataset = pydicom.dcmread(path, force=True)
-            return dataset.pixel_array
-        except Exception as second_error:
-            uid = _dataset_transfer_syntax_uid(dataset) if dataset is not None else ""
-            ready, detail = dicom_transfer_syntax_support(uid)
-            raise RuntimeError(
-                "No se pudieron decodificar los píxeles DICOM. "
-                f"TransferSyntax={uid or 'desconocida'} · {detail}. "
-                "DSG verifica el motor antes de abrir el volumen; prepara/repara el runtime DICOM offline. "
-                f"Detalle: {second_error}"
-            ) from first_error
+            image = sitk.ReadImage(str(path))
+            array = sitk.GetArrayFromImage(image)
+            if array is not None:
+                error_handling.log_fallback(
+                    _DSG_LOG,
+                    "DSG-F303",
+                    reason="pydicom pixel decoding failed",
+                    context={"filename": Path(path).name},
+                )
+                return array
+        except Exception as exc:
+            errors.append(f"SimpleITK/GDCM: {type(exc).__name__}: {exc}")
+
+    uid = _dataset_transfer_syntax_uid(dataset) if dataset is not None else ""
+    detail = " | ".join(errors[-3:])
+    raise RuntimeError(
+        "No se pudieron decodificar los píxeles de este CBCT"
+        + (f" (TransferSyntax {uid})" if uid else "")
+        + (f". Detalle técnico: {detail}" if detail else "")
+    )
 
 
 def _grayscale_frame(array):

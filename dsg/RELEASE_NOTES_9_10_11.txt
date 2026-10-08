@@ -1,0 +1,9 @@
+DSG 9.10.11 — Primera fase de mejora gradual del pipeline
+
+Contratos puros de entrada, labelmap y manifest. Diagnóstico por ejecución con etapas, duración y fallbacks. Nuevo botón Copiar diagnóstico. Trinquete automático de métricas. Mantiene motores, suavizado, geometría e historial Ctrl+Z.
+
+Las capturas amplias bajan de 1775 a 1768 y las silenciosas de 170 a 164; las otras métricas no empeoran. Los labels de hueso/canal se conservan; la normalización no recorta valores inválidos a un diente. No presupone HU absolutos para todos los CBCT.
+
+Incluye docs/CODEMAP.md actualizado y CODEMAP_INDEX.md regenerable con clases, funciones, métodos, operadores y líneas reales; tools/gen_index.py --check detecta un índice obsoleto.
+
+Esta fase no sustituye los nueve fragmentos DICOM ni RUNTIME por sesiones de escena. Esas migraciones siguen documentadas como deuda y necesitan más caracterización.

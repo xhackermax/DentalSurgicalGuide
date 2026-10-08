@@ -89,7 +89,7 @@ def _run_realtime_transform_refresh():
 @persistent
 def dicom_wizard_pro_depsgraph_update(scene, depsgraph) -> None:
     """Detect direct viewport transforms of the DICOM MPR planes."""
-    # Blender 5.1 can emit depsgraph notifications while enabling an add-on,
+    # Blender 5.2 can emit depsgraph notifications while enabling an add-on,
     # when bpy.data is the temporary _RestrictData object. Never touch objects
     # until normal blend-data access has been restored.
     if not _dicom_data_access_ready():
@@ -183,6 +183,11 @@ def dicom_wizard_pro_undo_post(*_args) -> None:
     RUNTIME.undo_in_progress = False
     RUNTIME.update_lock = False
     _clear_pending_refresh_state()
+    from . import workflow_history
+    if workflow_history.has_checkpoint(bpy.context.scene):
+        RUNTIME.undo_repair_pending = False
+        force_ui_redraw()
+        return
     RUNTIME.undo_repair_pending = True
     try:
         lifecycle.register_timer(_repair_after_undo, first_interval=0.18)
@@ -221,7 +226,7 @@ def unregister_undo_handlers() -> None:
                 try:
                     handlers.remove(handler)
                 except ValueError:
-                    pass
+                    _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 def register_realtime_handler() -> None:
@@ -235,10 +240,9 @@ def unregister_realtime_handler() -> None:
             try:
                 bpy.app.handlers.depsgraph_update_post.remove(handler)
             except ValueError:
-                pass
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 # =============================================================================
 # MODULE: operators.py
 # =============================================================================
-

@@ -670,7 +670,8 @@ class DICOMWIZARDPRO_OT_undo_last(Operator):
             self.report({'WARNING'}, "Ya hay una operación de deshacer en curso")
             return {'CANCELLED'}
         try:
-            result = bpy.ops.ed.undo()
+            from . import workflow_history
+            result = workflow_history.undo_previous(context)
         except RuntimeError as exc:
             self.report({'WARNING'}, f"No hay una acción disponible para deshacer: {exc}")
             return {'CANCELLED'}
@@ -910,7 +911,7 @@ class DICOMWIZARDPRO_OT_fill_holes(Operator):
 # -----------------------------------------------------------------------------
 # DSG 8.8.6 non-blocking CUDA-aware CBCT workflow
 # -----------------------------------------------------------------------------
-# Neural work happens in cbct_ai_runtime's worker thread. Blender data is never
+# Neural work happens in the isolated segmentation worker. Blender data is never
 # touched there. This timer commits the result and creates at most one tooth mesh
 # per tick, keeping Blender's event loop alive throughout the operation.
 # This state is intentionally module-owned and always initialized before an
@@ -961,226 +962,6 @@ _ASYNC_SEGMENTATION = {
     "last_message": "",
 }
 
-
-
-_POSTPROCESS_JOB_LOCK = threading.Lock()
-_POSTPROCESS_JOB = {
-    "running": False,
-    "done": False,
-    "error": "",
-    "message": "",
-    "result": None,
-    "started": 0.0,
-    "job_dir": "",
-    "processes": {},
-    "base_result": None,
-    "task_messages": {},
-}
-
-
-def _postprocess_job_state() -> dict:
-    with _POSTPROCESS_JOB_LOCK:
-        return {
-            "running": bool(_POSTPROCESS_JOB.get("running")),
-            "done": bool(_POSTPROCESS_JOB.get("done")),
-            "error": str(_POSTPROCESS_JOB.get("error") or ""),
-            "message": str(_POSTPROCESS_JOB.get("message") or ""),
-            "started": float(_POSTPROCESS_JOB.get("started") or 0.0),
-            "task_messages": dict(_POSTPROCESS_JOB.get("task_messages") or {}),
-        }
-
-
-def _clear_postprocess_job_dir():
-    with _POSTPROCESS_JOB_LOCK:
-        job_dir = str(_POSTPROCESS_JOB.get("job_dir") or "")
-        _POSTPROCESS_JOB["job_dir"] = ""
-        _POSTPROCESS_JOB["processes"] = {}
-    if job_dir:
-        try:
-            shutil.rmtree(job_dir, ignore_errors=True)
-        except Exception:
-            _DSG_LOG.debug("suppressed exception", exc_info=True)
-
-
-def _cancel_postprocess_workers():
-    with _POSTPROCESS_JOB_LOCK:
-        processes = dict(_POSTPROCESS_JOB.get("processes") or {})
-        _POSTPROCESS_JOB.update(
-            running=False, done=False, error="Cancelado",
-            message="Postproceso cancelado", processes={}, task_messages={}
-        )
-    for proc in processes.values():
-        try:
-            if proc is not None and proc.poll() is None:
-                proc.terminate()
-        except Exception:
-            _DSG_LOG.debug("suppressed exception", exc_info=True)
-    _clear_postprocess_job_dir()
-
-
-def _postprocess_write_optional_array(base_dir, name, arr):
-    np = load_numpy()
-    if arr is None:
-        return ""
-    path = Path(base_dir) / f"{name}.npy"
-    np.save(str(path), np.asarray(arr), allow_pickle=False)
-    return str(path)
-
-
-def _launch_postprocess_worker(blender_binary: Path, request_path: Path, log_path: Path):
-    log_handle = log_path.open("w", encoding="utf-8", errors="replace")
-    env = os.environ.copy()
-    env["PYTHONUNBUFFERED"] = "1"
-    command = [
-        str(blender_binary), "--background", "--factory-startup",
-        "--python", str(Path(__file__).resolve().parent / "cbct_postprocess_worker.py"),
-        "--", str(request_path),
-    ]
-    process = subprocess.Popen(
-        command, stdout=log_handle, stderr=subprocess.STDOUT,
-        stdin=subprocess.DEVNULL, env=env,
-        creationflags=(getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0),
-    )
-    return process, log_handle
-
-
-def _start_universal_postprocess_job(result: dict) -> bool:
-    """Run pure numerical dental reconciliation + mesh preparation off the UI path.
-
-    No bpy datablock is touched here. The existing DSG AI architecture already
-    separates numerical inference from main-thread Blender commits; 9.2.15 extends
-    that same boundary to the previously blocking 70-72% dental post-processing.
-    """
-    with _POSTPROCESS_JOB_LOCK:
-        if bool(_POSTPROCESS_JOB.get("running")):
-            return False
-        _POSTPROCESS_JOB.update(
-            running=True, done=False, error="", message="Preparando reconciliación dental…",
-            result=None, started=time.perf_counter(),
-        )
-
-    upper_mask = _ASYNC_SEGMENTATION.get("tooth_verifier_upper_mask")
-    upper_origin = _ASYNC_SEGMENTATION.get("tooth_verifier_upper_origin") or (0, 0, 0)
-    lower_mask = _ASYNC_SEGMENTATION.get("tooth_verifier_lower_mask")
-    lower_origin = _ASYNC_SEGMENTATION.get("tooth_verifier_lower_origin") or (0, 0, 0)
-    bone_semantic_mask = _ASYNC_SEGMENTATION.get("bone_semantic_mask")
-    bone_semantic_origin = _ASYNC_SEGMENTATION.get("bone_semantic_origin") or (0, 0, 0)
-    maxilla_semantic_mask = _ASYNC_SEGMENTATION.get("maxilla_semantic_mask")
-    maxilla_semantic_origin = _ASYNC_SEGMENTATION.get("maxilla_semantic_origin") or (0, 0, 0)
-    mandible_semantic_mask = _ASYNC_SEGMENTATION.get("mandible_semantic_mask")
-    mandible_semantic_origin = _ASYNC_SEGMENTATION.get("mandible_semantic_origin") or (0, 0, 0)
-    canal_verifier_mask = _ASYNC_SEGMENTATION.get("canal_verifier_mask")
-    canal_verifier_origin = _ASYNC_SEGMENTATION.get("canal_verifier_origin") or (0, 0, 0)
-    canal_verifier_stats = dict(_ASYNC_SEGMENTATION.get("canal_verifier_stats") or {})
-
-    def _worker():
-        try:
-            from . import cbct_dental_module
-            np = load_numpy()
-            labels = result.get("labels")
-            with _POSTPROCESS_JOB_LOCK:
-                _POSTPROCESS_JOB["message"] = "Reconciliando continuidad corona-raíz en ROI compactos…"
-            path_started = time.perf_counter()
-            path_stats = tooth_analysis.reconcile_universal_dentition_paths(
-                np, labels, RUNTIME.spacing_zyx_mm,
-                upper_support_mask=upper_mask, upper_support_origin=upper_origin,
-                lower_support_mask=lower_mask, lower_support_origin=lower_origin,
-            )
-            path_s = time.perf_counter() - path_started
-            with _POSTPROCESS_JOB_LOCK:
-                _POSTPROCESS_JOB["message"] = "Preparando mallas dentales y refinado CBCT fuera del hilo de Blender…"
-            mesh_payload = cbct_dental_module.prepare_universal_dentition_meshes(labels)
-            with _POSTPROCESS_JOB_LOCK:
-                _POSTPROCESS_JOB["message"] = "Preparando maxila, mandíbula y canal fuera del hilo de Blender…"
-            # Prefer UniversalLab jaw classes 54/53; retain DentalSegmentator
-            # anatomy as fallback exactly as the clinical route already does.
-            u_max, u_max_origin = _compact_mask_for_classes(labels, (54,))
-            max_mask = u_max if u_max is not None and bool(u_max.any()) else maxilla_semantic_mask
-            max_origin = u_max_origin if u_max is not None and bool(u_max.any()) else maxilla_semantic_origin
-            max_class = 54 if u_max is not None and bool(u_max.any()) else 1
-            max_source = "UNIVERSALLAB" if max_class == 54 else "DENTALSEGMENTATOR_8_7"
-            u_man, u_man_origin = _compact_mask_for_classes(labels, (53,))
-            man_mask = u_man if u_man is not None and bool(u_man.any()) else mandible_semantic_mask
-            man_origin = u_man_origin if u_man is not None and bool(u_man.any()) else mandible_semantic_origin
-            man_class = 53 if u_man is not None and bool(u_man.any()) else 2
-            man_source = "UNIVERSALLAB" if man_class == 53 else "DENTALSEGMENTATOR_8_7"
-            surfaces_started = time.perf_counter()
-            surfaces = {
-                "maxilla": _prepare_mask_surface_arrays(
-                    max_mask, max_origin, kind="JAW", label=max_class, max_axis=384, refine=True
-                ),
-                "mandible": _prepare_mask_surface_arrays(
-                    man_mask, man_origin, kind="JAW", label=man_class, max_axis=384, refine=True
-                ),
-                "canal": _prepare_canal_surface_arrays(
-                    labels, verifier_mask=canal_verifier_mask, verifier_origin=canal_verifier_origin,
-                    verifier_stats=canal_verifier_stats,
-                ),
-                "maxilla_class": int(max_class), "maxilla_source": str(max_source),
-                "mandible_class": int(man_class), "mandible_source": str(man_source),
-                "surface_prepare_s": 0.0,
-            }
-            surfaces["surface_prepare_s"] = float(time.perf_counter() - surfaces_started)
-            crop_info = result.setdefault("crop_info", {})
-            crop_info["tooth_path_reconciliation"] = dict(path_stats or {})
-            crop_info["tooth_postprocess_times"] = {
-                "path_reconciliation_s": float(path_s),
-                "mesh_prepare_s": float(mesh_payload.get("prepare_s", 0.0) or 0.0),
-                "surface_extract_s": float(mesh_payload.get("surface_extract_s", 0.0) or 0.0),
-            }
-            crop_info["tooth_surface_meshing"] = {
-                "engine_counts": dict(mesh_payload.get("engine_counts") or {}),
-                "vtk_available": bool(mesh_payload.get("vtk_available", False)),
-                "fallback_count": int(mesh_payload.get("mesher_fallback_count", 0) or 0),
-                "native_preview_count": int(mesh_payload.get("native_preview_count", 0) or 0),
-                "roi_total_voxels": int(mesh_payload.get("roi_total_voxels", 0) or 0),
-                "roi_vs_naive_fraction": float(mesh_payload.get("roi_vs_naive_fraction", 0.0) or 0.0),
-                "bbox_cache": bool(mesh_payload.get("bbox_cache", False)),
-                "roi_worker_count": int(mesh_payload.get("roi_worker_count", 1) or 1),
-                "native_fullres_count": int(mesh_payload.get("native_fullres_count", 0) or 0),
-                "single_pass": bool(mesh_payload.get("single_pass", False)),
-                "per_tooth_binary_masks": bool(mesh_payload.get("per_tooth_binary_masks", False)),
-                "component_cleanup_stage": str(mesh_payload.get("component_cleanup_stage", "")),
-                "native_resolution": bool(mesh_payload.get("native_resolution", False)),
-            }
-            payload = {
-                "result": result,
-                "path_stats": dict(path_stats or {}),
-                "prepared_meshes": mesh_payload,
-                "prepared_surfaces": surfaces,
-                "elapsed_s": float(time.perf_counter() - float(_POSTPROCESS_JOB.get("started") or time.perf_counter())),
-            }
-            with _POSTPROCESS_JOB_LOCK:
-                _POSTPROCESS_JOB.update(running=False, done=True, error="", message="Listo", result=payload)
-        except Exception as exc:
-            with _POSTPROCESS_JOB_LOCK:
-                _POSTPROCESS_JOB.update(
-                    running=False, done=True,
-                    error=f"{type(exc).__name__}: {exc}", message="Error en postproceso dental", result=None,
-                )
-
-    thread = threading.Thread(target=_worker, name="DSG-ToothPostprocess", daemon=True)
-    thread.start()
-    return True
-
-
-def _consume_universal_postprocess_result():
-    with _POSTPROCESS_JOB_LOCK:
-        if not bool(_POSTPROCESS_JOB.get("done")):
-            return None
-        payload = _POSTPROCESS_JOB.get("result")
-        error = str(_POSTPROCESS_JOB.get("error") or "")
-        _POSTPROCESS_JOB.update(running=False, done=False, error="", message="", result=None, started=0.0)
-    if error:
-        raise RuntimeError(error)
-    return payload
-
-
-_AI_PERFORMANCE_SESSION = {
-    "active": False,
-    "viewport_shading": [],
-    "changed_viewports": 0,
-}
 
 
 def _begin_ai_performance_session(context) -> dict:
@@ -1263,55 +1044,6 @@ def _restore_ai_performance_session(context=None) -> None:
 
 def ai_performance_session_state() -> dict:
     return dict(_AI_PERFORMANCE_SESSION)
-
-
-def _segmentation_progress_from_ai_message(message: str, *, verifier: bool = False) -> tuple[float, str]:
-    """Map real nnU-Net pipeline messages to a stable phase progress value.
-
-    The network's internal sliding-window percentage is not exposed by nnU-Net in
-    this integration, so DSG deliberately does NOT fabricate one. The progress
-    bar represents completed workflow phases; during the long neural-network
-    phase the percentage remains stable while elapsed time continues to update.
-    """
-    text = str(message or "").strip().lower()
-
-    if verifier:
-        base = 0.04
-        mapping = (
-            ("recortando", 0.05, "Preparando verificador anatómico"),
-            ("cargando", 0.07, "Cargando DentalSegmentator"),
-            ("preprocesando", 0.09, "Preprocesando verificador"),
-            ("segmentando", 0.12, "Verificando canal y continuidad dental"),
-            ("reconstruyendo", 0.15, "Reconstruyendo soporte anatómico"),
-            ("restaurando", 0.17, "Finalizando verificador"),
-            ("terminada", 0.18, "Verificador anatómico listo"),
-        )
-    else:
-        base = 0.20
-        mapping = (
-            ("recortando", 0.21, "Preparando CBCT"),
-            ("localizando arcadas", 0.24, "Localizando arcadas"),
-            ("roi dental", 0.27, "Preparando ROI dental"),
-            ("universalLab directo".lower(), 0.27, "Preparando UniversalLab"),
-            ("cargando", 0.31, "Cargando UniversalLab"),
-            ("reutilizado", 0.33, "UniversalLab cargado"),
-            ("preprocesando", 0.37, "Preprocesando CBCT"),
-            ("segmentando cbct", 0.45, "Segmentando dientes con IA"),
-            ("cuda híbrido", 0.49, "Segmentando con CUDA híbrido"),
-            ("reconstruyendo etiquetas", 0.62, "Reconstruyendo etiquetas"),
-            ("exportando por clases", 0.64, "Reconstruyendo etiquetas por clases"),
-            ("restaurando etiquetas", 0.67, "Restaurando resolución CBCT"),
-            ("comprobando maxila", 0.69, "Verificando FDI y arcadas"),
-            ("terminada", 0.70, "Inferencia dental terminada"),
-        )
-
-    factor = base
-    phase = "Procesando IA"
-    for token, candidate, label in mapping:
-        if token in text:
-            factor = float(candidate)
-            phase = str(label)
-    return factor, phase
 
 
 def _set_segmentation_progress(context, factor: float, phase: str, detail: str = "") -> None:
@@ -1402,44 +1134,8 @@ def semantic_workflow_busy() -> bool:
             return True
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
-    try:
-        from . import cbct_ai_runtime
-        return bool(cbct_ai_runtime.prediction_job_state().get("running"))
-    except Exception:
-        return False
+    return False
 
-
-
-def _cache_async_semantic_result(result: dict) -> object:
-    """Commit a worker-produced labelmap to DSG runtime on Blender's main thread."""
-    np = load_numpy()
-    if np is None:
-        raise RuntimeError("NumPy no está disponible")
-    signature = str(result.get("source_signature", ""))
-    if signature != _semantic_source_signature():
-        raise RuntimeError("El CBCT cambió durante la segmentación; el resultado se descartó por seguridad")
-    kind = str(result.get("kind", "")).lower()
-    labels = np.ascontiguousarray(result["labels"])
-    metadata = dict(result.get("metadata") or {})
-    crop_info = dict(result.get("crop_info") or {})
-    crop_info["stage_times"] = dict(result.get("stage_times") or {})
-
-    if kind == "universal" and ("arch" not in crop_info or "laterality" not in crop_info):
-        # Legacy-job fallback: use the same semantic SSOT as the current worker.
-        try:
-            from . import cbct_dental_module
-            semantic_check = cbct_dental_module.correct_universal_semantics(labels)
-            crop_info["arch"] = dict(semantic_check.get("arch") or {})
-            crop_info["laterality"] = dict(semantic_check.get("laterality") or {})
-            crop_info["mirroring"] = dict(semantic_check.get("laterality") or {})
-        except Exception as exc:
-            crop_info["arch"] = {"checked": False, "error": str(exc)}
-            crop_info["laterality"] = {"checked": False, "error": str(exc)}
-            crop_info["mirroring"] = dict(crop_info["laterality"])
-
-    return _store_semantic_result(
-        labels, kind=kind, signature=signature, metadata=metadata, crop_info=crop_info
-    )
 
 
 def _finish_async_segmentation(context, obj, *, detail: str, elapsed: float) -> None:
@@ -1476,23 +1172,9 @@ def _finish_async_segmentation(context, obj, *, detail: str, elapsed: float) -> 
                 context.scene["DSG_route_step"] = "SIMPLE_REVIEW"
         except Exception:
             _DSG_LOG.debug("suppressed exception", exc_info=True)
-    # Async timers live outside the initiating operator. Push the completed
-    # transaction explicitly so Ctrl+Z returns to the checkpoint before AI.
-    try:
-        bpy.ops.ed.undo_push(message="DSG · Segmentación CBCT terminada")
-    except Exception as exc:
-        print(f"[DSG Workflow] undo push warning: {exc}")
     _ASYNC_SEGMENTATION.update(
         active=False, phase="", builder=None, tooth_summary=None,
-        postprocess_started=False, postprocess_result=None, prepared_surfaces=None,
-        canal_verifier_mask=None, canal_verifier_origin=None,
-        canal_verifier_stats=None,
-        bone_semantic_mask=None, bone_semantic_origin=None,
-        maxilla_semantic_mask=None, maxilla_semantic_origin=None,
-        mandible_semantic_mask=None, mandible_semantic_origin=None,
-        tooth_verifier_upper_mask=None, tooth_verifier_upper_origin=None,
-        tooth_verifier_lower_mask=None, tooth_verifier_lower_origin=None,
-        tooth_path_stats=None, universal_roi_slices_full=None, universal_roi_info=None,
+        prepared_surfaces=None,
         bone_build_step="", bone_obj_name="", maxilla_obj_name="", mandible_obj_name="",
         canal_obj_name="", canal_summary=None, progress=1.0,
         progress_phase="Segmentación terminada",
@@ -1506,23 +1188,19 @@ def _finish_async_segmentation(context, obj, *, detail: str, elapsed: float) -> 
         cbct_pipeline_client.release_process_keep_artifacts()
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
+    from . import workflow_history
+    workflow_history.commit(context, "Segmentación CBCT terminada")
+    bpy.ops.ed.undo_push(message="DSG · Segmentación CBCT terminada")
 
 
 def _abort_async_segmentation(context, message: str) -> None:
     """Abort one transaction and remove only artifacts created by that phase."""
     phase = str(_ASYNC_SEGMENTATION.get("phase", ""))
+    failure_diagnostics = ""
     try:
         from . import cbct_pipeline_client
+        failure_diagnostics = str(cbct_pipeline_client.snapshot_failure_diagnostics() or "")
         cbct_pipeline_client.cleanup_artifacts()
-    except Exception:
-        _DSG_LOG.debug("suppressed exception", exc_info=True)
-    try:
-        from . import cbct_ai_runtime
-        cbct_ai_runtime.cancel_parallel_dual_jobs()
-    except Exception:
-        _DSG_LOG.debug("suppressed exception", exc_info=True)
-    try:
-        _cancel_postprocess_workers()
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
     if phase in {"BUILD_TEETH", "BUILD_BONE"} or str(_ASYNC_SEGMENTATION.get("structure", "")).upper() == "ALL":
@@ -1558,19 +1236,12 @@ def _abort_async_segmentation(context, message: str) -> None:
         ) if started > 0.0 else 0.0
         context.scene["DSG_last_segmentation_finished_at"] = float(time.time())
         context.scene["DSG_last_segmentation_success"] = False
+        context.scene["DSG_last_segmentation_diagnostics"] = failure_diagnostics
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
     _ASYNC_SEGMENTATION.update(
         active=False, phase="", builder=None,
-        postprocess_started=False, postprocess_result=None, prepared_surfaces=None,
-        canal_verifier_mask=None, canal_verifier_origin=None,
-        canal_verifier_stats=None,
-        bone_semantic_mask=None, bone_semantic_origin=None,
-        maxilla_semantic_mask=None, maxilla_semantic_origin=None,
-        mandible_semantic_mask=None, mandible_semantic_origin=None,
-        tooth_verifier_upper_mask=None, tooth_verifier_upper_origin=None,
-        tooth_verifier_lower_mask=None, tooth_verifier_lower_origin=None,
-        tooth_path_stats=None, universal_roi_slices_full=None, universal_roi_info=None,
+        prepared_surfaces=None,
         bone_build_step="", bone_obj_name="", maxilla_obj_name="", mandible_obj_name="",
         canal_obj_name="", canal_summary=None,
         progress=0.0, progress_phase="", progress_detail="",
@@ -1588,6 +1259,8 @@ def _abort_async_segmentation(context, message: str) -> None:
         print(f"[DSG CBCT AI] checkpoint rollback warning: {rollback_exc}")
     if restored:
         try:
+            from . import workflow_history
+            workflow_history.restore_runtime(context.scene)
             context.scene.dicom_wizard_pro.status = f"Error: {message}"
         except Exception:
             _DSG_LOG.debug("suppressed exception", exc_info=True)
@@ -1606,32 +1279,6 @@ def cancel_semantic_workflow(context, message: str = "Segmentación cancelada") 
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
     return True
-
-
-def _start_universal_full_job_after_verifier(props) -> bool:
-    """Start UniversalLab on the proven in-process background worker.
-
-    This bypasses persistent servers, second Blender processes and dual-worker
-    orchestration until segmentation is clinically stable again.
-    """
-    from . import cbct_ai_runtime
-    started = cbct_ai_runtime._start_prediction_job_inprocess(
-        RUNTIME.volume, RUNTIME.slopes, RUNTIME.intercepts,
-        RUNTIME.spacing_zyx_mm, RUNTIME.dims_zyx,
-        kind="universal",
-        source_signature=_semantic_source_signature(),
-        device_preference=str(getattr(props, "ai_device_preference", "AUTO")),
-        orientation_xyz=RUNTIME.orientation_xyz,
-        image_origin_patient=RUNTIME.image_origin_patient,
-        preferred_roi_slices_full=_ASYNC_SEGMENTATION.get("universal_roi_slices_full"),
-    )
-    if started:
-        _ASYNC_SEGMENTATION["phase"] = "AI"
-        _ASYNC_SEGMENTATION["kind"] = "universal"
-        _ASYNC_SEGMENTATION["last_message"] = ""
-        props.status = "UniversalLab · segmentando dientes, huesos y canal…"
-    return bool(started)
-
 
 
 def _poll_async_segmentation():
@@ -1674,8 +1321,9 @@ def _poll_async_segmentation():
                 upper, lower, composite = build_simple_arch_pair(context, prepared)
                 RUNTIME.pipeline_result_dir = str(cbct_pipeline_client.artifact_dir() or "")
                 scene["DSG_pipeline_timings_json"] = json.dumps(manifest.get("timings") or {}, ensure_ascii=False, default=str)
-                scene["DSG_pipeline_execution"] = "TOTALSEGMENTATOR_SIMPLE_ARCHES"
-                scene["DSG_cbct_segmentation_engine"] = "TotalSegmentator"
+                engine_name = str(manifest.get("segmentation_engine") or manifest.get("engine_id") or "AI")
+                scene["DSG_pipeline_execution"] = f"{str(manifest.get('engine_id') or 'AI')}_SIMPLE_ARCHES"
+                scene["DSG_cbct_segmentation_engine"] = engine_name
                 scene["DSG_cbct_segmentation_mode"] = "SIMPLE_TWO_ARCHES"
                 scene["DSG_simple_upper_object"] = upper.name
                 scene["DSG_simple_lower_object"] = lower.name
@@ -1688,231 +1336,42 @@ def _poll_async_segmentation():
                 return None
 
             np = load_numpy()
-            labels_path = str(manifest.get("universal_labels_path") or "")
+            labels_path = str(manifest.get("normalized_labels_path") or manifest.get("universal_labels_path") or "")
             labels = np.load(labels_path, mmap_mode="r")
             if tuple(labels.shape) != tuple(RUNTIME.dims_zyx):
-                raise RuntimeError("TotalSegmentator devolvió dimensiones incompatibles")
-            # Keep the TotalSegmentator compatibility labelmap memory-mapped. No full-volume
-            # copy is made on Blender's main thread.
+                raise RuntimeError("El motor seleccionado devolvió dimensiones incompatibles")
+            if str(labels.dtype)!=manifest['labelmap_contract']['dtype']:
+                raise RuntimeError('El archivo de labels no cumple el contrato del worker')
+            # All engines arrive here through the same normalized compatibility map.
             RUNTIME.semantic_labels = labels
             RUNTIME.pipeline_result_dir = str(cbct_pipeline_client.artifact_dir() or "")
             RUNTIME.semantic_source_signature = str(manifest.get("source_signature") or "")
             RUNTIME.semantic_model_kind = "universal"
-            RUNTIME.semantic_model_metadata = dict(manifest.get("universal_metadata") or {})
-            RUNTIME.semantic_crop_info = dict(manifest.get("universal_crop_info") or {})
+            RUNTIME.semantic_model_metadata = dict(manifest.get("semantic_metadata") or manifest.get("universal_metadata") or {})
+            RUNTIME.semantic_crop_info = dict(manifest.get("semantic_crop_info") or {})
             path_stats = dict(manifest.get("path_stats") or {})
             scene["DSG_tooth_path_reconciliation_json"] = json.dumps(path_stats, ensure_ascii=False)
             scene["DSG_tooth_path_reconciliation_corrected"] = bool(path_stats.get("corrected", False))
             scene["DSG_pipeline_timings_json"] = json.dumps(manifest.get("timings") or {}, ensure_ascii=False, default=str)
             scene["DSG_pipeline_worker_failures_json"] = json.dumps(manifest.get("worker_failures_recovered") or {}, ensure_ascii=False)
-            scene["DSG_pipeline_execution"] = "TOTALSEGMENTATOR_EXTERNAL_GPU_PLUS_CPU_MESH_WORKERS"
-            scene["DSG_cbct_segmentation_engine"] = "TotalSegmentator"
-            scene["DSG_cbct_totalseg_task"] = str(manifest.get("totalseg_task") or "teeth")
+            engine_name = str(manifest.get("segmentation_engine") or manifest.get("engine_id") or "AI")
+            engine_id = str(manifest.get("engine_id") or "AI")
+            scene["DSG_pipeline_execution"] = f"{engine_id}_EXTERNAL"
+            scene["DSG_cbct_segmentation_engine"] = engine_name
+            scene["DSG_cbct_engine_id"] = engine_id
+            scene["DSG_cbct_engine_capabilities_json"] = json.dumps(manifest.get("capabilities") or [], ensure_ascii=False)
             prepared_meshes = dict(manifest.get("prepared_meshes") or {})
             _ASYNC_SEGMENTATION["prepared_surfaces"] = dict(manifest.get("prepared_surfaces") or {})
             _ASYNC_SEGMENTATION["tooth_path_stats"] = path_stats
-            from . import totalseg_runtime
-            totalseg_runtime._prepend_paths()
+            _ASYNC_SEGMENTATION["engine_capabilities"] = list(manifest.get("capabilities") or [])
+            _ASYNC_SEGMENTATION["teeth_only"] = bool(manifest.get("teeth_only", False))
             from . import cbct_dental_module
             _ASYNC_SEGMENTATION["builder"] = cbct_dental_module.iter_build_universal_dentition(
                 context, labels, run_mirroring_check=False, prepared_meshes=prepared_meshes
             )
             _ASYNC_SEGMENTATION["phase"] = "BUILD_TEETH"
-            props.status = "TotalSegmentator listo · importando dientes FDI…"
+            props.status = f"{engine_name} listo · importando dientes FDI…"
             _set_segmentation_progress(context, 0.945, "Importando geometría", props.status)
-            return 0.01
-
-        if phase == "AI_CANAL_VERIFIER":
-            from . import cbct_ai_runtime
-            job = cbct_ai_runtime.prediction_job_state()
-            message = str(job.get("message") or "Verificando canal y soporte dental…")
-            factor, phase_label = _segmentation_progress_from_ai_message(
-                message, verifier=True
-            )
-            _set_segmentation_progress(
-                context, factor, phase_label,
-                "Anatomía · DentalSegmentator · " + message,
-            )
-            if message != _ASYNC_SEGMENTATION.get("last_message"):
-                props.status = "Anatomía · DentalSegmentator · " + message
-                _ASYNC_SEGMENTATION["last_message"] = message
-            if bool(job.get("running")):
-                return 0.10
-            error = str(job.get("error") or "")
-            if error:
-                # HYBRID policy: TEETH/ALL are genuinely two-engine routes.
-                # Never silently degrade to UniversalLab-only, because that
-                # would break the user's explicit clinical routing contract.
-                _abort_async_segmentation(
-                    context,
-                    "DentalSegmentator falló en una ruta que exige los dos motores: " + error,
-                )
-                return None
-            result = cbct_ai_runtime.consume_prediction_result()
-            if result is None:
-                return 0.10
-            signature = str(result.get("source_signature", ""))
-            if signature != _semantic_source_signature():
-                raise RuntimeError("El CBCT cambió durante la verificación del canal")
-            if str(result.get("kind", "")).lower() != "semantic":
-                raise RuntimeError("El verificador del canal devolvió un modelo inesperado")
-
-            labels_sem = result.get("labels")
-            try:
-                roi_slices, roi_info = cbct_ai_runtime._dental_roi_from_semantic(
-                    labels_sem, RUNTIME.spacing_zyx_mm, margin_mm=28.0
-                )
-                _ASYNC_SEGMENTATION["universal_roi_slices_full"] = roi_slices
-                _ASYNC_SEGMENTATION["universal_roi_info"] = dict(roi_info or {})
-            except Exception as roi_exc:
-                _ASYNC_SEGMENTATION["universal_roi_slices_full"] = None
-                _ASYNC_SEGMENTATION["universal_roi_info"] = {"valid": False, "error": str(roi_exc)}
-            verifier_mask, verifier_origin = _compact_mask_for_classes(labels_sem, (5,))
-            bone_semantic_mask, bone_semantic_origin = _compact_mask_for_classes(labels_sem, (1, 2))
-            maxilla_semantic_mask, maxilla_semantic_origin = _compact_mask_for_classes(labels_sem, (1,))
-            mandible_semantic_mask, mandible_semantic_origin = _compact_mask_for_classes(labels_sem, (2,))
-            upper_teeth_mask, upper_teeth_origin = _compact_mask_for_classes(labels_sem, (3,))
-            lower_teeth_mask, lower_teeth_origin = _compact_mask_for_classes(labels_sem, (4,))
-            _ASYNC_SEGMENTATION["canal_verifier_mask"] = verifier_mask
-            _ASYNC_SEGMENTATION["bone_semantic_mask"] = bone_semantic_mask
-            _ASYNC_SEGMENTATION["bone_semantic_origin"] = tuple(int(v) for v in bone_semantic_origin)
-            _ASYNC_SEGMENTATION["maxilla_semantic_mask"] = maxilla_semantic_mask
-            _ASYNC_SEGMENTATION["maxilla_semantic_origin"] = tuple(int(v) for v in maxilla_semantic_origin)
-            _ASYNC_SEGMENTATION["mandible_semantic_mask"] = mandible_semantic_mask
-            _ASYNC_SEGMENTATION["mandible_semantic_origin"] = tuple(int(v) for v in mandible_semantic_origin)
-            _ASYNC_SEGMENTATION["canal_verifier_origin"] = tuple(int(v) for v in verifier_origin)
-            _ASYNC_SEGMENTATION["tooth_verifier_upper_mask"] = upper_teeth_mask
-            _ASYNC_SEGMENTATION["tooth_verifier_upper_origin"] = tuple(int(v) for v in upper_teeth_origin)
-            _ASYNC_SEGMENTATION["tooth_verifier_lower_mask"] = lower_teeth_mask
-            _ASYNC_SEGMENTATION["tooth_verifier_lower_origin"] = tuple(int(v) for v in lower_teeth_origin)
-            _ASYNC_SEGMENTATION["canal_verifier_stats"] = {
-                "model": "DentalSegmentator",
-                "semantic_class": 5,
-                "voxels": int(verifier_mask.sum()) if verifier_mask is not None else 0,
-                "bone_voxels": int(bone_semantic_mask.sum()) if bone_semantic_mask is not None else 0,
-                "maxilla_voxels": int(maxilla_semantic_mask.sum()) if maxilla_semantic_mask is not None else 0,
-                "mandible_voxels": int(mandible_semantic_mask.sum()) if mandible_semantic_mask is not None else 0,
-                "upper_teeth_voxels": int(upper_teeth_mask.sum()) if upper_teeth_mask is not None else 0,
-                "lower_teeth_voxels": int(lower_teeth_mask.sum()) if lower_teeth_mask is not None else 0,
-                "source_signature": signature,
-            }
-            # Release the full verifier labelmap before UniversalLab inference.
-            del labels_sem
-            del result
-
-            props.status = "Soporte dental y canal verificados · iniciando UniversalLab…"
-            _set_segmentation_progress(
-                context, 0.20, "Preparando UniversalLab", props.status
-            )
-            if not _start_universal_full_job_after_verifier(props):
-                raise RuntimeError("No se pudo iniciar UniversalLab después del verificador del canal")
-            return 0.10
-
-        if phase == "AI":
-            from . import cbct_ai_runtime
-            job = cbct_ai_runtime.prediction_job_state()
-            message = str(job.get("message") or "Segmentando CBCT en segundo plano…")
-            factor, phase_label = _segmentation_progress_from_ai_message(
-                message, verifier=False
-            )
-            _set_segmentation_progress(context, factor, phase_label, message)
-            if message != _ASYNC_SEGMENTATION.get("last_message"):
-                props.status = message
-                _ASYNC_SEGMENTATION["last_message"] = message
-            if bool(job.get("running")):
-                return 0.10
-            error = str(job.get("error") or "")
-            if error:
-                _abort_async_segmentation(context, error)
-                return None
-            result = cbct_ai_runtime.consume_prediction_result()
-            if result is None:
-                return 0.10
-
-            kind = str(result.get("kind", "")).lower()
-            structure = str(_ASYNC_SEGMENTATION.get("structure", "")).upper()
-
-            # 9.2.15: the 70-72% freeze was here. Competitive Tooth Path ran
-            # many 3-D EDT/watershed operations directly inside this Blender timer.
-            # Start pure numerical reconciliation + tooth mesh preparation outside
-            # the datablock commit path, then keep this timer limited to UI polling.
-            if kind == "universal" and structure in {"TEETH", "ALL"}:
-                if not _start_universal_postprocess_job(result):
-                    raise RuntimeError("Ya hay un postproceso dental en curso")
-                _ASYNC_SEGMENTATION["phase"] = "POSTPROCESS_TEETH"
-                _ASYNC_SEGMENTATION["postprocess_started"] = True
-                props.status = "IA terminada · reconciliando dientes sin bloquear Blender…"
-                _set_segmentation_progress(context, 0.705, "Postprocesando dientes", props.status)
-                return 0.08
-
-            labels = _cache_async_semantic_result(result)
-
-            # UniversalLab dentition is built directly from its integer labelmap.
-            # Do NOT route the new ALL workflow through the legacy BONE/TEETH mask
-            # state before tooth creation. BUILD_BONE prepares its own 53/54 mask.
-            if kind == "universal" and structure in {"TEETH", "ALL"}:
-                from . import cbct_dental_module
-                _ASYNC_SEGMENTATION["builder"] = cbct_dental_module.iter_build_universal_dentition(
-                    context, labels, run_mirroring_check=True
-                )
-                _ASYNC_SEGMENTATION["phase"] = "BUILD_TEETH"
-                props.status = (
-                    "IA terminada · creando dientes + FDI 1 a 1…"
-                    if structure == "ALL"
-                    else "IA terminada · creando dientes 1 a 1…"
-                )
-                _set_segmentation_progress(
-                    context, 0.72, "Reconstruyendo dientes", props.status
-                )
-                return 0.01
-
-            # Other semantic surfaces still use the legacy active-mask state.
-            segment_tissue_semantically(
-                context,
-                str(_ASYNC_SEGMENTATION.get("structure") or props.segmentation_structure),
-            )
-            props.status = "IA terminada · creando superficie…"
-            obj = generate_segmentation_surface(context)
-            detail = f"{len(obj.data.polygons):,} caras"
-            _finish_async_segmentation(
-                context, obj, detail=detail,
-                elapsed=time.perf_counter() - float(_ASYNC_SEGMENTATION.get("started", time.perf_counter())),
-            )
-            return None
-
-        if phase == "POSTPROCESS_TEETH":
-            state = _postprocess_job_state()
-            message = str(state.get("message") or "Reconciliando dientes…")
-            props.status = message
-            _set_segmentation_progress(context, 0.71, "Workers múltiples · postproceso", message)
-            if bool(state.get("running")):
-                return 0.08
-            error = str(state.get("error") or "")
-            if error:
-                # Preserve the trained UniversalLab result if optional reconciliation
-                # fails, but do not hide the reason. Mesh preparation then falls back
-                # to the existing incremental builder on the main thread.
-                payload = _consume_universal_postprocess_result()  # raises with exact error
-                return 0.08
-            payload = _consume_universal_postprocess_result()
-            if payload is None:
-                return 0.08
-            result = payload.get("result") or {}
-            path_stats = dict(payload.get("path_stats") or {})
-            prepared_meshes = payload.get("prepared_meshes") or {}
-            _ASYNC_SEGMENTATION["prepared_surfaces"] = payload.get("prepared_surfaces") or {}
-            _ASYNC_SEGMENTATION["tooth_path_stats"] = path_stats
-            scene["DSG_tooth_path_reconciliation_json"] = json.dumps(path_stats, ensure_ascii=False)
-            scene["DSG_tooth_path_reconciliation_corrected"] = bool(path_stats.get("corrected", False))
-            scene["DSG_tooth_postprocess_worker_s"] = float(payload.get("elapsed_s", 0.0) or 0.0)
-            labels = _cache_async_semantic_result(result)
-            from . import cbct_dental_module
-            _ASYNC_SEGMENTATION["builder"] = cbct_dental_module.iter_build_universal_dentition(
-                context, labels, run_mirroring_check=True, prepared_meshes=prepared_meshes
-            )
-            _ASYNC_SEGMENTATION["phase"] = "BUILD_TEETH"
-            props.status = "Postproceso listo · insertando dientes preparados…"
-            _set_segmentation_progress(context, 0.72, "Insertando dientes", props.status)
             return 0.01
 
         if phase == "BUILD_TEETH":
@@ -1945,6 +1404,16 @@ def _poll_async_segmentation():
                     detail += f" · mallas {mesh_s:.1f}s"
 
                 if str(_ASYNC_SEGMENTATION.get("structure", "")).upper() == "ALL":
+                    capabilities = {str(v).upper() for v in (_ASYNC_SEGMENTATION.get("engine_capabilities") or [])}
+                    if "JAW" not in capabilities:
+                        from . import cbct_dental_module
+                        obj = cbct_dental_module.ensure_segmented_alignment_composite(context)
+                        detail += " · motor especializado sólo en dientes/FDI"
+                        _finish_async_segmentation(
+                            context, obj, detail=detail,
+                            elapsed=time.perf_counter() - float(_ASYNC_SEGMENTATION.get("started", time.perf_counter())),
+                        )
+                        return None
                     _ASYNC_SEGMENTATION["tooth_summary"] = dict(summary)
                     _ASYNC_SEGMENTATION["phase"] = "BUILD_BONE"
                     _ASYNC_SEGMENTATION["bone_build_step"] = "MAXILLA"
@@ -1975,7 +1444,7 @@ def _poll_async_segmentation():
                 model_kind="universal", require_current_source=True
             )
             if labels is None:
-                raise RuntimeError("Se perdió el labelmap UniversalLab antes de crear el canal")
+                raise RuntimeError("Se perdió el labelmap normalizado antes de crear el canal")
 
             build_step = str(_ASYNC_SEGMENTATION.get("bone_build_step") or "MAXILLA")
 
@@ -2007,12 +1476,12 @@ def _poll_async_segmentation():
                 maxilla_mask = ul_mask
                 maxilla_origin = ul_origin
                 maxilla_class = 54
-                maxilla_source = "TOTALSEGMENTATOR"
+                maxilla_source = str(scene.get("DSG_cbct_segmentation_engine", "AI"))
                 if maxilla_mask is None or not bool(getattr(maxilla_mask, "any", lambda: False)()):
                     maxilla_mask = _ASYNC_SEGMENTATION.get("maxilla_semantic_mask")
                     maxilla_origin = _ASYNC_SEGMENTATION.get("maxilla_semantic_origin")
                     maxilla_class = 1
-                    maxilla_source = "TOTALSEGMENTATOR"
+                    maxilla_source = str(scene.get("DSG_cbct_segmentation_engine", "AI"))
                 prepared_surfaces = _ASYNC_SEGMENTATION.get("prepared_surfaces") or {}
                 max_prepared = prepared_surfaces.pop("maxilla", None)
                 if isinstance(prepared_surfaces, dict) and prepared_surfaces.get("maxilla_class") is not None:
@@ -2025,10 +1494,10 @@ def _poll_async_segmentation():
                 )
                 scene["DSG_maxilla_object"] = maxilla_obj.name
                 scene["DSG_maxilla_engine"] = maxilla_source
-                scene["DSG_cbct_segmentation_mode"] = "TOTALSEGMENTATOR_TEETH"
+                scene["DSG_cbct_segmentation_mode"] = str(scene.get("DSG_cbct_engine_id", "AI"))
                 scene["DSG_cbct_segmentation_skipped"] = False
-                scene["DSG_cbct_bone_engine"] = "TotalSegmentator_teeth_jawbones"
-                scene["DSG_cbct_tooth_engine"] = "TotalSegmentator_ToothFairy3_FDI"
+                scene["DSG_cbct_bone_engine"] = str(scene.get("DSG_cbct_segmentation_engine", "AI"))
+                scene["DSG_cbct_tooth_engine"] = str(scene.get("DSG_cbct_segmentation_engine", "AI"))
                 scene["DSG_alignment_reference_pending"] = True
                 scene["DSG_alignment_reference_status"] = "NOT_BUILT_YET"
                 _ASYNC_SEGMENTATION["maxilla_obj_name"] = maxilla_obj.name
@@ -2042,12 +1511,12 @@ def _poll_async_segmentation():
                 mandible_mask = ul_mask
                 mandible_origin = ul_origin
                 mandible_class = 53
-                mandible_source = "TOTALSEGMENTATOR"
+                mandible_source = str(scene.get("DSG_cbct_segmentation_engine", "AI"))
                 if mandible_mask is None or not bool(getattr(mandible_mask, "any", lambda: False)()):
                     mandible_mask = _ASYNC_SEGMENTATION.get("mandible_semantic_mask")
                     mandible_origin = _ASYNC_SEGMENTATION.get("mandible_semantic_origin")
                     mandible_class = 2
-                    mandible_source = "TOTALSEGMENTATOR"
+                    mandible_source = str(scene.get("DSG_cbct_segmentation_engine", "AI"))
                 prepared_surfaces = _ASYNC_SEGMENTATION.get("prepared_surfaces") or {}
                 man_prepared = prepared_surfaces.pop("mandible", None)
                 if isinstance(prepared_surfaces, dict) and prepared_surfaces.get("mandible_class") is not None:
@@ -2149,34 +1618,52 @@ def _poll_async_segmentation():
 
 
 def _start_async_full_segmentation(context, structure: str = "ALL", route_mode: str = "FULL") -> bool:
-    """DSG 9.5: one TotalSegmentator task=teeth inference in an isolated worker."""
-    from . import totalseg_runtime, cbct_pipeline_client
+    """Launch the selected DSG 9.10 segmentation engine in the external worker."""
+    from . import segmentation_engines, cbct_pipeline_client
     props = context.scene.dicom_wizard_pro
     structure = str(structure or "ALL").upper()
     route_mode = str(route_mode or "FULL").upper()
     if route_mode not in {"FULL", "SIMPLE_ARCHES"}:
         raise ValueError(f"Modo de segmentación desconocido: {route_mode}")
     if structure not in {"ALL", "TEETH"}:
-        raise ValueError("El flujo TotalSegmentator sólo admite ALL o TEETH")
+        raise ValueError("El flujo IA externo sólo admite ALL o TEETH")
     if semantic_workflow_busy():
         return False
-    status = totalseg_runtime.quick_status()
-    if not status.dependencies_ready:
-        raise RuntimeError("TotalSegmentator no está instalado. Pulsa «INSTALAR MOTORES».")
-    if not status.model_ready:
-        raise RuntimeError("Faltan los modelos TotalSegmentator task=teeth (Tasks 115/113). Pulsa «INSTALAR MOTORES».")
-    totalseg_runtime._prepend_paths()
+
+    engine = str(getattr(props, "ai_segmentation_engine", "TOTALSEG") or "TOTALSEG").upper()
+    status = segmentation_engines.verify_engine(engine, force=True)
+    if not status.ready:
+        raise RuntimeError(status.error or f"{status.label} no está listo. Pulsa «INSTALAR / REPARAR»." )
+    if route_mode == "SIMPLE_ARCHES" and not segmentation_engines.engine_supports(engine, "JAW"):
+        raise RuntimeError(f"{status.label} no segmenta maxila/mandíbula; usa TotalSegmentator o U-Mamba2 para esta ruta")
+    try:
+        route = core.clinical_route(context.scene)
+    except Exception:
+        route = ""
+    if route == core.ROUTE_IMMEDIATE and not segmentation_engines.engine_supports(engine, "JAW"):
+        raise RuntimeError(f"{status.label} sólo aporta dientes/FDI y no es válido para implante inmediato")
+
     required = [RUNTIME.pipeline_volume_path, RUNTIME.pipeline_slopes_path, RUNTIME.pipeline_intercepts_path]
     if not all(value and Path(value).is_file() for value in required):
-        raise RuntimeError("Falta la memoria compartida del CBCT. Recarga el paciente con DSG 9.5.")
+        raise RuntimeError("Falta la memoria compartida del CBCT. Recarga el paciente en Blender 5.2.")
+
     signature = _semantic_source_signature()
+    from . import workflow_history
+    workflow_history.begin(context, "Segmentación CBCT")
     RUNTIME.semantic_labels = None
-    try: gc.collect()
-    except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-    try: cbct_pipeline_client.cleanup_artifacts()
-    except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
+    try:
+        gc.collect()
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
+    try:
+        cbct_pipeline_client.cleanup_artifacts()
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
+
     _begin_ai_performance_session(context)
-    _begin_segmentation_progress(context, "Arrancando TotalSegmentator")
+    _begin_segmentation_progress(context, f"Arrancando {status.label}")
+    _set_segmentation_progress(context, 0.02, "Segmentación dental", f"Preparando worker · {status.label}")
+
     started = cbct_pipeline_client.start_full_pipeline(
         volume_path=RUNTIME.pipeline_volume_path,
         slopes_path=RUNTIME.pipeline_slopes_path,
@@ -2187,79 +1674,47 @@ def _start_async_full_segmentation(context, structure: str = "ALL", route_mode: 
         orientation_xyz=RUNTIME.orientation_xyz,
         image_origin_patient=RUNTIME.image_origin_patient,
         device_preference=str(getattr(props, "ai_device_preference", "AUTO")),
-        totalseg_site_paths=totalseg_runtime.active_site_paths(),
-        totalseg_home_dir=totalseg_runtime.totalseg_home(),
-        totalseg_version=totalseg_runtime.TOTALSEG_VERSION,
+        engine=engine,
+        engine_site_paths=segmentation_engines.active_site_paths(engine),
+        engine_env=segmentation_engines.environment_for_engine(engine),
         dicom_vendor_dir=VENDOR_DIR,
+        python_executable=segmentation_engines._python_path(),
         route_mode=route_mode,
+        toothseg_repo=segmentation_engines.repos_root() / "ToothSeg",
+        umamba2_repo=segmentation_engines.repos_root() / "U-Mamba2",
+        umamba2_models=segmentation_engines.umamba2_models(),
     )
     if not started:
-        _end_segmentation_progress(context, success=False); _restore_ai_performance_session(context); return False
+        _end_segmentation_progress(context, success=False)
+        _restore_ai_performance_session(context)
+        return False
+
     _ASYNC_SEGMENTATION.update(
         active=True, phase="PIPELINE_EXTERNAL", structure=structure, kind="external", route_mode=route_mode,
-        source_signature=signature, started=time.perf_counter(), builder=None,
+        selected_engine=engine, source_signature=signature, started=time.perf_counter(), builder=None,
         tooth_summary=None, prepared_surfaces=None, tooth_path_stats=None,
         bone_build_step="", bone_obj_name="", maxilla_obj_name="", mandible_obj_name="",
         canal_obj_name="", canal_summary=None, last_message="",
     )
-    props.show_volume=False; props.show_planes=False; props.show_all_planes=False; props.show_box=False
+    props.show_volume = False
+    props.show_planes = False
+    props.show_all_planes = False
+    props.show_box = False
     update_visibility(context)
     lifecycle.unregister_timer(_poll_async_segmentation)
     lifecycle.register_timer(_poll_async_segmentation, first_interval=0.05)
-    props.status = ("TotalSegmentator · ruta simple · dos arcadas" if route_mode == "SIMPLE_ARCHES" else "TotalSegmentator · task=teeth · inferencia dental única")
-    context.scene["DSG_cbct_requested_engine_route"] = ("TOTALSEGMENTATOR_SIMPLE_ARCHES" if route_mode == "SIMPLE_ARCHES" else "TOTALSEGMENTATOR_TEETH")
-    _set_segmentation_progress(context,0.02,"TotalSegmentator",props.status)
+    props.status = f"{status.label} · segmentación en segundo plano"
+    context.scene["DSG_cbct_requested_engine_route"] = f"{engine}_{route_mode}"
+    context.scene["DSG_cbct_requested_engine"] = engine
     return True
 
-
-
-def _start_async_semantic_segmentation(context) -> bool:
-    from . import cbct_ai_runtime
-    props = context.scene.dicom_wizard_pro
-    if semantic_workflow_busy():
-        return False
-    kind = _semantic_model_kind_for_structure(props.segmentation_structure)
-    signature = _semantic_source_signature()
-    status = cbct_ai_runtime.quick_status()
-    if not status.dependencies_ready:
-        raise RuntimeError("Motor IA interno no instalado. Pulsa «INSTALAR MOTORES»")
-    if kind == "universal" and not status.universal_model_ready:
-        raise RuntimeError("Falta UniversalLab. Pulsa «INSTALAR MOTORES»")
-    if kind == "semantic" and not status.semantic_model_ready:
-        raise RuntimeError("Falta el checkpoint DentalSegmentator incluido con DSG")
-
-    _begin_ai_performance_session(context)
-    try:
-        started = cbct_ai_runtime._start_prediction_job_inprocess(
-            RUNTIME.volume, RUNTIME.slopes, RUNTIME.intercepts,
-            RUNTIME.spacing_zyx_mm, RUNTIME.dims_zyx,
-            kind=kind, source_signature=signature,
-            device_preference=str(getattr(props, "ai_device_preference", "AUTO")),
-            orientation_xyz=RUNTIME.orientation_xyz,
-            image_origin_patient=RUNTIME.image_origin_patient,
-        )
-    except Exception:
-        _restore_ai_performance_session(context)
-        raise
-    if not started:
-        _restore_ai_performance_session(context)
-        return False
-    _ASYNC_SEGMENTATION.update(
-        active=True, phase="AI", structure=str(props.segmentation_structure).upper(),
-        kind=kind, source_signature=signature, started=time.perf_counter(),
-        builder=None, last_message="",
-    )
-    lifecycle.unregister_timer(_poll_async_segmentation)
-    lifecycle.register_timer(_poll_async_segmentation, first_interval=0.05)
-    props.status = "Segmentación iniciada en segundo plano · puedes seguir usando Blender"
-    force_ui_redraw()
-    return True
 
 
 class DICOMWIZARDPRO_OT_segment_semantic_structure(Operator):
+    """Compatibility operator routed through the selected DSG 9.10 engine."""
     bl_idname = "dicom_wizard_pro.segment_semantic_structure"
     bl_label = "Segmentar estructura"
-    bl_description = "Usa TotalSegmentator task=teeth para dientes FDI, maxila, mandíbula y canal"
+    bl_description = "Segmenta la estructura solicitada con el motor seleccionado"
     bl_options = {"REGISTER", "UNDO"}
 
     target: bpy.props.StringProperty(default="BONE")
@@ -2267,9 +1722,6 @@ class DICOMWIZARDPRO_OT_segment_semantic_structure(Operator):
     def execute(self, context):
         props = context.scene.dicom_wizard_pro
         target = str(self.target or "BONE").upper()
-        if core.clinical_route(context.scene) == core.ROUTE_IMMEDIATE:
-            self.report({"ERROR"}, "Implante inmediato usa SEGMENTAR PARA IMPLANTE INMEDIATO con TotalSegmentator")
-            return {"CANCELLED"}
         if target not in {"BONE", "BONE_ONLY", "TEETH"}:
             self.report({"ERROR"}, f"Segmentación no soportada: {target}")
             return {"CANCELLED"}
@@ -2279,12 +1731,8 @@ class DICOMWIZARDPRO_OT_segment_semantic_structure(Operator):
             return {"CANCELLED"}
         try:
             props.segmentation_structure = target
-            # TotalSegmentator is the only segmentation engine in DSG 9.5.
-            # BONE/BONE_ONLY requests still use task=teeth because that model
-            # supplies the jawbones and canal together with dental FDI.
-            started = _start_async_full_segmentation(context, structure="TEETH" if target == "TEETH" else "ALL")
-            context.scene["DSG_cbct_requested_engine_route"] = "TOTALSEGMENTATOR_TEETH"
-            if not started:
+            structure = "TEETH" if target == "TEETH" else "ALL"
+            if not _start_async_full_segmentation(context, structure=structure):
                 self.report({"WARNING"}, "Ya hay una segmentación CBCT en curso")
                 return {"CANCELLED"}
         except Exception as exc:
@@ -2295,9 +1743,10 @@ class DICOMWIZARDPRO_OT_segment_semantic_structure(Operator):
 
 
 class DICOMWIZARDPRO_OT_segment_all(Operator):
+    """Main segmentation entry point for the selected external engine."""
     bl_idname = "dicom_wizard_pro.segment_all"
     bl_label = "Segmentar todo"
-    bl_description = "TotalSegmentator task=teeth: ruta completa o dos arcadas simples"
+    bl_description = "Ejecuta el motor seleccionado y normaliza la salida para DSG"
     bl_options = {"REGISTER", "UNDO"}
 
     route_mode: bpy.props.StringProperty(default="FULL")
@@ -2313,10 +1762,6 @@ class DICOMWIZARDPRO_OT_segment_all(Operator):
             if not _start_async_full_segmentation(context, structure="ALL", route_mode=mode):
                 self.report({"WARNING"}, "Ya hay una segmentación CBCT en curso")
                 return {"CANCELLED"}
-            context.scene["DSG_cbct_requested_engine_route"] = (
-                "TOTALSEGMENTATOR_SIMPLE_ARCHES" if mode == "SIMPLE_ARCHES"
-                else "TOTALSEGMENTATOR_TEETH"
-            )
         except Exception as exc:
             props.status = f"Error: {exc}"
             self.report({"ERROR"}, str(exc))
@@ -2325,18 +1770,14 @@ class DICOMWIZARDPRO_OT_segment_all(Operator):
 
 
 class DICOMWIZARDPRO_OT_direct_dicom_to_surface(Operator):
+    """Legacy button retained as a thin wrapper over the selected 9.10 engine."""
     bl_idname = "dicom_wizard_pro.direct_dicom_to_surface"
     bl_label = "Segmentar DICOM"
     bl_options = {"REGISTER"}
-    bl_description = (
-        "Genera la máscara adaptativa del modo elegido y crea su malla con el motor DICOM integrado"
-    )
+    bl_description = "Segmenta el CBCT con el motor seleccionado y genera las superficies DSG"
 
     def execute(self, context):
         props = context.scene.dicom_wizard_pro
-        if core.clinical_route(context.scene) == core.ROUTE_IMMEDIATE:
-            self.report({"ERROR"}, "Implante inmediato usa TotalSegmentator task=teeth")
-            return {"CANCELLED"}
         ok, message = _close_mpr_before_workflow_action(context)
         if not ok:
             self.report({"ERROR"}, message)
@@ -2349,11 +1790,7 @@ class DICOMWIZARDPRO_OT_direct_dicom_to_surface(Operator):
             props.status = f"Error: {exc}"
             self.report({"ERROR"}, str(exc))
             return {"CANCELLED"}
-        # Crucial: return immediately. All heavy neural work runs on a worker
-        # thread; bpy.app.timers commits results incrementally on the main thread.
         return {"FINISHED"}
-
-
 
 def generate_native_alignment_reference(
     context,
@@ -2921,4 +2358,3 @@ OPERATOR_CLASSES = CLASSES
 # =============================================================================
 # MODULE: panels.py
 # =============================================================================
-

@@ -313,6 +313,8 @@ def _schedule_zero_boundary_auto_advance(scene, model):
     performs the transition, re-audits the object, and lets the normal update
     callback validate the same zero-boundary rule.
     """
+    from . import workflow_history
+    if workflow_history.automation_suspended():return False
     if scene is None or not _valid_obj(model):
         return False
     key = (str(scene.name), str(model.name))
@@ -323,6 +325,7 @@ def _schedule_zero_boundary_auto_advance(scene, model):
 
     def _advance():
         try:
+            if workflow_history.automation_suspended():return None
             target_scene = bpy.data.scenes.get(scene_name)
             target_model = bpy.data.objects.get(model_name)
             if target_scene is None or not _valid_obj(target_model):
@@ -334,6 +337,7 @@ def _schedule_zero_boundary_auto_advance(scene, model):
             report = get_model_topology_report_cached(target_model)
             if not _workflow_closed_boundary_passes(report):
                 return None
+            workflow_history.begin(bpy.context,'Preparar modelo cerrado')
             _mark_closed_boundary_model_accepted(target_model, report)
             props.model_obj = register_dsg_object(target_model, ROLE_MODEL, target_model.name)
             target_scene['DSG_next_step_gate_blocked'] = False
@@ -346,6 +350,8 @@ def _schedule_zero_boundary_auto_advance(scene, model):
             target_scene[GUIDE_FLOW_ORDER_KEY] = GUIDE_FLOW_ORDER_MODEL_IMPLANT
             _set_obj_hidden(target_model, False, selectable_when_visible=True)
             _tag_dsg_view3d_redraw()
+            workflow_history.commit(bpy.context,'Modelo cerrado preparado')
+            bpy.ops.ed.undo_push(message='DSG · Modelo cerrado preparado')
         except Exception as exc:
             print(f'[DSG] Zero-boundary auto-advance warning: {exc}')
         finally:
@@ -353,7 +359,7 @@ def _schedule_zero_boundary_auto_advance(scene, model):
         return None
 
     try:
-        bpy.app.timers.register(_advance, first_interval=0.01)
+        lifecycle.register_timer(_advance, first_interval=0.01)
         return True
     except Exception:
         _AUTO_CLOSED_MODEL_ADVANCE_PENDING.discard(key)
@@ -1754,6 +1760,8 @@ def _require_workflow_stage(operator, context, required_step, *, action_en='', a
 def _reconcile_workflow_after_undo(scene):
     if scene is None:
         return False
+    from . import workflow_history
+    if workflow_history.has_checkpoint(scene):return True
     props = getattr(scene, 'dsg_props', None)
     if props is None:
         return False
@@ -2748,5 +2756,3 @@ def _restore_active_view3d_state(context, state):
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
     return True
-
-

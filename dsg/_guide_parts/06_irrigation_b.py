@@ -830,136 +830,6 @@ def build_irrigation_link_y_parts(context, entry, name_prefix='DSG_IrrLinkY'):
     return parts
 
 
-def commit_irrigation_link(context, props, target_implant, sleeve_point,
-                           source_entry, source_point):
-    """Create one Link branch (UI-agnostic).
-
-    Returns ``(ok, message_en, message_es)``. Used by the two-click Link tool
-    and by "Link selected" (automatic placement).
-    """
-    parameters = dict(
-        source_entry.get('parameters') or capture_irrigation_parameters(props))
-    # A linked implant has no independent external 4 mm inlet.  Keep its
-    # daughter branch continuously at 1.00 mm and let the common source
-    # channel provide the external inlet.  Expanding the Link branch to the
-    # source inlet diameter can invade the sleeve C manifold and produce a
-    # false wall/obstruction after the final assembly.
-    parameters['irr_inner_diameter'] = 1.0
-    parameters['irr_funnel_outer_diameter'] = 1.0
-    parameters['irr_taper_length'] = 0.0
-    parameters['irr_funnel_enabled'] = True
-    parameters['irr_link_continuous_1mm'] = True
-    parameters['irr_link_preserve_full_lumen'] = False
-    entry_props = irrigation_props_overlay(props, parameters)
-    controls, y_geometry, error_en, error_es = _build_irrigation_link_controls_from_points(
-        props, target_implant, sleeve_point, source_point, source_entry.get('link_source_tangent'), entry_props)
-    if not controls:
-        return False, error_en, error_es
-
-    link_index = int(props.irr_chain_count)
-    wall_name = f'{IRR_WALL_PREFIX}{link_index:02d}'
-    safe_remove_by_name(wall_name)
-    wall = build_irrigation_outer_wall_object(
-        context,
-        controls,
-        entry_props,
-        implant_obj=target_implant,
-        name=wall_name,
-        show_wire=False,
-    )
-    if not _valid_obj(wall):
-        return False, 'Could not create the irrigation link', 'No se pudo crear la conexión de irrigación'
-
-    try:
-        data = json.loads(props.irr_paths_json or '[]')
-        if not isinstance(data, list):
-            data = []
-    except Exception:
-        data = []
-
-    source_index = int(source_entry.get('index', 0))
-    data.append({
-        'implant': target_implant.name,
-        'points': [[float(p.x), float(p.y), float(p.z)] for p in controls],
-        'parameters': parameters,
-        'index': link_index,
-        'link': True,
-        'source_index': source_index,
-        'link_sleeve_point': [float(v) for v in Vector(sleeve_point)],
-        'link_channel_point': [float(v) for v in Vector(source_point)],
-        'link_manifold_center': [float(v) for v in y_geometry['manifold_center']],
-        'link_elbow_center': [float(v) for v in y_geometry['split_center']],
-        'link_split_center': [float(v) for v in y_geometry['split_center']],
-        'link_side_chamber_center': [float(v) for v in y_geometry['split_center']],
-        'link_channel_point': [float(v) for v in y_geometry['source_channel_point']],
-        'link_source_tangent': [float(v) for v in y_geometry['source_tangent']],
-        'link_trunk_direction': [float(v) for v in y_geometry['trunk_direction']],
-        'link_lateral': [float(v) for v in y_geometry['lateral']],
-        'link_geometry_mode': str(y_geometry.get('geometry_mode', 'ADAPTIVE_MIDPOINT_MANIFOLD')),
-        'link_branch_angle_deg': float(y_geometry.get('branch_angle_deg', 30.0)),
-        'link_split_point': [float(v) for v in y_geometry['split_center']],
-        'link_trunk_point': [float(v) for v in y_geometry['common_anchor']],
-        'link_source_shoulder': [float(v) for v in y_geometry['main_shoulder']],
-        'link_source_rejoin': [float(v) for v in y_geometry['main_rejoin']],
-        'link_common_anchor': [float(v) for v in y_geometry['common_anchor']],
-        'link_main_rejoin': [float(v) for v in y_geometry['main_rejoin']],
-        'link_main_shoulder': [float(v) for v in y_geometry['main_shoulder']],
-        'link_link_shoulder': [float(v) for v in y_geometry['link_shoulder']],
-        'link_link_rejoin': [float(v) for v in y_geometry['link_rejoin']],
-        'link_branch_midpoint': [float(v) for v in y_geometry['branch_midpoint']],
-        'link_plenum_radius': float(y_geometry.get('manifold_radius', 0.55)),
-    })
-    props.irr_paths_json = json.dumps(data)
-
-    register_dsg_object(wall, ROLE_IRRIGATION, wall_name, {
-        'DSG_implant': target_implant.name,
-        'DSG_irrigation_wall_confirmed': True,
-        'DSG_centerline_controls': json.dumps(
-            [list(Vector(point)) for point in controls]),
-        'DSG_irrigation_params': json.dumps(parameters),
-        'DSG_irrigation_index': link_index,
-        'DSG_irrigation_link': True,
-        'DSG_irrigation_source_index': source_index,
-        'DSG_irrigation_link_sleeve_point': json.dumps(
-            list(Vector(sleeve_point))),
-        'DSG_irrigation_link_channel_point': json.dumps(
-            list(Vector(source_point))),
-        'DSG_irrigation_link_y': True,
-        'DSG_irrigation_link_diameter': float(parameters.get('irr_inner_diameter', 1.0)),
-        'DSG_irrigation_link_split_point': json.dumps(list(y_geometry['split_center'])),
-        'DSG_irrigation_link_trunk_point': json.dumps(list(y_geometry['approach_point'])),
-        'DSG_irrigation_link_source_shoulder': json.dumps(list(y_geometry['source_channel_point'])),
-        'DSG_irrigation_link_source_rejoin': json.dumps(list(y_geometry['source_channel_point'])),
-        'DSG_irrigation_link_manifold_center': json.dumps(list(y_geometry['manifold_center'])),
-        'DSG_irrigation_link_elbow_center': json.dumps(list(y_geometry['split_center'])),
-        'DSG_irrigation_link_split_center': json.dumps(list(y_geometry['split_center'])),
-        'DSG_irrigation_link_side_chamber_center': json.dumps(list(y_geometry['split_center'])),
-        'DSG_irrigation_link_channel_point': json.dumps(list(y_geometry['source_channel_point'])),
-        'DSG_irrigation_link_source_tangent': json.dumps(list(y_geometry['source_tangent'])),
-        'DSG_irrigation_link_trunk_direction': json.dumps(list(y_geometry['trunk_direction'])),
-        'DSG_irrigation_link_lateral': json.dumps(list(y_geometry['lateral'])),
-        'DSG_irrigation_link_geometry_mode': str(y_geometry.get('geometry_mode', 'ADAPTIVE_MIDPOINT_MANIFOLD')),
-        'DSG_irrigation_link_branch_angle_deg': float(y_geometry.get('branch_angle_deg', 30.0)),
-        'DSG_irrigation_link_common_anchor': json.dumps(list(y_geometry['common_anchor'])),
-        'DSG_irrigation_link_main_rejoin': json.dumps(list(y_geometry['main_rejoin'])),
-        'DSG_irrigation_link_main_shoulder': json.dumps(list(y_geometry['main_shoulder'])),
-        'DSG_irrigation_link_link_shoulder': json.dumps(list(y_geometry['link_shoulder'])),
-        'DSG_irrigation_link_link_rejoin': json.dumps(list(y_geometry['link_rejoin'])),
-        'DSG_irrigation_link_branch_midpoint': json.dumps(list(y_geometry['branch_midpoint'])),
-        'DSG_irrigation_link_plenum_radius': float(y_geometry.get('manifold_radius', 0.55)),
-    })
-    wall.display_type = 'SOLID'
-    wall.show_in_front = False
-    props.irr_chain_count = len(data)
-    set_active(context, wall)
-
-    # Sequential opening: initial sleeve open, linked sleeves frangible + ordered.
-    auto_assign_irrigation_gate_defaults(props)
-    return (True,
-            f'Sleeve linked to irrigation channel {source_index + 1}',
-            f'Cilindro conectado al canal de irrigación {source_index + 1}')
-
-
 class DSG_OT_LinkIrrigation(Operator):
     bl_idname = 'dsg.link_irrigation'
     bl_label = 'Link'
@@ -986,10 +856,134 @@ class DSG_OT_LinkIrrigation(Operator):
 
     def _commit_link(self, context, props, target_implant, sleeve_point,
                      source_entry, source_point):
-        ok, message_en, message_es = commit_irrigation_link(
-            context, props, target_implant, sleeve_point, source_entry, source_point)
-        _dsg_report(self, {'INFO'} if ok else {'ERROR'}, message_en, message_es)
-        return ok
+        parameters = dict(
+            source_entry.get('parameters') or capture_irrigation_parameters(props))
+        # A linked implant has no independent external 4 mm inlet.  Keep its
+        # daughter branch continuously at 1.00 mm and let the common source
+        # channel provide the external inlet.  Expanding the Link branch to the
+        # source inlet diameter can invade the sleeve C manifold and produce a
+        # false wall/obstruction after the final assembly.
+        parameters['irr_inner_diameter'] = 1.0
+        parameters['irr_funnel_outer_diameter'] = 1.0
+        parameters['irr_taper_length'] = 0.0
+        parameters['irr_funnel_enabled'] = True
+        parameters['irr_link_continuous_1mm'] = True
+        parameters['irr_link_preserve_full_lumen'] = False
+        entry_props = irrigation_props_overlay(props, parameters)
+        controls, y_geometry, error_en, error_es = _build_irrigation_link_controls_from_points(
+            props, target_implant, sleeve_point, source_point, source_entry.get('link_source_tangent'), entry_props)
+        if not controls:
+            _dsg_report(self, {'ERROR'}, error_en, error_es)
+            return False
+
+        link_index = int(props.irr_chain_count)
+        wall_name = f'{IRR_WALL_PREFIX}{link_index:02d}'
+        safe_remove_by_name(wall_name)
+        wall = build_irrigation_outer_wall_object(
+            context,
+            controls,
+            entry_props,
+            implant_obj=target_implant,
+            name=wall_name,
+            show_wire=False,
+        )
+        if not _valid_obj(wall):
+            _dsg_report(
+                self, {'ERROR'},
+                'Could not create the irrigation link',
+                'No se pudo crear la conexión de irrigación')
+            return False
+
+        try:
+            data = json.loads(props.irr_paths_json or '[]')
+            if not isinstance(data, list):
+                data = []
+        except Exception:
+            data = []
+
+        source_index = int(source_entry.get('index', 0))
+        data.append({
+            'implant': target_implant.name,
+            'points': [[float(p.x), float(p.y), float(p.z)] for p in controls],
+            'parameters': parameters,
+            'index': link_index,
+            'link': True,
+            'source_index': source_index,
+            'link_sleeve_point': [float(v) for v in Vector(sleeve_point)],
+            'link_channel_point': [float(v) for v in Vector(source_point)],
+            'link_manifold_center': [float(v) for v in y_geometry['manifold_center']],
+            'link_elbow_center': [float(v) for v in y_geometry['split_center']],
+            'link_split_center': [float(v) for v in y_geometry['split_center']],
+            'link_side_chamber_center': [float(v) for v in y_geometry['split_center']],
+            'link_channel_point': [float(v) for v in y_geometry['source_channel_point']],
+            'link_source_tangent': [float(v) for v in y_geometry['source_tangent']],
+            'link_trunk_direction': [float(v) for v in y_geometry['trunk_direction']],
+            'link_lateral': [float(v) for v in y_geometry['lateral']],
+            'link_geometry_mode': str(y_geometry.get('geometry_mode', 'ADAPTIVE_MIDPOINT_MANIFOLD')),
+            'link_branch_angle_deg': float(y_geometry.get('branch_angle_deg', 30.0)),
+            'link_split_point': [float(v) for v in y_geometry['split_center']],
+            'link_trunk_point': [float(v) for v in y_geometry['common_anchor']],
+            'link_source_shoulder': [float(v) for v in y_geometry['main_shoulder']],
+            'link_source_rejoin': [float(v) for v in y_geometry['main_rejoin']],
+            'link_common_anchor': [float(v) for v in y_geometry['common_anchor']],
+            'link_main_rejoin': [float(v) for v in y_geometry['main_rejoin']],
+            'link_main_shoulder': [float(v) for v in y_geometry['main_shoulder']],
+            'link_link_shoulder': [float(v) for v in y_geometry['link_shoulder']],
+            'link_link_rejoin': [float(v) for v in y_geometry['link_rejoin']],
+            'link_branch_midpoint': [float(v) for v in y_geometry['branch_midpoint']],
+            'link_plenum_radius': float(y_geometry.get('manifold_radius', 0.55)),
+        })
+        props.irr_paths_json = json.dumps(data)
+
+        register_dsg_object(wall, ROLE_IRRIGATION, wall_name, {
+            'DSG_implant': target_implant.name,
+            'DSG_irrigation_wall_confirmed': True,
+            'DSG_centerline_controls': json.dumps(
+                [list(Vector(point)) for point in controls]),
+            'DSG_irrigation_params': json.dumps(parameters),
+            'DSG_irrigation_index': link_index,
+            'DSG_irrigation_link': True,
+            'DSG_irrigation_source_index': source_index,
+            'DSG_irrigation_link_sleeve_point': json.dumps(
+                list(Vector(sleeve_point))),
+            'DSG_irrigation_link_channel_point': json.dumps(
+                list(Vector(source_point))),
+            'DSG_irrigation_link_y': True,
+            'DSG_irrigation_link_diameter': float(parameters.get('irr_inner_diameter', 1.0)),
+            'DSG_irrigation_link_split_point': json.dumps(list(y_geometry['split_center'])),
+            'DSG_irrigation_link_trunk_point': json.dumps(list(y_geometry['approach_point'])),
+            'DSG_irrigation_link_source_shoulder': json.dumps(list(y_geometry['source_channel_point'])),
+            'DSG_irrigation_link_source_rejoin': json.dumps(list(y_geometry['source_channel_point'])),
+            'DSG_irrigation_link_manifold_center': json.dumps(list(y_geometry['manifold_center'])),
+            'DSG_irrigation_link_elbow_center': json.dumps(list(y_geometry['split_center'])),
+            'DSG_irrigation_link_split_center': json.dumps(list(y_geometry['split_center'])),
+            'DSG_irrigation_link_side_chamber_center': json.dumps(list(y_geometry['split_center'])),
+            'DSG_irrigation_link_channel_point': json.dumps(list(y_geometry['source_channel_point'])),
+            'DSG_irrigation_link_source_tangent': json.dumps(list(y_geometry['source_tangent'])),
+            'DSG_irrigation_link_trunk_direction': json.dumps(list(y_geometry['trunk_direction'])),
+            'DSG_irrigation_link_lateral': json.dumps(list(y_geometry['lateral'])),
+            'DSG_irrigation_link_geometry_mode': str(y_geometry.get('geometry_mode', 'ADAPTIVE_MIDPOINT_MANIFOLD')),
+            'DSG_irrigation_link_branch_angle_deg': float(y_geometry.get('branch_angle_deg', 30.0)),
+            'DSG_irrigation_link_common_anchor': json.dumps(list(y_geometry['common_anchor'])),
+            'DSG_irrigation_link_main_rejoin': json.dumps(list(y_geometry['main_rejoin'])),
+            'DSG_irrigation_link_main_shoulder': json.dumps(list(y_geometry['main_shoulder'])),
+            'DSG_irrigation_link_link_shoulder': json.dumps(list(y_geometry['link_shoulder'])),
+            'DSG_irrigation_link_link_rejoin': json.dumps(list(y_geometry['link_rejoin'])),
+            'DSG_irrigation_link_branch_midpoint': json.dumps(list(y_geometry['branch_midpoint'])),
+            'DSG_irrigation_link_plenum_radius': float(y_geometry.get('manifold_radius', 0.55)),
+        })
+        wall.display_type = 'SOLID'
+        wall.show_in_front = False
+        props.irr_chain_count = len(data)
+        set_active(context, wall)
+
+        _dsg_report(
+            self,
+            {'INFO'},
+            f'Sleeve linked to irrigation channel {source_index + 1}',
+            f'Cilindro conectado al canal de irrigación {source_index + 1}',
+        )
+        return True
 
     def modal(self, context, event):
         if not lifecycle.is_active():
@@ -1063,24 +1057,6 @@ class DSG_OT_LinkIrrigation(Operator):
                     'The selected irrigation channel has no saved path',
                     'El canal de irrigación seleccionado no tiene una trayectoria guardada')
                 return {'RUNNING_MODAL'}
-
-            if bool(source_entry.get('link', False)):
-                # A Link of a Link is never assembled by Apply Irrigation (only
-                # links whose source is a main channel form a Y network), so the
-                # branch would silently disappear. Attach to the main trunk.
-                trunk_entry = _find_irrigation_entry_by_index(
-                    entries, int(source_entry.get('source_index', -1)))
-                if trunk_entry is None or bool(trunk_entry.get('link', False)):
-                    _dsg_report(
-                        self, {'WARNING'},
-                        'Click the main irrigation channel',
-                        'Haz clic sobre el conducto principal de irrigación')
-                    return {'RUNNING_MODAL'}
-                source_entry = trunk_entry
-                _dsg_report(
-                    self, {'INFO'},
-                    'Linked to the main channel (branches always join the main trunk)',
-                    'Vinculado al conducto principal (las ramas siempre se unen al tronco)')
 
             source_implant = source_entry.get('implant')
             if source_implant is self._target_implant:
@@ -1193,7 +1169,6 @@ class DSG_OT_RemoveLastIrrigation(Operator):
             props.irr_paths_json = '[]'
 
         props.irr_chain_count = len(data)
-        auto_assign_irrigation_gate_defaults(props)
         remaining = get_confirmed_irrigation_walls()
         if remaining:
             set_active(context, remaining[-1])
@@ -1578,13 +1553,7 @@ def build_irrigation_flow_simulation_routes(props):
         if len(source_flow) < 2:
             continue
 
-        sequential_shares = {}
-        if isinstance(balances, dict) and balances.get('mode') == 'SEQUENTIAL_OPENING':
-            stages = (balances.get('design') or {}).get('stages') or []
-            sequential_shares = dict(stages[-1].get('shares', {})) if stages else {}
-        if sequential_shares:
-            source_weight = float(sequential_shares.get(str(source.get('implant_name') or ''), 0.0))
-        elif len(links) == 1:
+        if len(links) == 1:
             record = balances.get(int(links[0].get('index', -1)), {})
             source_weight = float(record.get('predicted_source_flow_fraction', 0.5))
         elif links:
@@ -1619,9 +1588,7 @@ def build_irrigation_flow_simulation_routes(props):
                 daughter[0] = (split, max(float(daughter[0][1]), float(common[-1][1]) if common else float(daughter[0][1])))
             complete = _remove_near_duplicate_samples(common + daughter[1:], epsilon=0.012)
 
-            if sequential_shares:
-                link_weight = float(sequential_shares.get(str(link.get('implant_name') or ''), 0.0))
-            elif len(links) == 1:
+            if len(links) == 1:
                 record = balances.get(int(link.get('index', -1)), {})
                 link_weight = float(record.get('predicted_link_flow_fraction', 0.5))
             else:
@@ -2837,20 +2804,6 @@ class DSG_OT_ConfirmIrrigation(Operator):
                 _DSG_LOG.debug("suppressed exception", exc_info=True)
             props.guide_obj = register_dsg_object(final_temp, ROLE_GUIDE, GUIDE_NAME)
             sealed_names = sync_irrigation_gate_metadata(props.guide_obj, props)
-            if irrigation_sequential_enabled(props):
-                refresh_irrigation_network_roles(props)
-                network_note_en = ('sequential opening: initial sleeve open, linked sleeves '
-                                   '0.10 mm frangible, trunk throats towards the initial sleeve')
-                network_note_es = ('apertura secuencial: cilindro inicial abierto, vinculados con '
-                                   'pared frangible 0,10 mm, estrechamientos del tronco hacia el inicial')
-                try:
-                    props.guide_obj['DSG_irrigation_network_json'] = json.dumps(
-                        irrigation_network_summary(props))
-                except Exception:
-                    _DSG_LOG.debug("suppressed exception", exc_info=True)
-            else:
-                network_note_en = 'forced Y, full Ø1 mm lumen'
-                network_note_es = 'Y forzada, lumen Ø1 mm completo'
             set_active(context, props.guide_obj)
             _dsg_report(self, {'INFO'}, f'Irrigation applied: {len(entries)} channel(s), '
                         f'{cut_operations} irrigation cut(s), '
@@ -2861,7 +2814,7 @@ class DSG_OT_ConfirmIrrigation(Operator):
                         f'{model_cut_preflight_passes} model/channel preflight(s) passed; '
                         f'{preflight_repaired_components} component(s) repaired during preflight; '
                         f'{junction_operations} Link-wall opening operation(s); '
-                        f'{network_note_en}; hollow walls preserved; '
+                        f'forced Y + length-compensated balancing nozzles Ø0.72–0.86 mm; hollow walls preserved; '
                         f'{len(sealed_names)} export diaphragm(s) scheduled.', f'Irrigación aplicada: {len(entries)} conducto(s), '
                         f'{cut_operations} corte(s) de irrigación, '
                         f'{sleeve_boolean_operations} corte(s) de manifold en C sobre sleeve; '
@@ -2871,7 +2824,7 @@ class DSG_OT_ConfirmIrrigation(Operator):
                         f'{model_cut_preflight_passes} verificación(es) modelo/canal superadas; '
                         f'{preflight_repaired_components} componente(s) reparado(s) en preflight; '
                         f'{junction_operations} apertura(s) de pared Link; '
-                        f'{network_note_es}; paredes huecas preservadas; '
+                        f'Y forzada + boquillas compensadas Ø0,72–0,86 mm; paredes huecas preservadas; '
                         f'{len(sealed_names)} sello(s) programado(s) para la copia de exportación.')
 
             context.scene[WORKFLOW_IRRIGATION_RESOLVED_KEY] = True

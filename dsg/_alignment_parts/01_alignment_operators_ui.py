@@ -674,7 +674,7 @@ class DICP_OT_PickLandmarks(Operator):
         if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'NDOF_MOTION'}:
             return {'PASS_THROUGH'}
 
-        if event.type in {'BACK_SPACE', 'DEL', 'RIGHTMOUSE'} and event.value == 'PRESS':
+        if (event.type in {'BACK_SPACE', 'DEL', 'RIGHTMOUSE'} or (event.type == 'Z' and event.ctrl)) and event.value == 'PRESS':
             if self._phase == "target" and props.target_point_count > 0:
                 props.target_point_count -= 1
             elif self._phase == "target" and props.target_point_count == 0:
@@ -2174,7 +2174,8 @@ class DICP_OT_BackToAlignment(Operator):
             )
             return {'CANCELLED'}
         try:
-            result = bpy.ops.ed.undo()
+            from . import workflow_history
+            result = workflow_history.undo_previous(context)
         except RuntimeError as exc:
             _report(self, {'WARNING'}, props, f"Undo is not available: {exc}", f"No hay una acción disponible para deshacer: {exc}")
             return {'CANCELLED'}

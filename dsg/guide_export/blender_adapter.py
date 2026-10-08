@@ -46,37 +46,6 @@ def mesh_arrays(obj, depsgraph=None) -> tuple[np.ndarray, np.ndarray]:
     return world, tris.reshape(-1, 3)
 
 
-def triangulate_for_stl(obj) -> int:
-    """Triangulate with BEAUTY before writing STL; returns the triangle count.
-
-    Exact Booleans leave large concave n-gons. Blender's STL writer
-    triangulates them on the fly and, on concave n-gons, can emit a diagonal
-    that duplicates an existing edge (edges shared by 3+ triangles: a
-    non-manifold STL, measured on real DSG sleeves in Blender 5.2). BMesh's
-    BEAUTY triangulation does not, so the file written is exactly the manifold
-    triangle mesh the quality gate checks.
-    """
-    import bmesh
-    bm = bmesh.new()
-    try:
-        bm.from_mesh(obj.data)
-        bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method="BEAUTY", ngon_method="BEAUTY")
-        # "Pinch" edges (two surfaces touching along one edge: 4, 6… faces) are a
-        # known EXACT-Boolean artefact. Splitting them separates the two sheets
-        # without moving any vertex, so every edge is shared by exactly two
-        # triangles again. Odd counts are left for the quality gate to report.
-        pinched = [e for e in bm.edges if len(e.link_faces) > 2 and len(e.link_faces) % 2 == 0]
-        if pinched:
-            bmesh.ops.split_edges(bm, edges=pinched)
-            LOG.info("export: split %d pinched edge(s)", len(pinched))
-        bm.to_mesh(obj.data)
-        obj.data.update()
-        obj["DSG_export_pinched_edges_split"] = len(pinched)
-        return len(bm.faces)
-    finally:
-        bm.free()
-
-
 def bvh_from_arrays(vertices: np.ndarray, triangles: np.ndarray) -> BVHTree:
     return BVHTree.FromPolygons(vertices.tolist(), triangles.tolist(), all_triangles=True)
 
@@ -216,15 +185,8 @@ def read_export_context(context, guide_ns, *, operator_options: dict | None = No
             platform_world_mm=_vec(_safe(guide_ns.get_implant_platform_center_world, props, implant)),
             axis_world=_vec(_safe(guide_ns.get_sleeve_axis_world, props, implant)),
         )
-        rec.sleeve = {
-            "center_world_mm": _vec(_safe(guide_ns.get_sleeve_center_world, props, implant)),
-            "irrigation_open_order": int(implant.get("DSG_irrigation_open_order", 0) or 0) or None,
-            "irrigation_frangible_wall": bool(implant.get("DSG_irrigation_sealed", False)),
-        }
+        rec.sleeve = {"center_world_mm": _vec(_safe(guide_ns.get_sleeve_center_world, props, implant))}
         ctx.implants.append(rec)
-    summary_fn = getattr(guide_ns, "irrigation_network_summary", None)
-    if callable(summary_fn):
-        ctx.irrigation_network = _safe(summary_fn, props) or []
     return ctx
 
 

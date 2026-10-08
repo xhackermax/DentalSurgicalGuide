@@ -2057,19 +2057,13 @@ def _add_forced_wye_plenum_part(context, parts, link_entry, radius, name):
 
 
 def _calculate_midpoint_wye_balances(source_entry, wye_specs, props):
-    """Hydraulic design of a linked network.
+    """Nozzle-free linked irrigation.
 
-    * Sequential opening (default, 9.7.1): see ``irrigation_network``. Each Y
-      throttles the trunk towards the initial sleeve so that the sleeve
-      perforated next receives most of the flow. Returns
-      ``{'mode': 'SEQUENTIAL_OPENING', ...}``.
-    * Legacy: nozzle-free, full Ø1 mm everywhere (returns ``{}``).
+    Previous automatic hydraulic balancing reduced branches to 0.72-0.94 mm and
+    created a visible/functional bottleneck.  DSG now preserves the designed
+    lumen diameter through the split; flow balancing is left to geometry, not a
+    forced stenosis.
     """
-    if wye_specs and irrigation_sequential_enabled(props):
-        try:
-            return sequential_wye_balances(source_entry, wye_specs, props)
-        except Exception as exc:
-            _DSG_LOG.warning('sequential irrigation design failed, using full lumen: %s', exc, exc_info=True)
     return {}
 
 
@@ -2083,14 +2077,8 @@ def _apply_entry_midpoint_geometry(samples, entry, wye_specs):
 
 
 def _apply_entry_balancing(samples, entry, wye_specs, balances):
-    """Sequential mode: metering throats on the trunk towards the initial sleeve.
-
-    Linked daughters always keep the full lumen; in legacy mode nothing changes.
-    """
-    if (not isinstance(balances, dict) or balances.get('mode') != 'SEQUENTIAL_OPENING'
-            or bool(entry.get('link', False))):
-        return list(samples)
-    return apply_sequential_trunk_throats(samples, balances)
+    """Preserve the full lumen across source and linked branches."""
+    return list(samples)
 
 
 def build_irrigation_y_network_hollow_wall(context, source_entry, link_entries, props,
@@ -2102,7 +2090,6 @@ def build_irrigation_y_network_hollow_wall(context, source_entry, link_entries, 
     outer body are fused independently, then hollowed once.  Only the easier
     daughter is metered, maximising total water delivery.
     """
-    link_entries = order_links_along_trunk(source_entry, link_entries, props)
     entries = [source_entry] + list(link_entries or [])
     if len(entries) < 2:
         return None
@@ -2195,8 +2182,7 @@ def build_irrigation_y_network_hollow_wall(context, source_entry, link_entries, 
         outer.display_type = 'SOLID'
         outer.show_in_front = False
 
-        sequential = isinstance(balances, dict) and balances.get('mode') == 'SEQUENTIAL_OPENING'
-        records = [] if sequential else [r for r in balances.values() if isinstance(r, dict)]
+        records = list(balances.values())
         exact_all = bool(records) and all(
             bool(record.get('exact_balance_possible', False)) for record in records)
         max_error = max([
@@ -2219,10 +2205,8 @@ def build_irrigation_y_network_hollow_wall(context, source_entry, link_entries, 
             'DSG_irrigation_body_wall_thickness': float(getattr(props, 'irr_wall_thickness', IRRIGATION_SLIM_WALL_THICKNESS_DEFAULT_MM)),
             'DSG_irrigation_no_internal_caps': True,
             'DSG_irrigation_link_count': len(wye_specs),
-            'DSG_irrigation_balancing_mode': (
-                'SEQUENTIAL_OPENING_TRUNK_THROATS' if sequential
-                else 'MINIMUM_LOSS_POISEUILLE_SINGLE_BRANCH'),
-            'DSG_irrigation_only_easier_branch_restricted': not sequential,
+            'DSG_irrigation_balancing_mode': 'MINIMUM_LOSS_POISEUILLE_SINGLE_BRANCH',
+            'DSG_irrigation_only_easier_branch_restricted': True,
             'DSG_irrigation_nozzle_min_diameter': 0.72,
             'DSG_irrigation_nozzle_max_diameter': 0.94,
             'DSG_irrigation_nozzle_after_split': True,
@@ -2251,7 +2235,6 @@ def build_irrigation_y_network_hollow_wall(context, source_entry, link_entries, 
 def build_irrigation_y_network_lumen_cutter(context, source_entry, link_entries, props,
                                               name='DSG_IrrYNetworkCut'):
     """Creates a cutter that exactly follows the rebuilt manifold lumen."""
-    link_entries = order_links_along_trunk(source_entry, link_entries, props)
     entries = [source_entry] + list(link_entries or [])
     wye_specs = list(link_entries or [])
     if len(entries) < 2:
@@ -2299,10 +2282,7 @@ def build_irrigation_y_network_lumen_cutter(context, source_entry, link_entries,
             'DSG_cut_type': 'adaptive_midpoint_manifold_lumen',
             'DSG_irrigation_y_network': True,
             'DSG_irrigation_geometry_mode': 'ADAPTIVE_MIDPOINT_MANIFOLD_EXTERNAL_ONLY',
-            'DSG_irrigation_balancing_mode': (
-                'SEQUENTIAL_OPENING_TRUNK_THROATS'
-                if isinstance(balances, dict) and balances.get('mode') == 'SEQUENTIAL_OPENING'
-                else 'FULL_1MM_LINK_DAUGHTERS'),
+            'DSG_irrigation_balancing_mode': 'FULL_1MM_LINK_DAUGHTERS',
             'DSG_irrigation_balance_data': json.dumps(balances),
             'DSG_irrigation_contains_sleeve_c_manifolds': False,
         })

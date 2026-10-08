@@ -4,7 +4,7 @@ bl_info = {
     "name": "DSG · Alignment Module",
     "author": "Max Tiburcio",
     "version": (2, 16, 0),
-    "blender": (5, 0, 0),
+    "blender": (5, 2, 0),
     "location": "View3D > Sidebar > DSG",
     "description": "Occlusal/incisal dental auto-registration with ambiguity-safe three-zone fallback",
     "category": "3D View",
@@ -503,9 +503,16 @@ def _clinical_cbct_review_objects(context, target):
         if str(target.get("dental_suite_alignment_reference_quality", "") or "") in {
             "ALL_SEGMENTED_DUPLICATE_COMPOSITE", "IMMEDIATE_ARCH_COMPOSITE"
         }:
+            from . import cbct_dental_module
+            if cbct_dental_module.VISUAL_SMOOTHING_CHOICE_KEY in context.scene:
+                cbct_dental_module.set_dentition_alignment_visual_smoothing(
+                    context, bool(context.scene[cbct_dental_module.VISUAL_SMOOTHING_CHOICE_KEY])
+                )
             return [], [], []
         from . import cbct_dental_module
-        teeth = list(cbct_dental_module.set_dentition_alignment_visual_smoothing(context, True))
+        teeth = list(cbct_dental_module.set_dentition_alignment_visual_smoothing(
+            context, bool(context.scene.get(cbct_dental_module.VISUAL_SMOOTHING_CHOICE_KEY, True))
+        ))
         if not teeth:
             return [], [], []
         labels = [
@@ -525,7 +532,9 @@ def _clinical_cbct_review_objects(context, target):
 def _disable_clinical_cbct_review_smoothing(context) -> None:
     try:
         from . import cbct_dental_module
-        cbct_dental_module.set_dentition_alignment_visual_smoothing(context, False)
+        cbct_dental_module.set_dentition_alignment_visual_smoothing(
+            context, bool(context.scene.get(cbct_dental_module.VISUAL_SMOOTHING_CHOICE_KEY, False))
+        )
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
 
@@ -957,7 +966,7 @@ def _clear_markers() -> None:
             try:
                 scene.collection.children.unlink(collection)
             except RuntimeError:
-                pass
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
         bpy.data.collections.remove(collection)
 
 
@@ -1092,6 +1101,18 @@ def _immediate_alignment_teeth(context, target):
         return []
 
 
+def _registration_mesh_source(obj, depsgraph):
+    """A DSG display modifier must never change the clinical ICP reference."""
+    from . import cbct_dental_module
+    original = obj.get('DSG_post_smooth_original_mesh')
+    if isinstance(original, bpy.types.Mesh):
+        return obj, original, False
+    if obj.modifiers.get(cbct_dental_module.ALIGNMENT_VISUAL_SMOOTH_MODIFIER) is not None:
+        return obj, obj.data, False
+    evaluated = obj.evaluated_get(depsgraph)
+    return evaluated, evaluated.to_mesh(), True
+
+
 def _mesh_graph_from_objects(objects) -> _MeshGraph | None:
     """Concatenate several mesh objects into one in-memory world-space graph."""
     point_blocks, normal_blocks, edge_blocks = [], [], []
@@ -1100,8 +1121,7 @@ def _mesh_graph_from_objects(objects) -> _MeshGraph | None:
     for obj in objects:
         if obj is None or obj.type != 'MESH':
             continue
-        evaluated = obj.evaluated_get(depsgraph)
-        mesh = evaluated.to_mesh()
+        evaluated, mesh, temporary = _registration_mesh_source(obj, depsgraph)
         try:
             if mesh is None or len(mesh.vertices) < 3:
                 continue
@@ -1123,7 +1143,8 @@ def _mesh_graph_from_objects(objects) -> _MeshGraph | None:
                 edge_blocks.append(edge_vertices.reshape((-1, 2)) + int(offset))
             offset += nv
         finally:
-            evaluated.to_mesh_clear()
+            if temporary:
+                evaluated.to_mesh_clear()
     if not point_blocks:
         return None
     points = np.concatenate(point_blocks, axis=0)
@@ -1339,8 +1360,7 @@ def _extract_world_mesh_graph(obj) -> _MeshGraph | None:
         if dental_graph is not None:
             return dental_graph
     depsgraph = bpy.context.evaluated_depsgraph_get()
-    evaluated = obj.evaluated_get(depsgraph)
-    mesh = evaluated.to_mesh()
+    evaluated, mesh, temporary = _registration_mesh_source(obj, depsgraph)
     try:
         if mesh is None or len(mesh.vertices) < 3 or len(mesh.edges) < 2:
             return None
@@ -1381,7 +1401,8 @@ def _extract_world_mesh_graph(obj) -> _MeshGraph | None:
         world_normals = _to_world_normals(local_normals, matrix_world)
         return _MeshGraph(world_points, world_normals, edges)
     finally:
-        evaluated.to_mesh_clear()
+        if temporary:
+            evaluated.to_mesh_clear()
 
 
 def _fallback_local_patch(graph: _MeshGraph, seed_world: np.ndarray):
@@ -2888,5 +2909,3 @@ def _reciprocal_correspondences(
     if selected is None or len(selected) < PATCH_MIN_CORRESPONDENCES:
         return None
     return matched, target_indices, distances, selected
-
-

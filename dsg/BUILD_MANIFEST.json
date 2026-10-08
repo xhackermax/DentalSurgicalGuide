@@ -1,0 +1,2166 @@
+{
+  "schema": "dsg.installable-runtime.v3",
+  "version": "9.10.11",
+  "blender_exact": "5.2",
+  "python_offline_payload": "win_py313",
+  "segmentation_engines": [
+    "TOTALSEG",
+    "TOOTHSEG",
+    "UMAMBA2"
+  ],
+  "engine_sources": {
+    "TOTALSEG": {
+      "package": "TotalSegmentator",
+      "version": "2.18.0",
+      "weights": "official downloader task=teeth + craniofacial crop"
+    },
+    "TOOTHSEG": {
+      "repository": "MIC-DKFZ/ToothSeg",
+      "commit": "b29d1017fa124f89645fa56f98649e3f3f43bdb0",
+      "weights": "Zenodo 14893540 / ToothSeg.zip",
+      "md5": "5d8dd061cce9529943567aeba3271143"
+    },
+    "UMAMBA2": {
+      "repository": "zhiqin1998/U-Mamba2",
+      "commit": "2046d29785087b656ca69fa02dd40e43e69cfb42",
+      "weights": "final ToothFairy3 checkpoint required separately"
+    }
+  },
+  "weights_bundled": false,
+  "file_count": 426,
+  "files": [
+    {
+      "path": "__init__.py",
+      "bytes": 24318,
+      "sha256": "5f3b7e6ec1d4712f5d1ae3b2babe24581842914aeb713c73941b3e32368b0f6d"
+    },
+    {
+      "path": "_alignment_parts/00_alignment_core.py",
+      "bytes": 127009,
+      "sha256": "84e9b58a9317ce07f6f62945bdab938703a4cbd7f9cc8658146418616a1c6dd2"
+    },
+    {
+      "path": "_alignment_parts/01_alignment_operators_ui.py",
+      "bytes": 120798,
+      "sha256": "ffbfe4fe412a4ea0cbc018a29c355f1a399562723d2a463fc3ac895a4220e3c3"
+    },
+    {
+      "path": "_dicom_parts/00_constants_runtime_dependencies.py",
+      "bytes": 37842,
+      "sha256": "a11efd0401dfa0907f3d2801d18793edfd39907c05407f4f71d36912c03b00c7"
+    },
+    {
+      "path": "_dicom_parts/01_utils_dicom_io.py",
+      "bytes": 52775,
+      "sha256": "a9ebdfb16ef19c0563ff0c3a3ac3d002dece8cfbdb17df8f605733fea3cce2a3"
+    },
+    {
+      "path": "_dicom_parts/02_volume_mpr_scene.py",
+      "bytes": 76878,
+      "sha256": "b89de1f6bd31ed7c66a8a8b4c0c5e658fa5de92e1fec98c6004224b7290f6829"
+    },
+    {
+      "path": "_dicom_parts/03_updates_segmentation.py",
+      "bytes": 102726,
+      "sha256": "eb48ce07cd908a845028652594b21e38e98e500a53095b04eaddb219275402d8"
+    },
+    {
+      "path": "_dicom_parts/04_hybrid_surface_preview.py",
+      "bytes": 124469,
+      "sha256": "06e650eea94d2b51467ecac25c94a7fb3cf563ae1425c520f59ba69f935e139e"
+    },
+    {
+      "path": "_dicom_parts/05_realtime_mpr.py",
+      "bytes": 9948,
+      "sha256": "ad93af68eb2e03614448976aefa2d405c8a06db2184171fbd40283a6aa65d0df"
+    },
+    {
+      "path": "_dicom_parts/06_operators_a.py",
+      "bytes": 119471,
+      "sha256": "383700bf08d77c4eb61b354546592dfee3c123ee09f71e31686871465fc05fc3"
+    },
+    {
+      "path": "_dicom_parts/06_operators_b.py",
+      "bytes": 103937,
+      "sha256": "ff50ff9de59e5c071e3ffd8fe837a8f898596f23875066f8169e8fa59f694910"
+    },
+    {
+      "path": "_dicom_parts/07_panels_registration.py",
+      "bytes": 33324,
+      "sha256": "ee6ce8ab7a956213dc13a74df136b0324000f323153cfcba355c2ea1cca48866"
+    },
+    {
+      "path": "_guide_parts/00_bootstrap_constants_assets_a.py",
+      "bytes": 43805,
+      "sha256": "f40023550eb05cccb96d44f25ba701008e4ca91e0ef7a5e92f22b444652728ba"
+    },
+    {
+      "path": "_guide_parts/00_bootstrap_constants_assets_b.py",
+      "bytes": 5007,
+      "sha256": "7cad2b14012c13b11b663eb6271b3a9487a1b8630b9bbfe19ebac4afa0a82bb2"
+    },
+    {
+      "path": "_guide_parts/01_workflow_state_mpr_objects_a.py",
+      "bytes": 120828,
+      "sha256": "d7d1f4301a7778aba42684b47b33efca6e483b68ce4968e4561495d71114922b"
+    },
+    {
+      "path": "_guide_parts/01_workflow_state_mpr_objects_b.py",
+      "bytes": 109320,
+      "sha256": "23f2bc355250d09697f6f3840a5c92110ba9dc621ffdeee276e87f9a013d4814"
+    },
+    {
+      "path": "_guide_parts/02_implant_animation_geometry_a.py",
+      "bytes": 121592,
+      "sha256": "63ca8b330f1781c384125ac470550af66f532270181a053655b23e31237d9fbb"
+    },
+    {
+      "path": "_guide_parts/02_implant_animation_geometry_b.py",
+      "bytes": 129953,
+      "sha256": "11bc8df5c32955402fa0a3e44c58a59c90100ffe0c3e82d275229f789d286a65"
+    },
+    {
+      "path": "_guide_parts/02_implant_animation_geometry_c.py",
+      "bytes": 97339,
+      "sha256": "afa231fafec7e3ed2eb28e36c4a40291b8b02faedc78d0b1931d6e439df87be0"
+    },
+    {
+      "path": "_guide_parts/03_blockout_frame_geometry_a.py",
+      "bytes": 132122,
+      "sha256": "df31afa6450199ab53b1a970837505a81fc3ce0057741c2a14c9e0e1f70b0ea6"
+    },
+    {
+      "path": "_guide_parts/03_blockout_frame_geometry_b.py",
+      "bytes": 129819,
+      "sha256": "492f267ddc53123fcc7fdaf96e7d61ea86e5472bb1c55d96419b5193e88d46a9"
+    },
+    {
+      "path": "_guide_parts/03_blockout_frame_geometry_c.py",
+      "bytes": 113937,
+      "sha256": "93177c9d9515121dafdd11e1d26278a25244a0ba2bd092bdb27f443b519b12d9"
+    },
+    {
+      "path": "_guide_parts/04_properties_clinical_operators.py",
+      "bytes": 209252,
+      "sha256": "1a6304de35b69afe8b44f00aed3819098bd0fce14e930b59d30852e79296fdf7"
+    },
+    {
+      "path": "_guide_parts/05_frame_microscrews_sleeves_drill.py",
+      "bytes": 173265,
+      "sha256": "dd94fb30632082b61ffb6902ef3f767ad595aed246e64aec66dd6e9796d5be05"
+    },
+    {
+      "path": "_guide_parts/06_irrigation_a.py",
+      "bytes": 119676,
+      "sha256": "72b21f3e910c0743e48a1c9b43546bd6746f9f48c4dcf607928464553ce2fc53"
+    },
+    {
+      "path": "_guide_parts/06_irrigation_b.py",
+      "bytes": 133730,
+      "sha256": "83ac546a7ef7a360dbbfd7a0ffb54e41e69b5c5c9784b869550235e5a1035d0d"
+    },
+    {
+      "path": "_guide_parts/07_reinforcement_animation.py",
+      "bytes": 121948,
+      "sha256": "e0d3ce0b65de7bbdca7bb28e925a5e8bfd417e669544d7ac0d2baefade793f39"
+    },
+    {
+      "path": "_guide_parts/08_export_final_ui_registration.py",
+      "bytes": 162319,
+      "sha256": "9d79b0485b2c3ea3546bc3086fa35f755ed94111e53f1fc66a2d7f17ee20bd6f"
+    },
+    {
+      "path": "agent_core.py",
+      "bytes": 7967,
+      "sha256": "7f39ea76ed21647df35fab869a39acdf3231382462dd9a55127078d672b37e1c"
+    },
+    {
+      "path": "agent_facade.py",
+      "bytes": 11508,
+      "sha256": "cbb30770d8df168e03bf87a7775ff1af3073e14dac12e7789256ba81153870b3"
+    },
+    {
+      "path": "agent_scene_graph.py",
+      "bytes": 7405,
+      "sha256": "5e9e6bf05ebb9368dc95b22b4c4c566eae16f8caa1a641991e98cddc631eae34"
+    },
+    {
+      "path": "alignment_module.py",
+      "bytes": 303,
+      "sha256": "87c0257a72b99e448b0a41289cba2be89882e73508c82d900f236b57722653a7"
+    },
+    {
+      "path": "anatomy_refine.py",
+      "bytes": 26699,
+      "sha256": "d87c7aa08bca12e66b3b249a10628105bb1e2d27c3230611b9368f05e46be242"
+    },
+    {
+      "path": "blender_compat.py",
+      "bytes": 1595,
+      "sha256": "82cdf8c045ef84e76249f4c7b3e7bd89b1c684c926772705ae0a32fc411f7f0e"
+    },
+    {
+      "path": "cbct_dental_module.py",
+      "bytes": 116392,
+      "sha256": "cd0497e372b150b2ac5aef3ce1aff907c1500182ff4b9da7afb7d8a2d8666cfa"
+    },
+    {
+      "path": "cbct_native_threshold.py",
+      "bytes": 28224,
+      "sha256": "4f13e12ca46afd0b1faff659abe18cd3b91833bc92be796b7bba6bf7801fbb7c"
+    },
+    {
+      "path": "cbct_pipeline_client.py",
+      "bytes": 15031,
+      "sha256": "0280ba5c47f2c6badca8031d38a5a68aaf743bfad89fb182aa6256fd2760868e"
+    },
+    {
+      "path": "cbct_pipeline_tasks.py",
+      "bytes": 18320,
+      "sha256": "8d248af9a10b74967be4fa6d1b649075b64863084046187b62031cc20acd1206"
+    },
+    {
+      "path": "cbct_pipeline_worker.py",
+      "bytes": 32657,
+      "sha256": "5e5294b85ee48b029b4ff5a06dcb8b7177bb9866b556d26d8415ad698d3ef4bf"
+    },
+    {
+      "path": "cbct_post_smoothing.py",
+      "bytes": 16468,
+      "sha256": "98929c6544e2dd16a3ada46a43f39f8dc80342832426b47949f302b80fb87fa8"
+    },
+    {
+      "path": "cbct_post_smoothing_worker.py",
+      "bytes": 10577,
+      "sha256": "0e217f3b1cc3184a01e59956bf7220eda7185542394e18f6261e1ab32e11fae2"
+    },
+    {
+      "path": "cbct_surface_meshing.py",
+      "bytes": 30466,
+      "sha256": "58b427546e7ed9b73a4fbd4386a8bbae929acf0d6d7244d374bb82574bf7ed53"
+    },
+    {
+      "path": "cbct_surface_sidecar.py",
+      "bytes": 2526,
+      "sha256": "48ebaa76aa74b6de4949b49a654c130290ed57ac8e48bf53ab97b6464240dfc9"
+    },
+    {
+      "path": "cbct_surface_worker_client.py",
+      "bytes": 3453,
+      "sha256": "6dd7e6f0cb072850b0d13f9d2a44dc7ec3877e461e4fc60b1523e3993a702754"
+    },
+    {
+      "path": "clinical_context.py",
+      "bytes": 22158,
+      "sha256": "5ade342e63145a608f6d8f15dfedf84b71068afc494a6695e6a48a752fcbc4e7"
+    },
+    {
+      "path": "clinical_core.py",
+      "bytes": 19658,
+      "sha256": "409bd6edac630e2267295832fb72224ac6ce26219f0ba4ab374d23ed96e2160f"
+    },
+    {
+      "path": "common_surface_match.py",
+      "bytes": 66216,
+      "sha256": "a794ea7bc79baaca11b29ec6d873f4ac0258a91bd368186f59ecd0ca4b749c28"
+    },
+    {
+      "path": "compute_probe.py",
+      "bytes": 2176,
+      "sha256": "9ed639c7b51ad2e5fca8c68245e11887f338aa2320d9c0092d3c15d2531b753d"
+    },
+    {
+      "path": "core.py",
+      "bytes": 196911,
+      "sha256": "b97db9bb613a6ad208e95806964042faba8ff01cb1706e137791cd46cba0fb79"
+    },
+    {
+      "path": "dental_asset_blender.py",
+      "bytes": 22885,
+      "sha256": "53310d6122bdd9b5557892fde28d3cdcb272863f148aacca7f76f0c4eeac457b"
+    },
+    {
+      "path": "dental_assets.py",
+      "bytes": 22726,
+      "sha256": "2400fb4f192dc3d0d72f3ac0f4bb54adf8e1423caa05240ab9e55f86434e2b2f"
+    },
+    {
+      "path": "dental_mapping/__init__.py",
+      "bytes": 1077,
+      "sha256": "aad5949116f33d42bb7391af41eedabab5b43f215014e2b21efbe06f8e8cc5bb"
+    },
+    {
+      "path": "dental_mapping/anatomic_fit.py",
+      "bytes": 7942,
+      "sha256": "2df987f9fe80a86cefb2678a5b6d017db9f0d2a67f5f1c3c9f4840cda232cacd"
+    },
+    {
+      "path": "dental_mapping/derived_geometry.py",
+      "bytes": 5949,
+      "sha256": "de31fd9c037363a34be5246de3c456d792e634e68fe934236239e79eaf53e5ca"
+    },
+    {
+      "path": "dental_mapping/emergence.py",
+      "bytes": 8192,
+      "sha256": "d90b5c02d0bf92944f28e3eb99db8945a49a6f3c7028112a814ef4b010a97426"
+    },
+    {
+      "path": "dental_mapping/eoff.py",
+      "bytes": 1210,
+      "sha256": "ba5ffd9c0847c70d7c0466aa5f636e4fbee5874cb11c6c7b7215909065af9c8e"
+    },
+    {
+      "path": "dental_mapping/eoff_core.py",
+      "bytes": 2949,
+      "sha256": "8bf6fcbaac493209039f84a2fc4c62e40af76cc028cb5913a424217d0ea7065d"
+    },
+    {
+      "path": "dental_mapping/landmark_refine.py",
+      "bytes": 2779,
+      "sha256": "adf8be64cb5b1568c56003846d7f0b404d6a312580dc5037573282984596242b"
+    },
+    {
+      "path": "dental_mapping/landmark_transfer.py",
+      "bytes": 1663,
+      "sha256": "a2f6eff80b549939747d38002c7e029261923265db0beaef88aa5b7f8219fc77"
+    },
+    {
+      "path": "dental_mapping/library.py",
+      "bytes": 12526,
+      "sha256": "a3187c71afd9fa30898fd21b5d35444f0d50e90e37cbb55869141c831923227b"
+    },
+    {
+      "path": "dental_mapping/mesh_distance_core.py",
+      "bytes": 7584,
+      "sha256": "f31810b1b2bf1f4a17f8e0965789ab7cfbfd1a6bfee535d0730248d40a6adb0e"
+    },
+    {
+      "path": "dental_mapping/migration.py",
+      "bytes": 3487,
+      "sha256": "2efdd935db00a9928279513a00687c41d044bd7f4107c412d5269ef88953629e"
+    },
+    {
+      "path": "dental_mapping/occlusal_fit.py",
+      "bytes": 6073,
+      "sha256": "cf97992a519de5b9ff0280e0292c5995833fb9ca551aafee2d97cfdad9d31557"
+    },
+    {
+      "path": "dental_mapping/proximal_fit.py",
+      "bytes": 6232,
+      "sha256": "0c18689230f88db9465f9eb7f8a74487efc8dccf94d1779524a5574e3ab3a88c"
+    },
+    {
+      "path": "dental_mapping/registration.py",
+      "bytes": 17928,
+      "sha256": "d268f3a379bcab1ff15be39c3183005d3942c95906397c41b0e04f240f1373dc"
+    },
+    {
+      "path": "dental_mapping/scoring.py",
+      "bytes": 1776,
+      "sha256": "6a4f6a56d8a2fa9b0d6c189480a9b62324c6c87a5cb354bde461f9c64eb14705"
+    },
+    {
+      "path": "dental_mapping/service.py",
+      "bytes": 24326,
+      "sha256": "16a2dcd97862ea47f5dbe5eb62bffe6c0f4e6b762d9b5208243333e80e165ac3"
+    },
+    {
+      "path": "dental_mapping/surgical_context.py",
+      "bytes": 49336,
+      "sha256": "5a57d7b52876b5a7a28ee5209294b6c857a864472c5a712369c8993462abedb9"
+    },
+    {
+      "path": "dental_mapping/validation.py",
+      "bytes": 3966,
+      "sha256": "d2ef92f2f7067c83dcd1371b5e703462809e8f338ba951e04e0d7efe0e73d8d7"
+    },
+    {
+      "path": "dental_surface_geometry.py",
+      "bytes": 25527,
+      "sha256": "f3cfd27aae07e0c1e6eba6cf807739b1ed3a724ae0ec273093bf65976220d64d"
+    },
+    {
+      "path": "dicom_module.py",
+      "bytes": 896,
+      "sha256": "8762ffa1b482808bf53b65cefba04f9341a37cd4be2646844225706146143dfa"
+    },
+    {
+      "path": "dicom_probe.py",
+      "bytes": 1237,
+      "sha256": "8686a6cabad1c45f3a3dc687a362047ad7f435e227335194840fc4d5851d94a8"
+    },
+    {
+      "path": "docs/ARCHITECTURE_RATCHET.md",
+      "bytes": 2834,
+      "sha256": "6332710548695bcce5aebbe182f2164e39419c7bdeafcfbe6032f0a12edbb4b3"
+    },
+    {
+      "path": "docs/BLENDER_5_2_COMPATIBILITY.md",
+      "bytes": 382,
+      "sha256": "fa53c4f92120997c6c6da1f110a7718e9b33cd87aa6a1f7f0e7c2809f631012e"
+    },
+    {
+      "path": "docs/CHANGELOG.md",
+      "bytes": 5194,
+      "sha256": "fe5a26d34eb63b92ad810fa5300c0270f20c6212e3b04128030b43e040370b17"
+    },
+    {
+      "path": "docs/CODEMAP.md",
+      "bytes": 31906,
+      "sha256": "f339b89b99234b3fbcfe00d9b6ece1c199706d141de2d1b7c48ea9b6a0c6f42d"
+    },
+    {
+      "path": "docs/CODEMAP_INDEX.md",
+      "bytes": 294425,
+      "sha256": "9e3d8cf325746c04c069e9beca61c3dfd22b040f9934ae56264b77f201f26784"
+    },
+    {
+      "path": "docs/ERROR_FALLBACK_FAILTEST_POLICY.md",
+      "bytes": 3004,
+      "sha256": "574b93786f2d0aa5809a8a3f9389e0e14832b4425f2f3cdfcb48767a17c70d1c"
+    },
+    {
+      "path": "docs/GUIDE_EXPORT_QUALITY_GATE.md",
+      "bytes": 716,
+      "sha256": "39c4e8e75982aa2a538193105fd2489e9ad2feb04363ca5fa6fbb3bd44fc7055"
+    },
+    {
+      "path": "docs/history/8_6_7/guide_pipeline_contract.py.txt",
+      "bytes": 1215,
+      "sha256": "d02d5575750a8865014a363d237e0166de3e02386bf64d80d4f19b825148242a"
+    },
+    {
+      "path": "docs/history/8_6_7/roadmap_module.py.txt",
+      "bytes": 54793,
+      "sha256": "51f017eb01e1f03af06d9e37e0effe09e922caf460fde878906aeec93b031df3"
+    },
+    {
+      "path": "docs/INDEX.md",
+      "bytes": 605,
+      "sha256": "90634b532d4352b447d6f93556a019a74f36045a0994a63efd4fd0ba7aa9ca4c"
+    },
+    {
+      "path": "docs/PIPELINE_ROADMAP_V8_6_7_RECOVERED.md",
+      "bytes": 1352,
+      "sha256": "453a513ef773ae1982d785a28f857a9d58ac66cf089f97573c27aef327b64508"
+    },
+    {
+      "path": "docs/SEGMENTATION_ENGINES_9_10.md",
+      "bytes": 1067,
+      "sha256": "497b1cd8a8af0f53b4a7f437a1dc24c5cdebc9d9725e965159d891445b02f266"
+    },
+    {
+      "path": "dsg_logging.py",
+      "bytes": 4336,
+      "sha256": "543012d1147e0dac731868c506c79177730308e81a60595a25073fa837e20fe8"
+    },
+    {
+      "path": "engine_preflight.py",
+      "bytes": 4641,
+      "sha256": "37d2727ee1daa959306a69b05c22264f19dc7f649eb0c2135dd3f2f412af6468"
+    },
+    {
+      "path": "error_handling.py",
+      "bytes": 9346,
+      "sha256": "13066ad7731085e05602cb5bd64481b08bf7a9a4562657dc36f12e1f34d9c1fe"
+    },
+    {
+      "path": "evidence_context.py",
+      "bytes": 8245,
+      "sha256": "d9fb259edaa20ec907122a81d51cf08120c7550ced94d74e804036161aee1333"
+    },
+    {
+      "path": "evidence_core.py",
+      "bytes": 14806,
+      "sha256": "0401d67e7cc4cb6cec2d387e0ca1e587bd69248e96941887f0a01e8abd78fe39"
+    },
+    {
+      "path": "failtests.py",
+      "bytes": 4402,
+      "sha256": "6c57c2d694158703d1c36468c76d8664c12b3f10c488022d7653e4af5f4dc69a"
+    },
+    {
+      "path": "frame_fem_core.py",
+      "bytes": 29441,
+      "sha256": "8a7083434073f646fedfbac69d1841ef78f25ef7069922a3b04911e22aff9ef7"
+    },
+    {
+      "path": "frame_structural.py",
+      "bytes": 37025,
+      "sha256": "ffadbc335d4854c24c9ac38f48262e7fb1b675b534f407ff6cdd0804723ad81f"
+    },
+    {
+      "path": "frame_structural_core.py",
+      "bytes": 5812,
+      "sha256": "61223ed590c8b53406a632d40a305067f4f4eda273d5fd37aadb8b4970ae5cab"
+    },
+    {
+      "path": "frame_surface_corridor.py",
+      "bytes": 15999,
+      "sha256": "53d4e0b490e59193c9e08ff7eaad4df374301a6ea98f3ada70c5c98095f19cea"
+    },
+    {
+      "path": "glyph_library.py",
+      "bytes": 10997,
+      "sha256": "e9a62bce0e4869b075e4f1a21e917c4ad22855e9d19053096f92e468640f62b2"
+    },
+    {
+      "path": "guide_assets.py",
+      "bytes": 1620,
+      "sha256": "914681fa8e4a541ed12323133645afc2678073f3215ea9bd98da7db3be4c258c"
+    },
+    {
+      "path": "guide_export/__init__.py",
+      "bytes": 762,
+      "sha256": "ae83c1e448a074fe5fa13f48236ceaa78debe8db517f33e5e0f6e793c5f89423"
+    },
+    {
+      "path": "guide_export/blender_adapter.py",
+      "bytes": 9153,
+      "sha256": "84e31d7dcc7a5d5a774f4c52f25b2a0e428ca3441d20e6f3c934b5025b83cc12"
+    },
+    {
+      "path": "guide_export/mesh_checks.py",
+      "bytes": 13822,
+      "sha256": "94e067cd8a3f61ef22f8fa931f015e489c7ec20d6db2a66315f1d0cfdcb49989"
+    },
+    {
+      "path": "guide_export/policy.py",
+      "bytes": 1905,
+      "sha256": "197819dacccc3b38ab43f82496914abff16d8ba0872908c48754fc0081495fd2"
+    },
+    {
+      "path": "guide_export/report.py",
+      "bytes": 3637,
+      "sha256": "ecd645daa34f48f4e0d3032e323d4e2cb13762ae1d971900d00adc87d47c6d9e"
+    },
+    {
+      "path": "guide_export/service.py",
+      "bytes": 5659,
+      "sha256": "7c64918c9070d00dd4ff4d1c2745a5b28979d24f6f73081bcb70037600a7e524"
+    },
+    {
+      "path": "guide_module.py",
+      "bytes": 924,
+      "sha256": "b1bc2a1a612a085a291b5f9efc0e9ad7a3cfd2a0f7090668da3bb76a2cf13b9b"
+    },
+    {
+      "path": "icon_manager.py",
+      "bytes": 3015,
+      "sha256": "9add839f3a947079881dff9f486e495d5e3e0a59f4b914316f279ca21e402e98"
+    },
+    {
+      "path": "icons/add.png",
+      "bytes": 4033,
+      "sha256": "dea927ce9b4758a3adcebb21da0c88df39eed0a407d7582627331aa5386a3710"
+    },
+    {
+      "path": "icons/add.svg",
+      "bytes": 395,
+      "sha256": "b649ab70e5caca6bbba1d89e306a9f3fdb015bb201184749cc54bd657ef55f48"
+    },
+    {
+      "path": "icons/add_dark.png",
+      "bytes": 4033,
+      "sha256": "dea927ce9b4758a3adcebb21da0c88df39eed0a407d7582627331aa5386a3710"
+    },
+    {
+      "path": "icons/add_implant.png",
+      "bytes": 5035,
+      "sha256": "88e61f5757bd8399fff8fb953c5926b56a6ca674bb4cbd15c3dfd463da8f1e3f"
+    },
+    {
+      "path": "icons/add_implant.svg",
+      "bytes": 570,
+      "sha256": "d3d22c4d139f217c4e98016423090cd7df8f26190fa0f5e390f75392a3c9ab94"
+    },
+    {
+      "path": "icons/add_implant_dark.png",
+      "bytes": 5035,
+      "sha256": "88e61f5757bd8399fff8fb953c5926b56a6ca674bb4cbd15c3dfd463da8f1e3f"
+    },
+    {
+      "path": "icons/add_implant_light.png",
+      "bytes": 4986,
+      "sha256": "b026a86eeb8a59514f53c7d8287f58bc813e9d4568f6cad458ce6a0a36204935"
+    },
+    {
+      "path": "icons/add_light.png",
+      "bytes": 4181,
+      "sha256": "e140310f1e1548c7626515b338dbac946b7e43a07b80a03cc02e812e6b3cdab7"
+    },
+    {
+      "path": "icons/alignment_status.png",
+      "bytes": 2026,
+      "sha256": "b65a83fc73b8d172df32e6954cfc5b5da44eb0cb4273acb1d3b47be6d2ef31c4"
+    },
+    {
+      "path": "icons/alignment_status.svg",
+      "bytes": 537,
+      "sha256": "b97efc54b22c6ab9537e87106fd0b93c4f8beede6b693a7bc63bff7b91a181c9"
+    },
+    {
+      "path": "icons/alignment_status_dark.png",
+      "bytes": 2026,
+      "sha256": "b65a83fc73b8d172df32e6954cfc5b5da44eb0cb4273acb1d3b47be6d2ef31c4"
+    },
+    {
+      "path": "icons/alignment_status_light.png",
+      "bytes": 2045,
+      "sha256": "967e7b7cf01bd6126ed666d8760910786c15bcdc9e831e01d9bdb34683dea43f"
+    },
+    {
+      "path": "icons/animation.png",
+      "bytes": 4541,
+      "sha256": "1c908dd473b65ac67611939f944986dbb657c16e01457bcb399a50a5ca1898cb"
+    },
+    {
+      "path": "icons/animation.svg",
+      "bytes": 359,
+      "sha256": "154962c97131807852b2d8bfb15a86e8403b27be8ea0721d4bd8c448222c05d0"
+    },
+    {
+      "path": "icons/animation_dark.png",
+      "bytes": 4541,
+      "sha256": "1c908dd473b65ac67611939f944986dbb657c16e01457bcb399a50a5ca1898cb"
+    },
+    {
+      "path": "icons/animation_light.png",
+      "bytes": 4627,
+      "sha256": "1fd93b2259926093a5b213a255f09e4a1781b828040b3d8975852afba73a2d7f"
+    },
+    {
+      "path": "icons/auto_align.png",
+      "bytes": 3166,
+      "sha256": "c607510135bfe64bbc08431930460a5d1f375dfcb1e82e53003e9e16b6f80873"
+    },
+    {
+      "path": "icons/auto_align.svg",
+      "bytes": 748,
+      "sha256": "62fbb3afeeb3e5f06767c2fbcb686086a227109a3cf4be9d07cceb15fccc055c"
+    },
+    {
+      "path": "icons/auto_align_dark.png",
+      "bytes": 3166,
+      "sha256": "c607510135bfe64bbc08431930460a5d1f375dfcb1e82e53003e9e16b6f80873"
+    },
+    {
+      "path": "icons/auto_align_light.png",
+      "bytes": 3177,
+      "sha256": "5022671a7d6daa3e8a0971b787f18bc8db7f8466eb55bc99e052ff5355a4003b"
+    },
+    {
+      "path": "icons/axis.png",
+      "bytes": 2994,
+      "sha256": "99ad44a87e4e797a0c66b7afc6c74775d9419cce33e80fe612e824bfdf30fd03"
+    },
+    {
+      "path": "icons/axis.svg",
+      "bytes": 476,
+      "sha256": "241aa5aa27bcb3d259d11192f617125ad6cd10d598ac67e6ae889a084f21e2c1"
+    },
+    {
+      "path": "icons/axis_dark.png",
+      "bytes": 2994,
+      "sha256": "99ad44a87e4e797a0c66b7afc6c74775d9419cce33e80fe612e824bfdf30fd03"
+    },
+    {
+      "path": "icons/axis_light.png",
+      "bytes": 3032,
+      "sha256": "9316efa407593a30a509916bf4d76b0da1746fe1ab940067adb4f1f4971fd917"
+    },
+    {
+      "path": "icons/back.png",
+      "bytes": 1758,
+      "sha256": "86b316c3cfebe4af5cbfd875a715cd6c0b4d04bf2370ec4a1f5814d5155cf4a9"
+    },
+    {
+      "path": "icons/back.svg",
+      "bytes": 364,
+      "sha256": "eb284f4459771ee40d3dedc47bc014d500087a674f6066a72bbf76d7623dd6ed"
+    },
+    {
+      "path": "icons/back_dark.png",
+      "bytes": 1758,
+      "sha256": "86b316c3cfebe4af5cbfd875a715cd6c0b4d04bf2370ec4a1f5814d5155cf4a9"
+    },
+    {
+      "path": "icons/back_light.png",
+      "bytes": 1758,
+      "sha256": "86b316c3cfebe4af5cbfd875a715cd6c0b4d04bf2370ec4a1f5814d5155cf4a9"
+    },
+    {
+      "path": "icons/cbct.png",
+      "bytes": 2831,
+      "sha256": "4a50180ef2a51dce53ffb66fbfa6f5a64835d0853cc754344d99171284488cc5"
+    },
+    {
+      "path": "icons/cbct.svg",
+      "bytes": 478,
+      "sha256": "4a083983e7ba68a6493a140341a3b2d374d3718bb6dbe0400154a574ff4723b3"
+    },
+    {
+      "path": "icons/cbct_dark.png",
+      "bytes": 2831,
+      "sha256": "4a50180ef2a51dce53ffb66fbfa6f5a64835d0853cc754344d99171284488cc5"
+    },
+    {
+      "path": "icons/cbct_light.png",
+      "bytes": 2905,
+      "sha256": "d34f81780c1f7b9cfd1a54695c0aaa229892ce327b42b8c05dd65e8529a133a1"
+    },
+    {
+      "path": "icons/clear_measurements.png",
+      "bytes": 3284,
+      "sha256": "bfdbc68773de06bb666d08e1f7158075406380ba7804a263ab4e8f2b3deb59a1"
+    },
+    {
+      "path": "icons/clear_measurements.svg",
+      "bytes": 357,
+      "sha256": "ba8e2cd80725c1850e8355831cfc6d881b6425ef071e2881845ca782816c173b"
+    },
+    {
+      "path": "icons/clear_measurements_dark.png",
+      "bytes": 3284,
+      "sha256": "bfdbc68773de06bb666d08e1f7158075406380ba7804a263ab4e8f2b3deb59a1"
+    },
+    {
+      "path": "icons/clear_measurements_light.png",
+      "bytes": 3434,
+      "sha256": "81e3d495b1373fe80920dc3e990e53a27d0c177e0b413ef8f8f7a62f4f20cc80"
+    },
+    {
+      "path": "icons/close.png",
+      "bytes": 1050,
+      "sha256": "797091def2fb50cea9ec8d100b2b5b6e0d06b6e9e3370dfd5e8fd525055d2de2"
+    },
+    {
+      "path": "icons/close.svg",
+      "bytes": 311,
+      "sha256": "237b45f37fd005b2f0e1dc1d2e9e70943cb412df488866b9b564294a98d4cd02"
+    },
+    {
+      "path": "icons/close_dark.png",
+      "bytes": 1050,
+      "sha256": "797091def2fb50cea9ec8d100b2b5b6e0d06b6e9e3370dfd5e8fd525055d2de2"
+    },
+    {
+      "path": "icons/close_light.png",
+      "bytes": 1050,
+      "sha256": "797091def2fb50cea9ec8d100b2b5b6e0d06b6e9e3370dfd5e8fd525055d2de2"
+    },
+    {
+      "path": "icons/continue.png",
+      "bytes": 642,
+      "sha256": "5f5babce948805f37a73be9180d5a4ac3da42eb9caf45c5cf85943d95f8a99ff"
+    },
+    {
+      "path": "icons/continue.svg",
+      "bytes": 282,
+      "sha256": "545361e7ae960e681b9bf364ebc6dadda32c0d9b32f3b520338010d9ca369064"
+    },
+    {
+      "path": "icons/continue_dark.png",
+      "bytes": 642,
+      "sha256": "5f5babce948805f37a73be9180d5a4ac3da42eb9caf45c5cf85943d95f8a99ff"
+    },
+    {
+      "path": "icons/continue_light.png",
+      "bytes": 642,
+      "sha256": "5f5babce948805f37a73be9180d5a4ac3da42eb9caf45c5cf85943d95f8a99ff"
+    },
+    {
+      "path": "icons/contour.png",
+      "bytes": 4436,
+      "sha256": "64e609332994f43d688f7fb86c53ee322095049c5bfbfc7c45158bff71f78353"
+    },
+    {
+      "path": "icons/contour.svg",
+      "bytes": 740,
+      "sha256": "f2580f48ce7cb877d753d0fa1fc5a6dd32e2253fb919df6b73bb56abfaa76287"
+    },
+    {
+      "path": "icons/contour_dark.png",
+      "bytes": 4436,
+      "sha256": "64e609332994f43d688f7fb86c53ee322095049c5bfbfc7c45158bff71f78353"
+    },
+    {
+      "path": "icons/contour_light.png",
+      "bytes": 4605,
+      "sha256": "1fbb642345af3d5b2aa92c4bc62a40790fc7c9fc11b265b80881c782c130fa26"
+    },
+    {
+      "path": "icons/delete.png",
+      "bytes": 1221,
+      "sha256": "b63d6eb5caa44c715ca7836ad464a1cc137627d1d2b0474d6eccab5ea6082544"
+    },
+    {
+      "path": "icons/delete.svg",
+      "bytes": 332,
+      "sha256": "69ee1e3211b1b5aa7804e76a3c9887b3747cb56832e71f739f4cdb286c356c48"
+    },
+    {
+      "path": "icons/delete_dark.png",
+      "bytes": 1221,
+      "sha256": "b63d6eb5caa44c715ca7836ad464a1cc137627d1d2b0474d6eccab5ea6082544"
+    },
+    {
+      "path": "icons/delete_implant.png",
+      "bytes": 4210,
+      "sha256": "cfbfcc847c1bb1d47bc4d5ed834051f2b7a079ce590f4943a4fee8a2edc53fd0"
+    },
+    {
+      "path": "icons/delete_implant.svg",
+      "bytes": 599,
+      "sha256": "971cc0ea456eb4391f346ae231c1b998d3a02a97f237fff7a95c1ca35708ce19"
+    },
+    {
+      "path": "icons/delete_implant_dark.png",
+      "bytes": 4210,
+      "sha256": "cfbfcc847c1bb1d47bc4d5ed834051f2b7a079ce590f4943a4fee8a2edc53fd0"
+    },
+    {
+      "path": "icons/delete_implant_light.png",
+      "bytes": 4145,
+      "sha256": "66b709b62d49fe99964b13885be0fad56bac9e2d2e867248b7c6ecbbdfd0e6d8"
+    },
+    {
+      "path": "icons/delete_light.png",
+      "bytes": 1214,
+      "sha256": "ff412d6ea0f56a84d440f966bea5e8dbf885fbb352de399fe920537aaac270e1"
+    },
+    {
+      "path": "icons/drill_channel.png",
+      "bytes": 1909,
+      "sha256": "fff5a30044b807d5204562b6deedad8bfcc8950c71dfbeac34f2aa7ab0f96ed3"
+    },
+    {
+      "path": "icons/drill_channel.svg",
+      "bytes": 426,
+      "sha256": "325e25d3018a10e2f7eb815cf0494a3ae6edae5e2dbe70903f16fc2b735edf38"
+    },
+    {
+      "path": "icons/drill_channel_dark.png",
+      "bytes": 1909,
+      "sha256": "fff5a30044b807d5204562b6deedad8bfcc8950c71dfbeac34f2aa7ab0f96ed3"
+    },
+    {
+      "path": "icons/drill_channel_light.png",
+      "bytes": 2000,
+      "sha256": "6c1f485ea69779d6ac074d169cbca1ee03649fc3446b8f95cd1b8243bdf30057"
+    },
+    {
+      "path": "icons/edit_implant.png",
+      "bytes": 4245,
+      "sha256": "2b91e3518fae320f07f117f812ba645d94eb0cb684eb66be5e5cd4045609fdcd"
+    },
+    {
+      "path": "icons/edit_implant.svg",
+      "bytes": 535,
+      "sha256": "2ab09c1d745f4faf5e08531091ca50c1b21f7207c9390c1066e430a8df717278"
+    },
+    {
+      "path": "icons/edit_implant_dark.png",
+      "bytes": 4245,
+      "sha256": "2b91e3518fae320f07f117f812ba645d94eb0cb684eb66be5e5cd4045609fdcd"
+    },
+    {
+      "path": "icons/edit_implant_light.png",
+      "bytes": 4215,
+      "sha256": "769fa3bbd1fa0f5ec6d345cb44a131a01ff120aaa6c1329b663ad63bac9c6ea9"
+    },
+    {
+      "path": "icons/edit_points.png",
+      "bytes": 4822,
+      "sha256": "2927ee627f907fd87bc956d78ba37f32478c2e5d6c9205df214cc0166ec408dd"
+    },
+    {
+      "path": "icons/edit_points.svg",
+      "bytes": 828,
+      "sha256": "6134f45360e22b2c9ba854a4f1a24cad5e910cdcfd42e7f690ea4af9829edd83"
+    },
+    {
+      "path": "icons/edit_points_dark.png",
+      "bytes": 4822,
+      "sha256": "2927ee627f907fd87bc956d78ba37f32478c2e5d6c9205df214cc0166ec408dd"
+    },
+    {
+      "path": "icons/edit_points_light.png",
+      "bytes": 4936,
+      "sha256": "1059e9bb728d62aea76853e43a3541128b472ae9d73d8b33eca00efef4b4d842"
+    },
+    {
+      "path": "icons/engrave_name.png",
+      "bytes": 3405,
+      "sha256": "be3af4c0f05c761b5eff68c2a768d0f0be10dcbb943203edf6d7df9c7d234a60"
+    },
+    {
+      "path": "icons/engrave_name.svg",
+      "bytes": 584,
+      "sha256": "803cc4fcde5751cfd1fd8eb229c36f0c36fa9fa9982df4f98ffd148d65a28f03"
+    },
+    {
+      "path": "icons/engrave_name_dark.png",
+      "bytes": 3405,
+      "sha256": "be3af4c0f05c761b5eff68c2a768d0f0be10dcbb943203edf6d7df9c7d234a60"
+    },
+    {
+      "path": "icons/engrave_name_light.png",
+      "bytes": 3514,
+      "sha256": "a10cf76146f357126a34e81cd9a5dfa2c28dfcbf3b658cc9a8360eb799d25105"
+    },
+    {
+      "path": "icons/export_stl.png",
+      "bytes": 1954,
+      "sha256": "98ff75da7da605457ebb6e171e2c967030422c69ad8387299b46a25f4a1f27c9"
+    },
+    {
+      "path": "icons/export_stl.svg",
+      "bytes": 582,
+      "sha256": "915514c88678e55cdd997879a8698bbf3656537fe7bf9f6dfec05792e6d9ec0c"
+    },
+    {
+      "path": "icons/export_stl_dark.png",
+      "bytes": 1954,
+      "sha256": "98ff75da7da605457ebb6e171e2c967030422c69ad8387299b46a25f4a1f27c9"
+    },
+    {
+      "path": "icons/export_stl_light.png",
+      "bytes": 1963,
+      "sha256": "e51c1f0bcb6e23c9d88460f878a9f48c03ad18aae0473a47c0392d89d936f507"
+    },
+    {
+      "path": "icons/finalize_guide.png",
+      "bytes": 3446,
+      "sha256": "8b9196f3b9cafb333878ed594d1d23de2374adfce8b95b1ad9ebd72cd63a1499"
+    },
+    {
+      "path": "icons/finalize_guide.svg",
+      "bytes": 375,
+      "sha256": "7d10cc302269a378234cfc32d4ef924c8b005d023c819d8df711721cf3fc34fe"
+    },
+    {
+      "path": "icons/finalize_guide_dark.png",
+      "bytes": 3446,
+      "sha256": "8b9196f3b9cafb333878ed594d1d23de2374adfce8b95b1ad9ebd72cd63a1499"
+    },
+    {
+      "path": "icons/finalize_guide_light.png",
+      "bytes": 3497,
+      "sha256": "cc96cc4e2bd1147d95a07abf39f2ca9bda2bee6ce2c366f565c42c5116948aa4"
+    },
+    {
+      "path": "icons/frame.png",
+      "bytes": 3227,
+      "sha256": "df55c27131834dff1a4f0e3b51f7e9cf016ddee75351a9c684e56b0101d9a6c8"
+    },
+    {
+      "path": "icons/frame.svg",
+      "bytes": 382,
+      "sha256": "4dd90f15984024b38f84dae363bd0a408ee58ae7191b692503d4da80e03b43d0"
+    },
+    {
+      "path": "icons/frame_dark.png",
+      "bytes": 3227,
+      "sha256": "df55c27131834dff1a4f0e3b51f7e9cf016ddee75351a9c684e56b0101d9a6c8"
+    },
+    {
+      "path": "icons/frame_light.png",
+      "bytes": 3297,
+      "sha256": "78600c0c43d106e29cdcbc2903d3d35d3729f89a3a1475be65f429a7ad9c52db"
+    },
+    {
+      "path": "icons/help.png",
+      "bytes": 5355,
+      "sha256": "637ffda4ccb77278eced615c0eec12db91b1e322c6a57a0abef88026a9923853"
+    },
+    {
+      "path": "icons/help.svg",
+      "bytes": 457,
+      "sha256": "8078ef14d9f17153632fcca5461033dff6e1911d5cbf3c91e3accb60b12ef5c9"
+    },
+    {
+      "path": "icons/help_dark.png",
+      "bytes": 5355,
+      "sha256": "637ffda4ccb77278eced615c0eec12db91b1e322c6a57a0abef88026a9923853"
+    },
+    {
+      "path": "icons/help_light.png",
+      "bytes": 5472,
+      "sha256": "fea748dd72a324729cc4de4990efbafb5413e51f9892957a5569d91354fdc048"
+    },
+    {
+      "path": "icons/icp_refine.png",
+      "bytes": 2192,
+      "sha256": "e06aebeee1345fcc64623ae9abdf5f324991bf9f0a3a37a095e903546ef23933"
+    },
+    {
+      "path": "icons/icp_refine.svg",
+      "bytes": 698,
+      "sha256": "32dcac5aeac88d36c4bb47687a491e2dda9c6a27acf01cef189e2c7be260b0b0"
+    },
+    {
+      "path": "icons/icp_refine_dark.png",
+      "bytes": 2192,
+      "sha256": "e06aebeee1345fcc64623ae9abdf5f324991bf9f0a3a37a095e903546ef23933"
+    },
+    {
+      "path": "icons/icp_refine_light.png",
+      "bytes": 2195,
+      "sha256": "05be9c4f86e158c952fbdc69b69e6a1dfdf193f50c1e1e4869f7f740e1cd5681"
+    },
+    {
+      "path": "icons/implant_tea.png",
+      "bytes": 5005,
+      "sha256": "c3b735be67de935237398dac58d034ed3e2241730a9570620d35427d40b080ce"
+    },
+    {
+      "path": "icons/implant_tea.svg",
+      "bytes": 546,
+      "sha256": "7f614ca8c98f8a932639ba95e771268ffdafd1c21f33672fa00bdd3932b19ca3"
+    },
+    {
+      "path": "icons/implant_tea_dark.png",
+      "bytes": 5005,
+      "sha256": "c3b735be67de935237398dac58d034ed3e2241730a9570620d35427d40b080ce"
+    },
+    {
+      "path": "icons/implant_tea_light.png",
+      "bytes": 4917,
+      "sha256": "0baf6802d1188d65949a42434f84a1fc4ad2d6815b095535787132d4eec4d6f7"
+    },
+    {
+      "path": "icons/import_stl.png",
+      "bytes": 1927,
+      "sha256": "e3074a49f8f9320adbc526cde0b0fe5108f790d6e982d9a2719c2667035d29bc"
+    },
+    {
+      "path": "icons/import_stl.svg",
+      "bytes": 582,
+      "sha256": "f48afb822aa6504b87d24f5c725299b2f37c16b83f855e1feda71c797c31bb34"
+    },
+    {
+      "path": "icons/import_stl_dark.png",
+      "bytes": 1927,
+      "sha256": "e3074a49f8f9320adbc526cde0b0fe5108f790d6e982d9a2719c2667035d29bc"
+    },
+    {
+      "path": "icons/import_stl_light.png",
+      "bytes": 1941,
+      "sha256": "c10317db6a5b4db79e867295e1aa7406be179bfded672185308d64e92a0d5bbc"
+    },
+    {
+      "path": "icons/install_blockout.png",
+      "bytes": 4255,
+      "sha256": "54339937520c9a22c3131c705b9cb6964a9c8cbacc0802f93ad6a40027716e87"
+    },
+    {
+      "path": "icons/install_blockout.svg",
+      "bytes": 499,
+      "sha256": "f31ce0a66da2a5af1f952b68bd6dc29fcfd115414948858c159c3fcf9425027a"
+    },
+    {
+      "path": "icons/install_blockout_dark.png",
+      "bytes": 4255,
+      "sha256": "54339937520c9a22c3131c705b9cb6964a9c8cbacc0802f93ad6a40027716e87"
+    },
+    {
+      "path": "icons/install_blockout_light.png",
+      "bytes": 4379,
+      "sha256": "4cc047ab05454c171510eb11acbbb8ab8b69ae4df3b0d9cf8f2ea631c1b8e27e"
+    },
+    {
+      "path": "icons/irrigation.png",
+      "bytes": 2199,
+      "sha256": "57af3c1416f35633521c48ec2b998cf2e9de5b69a04d4eed4c77dddce714eef4"
+    },
+    {
+      "path": "icons/irrigation.svg",
+      "bytes": 399,
+      "sha256": "e0f3604bb5e31dfa07814649d5b73bc3834f63009db269892a2b975c4b394f04"
+    },
+    {
+      "path": "icons/irrigation_c.png",
+      "bytes": 4244,
+      "sha256": "cc77b61d01c8bbe8ef03cee3fb4daa3c9538069e68481d54544305105c094695"
+    },
+    {
+      "path": "icons/irrigation_c.svg",
+      "bytes": 443,
+      "sha256": "915b14a07e5b8daed73dc1df90aea3e1a1776aa8a79068a33504e1ef1e90b2bd"
+    },
+    {
+      "path": "icons/irrigation_c_dark.png",
+      "bytes": 4244,
+      "sha256": "cc77b61d01c8bbe8ef03cee3fb4daa3c9538069e68481d54544305105c094695"
+    },
+    {
+      "path": "icons/irrigation_c_light.png",
+      "bytes": 4250,
+      "sha256": "c89ec88ed85adc2f32751dc143ece141e4b06788406a09026e37995c54fa7bd6"
+    },
+    {
+      "path": "icons/irrigation_dark.png",
+      "bytes": 2199,
+      "sha256": "57af3c1416f35633521c48ec2b998cf2e9de5b69a04d4eed4c77dddce714eef4"
+    },
+    {
+      "path": "icons/irrigation_direct.png",
+      "bytes": 1511,
+      "sha256": "5b15abf92e122d3b43307aa761a0b1ef49f3de8b1b2e81c30ae751d2dd38ca2f"
+    },
+    {
+      "path": "icons/irrigation_direct.svg",
+      "bytes": 449,
+      "sha256": "f2ac505555756b52ecb215c3c0b93c43a556cda0cb718bf86f8c9d12f719d270"
+    },
+    {
+      "path": "icons/irrigation_direct_dark.png",
+      "bytes": 1511,
+      "sha256": "5b15abf92e122d3b43307aa761a0b1ef49f3de8b1b2e81c30ae751d2dd38ca2f"
+    },
+    {
+      "path": "icons/irrigation_direct_light.png",
+      "bytes": 1511,
+      "sha256": "5b15abf92e122d3b43307aa761a0b1ef49f3de8b1b2e81c30ae751d2dd38ca2f"
+    },
+    {
+      "path": "icons/irrigation_light.png",
+      "bytes": 2216,
+      "sha256": "e562e37e714fcbe0516f288458677963045a3f96c1ac919d44d00330aaa0894e"
+    },
+    {
+      "path": "icons/link.png",
+      "bytes": 3137,
+      "sha256": "8e9719592956823d9d46fd89d7f9c4c423eeab037d00fd1de4beb37e5b4ed6b1"
+    },
+    {
+      "path": "icons/link.svg",
+      "bytes": 485,
+      "sha256": "af53160b06554c9e3750ebfa936a7836b16d388a1bace6067ed9fd66561a024c"
+    },
+    {
+      "path": "icons/link_dark.png",
+      "bytes": 3137,
+      "sha256": "8e9719592956823d9d46fd89d7f9c4c423eeab037d00fd1de4beb37e5b4ed6b1"
+    },
+    {
+      "path": "icons/link_light.png",
+      "bytes": 3237,
+      "sha256": "abc6b93aa71303605dc1263025b0b09a285e154b2957406567aa95f917b26f9d"
+    },
+    {
+      "path": "icons/lock_axis.png",
+      "bytes": 3825,
+      "sha256": "87f7d833e58f022146daaedf33016011b65482cab54ffbc074a2bc4646851f0a"
+    },
+    {
+      "path": "icons/lock_axis.svg",
+      "bytes": 463,
+      "sha256": "ec008b0848dd315a7a7578c59ab734c530774dd4be39491a7f449c9cd183e1a5"
+    },
+    {
+      "path": "icons/lock_axis_dark.png",
+      "bytes": 3825,
+      "sha256": "87f7d833e58f022146daaedf33016011b65482cab54ffbc074a2bc4646851f0a"
+    },
+    {
+      "path": "icons/lock_axis_light.png",
+      "bytes": 3902,
+      "sha256": "ace3a66cb180ccbd81f7268164f5ce79a1506988354e3f09a51781dfdc76396d"
+    },
+    {
+      "path": "icons/lock_implant.png",
+      "bytes": 4480,
+      "sha256": "8340aec737a3753433ff0752d920fbf5e05fdee69ad9171a8a0df810c5f275a3"
+    },
+    {
+      "path": "icons/lock_implant.svg",
+      "bytes": 622,
+      "sha256": "202b5a354989a728c71c1be520c9e7185462c2abf98d706e6a0d6641509cf1eb"
+    },
+    {
+      "path": "icons/lock_implant_dark.png",
+      "bytes": 4480,
+      "sha256": "8340aec737a3753433ff0752d920fbf5e05fdee69ad9171a8a0df810c5f275a3"
+    },
+    {
+      "path": "icons/lock_implant_light.png",
+      "bytes": 4424,
+      "sha256": "1451fef368d5673d6f463f6aa255329ab60075ba7b2644a2fc030bc222599f64"
+    },
+    {
+      "path": "icons/manual_align.png",
+      "bytes": 3064,
+      "sha256": "078a313bece29799686c5f7788fc22e3f0fcd673c07f1e4a32d27f260dfebc1d"
+    },
+    {
+      "path": "icons/manual_align.svg",
+      "bytes": 573,
+      "sha256": "31c611d97783aea32d4839821a108bc46f8cd7afd3a6828c12020f9eba32d76c"
+    },
+    {
+      "path": "icons/manual_align_dark.png",
+      "bytes": 3064,
+      "sha256": "078a313bece29799686c5f7788fc22e3f0fcd673c07f1e4a32d27f260dfebc1d"
+    },
+    {
+      "path": "icons/manual_align_light.png",
+      "bytes": 3124,
+      "sha256": "44f9c6a1451ef295ae965b052af4dc9b6b60d7e5839783edd885cb423c5462f4"
+    },
+    {
+      "path": "icons/measure_angle.png",
+      "bytes": 1763,
+      "sha256": "fd6552ef6aa997bb1ef19475a2b5974c74845580ba9073166d55876de86d9207"
+    },
+    {
+      "path": "icons/measure_angle.svg",
+      "bytes": 400,
+      "sha256": "6612ada7598f0d0d1bdadd8b63713610d5274b4c65514105ab9ed869ba524a3a"
+    },
+    {
+      "path": "icons/measure_angle_dark.png",
+      "bytes": 1763,
+      "sha256": "fd6552ef6aa997bb1ef19475a2b5974c74845580ba9073166d55876de86d9207"
+    },
+    {
+      "path": "icons/measure_angle_light.png",
+      "bytes": 1694,
+      "sha256": "34efbccfa3186b709534851d9dec5e8c21467ca0c3133cb07f05d18e21dd0565"
+    },
+    {
+      "path": "icons/measure_distance.png",
+      "bytes": 1467,
+      "sha256": "86acaa306240faa6509295da1c5c32fcd6459ae249c1e63e6e4d3df15dc96e9d"
+    },
+    {
+      "path": "icons/measure_distance.svg",
+      "bytes": 439,
+      "sha256": "2b7dcfdcb56c856440adc2d4f26ac1da7f1aef9987548cd2e4aa89a04278efe2"
+    },
+    {
+      "path": "icons/measure_distance_dark.png",
+      "bytes": 1467,
+      "sha256": "86acaa306240faa6509295da1c5c32fcd6459ae249c1e63e6e4d3df15dc96e9d"
+    },
+    {
+      "path": "icons/measure_distance_light.png",
+      "bytes": 1527,
+      "sha256": "0b7b5bfb9bd93b8d90c0f57ae7f3068d4bf5388dbff33fbe31885fddfa7b1e07"
+    },
+    {
+      "path": "icons/measure_two_points.png",
+      "bytes": 1210,
+      "sha256": "34f3dc8098e41481a59948b15da43d52a814593b582f87d5face299f988f859c"
+    },
+    {
+      "path": "icons/measure_two_points.svg",
+      "bytes": 541,
+      "sha256": "96afebb02d86168a4cad51bce7f396edf5eaea12d1da658d2965ab78bae415bf"
+    },
+    {
+      "path": "icons/measure_two_points_dark.png",
+      "bytes": 1210,
+      "sha256": "34f3dc8098e41481a59948b15da43d52a814593b582f87d5face299f988f859c"
+    },
+    {
+      "path": "icons/measure_two_points_light.png",
+      "bytes": 1210,
+      "sha256": "cb02c270068cd9bd1644cd840ce407ccde1f6efdb0af12447551dbcc8365f88a"
+    },
+    {
+      "path": "icons/microscrew.png",
+      "bytes": 3883,
+      "sha256": "c1a589f74d043d4ace87c0e82c7a09e31facf37c567f01c0b3055670fc419242"
+    },
+    {
+      "path": "icons/microscrew.svg",
+      "bytes": 494,
+      "sha256": "2de40f89ce2f677a11fc370c6f34d25955eddc7518ee16bc69ace6b3a7bf3700"
+    },
+    {
+      "path": "icons/microscrew_dark.png",
+      "bytes": 3883,
+      "sha256": "c1a589f74d043d4ace87c0e82c7a09e31facf37c567f01c0b3055670fc419242"
+    },
+    {
+      "path": "icons/microscrew_light.png",
+      "bytes": 3859,
+      "sha256": "d279b39b632ac1d033ee1dde8748af4465e3468d214629942d42936ecd98b148"
+    },
+    {
+      "path": "icons/model.png",
+      "bytes": 4118,
+      "sha256": "1a77b584fc3bd1b5b0867a501cbd9fc0f224797eba21ded9bd069b79def874b1"
+    },
+    {
+      "path": "icons/model.svg",
+      "bytes": 494,
+      "sha256": "8bee1c9e6c246c82a5eb88317dd61fa4aa39066277c3e8c62a8d4cc6dcef4c58"
+    },
+    {
+      "path": "icons/model_dark.png",
+      "bytes": 4118,
+      "sha256": "1a77b584fc3bd1b5b0867a501cbd9fc0f224797eba21ded9bd069b79def874b1"
+    },
+    {
+      "path": "icons/model_light.png",
+      "bytes": 4251,
+      "sha256": "6c1e74c5a61b9a039a5da1c7af9b22d15ce382f6baccd214a03c7cc7e374d7da"
+    },
+    {
+      "path": "icons/model_visibility.png",
+      "bytes": 4558,
+      "sha256": "7e18e6f18aca13ec5e31af448e9d7a837006edc18139dab2b1ca3701f3db91b6"
+    },
+    {
+      "path": "icons/model_visibility.svg",
+      "bytes": 427,
+      "sha256": "f6fdc8a815ac926d7368f39c451cd4231d65402f8a301442ae5ecfaacecd03f9"
+    },
+    {
+      "path": "icons/model_visibility_dark.png",
+      "bytes": 4558,
+      "sha256": "7e18e6f18aca13ec5e31af448e9d7a837006edc18139dab2b1ca3701f3db91b6"
+    },
+    {
+      "path": "icons/model_visibility_light.png",
+      "bytes": 4719,
+      "sha256": "770fafeb747739f5b44e5522c97a062b04608be0fe83dc0ce20f277eacfa8fee"
+    },
+    {
+      "path": "icons/move_plane.png",
+      "bytes": 2639,
+      "sha256": "c50bfa2da7aeffbdad954ae12966d57101a90803ad8db9713bb97b3abc105ac4"
+    },
+    {
+      "path": "icons/move_plane.svg",
+      "bytes": 362,
+      "sha256": "1b8299022cca870b6dd576380f5ef70a9aef4661c8db0a96f35912b2d7ad0bed"
+    },
+    {
+      "path": "icons/move_plane_dark.png",
+      "bytes": 2639,
+      "sha256": "c50bfa2da7aeffbdad954ae12966d57101a90803ad8db9713bb97b3abc105ac4"
+    },
+    {
+      "path": "icons/move_plane_light.png",
+      "bytes": 2665,
+      "sha256": "f90a4cfaeca6978756976453d51a93b33f6413f3f4bfc5c9f60adc2a4939d3d6"
+    },
+    {
+      "path": "icons/mpr.png",
+      "bytes": 1745,
+      "sha256": "647a15b993c09ea6dcd9aa533dbc22533930a1b2ba766af4a5398cf8b5ce3a15"
+    },
+    {
+      "path": "icons/mpr.svg",
+      "bytes": 382,
+      "sha256": "3807d90dd56adca3e220ffd9939facaf99b6e2324a7e6877680932d6f9338208"
+    },
+    {
+      "path": "icons/mpr_dark.png",
+      "bytes": 1745,
+      "sha256": "647a15b993c09ea6dcd9aa533dbc22533930a1b2ba766af4a5398cf8b5ce3a15"
+    },
+    {
+      "path": "icons/mpr_light.png",
+      "bytes": 1768,
+      "sha256": "d90e13a1a5fdda29b7f76f947419fa15ec95fe6d121081820b1de67bc302e8b6"
+    },
+    {
+      "path": "icons/mpr_orange.png",
+      "bytes": 1745,
+      "sha256": "647a15b993c09ea6dcd9aa533dbc22533930a1b2ba766af4a5398cf8b5ce3a15"
+    },
+    {
+      "path": "icons/mpr_orange.svg",
+      "bytes": 382,
+      "sha256": "3807d90dd56adca3e220ffd9939facaf99b6e2324a7e6877680932d6f9338208"
+    },
+    {
+      "path": "icons/mpr_orange_dark.png",
+      "bytes": 1745,
+      "sha256": "647a15b993c09ea6dcd9aa533dbc22533930a1b2ba766af4a5398cf8b5ce3a15"
+    },
+    {
+      "path": "icons/mpr_orange_light.png",
+      "bytes": 1768,
+      "sha256": "d90e13a1a5fdda29b7f76f947419fa15ec95fe6d121081820b1de67bc302e8b6"
+    },
+    {
+      "path": "icons/open_folder.png",
+      "bytes": 2164,
+      "sha256": "0d83b4edfa0625485bae555c527a451e4f4655b9c933218dc156184eb507bbf0"
+    },
+    {
+      "path": "icons/open_folder.svg",
+      "bytes": 340,
+      "sha256": "ebe904b4d60352b12aaf4234297f8b56845e62b9404fa0e5bae6c352cafcbfd4"
+    },
+    {
+      "path": "icons/open_folder_dark.png",
+      "bytes": 2164,
+      "sha256": "0d83b4edfa0625485bae555c527a451e4f4655b9c933218dc156184eb507bbf0"
+    },
+    {
+      "path": "icons/open_folder_light.png",
+      "bytes": 2195,
+      "sha256": "a9103642a6d22d57ea48f37bb75372b13624891de64b8c1ccc139a0557ee2297"
+    },
+    {
+      "path": "icons/orient_view.png",
+      "bytes": 3386,
+      "sha256": "21551bdd0c1eae4a5bb713307d7d1106b8bbb99fb1226115ae3d6948ecb8317c"
+    },
+    {
+      "path": "icons/orient_view.svg",
+      "bytes": 478,
+      "sha256": "dbc32b123195234c0c0311ad5945e10806a43f8e973b8d1268fb63b451594824"
+    },
+    {
+      "path": "icons/orient_view_dark.png",
+      "bytes": 3386,
+      "sha256": "21551bdd0c1eae4a5bb713307d7d1106b8bbb99fb1226115ae3d6948ecb8317c"
+    },
+    {
+      "path": "icons/orient_view_light.png",
+      "bytes": 3457,
+      "sha256": "3dea0a487511dd973c1857cc9fd733afe47a1bfb20d2223f969a5ad03b8d8447"
+    },
+    {
+      "path": "icons/reinforcement.png",
+      "bytes": 3135,
+      "sha256": "1932335ec20a75ce6d540bdd6dbfd82e70abfcc549c05332dce927c49411a1e4"
+    },
+    {
+      "path": "icons/reinforcement.svg",
+      "bytes": 547,
+      "sha256": "7e562a134b7021379308d9c7ccd0f540fc6f749a1ae42a1a628f6b8e03972b1a"
+    },
+    {
+      "path": "icons/reinforcement_dark.png",
+      "bytes": 3135,
+      "sha256": "1932335ec20a75ce6d540bdd6dbfd82e70abfcc549c05332dce927c49411a1e4"
+    },
+    {
+      "path": "icons/reinforcement_light.png",
+      "bytes": 3111,
+      "sha256": "6dd4f506c41aa0afa9d9fa96c540c27832894d2d5c3caae7e89d393e528f5d85"
+    },
+    {
+      "path": "icons/reset.png",
+      "bytes": 3687,
+      "sha256": "c0f38e5e02928365c8b25af0a519185db8e3ae60b21326dae0c44f26bc525c63"
+    },
+    {
+      "path": "icons/reset.svg",
+      "bytes": 374,
+      "sha256": "bff1e0457e8698a65b8d956b3c01cb499e179f6c4a8d40fed046a0bfc3d616ba"
+    },
+    {
+      "path": "icons/reset_dark.png",
+      "bytes": 3687,
+      "sha256": "c0f38e5e02928365c8b25af0a519185db8e3ae60b21326dae0c44f26bc525c63"
+    },
+    {
+      "path": "icons/reset_light.png",
+      "bytes": 3724,
+      "sha256": "d3d6576d2969435b87f7013122445c663063f6551c0e9cb5e30c23e2a7ff038d"
+    },
+    {
+      "path": "icons/select_implant.png",
+      "bytes": 5216,
+      "sha256": "9513efad4c09eec15a2f3bf6cb35647db29111bc7fa4803eb2546f9b661f6e25"
+    },
+    {
+      "path": "icons/select_implant.svg",
+      "bytes": 547,
+      "sha256": "65a2ca6e8fae28ba772e02377845e2e1ff31598ab6e23b45effdc12eb4bab8c6"
+    },
+    {
+      "path": "icons/select_implant_dark.png",
+      "bytes": 5216,
+      "sha256": "9513efad4c09eec15a2f3bf6cb35647db29111bc7fa4803eb2546f9b661f6e25"
+    },
+    {
+      "path": "icons/select_implant_light.png",
+      "bytes": 5170,
+      "sha256": "5d9cdc7e7a2174eae378b5e820037b77a0813767adec5d6f0524f54a997e30ab"
+    },
+    {
+      "path": "icons/settings.png",
+      "bytes": 5866,
+      "sha256": "435bfcbdb695bbe2dde3a3936c96e70bffff12a02b7d779aa29199cdaccb7abd"
+    },
+    {
+      "path": "icons/settings.svg",
+      "bytes": 713,
+      "sha256": "2f4aad390d384b26702ae0eed9b1d088b6e1637b44d08d242f9ee1e5e58f942f"
+    },
+    {
+      "path": "icons/settings_dark.png",
+      "bytes": 5866,
+      "sha256": "435bfcbdb695bbe2dde3a3936c96e70bffff12a02b7d779aa29199cdaccb7abd"
+    },
+    {
+      "path": "icons/settings_light.png",
+      "bytes": 6071,
+      "sha256": "e87c4143982c77a5aecf7e22863223dc07e2bef1846ee6257de33213dc22f7dd"
+    },
+    {
+      "path": "icons/status_empty.png",
+      "bytes": 3866,
+      "sha256": "032e53b2ee27bbd1d3e2d5a857623b57a8a460a1a40a0c5a4862db13f003f5be"
+    },
+    {
+      "path": "icons/status_empty.svg",
+      "bytes": 323,
+      "sha256": "f011b51d9d91ec9a0f85ebee0c86646712241af6cd0ea8cb14c541e0f8289681"
+    },
+    {
+      "path": "icons/status_empty_dark.png",
+      "bytes": 3866,
+      "sha256": "032e53b2ee27bbd1d3e2d5a857623b57a8a460a1a40a0c5a4862db13f003f5be"
+    },
+    {
+      "path": "icons/status_empty_light.png",
+      "bytes": 3866,
+      "sha256": "032e53b2ee27bbd1d3e2d5a857623b57a8a460a1a40a0c5a4862db13f003f5be"
+    },
+    {
+      "path": "icons/status_error.png",
+      "bytes": 3951,
+      "sha256": "a5312b2a8511261201bc71390d0f68eecd36024eb9ee812ac492ea3562a1fe9c"
+    },
+    {
+      "path": "icons/status_error.svg",
+      "bytes": 331,
+      "sha256": "f1ce56b61529745e539183b43826c02fb64119b0c5d4766f0a2e9780d7b3ee41"
+    },
+    {
+      "path": "icons/status_error_dark.png",
+      "bytes": 3951,
+      "sha256": "a5312b2a8511261201bc71390d0f68eecd36024eb9ee812ac492ea3562a1fe9c"
+    },
+    {
+      "path": "icons/status_error_light.png",
+      "bytes": 3951,
+      "sha256": "a5312b2a8511261201bc71390d0f68eecd36024eb9ee812ac492ea3562a1fe9c"
+    },
+    {
+      "path": "icons/status_info.png",
+      "bytes": 3926,
+      "sha256": "98f0b68a92c65c8b2a31a1dc31d68e5c5fb96163ae629a079790c97955d20752"
+    },
+    {
+      "path": "icons/status_info.svg",
+      "bytes": 379,
+      "sha256": "fd615dd5d5466b46762e29f52df8e21ae6b236a42668a256aa55228e91d80421"
+    },
+    {
+      "path": "icons/status_info_dark.png",
+      "bytes": 3926,
+      "sha256": "98f0b68a92c65c8b2a31a1dc31d68e5c5fb96163ae629a079790c97955d20752"
+    },
+    {
+      "path": "icons/status_info_light.png",
+      "bytes": 3926,
+      "sha256": "98f0b68a92c65c8b2a31a1dc31d68e5c5fb96163ae629a079790c97955d20752"
+    },
+    {
+      "path": "icons/status_ok.png",
+      "bytes": 4000,
+      "sha256": "e0b66a77a94ff95159c071aedda9d1119c68b18d2fdf641777cc1fb6ff5b2d81"
+    },
+    {
+      "path": "icons/status_ok.svg",
+      "bytes": 324,
+      "sha256": "d3f38c34c1327a915226edb8eb59411ca334af27331857d900abd6dce2f70d8d"
+    },
+    {
+      "path": "icons/status_ok_dark.png",
+      "bytes": 4000,
+      "sha256": "e0b66a77a94ff95159c071aedda9d1119c68b18d2fdf641777cc1fb6ff5b2d81"
+    },
+    {
+      "path": "icons/status_ok_light.png",
+      "bytes": 4000,
+      "sha256": "e0b66a77a94ff95159c071aedda9d1119c68b18d2fdf641777cc1fb6ff5b2d81"
+    },
+    {
+      "path": "icons/status_pending.png",
+      "bytes": 2444,
+      "sha256": "0e46f5409f2f2845608ac4d2710012e78fe5072766236fa49aeb8bf940672523"
+    },
+    {
+      "path": "icons/status_pending.svg",
+      "bytes": 346,
+      "sha256": "a94094adbc87a2276dc774a8546e7dcbb53fc1d41e4c628ecf2cf504fb1b3ede"
+    },
+    {
+      "path": "icons/status_pending_dark.png",
+      "bytes": 2444,
+      "sha256": "0e46f5409f2f2845608ac4d2710012e78fe5072766236fa49aeb8bf940672523"
+    },
+    {
+      "path": "icons/status_pending_light.png",
+      "bytes": 2444,
+      "sha256": "0e46f5409f2f2845608ac4d2710012e78fe5072766236fa49aeb8bf940672523"
+    },
+    {
+      "path": "icons/status_warning.png",
+      "bytes": 3203,
+      "sha256": "6d4d8f47330682c106559563a662406d9e4ba4286894037f5253f4e4ecefb780"
+    },
+    {
+      "path": "icons/status_warning.svg",
+      "bytes": 376,
+      "sha256": "0f4da2834bd008631951687b45a6fbfbef2d5875365603c7fb2b2a6283230f82"
+    },
+    {
+      "path": "icons/status_warning_dark.png",
+      "bytes": 3203,
+      "sha256": "6d4d8f47330682c106559563a662406d9e4ba4286894037f5253f4e4ecefb780"
+    },
+    {
+      "path": "icons/status_warning_light.png",
+      "bytes": 3203,
+      "sha256": "6d4d8f47330682c106559563a662406d9e4ba4286894037f5253f4e4ecefb780"
+    },
+    {
+      "path": "icons/switch_plane.png",
+      "bytes": 2106,
+      "sha256": "9e92f9053a7bd8b8a719689f95d16fdf838f7aca836de075e70b92b824789f3a"
+    },
+    {
+      "path": "icons/switch_plane.svg",
+      "bytes": 466,
+      "sha256": "919245af6d8e02b5cc0b442158a693629389b6bac337ec6d8dcf20503386bcf6"
+    },
+    {
+      "path": "icons/switch_plane_dark.png",
+      "bytes": 2106,
+      "sha256": "9e92f9053a7bd8b8a719689f95d16fdf838f7aca836de075e70b92b824789f3a"
+    },
+    {
+      "path": "icons/switch_plane_light.png",
+      "bytes": 2110,
+      "sha256": "7be8fe64741e4afcd1111f5e82f851f7bd062045e993fd8b1c5d2b396da5eec8"
+    },
+    {
+      "path": "icons/tone_primary.png",
+      "bytes": 229,
+      "sha256": "852dbfe4bbc3c2984c72b3a2a6d398f013dfafae259d5227863f7a4e641aa55c"
+    },
+    {
+      "path": "icons/tone_sand.png",
+      "bytes": 229,
+      "sha256": "4cd4049ad743858f54d000f4f888778705f48b67038ff9604b0eaad6297c04c6"
+    },
+    {
+      "path": "icons/tone_secondary.png",
+      "bytes": 226,
+      "sha256": "bdb84c4310a8d87f567429647c658261143e2adfd2b02a1b3977a061bc0d87a3"
+    },
+    {
+      "path": "icons/tone_secondary_alt.png",
+      "bytes": 229,
+      "sha256": "470427a56f2969e3a00ba9f2f4cd766c40a5a668cb7397d7a96254bfd9145b2b"
+    },
+    {
+      "path": "icons/tone_secondary_soft.png",
+      "bytes": 228,
+      "sha256": "78c059a1d319c4833f4ecc1e9d20391231a5633224d3cc7e03bb802b49081cbf"
+    },
+    {
+      "path": "icons/tone_sky.png",
+      "bytes": 229,
+      "sha256": "d4ce329069313269fb0565968641995504a4a8512e23e70c635de0745c3c1ef8"
+    },
+    {
+      "path": "icons/tone_tertiary.png",
+      "bytes": 229,
+      "sha256": "5b4467e4ace72390286068d0b996e9d696b0823db72bfd6bace0cef39247a581"
+    },
+    {
+      "path": "icons/validate.png",
+      "bytes": 3322,
+      "sha256": "f95b20c82119ced32bc1cdb253acb86459c723ac14b9094260ba3153803c6e1a"
+    },
+    {
+      "path": "icons/validate.svg",
+      "bytes": 371,
+      "sha256": "ea033857e3f6ab3463e66019adf59272045a564cc1a0bd59daf061a0bf523594"
+    },
+    {
+      "path": "icons/validate_dark.png",
+      "bytes": 3322,
+      "sha256": "f95b20c82119ced32bc1cdb253acb86459c723ac14b9094260ba3153803c6e1a"
+    },
+    {
+      "path": "icons/validate_light.png",
+      "bytes": 3317,
+      "sha256": "cc02d957bc0d079694b51b2bb17af62026a43a02bdac0aa2badf5e1498d9874e"
+    },
+    {
+      "path": "icons/verify_lumen.png",
+      "bytes": 3412,
+      "sha256": "b3a4491a2b3559e5414feea57667dc1c59c8d9085309e06e35fd70fea82e4a96"
+    },
+    {
+      "path": "icons/verify_lumen.svg",
+      "bytes": 493,
+      "sha256": "f48d3119db53e596d50c4d1d981aedfe7f9965e0dffd530a50fd8fec7695510c"
+    },
+    {
+      "path": "icons/verify_lumen_dark.png",
+      "bytes": 3412,
+      "sha256": "b3a4491a2b3559e5414feea57667dc1c59c8d9085309e06e35fd70fea82e4a96"
+    },
+    {
+      "path": "icons/verify_lumen_light.png",
+      "bytes": 3417,
+      "sha256": "56b3d095f48203bf37047dfd6271bebcc79948ca926ef255770e8decf37fb06c"
+    },
+    {
+      "path": "icons/view.png",
+      "bytes": 4173,
+      "sha256": "eb2a4d7db02b0bbaa3864bba2fbaa590d027c25230222ced5ec3b9e98fe10bb5"
+    },
+    {
+      "path": "icons/view.svg",
+      "bytes": 353,
+      "sha256": "39f56b6c64cb20a7acca9c285395eddba250638ff531d766d31b083431377d09"
+    },
+    {
+      "path": "icons/view_dark.png",
+      "bytes": 4173,
+      "sha256": "eb2a4d7db02b0bbaa3864bba2fbaa590d027c25230222ced5ec3b9e98fe10bb5"
+    },
+    {
+      "path": "icons/view_light.png",
+      "bytes": 4384,
+      "sha256": "ad9361f4637a15ca58e9a125bc15f39c2e0bc355d0544832e72f9e5a18d34697"
+    },
+    {
+      "path": "INSTALL.txt",
+      "bytes": 898,
+      "sha256": "616635880a358fdcb6d13096c4693b7e1f0beff43d8e37639d3a503d6c2d1245"
+    },
+    {
+      "path": "installation_lock.py",
+      "bytes": 1307,
+      "sha256": "3cfa7b7d134d92cbc4cd6f8455b84451fa1e25cd119696f97a3e1031878ec556"
+    },
+    {
+      "path": "lifecycle.py",
+      "bytes": 4534,
+      "sha256": "5f49e9502e91bae23eeebec6234a3d6eeb1e7f6ccc078b2eebf939e748770107"
+    },
+    {
+      "path": "minidicom.py",
+      "bytes": 11539,
+      "sha256": "51fe099200df5b2b96d965243047077a1eaaa51bdfe1795f522d4cc6b3af2319"
+    },
+    {
+      "path": "offline_runtime/requirements_dicom.txt",
+      "bytes": 120,
+      "sha256": "8e6ba16fc5873b5da95d599e6f713eb1a605ea35eae9dc8242a2db3c02219077"
+    },
+    {
+      "path": "offline_runtime/requirements_geometry_optional.txt",
+      "bytes": 181,
+      "sha256": "a7033eb7efab789812c7c6970484764d3b69274de7d90b8d9a5a39ffcb68659a"
+    },
+    {
+      "path": "offline_runtime/requirements_inference.txt",
+      "bytes": 227,
+      "sha256": "eae35a33f84e1e4fd8454eed10bc457f9216d643eaff3d08a32547a74c3b5790"
+    },
+    {
+      "path": "offline_runtime/requirements_vtk_optional.txt",
+      "bytes": 163,
+      "sha256": "3cc485d8ab2a50a54d84ebb52ecf974757064cddd2ce8f90149ace9fec64c168"
+    },
+    {
+      "path": "offline_runtime/win_py313/dicom_wheels/pydicom-3.0.2-py3-none-any.whl",
+      "bytes": 2376822,
+      "sha256": "abf971a5440f84dbaf42c4b6758e30e62480902584f8b270b9a5d146e278a07b"
+    },
+    {
+      "path": "offline_runtime/win_py313/dicom_wheels/pyjpegls-1.5.1-cp313-cp313-win_amd64.whl",
+      "bytes": 1142653,
+      "sha256": "5812655f1fbb93bd2666ff05616bf3c7eae2474c6c4f8bf8afb6d5e5c0d6e9cf"
+    },
+    {
+      "path": "offline_runtime/win_py313/dicom_wheels/pylibjpeg-2.1.0-py3-none-any.whl",
+      "bytes": 25472,
+      "sha256": "25df9496a69e64e98c887fddee12a1271e275b5f74ba804f9bf98a08bb80993e"
+    },
+    {
+      "path": "offline_runtime/win_py313/dicom_wheels/pylibjpeg_libjpeg-2.4.0-cp313-cp313-win_amd64.whl",
+      "bytes": 751538,
+      "sha256": "cb0f2ee4eb5f9bf4cff2905f3eacd7eefda5bc8b1e82959110593781c5b52bea"
+    },
+    {
+      "path": "offline_runtime/win_py313/dicom_wheels/pylibjpeg_openjpeg-2.5.0-cp313-cp313-win_amd64.whl",
+      "bytes": 350631,
+      "sha256": "c25f623299b853917857738500bafa0d1315fc1a7149822a7e27f4bb64cec0a9"
+    },
+    {
+      "path": "offline_runtime/win_py313/dicom_wheels/pylibjpeg_rle-2.2.0-cp313-cp313-win_amd64.whl",
+      "bytes": 140865,
+      "sha256": "0664634915a50967165df569e31f44e6dbbc2390164dea02b556254c352e9ab0"
+    },
+    {
+      "path": "offline_runtime/win_py313/README.txt",
+      "bytes": 443,
+      "sha256": "5dc4f597cc6814748069af05859ca9a9849c72ba8e70b22d0aaaa3e126c2647c"
+    },
+    {
+      "path": "pipeline_core/__init__.py",
+      "bytes": 171,
+      "sha256": "6c856b9acde032176e2bf9deb79500ae9d826b448949b85185481d972a5f8aa1"
+    },
+    {
+      "path": "pipeline_core/contracts.py",
+      "bytes": 4833,
+      "sha256": "e705b275b2f3cf41e61ad088f17590331371eff763698abc6c1f3ca9d52ad593"
+    },
+    {
+      "path": "pipeline_core/trace.py",
+      "bytes": 2156,
+      "sha256": "a2b4dad527d87e6f7c82119382f9d03d786d829ab2c32d4ce91d41d95a76d834"
+    },
+    {
+      "path": "README.md",
+      "bytes": 9896,
+      "sha256": "66fd7dbcb37c65b3f8eb590f7bf33f76c39462deed943de054f749db3bb7474d"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_1.txt",
+      "bytes": 749,
+      "sha256": "b64d0b967eec85ff5909146fdfdbbfcca1407d0282d024b094d4f9a28a155d05"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_10.txt",
+      "bytes": 1106,
+      "sha256": "d38cd06995a4bd8d67d71260da814d76fe6d85c6d8708a594760546f9214a6b7"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_11.txt",
+      "bytes": 923,
+      "sha256": "b51c43fcbca786ddc1d7f47809a599d5d1eb1d468b3596c0ac897556f5380aa4"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_2.txt",
+      "bytes": 1410,
+      "sha256": "bdff5c79c0639af95f3c7ba6822acd317c723eed4bef273794bbbede2cf3a75b"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_3.txt",
+      "bytes": 1001,
+      "sha256": "fac8dd2d0a849da71befacaa87dedffa77cc3d16beab9f8cb2be0a9be0227b60"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_4.txt",
+      "bytes": 452,
+      "sha256": "9df212eb0acc8291a483079be4947bf58fc6fdf861763915eb3d9c3104efbd51"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_5.txt",
+      "bytes": 419,
+      "sha256": "82ee359379fe5eb934641f8a7c614580ae491669034137a34dd54c811033222c"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_6.txt",
+      "bytes": 585,
+      "sha256": "c29e17bac2f950a607f63a95952ca9cefeea6bd206122cd35efc315fffc00010"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_7.txt",
+      "bytes": 482,
+      "sha256": "8ab3f3cf86a608049990cf316c6ce6f70b6b9a18aed48220c1f67fedfec2fd70"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_8.txt",
+      "bytes": 565,
+      "sha256": "6d6d749112f81a8f7f67f102291d3cc21edeb224808476d6511a2872ecf309da"
+    },
+    {
+      "path": "RELEASE_NOTES_9_10_9.txt",
+      "bytes": 516,
+      "sha256": "b410e4f972d1d3e19d6cbaf4080819b25097149f92429b81fd2e15de2ef2ab34"
+    },
+    {
+      "path": "resources/clinical/patient_context_schema_v1.json",
+      "bytes": 1227,
+      "sha256": "ea977707832a6f63499e523cb01cea0f5ff801b0391b908e9f781dad79d44ef5"
+    },
+    {
+      "path": "resources/clinical/source_registry.json",
+      "bytes": 6412,
+      "sha256": "5f313df7a2b17b9bdb33bb4f5f756468532e6710202712e7d0a02d01d1dbb0d6"
+    },
+    {
+      "path": "resources/dental_assets/asset_contract_v1.json",
+      "bytes": 12890,
+      "sha256": "1eece64ab2eee2f3b018ca6f41539c592dba0eb6a05b3467e6862eb5860e9516"
+    },
+    {
+      "path": "resources/dental_assets/asset_contract_v1.sha256",
+      "bytes": 65,
+      "sha256": "8ea3f3d987ddd60cf6d3adfc555babf5377af6ae18053cd19db636a5e45fd52a"
+    },
+    {
+      "path": "resources/dental_assets/README_LIBRARY_REQUIRED.md",
+      "bytes": 1322,
+      "sha256": "20503d1ff1556c03c7bd7a9b3bce7cff81bda704e1b8176f5476aae32ec94b38"
+    },
+    {
+      "path": "resources/evidence/expert_watchlist.json",
+      "bytes": 3854,
+      "sha256": "0a4887af9e5480279ba3839d3ebb72ced3f67d7f2b4618e633167528a8f6b619"
+    },
+    {
+      "path": "resources/evidence/journals.json",
+      "bytes": 2372,
+      "sha256": "ca98b8b3e775b9273aa801e17f1d5810120372f722e857638a2003f76200ae26"
+    },
+    {
+      "path": "resources/evidence/manifest.json",
+      "bytes": 1506,
+      "sha256": "7f2a5ffd0097884f1080e8e4805853f8398173051301de1b836be8f47855553f"
+    },
+    {
+      "path": "resources/evidence/references.json",
+      "bytes": 35255,
+      "sha256": "8110a7bcda6dc4b619a35782cdb1eee673f579695a9ef992d5c50af851496c88"
+    },
+    {
+      "path": "resources/evidence/rules.json",
+      "bytes": 12433,
+      "sha256": "d5c160ce7a52e7a76ca7c87a09ac6bbc64e9da2714c84dd1f7309c0a26a3b721"
+    },
+    {
+      "path": "resources/evidence/search_queries.json",
+      "bytes": 913,
+      "sha256": "3f93a0491e2cf51ab5b948ad3465d2c7e0c3b3c2a899d3ac82c89623d60f9d2c"
+    },
+    {
+      "path": "resources/frame/frame_structural_contract_v1.json",
+      "bytes": 2487,
+      "sha256": "b8fbe32eccd8e7888a34fdec175c4d5d5cddb0050b9a3658ae10bfbf910e51fe"
+    },
+    {
+      "path": "resources/guide_assets/drill_visual_template.b85",
+      "bytes": 228570,
+      "sha256": "7a1a4330ccbf36ddbe80bf037d2ab8c9d74363ff9c027e3ebf5c1c6785361c0c"
+    },
+    {
+      "path": "resources/guide_assets/implant_template.b85",
+      "bytes": 179969,
+      "sha256": "0e96fa18c388ad6bd14b7cfb251e11681a997ceef7352a5e14a9476f168940ec"
+    },
+    {
+      "path": "resources/guide_assets/manifest.json",
+      "bytes": 636,
+      "sha256": "cf9659e460e6ed52ac22093ae9ca3599cc556c3320604aae8b713dcdc2a3f825"
+    },
+    {
+      "path": "resources/guide_assets/microscrew_visual_template.b85",
+      "bytes": 294303,
+      "sha256": "2d6ef502f5195bc74d028a27dabd6cae097fa09d8a99f5927a565457d7fbf024"
+    },
+    {
+      "path": "resources/specs/DSG_v9_10_0_SEGMENTATION_ENGINES.json",
+      "bytes": 809,
+      "sha256": "39a74d236513beff3833c897cf024c1cb396316395bf0a21f423c2e5928e957c"
+    },
+    {
+      "path": "roadmap_module.py",
+      "bytes": 81074,
+      "sha256": "2186dbe3d37dc19487934baa025a74e03fb501775c82ab5485defabb0a22b786"
+    },
+    {
+      "path": "runtime_bootstrap.py",
+      "bytes": 8678,
+      "sha256": "a81c75a6fbf459c3db8cdfd99a0c254b5ffe7b2c77114b8242269453d056d6f4"
+    },
+    {
+      "path": "segmentation_engines.py",
+      "bytes": 19201,
+      "sha256": "698ac95f40c574a3b07d83fde853d4d6cca7b0a112aebbf51e470e0dcc46450a"
+    },
+    {
+      "path": "segmentation_install_worker.py",
+      "bytes": 19536,
+      "sha256": "af053f350b350d66388d5bef7b2f5aab107d7169bed42e55d30dde92148eadc7"
+    },
+    {
+      "path": "source_parts.py",
+      "bytes": 1192,
+      "sha256": "b31c42a9b47fff27d138a44bb700f557fc537aa8ef8cd3a2790e385e2f9c968a"
+    },
+    {
+      "path": "surface_nets_geometry.py",
+      "bytes": 5886,
+      "sha256": "5c6bdf71a55eff764417820e5d9a97aedf9d347d7f22ca1bc2f12f732a0ba3ae"
+    },
+    {
+      "path": "surface_smoothing.py",
+      "bytes": 12699,
+      "sha256": "e622f05b0a698d5caddb4b71910a00e98a312ceb0cda41c89ca4ca05030c5938"
+    },
+    {
+      "path": "tests_blender/test_all_stage_history.py",
+      "bytes": 6482,
+      "sha256": "6303d1726a01ef91d57af94ed67604928d83c0208b1ff1f772916e99ebe6218c"
+    },
+    {
+      "path": "tests_blender/test_async_smoothing_undo.py",
+      "bytes": 2660,
+      "sha256": "8973ef5793e13c0014a170f49ca3b4eec883349fed27346a50c02d699e7b9e59"
+    },
+    {
+      "path": "tests_blender/test_constrained_surface_smoothing.py",
+      "bytes": 8332,
+      "sha256": "b34ec3d991975a82ac97fb05d2e089013bf37fca15dd9ca480e046177db693ee"
+    },
+    {
+      "path": "tests_blender/test_dentition_scipy.py",
+      "bytes": 1160,
+      "sha256": "d0695e2302756373593e32eab46c6fcbd9b9b79207e34a6a4776c78a16fe8652"
+    },
+    {
+      "path": "tests_blender/test_engine_models.py",
+      "bytes": 2380,
+      "sha256": "547cd71f0dba42ed12a40e1b71f81d260c635865f624873a4e3405cb421d94ef"
+    },
+    {
+      "path": "tests_blender/test_history_beyond_native_limit.py",
+      "bytes": 1139,
+      "sha256": "265da6dabccf5ba5347e80b0e18c0af9a81ace4d85eb6a4ebccdf50b3d8e4e64"
+    },
+    {
+      "path": "tests_blender/test_immediate_gate.py",
+      "bytes": 2077,
+      "sha256": "b214512793fac1945ed0658b45407b818d96337cddad68e22b9194e768e50702"
+    },
+    {
+      "path": "tests_blender/test_modal_history.py",
+      "bytes": 3115,
+      "sha256": "277033661dec60d54b259b6384b63504d030353171fc8f34747e61d3da1d505a"
+    },
+    {
+      "path": "tests_blender/test_mpr_image_history.py",
+      "bytes": 1744,
+      "sha256": "36547ee26edc067280784506f8003d337513ac4295cfccff02d8e6d862028d77"
+    },
+    {
+      "path": "tests_blender/test_pipeline_diagnostic.py",
+      "bytes": 1411,
+      "sha256": "01c5d5b0ac36acb9dd3919f05928f8c985bb7f208828b72b1cef2bd3e711cc59"
+    },
+    {
+      "path": "tests_blender/test_post_segmentation_smoothing.py",
+      "bytes": 3276,
+      "sha256": "44f8d9485ec7fcd4c14ffb1e1a291454035e9c8adf0830d817a9ff6d381c61c3"
+    },
+    {
+      "path": "tests_blender/test_registration.py",
+      "bytes": 2639,
+      "sha256": "917cd3a049704620eeea164af9547562ab179f169872094d779725ee8ddfdee8"
+    },
+    {
+      "path": "tests_blender/test_runtime_status.py",
+      "bytes": 1509,
+      "sha256": "5dc06603e3930f6447dc0d95d5dba545bbaf596e28578e37df4842cc44e5403e"
+    },
+    {
+      "path": "tests_blender/test_sleeve_operator_undo.py",
+      "bytes": 2371,
+      "sha256": "10fd6dcc85aed170379a6cd3a0cc9a6191a6fcdf3232c34ce036796b84fe25a9"
+    },
+    {
+      "path": "tests_blender/test_surface_smoothing.py",
+      "bytes": 6569,
+      "sha256": "f016087995328d97cf20966eafb0bc7a7b5833c1453b7b9942a2b95db06f0fad"
+    },
+    {
+      "path": "tests_blender/test_workflow_history.py",
+      "bytes": 2886,
+      "sha256": "f5038eb5c8dca39c568ff87dea755c2a5eb556511f8eeae379085d8742de55a7"
+    },
+    {
+      "path": "tests_pure/test_installer.py",
+      "bytes": 5243,
+      "sha256": "09b8c1df3ec160ecd8647a03e9684a886673a6fd4a26cdb38c2b6e9420de5531"
+    },
+    {
+      "path": "tests_pure/test_metrics.py",
+      "bytes": 1123,
+      "sha256": "0973d67ea02c3f7b1f087f27a3fc051f8038c8b197284facb0a73fefa6974fa9"
+    },
+    {
+      "path": "tests_pure/test_pipeline_contracts.py",
+      "bytes": 3342,
+      "sha256": "c9d351b522a36aeffc9adcce0621a2cc142902ad9963b8b3e0384cafdb986436"
+    },
+    {
+      "path": "tests_pure/test_pipeline_worker_trace.py",
+      "bytes": 3842,
+      "sha256": "625e1fb522995f5fdc3542bee44056fa945a070503c22e80f18245c3dde52100"
+    },
+    {
+      "path": "THIRD_PARTY_MODEL_NOTICE.txt",
+      "bytes": 1227,
+      "sha256": "1464b99d150865e1affafd969afdcfb40fe78f9e3abd1f1e394503af2bf55842"
+    },
+    {
+      "path": "tools/check_quality.py",
+      "bytes": 1028,
+      "sha256": "b9ea9f589c59ce3e2b830ad854445185ee5255ca1f31e7c0232a9a000ad78b68"
+    },
+    {
+      "path": "tools/gen_index.py",
+      "bytes": 5955,
+      "sha256": "77b7fa684a2f014b938ef443d0c5ea274ff6144d8c88dd5b4d3434eb80e50205"
+    },
+    {
+      "path": "tools/metrics.py",
+      "bytes": 2645,
+      "sha256": "3d98ae5c005f73ec8e592dbcf007f225854cd65ea5e75c15555db374289d1472"
+    },
+    {
+      "path": "tools/metrics_baseline.json",
+      "bytes": 181,
+      "sha256": "af0a29f175364f1327f98fbf3afeb2eabdf797a0d4d4fcc66f4fdc806b5896fe"
+    },
+    {
+      "path": "tooth_analysis.py",
+      "bytes": 63869,
+      "sha256": "d41e77449eec565485e3545dc0859a20c43ec7361b5b8095802da1e623e3632f"
+    },
+    {
+      "path": "ui_style.py",
+      "bytes": 9036,
+      "sha256": "3b41ca7020fb3f74bdc74b52703443ab1781c6e3531e67c9d7d785ac5029e243"
+    },
+    {
+      "path": "version.py",
+      "bytes": 154,
+      "sha256": "a306d864f0a32358d6f5ce5a7d6af277e49eb8f4cbcbee2efa0428f2dcee3a1d"
+    },
+    {
+      "path": "workflow_history.py",
+      "bytes": 24807,
+      "sha256": "c24ce6666fa54c98bbac04a594f8c0baeaf8985b1a42438cf3f32d3cb086ec44"
+    }
+  ],
+  "repair": "Windows long-path checkpoints, cross-process installation lock, actual model-loading preflight and accurate partial/unsupported status.",
+  "dicom_wheels_bundled": true,
+  "cuda_index": "https://download.pytorch.org/whl/cu126"
+}

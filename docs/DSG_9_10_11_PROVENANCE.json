@@ -1,0 +1,12 @@
+{
+  "version": "9.10.11",
+  "source": "DSG_v9_10_11_BLENDER_5_2_PIPELINE_CONTRACTS_DIAGNOSTICS.zip",
+  "sha256": "d39ff9a4af0ddc4024582f538adf65de30d47d29d3a6986b719b337208169206",
+  "bytes": 7157729,
+  "manifest_files": 426,
+  "archive_files": 427,
+  "crc_valid": true,
+  "all_manifest_hashes_valid": true,
+  "unlisted_files": [],
+  "source_root": "dsg/"
+}

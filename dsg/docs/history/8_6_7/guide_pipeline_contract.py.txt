@@ -1,0 +1,50 @@
+STEP_MODEL         = 0
+STEP_AXIS          = 0
+STEP_BLOCKOUT      = 0
+STEP_IMPLANT       = 1
+STEP_CONTOUR       = 2
+STEP_FRAME         = 3
+STEP_SLEEVE        = 4
+STEP_IRRIGATION    = 5
+STEP_REINFORCEMENT = 6
+STEP_DRILL         = 7
+STEP_FINAL_CUT     = 8
+STEP_NAME          = 9
+STEP_DONE          = 9
+TOTAL_STEPS        = 10
+
+# Global clinical numbering includes the two stages that precede this module:
+# 1 DICOM import, 2 IOS–DICOM alignment, then the ten guide stages 3–12.
+GLOBAL_CLINICAL_STEP_OFFSET = 2
+GLOBAL_TOTAL_CLINICAL_STEPS = TOTAL_STEPS + GLOBAL_CLINICAL_STEP_OFFSET
+
+GUIDE_FLOW_ORDER_KEY = "DSG_guide_flow_order"
+GUIDE_FLOW_ORDER_MODEL_IMPLANT = "MODEL_IMPLANT_CONTOUR_V1"
+GUIDE_FLOW_ORDER_IMPLANT_FIRST_LEGACY = "IMPLANT_FIRST_V1"
+
+STEP_LABELS = [
+    "Retentive Model",
+    "Implant Planning",
+    "Outline",
+    "Microscrew",
+    "Sleeves",
+    "Irrigation",
+    "Reinforcements",
+    "Drill Channels",
+    "Final Boolean",
+    "Name and Export",
+]
+
+STEP_LABELS_ES = [
+    "Modelo retentivo",
+    "Planificación de implantes",
+    "Contorno",
+    "Microtornillo",
+    "Cilindros",
+    "Irrigación",
+    "Refuerzos",
+    "Canales de fresado",
+    "Corte final",
+    "Nombre y exportación",
+]
+

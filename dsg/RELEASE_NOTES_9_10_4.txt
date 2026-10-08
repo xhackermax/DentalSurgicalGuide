@@ -1,0 +1,7 @@
+DSG 9.10.4 - ruta de implante inmediato
+
+- Corrige la llamada obsoleta engine_status y el campo detail de su comprobación.
+- Carga SciPy desde el runtime DSG privado antes de individualizar los dientes.
+- Mantiene NumPy de Blender y no importa PyTorch en el proceso de la interfaz.
+- Conserva los requisitos de mandíbula/maxila y las reparaciones DICOM/CUDA de 9.10.3.
+- Añade pruebas de la puerta de ruta y de bounding boxes con SciPy real.

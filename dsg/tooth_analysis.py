@@ -1,9 +1,9 @@
 """DSG dental semantics v2 — tabula-rasa tooth identity model.
 
-Tooth identity comes from explicit UniversalLab CBCT labels. DSG never infers
+Tooth identity comes from explicit normalized CBCT labels. DSG never infers
 FDI from IOS geometry. A marker-controlled 3-D watershed may be used only as a
-post-inference *continuity reconciler*: UniversalLab labels are immutable identity
-seeds and DentalSegmentator supplies grouped anatomical tooth support. This is
+post-inference *continuity reconciler*: normalized tooth labels are immutable identity
+seeds and an optional grouped anatomical support mask can refine continuity. This is
 not geometric FDI guessing and cannot create a new dental identity.
 
 Identity becomes clinically accepted only after review; IOS is alignment
@@ -41,7 +41,7 @@ UNIVERSAL_TO_FDI_PRIMARY: dict[int, int] = {
 UNIVERSAL_LAB_STRUCTURES = {53: "MANDIBLE", 54: "MAXILLA", 55: "MANDIBULAR_CANAL"}
 IOS_GUM_LABEL = 33
 
-# UniversalLab left/right counterparts. This mapping is semantic model data, not
+# normalized left/right counterparts. This mapping is semantic model data, not
 # geometry policy, so it belongs beside the Universal→FDI SSOT.
 _UNIVERSAL_MIRROR_PAIR_LIST = (
     (1,16),(2,15),(3,14),(4,13),(5,12),(6,11),(7,10),(8,9),
@@ -294,9 +294,9 @@ def _semantic_label_patient_centroids(np, labels, spacing_zyx, orientation_xyz,
 
 def correct_universal_arch_array(np, labels, spacing_zyx, orientation_xyz,
                                  image_origin_patient):
-    """Validate UniversalLab maxilla/mandible identity without rewriting teeth.
+    """Validate maxilla/mandible identity without rewriting teeth.
 
-    UniversalLab was trained with explicit upper/lower tooth identities.  The
+    The selected engine was normalized with explicit upper/lower tooth identities. The
     upstream BATCHDENTALSEG source therefore treats those learned labels as the
     identity authority and does not perform per-tooth arch relabelling.  DSG
     9.1.15 added centroid-based automatic arch remapping; that optimization can
@@ -362,7 +362,7 @@ def correct_universal_arch_array(np, labels, spacing_zyx, orientation_xyz,
         }
         if wrong:
             result["reason"] = (
-                "UniversalLab y la posición física del arco discrepan; DSG conserva la etiqueta aprendida "
+                "La etiqueta FDI y la posición física del arco discrepan; DSG conserva la identidad del motor "
                 "y exige revisión en vez de fusionar dientes"
             )
         elif uncertain:
@@ -416,7 +416,7 @@ def correct_universal_semantics_array(np, labels, spacing_zyx, orientation_xyz,
 
 
 def correct_universal_mirroring_array(np, labels, spacing_zyx, orientation_xyz, image_origin_patient):
-    """Correct UniversalLab laterality at voxel level, never by whole-label merge.
+    """Correct tooth laterality at voxel level, never by whole-label merge.
 
     This restores the essential behavior of the prior BATCHDENTALSEG
     ``onResolveMirroring`` implementation while keeping DSG's memory-bounded
@@ -500,7 +500,7 @@ def correct_universal_mirroring_array(np, labels, spacing_zyx, orientation_xyz, 
         "safety_band_mm": float(safety_band_mm),
         "changed_labels": changed_labels,
         "changed_voxels_by_label": {str(v): int(changed_counts[v]) for v in changed_labels},
-        "policy": "PRIOR_UNIVERSALLAB_VOXEL_SIDE_CORRECTION",
+        "policy": "PRIOR_NORMALIZED_VOXEL_SIDE_CORRECTION",
     }
 
 
@@ -648,13 +648,13 @@ def reconcile_universal_dentition_paths(
     lower_support_mask=None,
     lower_support_origin=(0, 0, 0),
 ):
-    """Repair UniversalLab tooth instances by following each tooth through a
+    """Repair normalized tooth instances by following each tooth through a
     second model's *grouped-tooth* support mask.
 
     This deliberately mirrors DSG's mandibular-canal strategy:
 
-    * UniversalLab remains the identity source (Universal label -> FDI).
-    * DentalSegmentator provides independent anatomical support (upper/lower
+    * The normalized compatibility label remains the identity source (label -> FDI).
+    * An optional anatomical support mask may provide independent upper/lower
       teeth) but never invents an FDI number.
     * A robust *interior core* is selected for every learned Universal tooth
       label, so a thin proximal bridge between two teeth is broken before growth.
@@ -732,7 +732,7 @@ def reconcile_universal_dentition_paths(
     def _seed_core_data(binary, offset_zyx=(0, 0, 0)):
         """Return eroded interior cores for one learned tooth label.
 
-        A UniversalLab label may contain two neighbouring teeth joined through a
+        A normalized tooth label may contain two neighbouring teeth joined through a
         thin proximal bridge.  Using the full connected component as a watershed
         marker makes that error irreversible.  We therefore derive markers from
         the *interior* of the label, where a narrow inter-dental contact vanishes.
@@ -796,7 +796,7 @@ def reconcile_universal_dentition_paths(
         all other learned tooth cores.  Voxels clearly closer to another core are
         removed, then only the component still connected to this seed is retained.
         This is a boundary guard, not an FDI inference: identities still come only
-        from UniversalLab markers.
+        from normalized tooth markers.
         """
         territory = np.asarray(territory, dtype=bool)
         seed = np.asarray(seed, dtype=bool)
@@ -920,7 +920,7 @@ def reconcile_universal_dentition_paths(
         if support_mask is None:
             return {
                 "arch": arch_name, "checked": False, "corrected": False,
-                "reason": "DentalSegmentator grouped-tooth support unavailable",
+                "reason": "grouped-tooth support unavailable",
             }
         support_mask = np.asarray(support_mask, dtype=bool)
         if support_mask.ndim != 3 or not support_mask.any():
@@ -934,7 +934,7 @@ def reconcile_universal_dentition_paths(
         if not present:
             return {
                 "arch": arch_name, "checked": True, "corrected": False,
-                "reason": "no UniversalLab tooth seeds in arch", "seed_count": 0,
+                "reason": "no normalized tooth seeds in arch", "seed_count": 0,
             }
 
         boxes = ndimage.find_objects(arr, max_label=55)
@@ -985,7 +985,7 @@ def reconcile_universal_dentition_paths(
         comp_by_label = {}
         largest_centroid = {}
         raw_voxels_by_label = {}
-        # 9.2.15 PERFORMANCE: never run one full-arch EDT per tooth. UniversalLab
+        # PERFORMANCE: never run one full-arch EDT per tooth. The normalized map
         # already gives a bounding box for every identity, so deep-core analysis is
         # performed only inside that compact local box. This preserves the exact
         # 9.1.34 competitive-marker semantics while removing the O(N_teeth * FOV)
@@ -1195,7 +1195,7 @@ def reconcile_universal_dentition_paths(
         structure26 = ndimage.generate_binary_structure(3, 2)
 
         def _seed_connected_raw(label, seed):
-            """Non-destructive fallback for one UniversalLab identity.
+            """Non-destructive fallback for one normalized tooth identity.
 
             The eroded interior is a *marker*, never a final tooth. If a proposed
             competitive territory is implausible, preserve the original learned
@@ -1301,7 +1301,7 @@ def reconcile_universal_dentition_paths(
             final = np.asarray(final, dtype=bool)
             # Final territories should be mutually exclusive. If an ambiguous
             # rescue overlaps a territory already written, preserve the original
-            # UniversalLab owner at that overlap instead of making result depend
+            # normalized-label owner at that overlap instead of making result depend
             # on loop order.
             overlap = final & (reconciled != 0) & (reconciled != int(label))
             if bool(overlap.any()):
@@ -1330,7 +1330,7 @@ def reconcile_universal_dentition_paths(
 
         # Non-destructive transactional write. Replace only identities for which a
         # final mask exists. If a future seed-selection change fails for one label,
-        # that original UniversalLab tooth remains visible instead of being erased.
+        # that original normalized tooth remains visible instead of being erased.
         labels_to_replace = sorted(set(int(v) for v in labels_to_replace))
         if labels_to_replace:
             replace_mask = np.isin(raw, np.asarray(labels_to_replace, dtype=raw.dtype))
@@ -1349,7 +1349,7 @@ def reconcile_universal_dentition_paths(
             "review_labels": sorted(set(review_labels)),
             "review_fdi": [int(universal_to_fdi(v, source="CBCT")) for v in sorted(set(review_labels))],
             "teeth": tooth_details,
-            "policy": "UNIVERSAL_INTERIOR_CORE + DENTALSEGMENTATOR_SUPPORT + COMPETITIVE_3D_PATH",
+            "policy": "NORMALIZED_INTERIOR_CORE + SUPPORT_MASK + COMPETITIVE_3D_PATH",
         }
 
     upper = _process_arch("MAXILLA", upper_support_mask, upper_support_origin)

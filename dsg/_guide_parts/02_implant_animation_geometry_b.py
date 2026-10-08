@@ -1153,7 +1153,7 @@ def _close_main_boundary_with_planar_base(bm, loop_verts, outward_direction,
                 made += 1
                 continue
             except ValueError:
-                pass
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
 
             first = second = False
             try:
@@ -1161,13 +1161,13 @@ def _close_main_boundary_with_planar_base(bm, loop_verts, outward_direction,
                 first = True
                 made += 1
             except ValueError:
-                pass
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
             try:
                 bm.faces.new((upper[index], lower[nxt], lower[index]))
                 second = True
                 made += 1
             except ValueError:
-                pass
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
             if not (first and second):
                 raise RuntimeError(
                     f'Could not create a complete {label} bridge at rim edge {index}; '
@@ -1902,15 +1902,15 @@ def _append_base_prism_to_bmesh(bm, polygon_2d, axis_u, axis_v, direction,
         try:
             bm.faces.new((top[index], top[nxt], bottom[nxt], bottom[index]))
         except ValueError:
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
     try:
         bm.faces.new(tuple(reversed(top)))
     except ValueError:
-        pass
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
     try:
         bm.faces.new(tuple(bottom))
     except ValueError:
-        pass
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 def _run_voxel_remesh_operator(context, obj, voxel_size):
@@ -2774,7 +2774,7 @@ def _fill_boundary_component_topology_only(bm, component):
                 except ValueError:
                     # Existing triangle is harmless; the component is audited
                     # again by the caller before committing the mesh.
-                    pass
+                    _DSG_LOG.debug("suppressed exception", exc_info=True)
             created = [centre_vert]
         except Exception:
             created = []

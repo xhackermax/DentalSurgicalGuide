@@ -543,7 +543,7 @@ def _write_binary_mask_vdb(mask, filepath: Path) -> None:
     if np is None:
         raise RuntimeError("NumPy no está disponible")
     if vdb is None:
-        raise RuntimeError("Blender no expone OpenVDB; usa la versión oficial de Blender 5.1")
+        raise RuntimeError("Blender no expone OpenVDB; usa la versión oficial de Blender 5.2 LTS")
 
     # pydicom/NumPy masks are [z,y,x], while OpenVDB arrays are [x,y,z].
     values_xyz = np.ascontiguousarray(mask.transpose(2, 1, 0), dtype=np.float32)
@@ -1265,11 +1265,13 @@ def _native_threshold_cache_key() -> str:
 
 
 def _load_torch_for_surface_acceleration():
-    """Reuse DSG's selected AI runtime without making Torch mandatory."""
+    """Reuse DSG 9.10's shared numerical runtime without making Torch mandatory."""
     try:
-        from . import cbct_ai_runtime
-        cbct_ai_runtime._prepend_runtime_paths()
-        import importlib
+        from . import segmentation_engines
+        import importlib, sys
+        for path in reversed(segmentation_engines.active_site_paths(None)):
+            if path and path not in sys.path:
+                sys.path.insert(0, path)
         importlib.invalidate_caches()
         import torch
         return torch
@@ -1995,7 +1997,7 @@ def _native_voxel_shell_from_mask(mask, origin_zyx, *, max_axis: int = 384):
 def generate_segmentation_surface(context) -> bpy.types.Object:
     """Convert the active AI mask to Blender-native surfaces.
 
-    UniversalLab teeth are emitted as independent learned instances. Other
+    Normalized engine teeth are emitted as independent learned instances. Other
     masks use marching cubes instead of the old cubical voxel shell, removing
     the visible terracing and unnecessary polygon load from DSG 8.7.
     """
@@ -2014,7 +2016,7 @@ def generate_segmentation_surface(context) -> bpy.types.Object:
     if structure in {"TEETH", "BONE"} and semantic_kind == "universal":
         labels = _load_semantic_labels_cached("universal")
         if labels is None:
-            raise RuntimeError("Se perdió el labelmap UniversalLab; vuelve a segmentar")
+            raise RuntimeError("Se perdió el labelmap normalizado; vuelve a segmentar")
         props.status = "Creando dientes independientes + FDI…"
         force_ui_redraw()
         from . import cbct_dental_module
@@ -2046,7 +2048,7 @@ def generate_segmentation_surface(context) -> bpy.types.Object:
         bone_compact, bone_origin = _compact_mask(bone_full, (0, 0, 0))
         del bone_full
         if bone_compact is None or not bone_compact.any():
-            raise RuntimeError("UniversalLab no devolvió maxila/mandíbula suficientes")
+            raise RuntimeError("El motor seleccionado no devolvió maxila/mandíbula suficientes")
         mask = bone_compact
         surface_origin = bone_origin
     else:
@@ -2322,12 +2324,12 @@ def build_simple_arch_pair(context, prepared_surfaces):
 
 def build_semantic_arch_surface(
     context, mask, origin_zyx, *, object_name: str, arch: str, semantic_class: int,
-    source_engine: str = "DENTALSEGMENTATOR_8_7", prepared=None,
+    source_engine: str = "DSG_NORMALIZED_9_10", prepared=None,
 ):
     """Materialize one jaw class as its own Blender mesh.
 
-    For the immediate route DSG prefers UniversalLab 54=maxilla and 53=mandible
-    because those are jaw-specific classes. DentalSegmentator 1/2 remains the
+    For the immediate route DSG prefers normalized 54=maxilla and 53=mandible
+    because those are jaw-specific classes. A compatibility fallback remains the
     semantic-anatomy owner/fallback, but 9.2.16 no longer materializes an extra
     combined jaw mesh. Exactly one maxilla and one mandible remain in the scene.
     """
@@ -2383,10 +2385,10 @@ def build_semantic_arch_surface(
         obj.data.materials.append(_surface_material("BONE_ONLY"))
     obj["dicom_parented_to_root"] = True
     obj["dicom_root_name"] = root.name
-    source_engine = str(source_engine or "DENTALSEGMENTATOR_8_7").upper()
+    source_engine = str(source_engine or "DSG_NORMALIZED_9_10").upper()
     obj["dicom_surface_engine"] = (
-        "UniversalLab_jaw_class" if source_engine == "UNIVERSALLAB"
-        else "DentalSegmentator_8.7_arch_class"
+        "normalized_jaw_class" if semantic_class in {53, 54}
+        else "compatibility_arch_class"
     )
     obj["DSG_semantic_source"] = source_engine
     obj["DSG_semantic_class"] = int(semantic_class)
@@ -2647,6 +2649,16 @@ class DICOMWizardProProperties(bpy.types.PropertyGroup):
         ],
         default="AUTO",
     )
+    ai_segmentation_engine: bpy.props.EnumProperty(
+        name="Motor de segmentación",
+        description="Permite comparar exactamente el mismo CBCT con los tres motores integrados en DSG 9.10",
+        items=[
+            ("TOTALSEG", "TotalSegmentator teeth", "Completo: dientes FDI, maxila, mandíbula y canal; producción"),
+            ("TOOTHSEG", "ToothSeg dual-branch", "Máxima especialización de dientes/FDI; no segmenta maxila/mandíbula/canal"),
+            ("UMAMBA2", "U-Mamba2", "Motor ToothFairy3 experimental; requiere checkpoint final de segmentación"),
+        ],
+        default="TOTALSEG",
+    )
     ai_manage_blender_resources: bpy.props.BoolProperty(
         name="Gestionar recursos de Blender",
         description="Durante la IA pasa temporalmente Material Preview/Rendered a Solid para liberar VRAM; restaura la vista al terminar",
@@ -2675,9 +2687,9 @@ class DICOMWizardProProperties(bpy.types.PropertyGroup):
     segmentation_structure: bpy.props.EnumProperty(
         name="Segmentación DICOM",
         items=[
-            ("BONE", "Hueso + dientes", "Segmentación semántica CBCT con el modelo DentalSegmentator validado en DSG 8.7"),
-            ("TEETH", "Dientes", "UniversalLab: instancias dentales individuales y numeración FDI desde CBCT"),
-            ("BONE_ONLY", "Hueso", "Clases óseas semánticas del DentalSegmentator, sin la clase dental"),
+            ("BONE", "Hueso + dientes", "Segmentación multiclase con el motor seleccionado"),
+            ("TEETH", "Dientes", "Dientes individualizados y numeración FDI desde el motor seleccionado"),
+            ("BONE_ONLY", "Hueso", "Estructuras óseas si el motor seleccionado las proporciona"),
         ],
         default="BONE",
         update=on_automatic_structure_change,

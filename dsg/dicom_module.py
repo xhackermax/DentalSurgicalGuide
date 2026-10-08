@@ -1,9 +1,9 @@
-"""DICOM Wizard Pro 5.x v1.13.0 - in-process CBCT AI, UniversalLab tooth instances/FDI and optimized surfaces.
+"""DICOM Wizard Pro 5.x v1.13.0 - external multi-engine CBCT segmentation and optimized surfaces.
 
-Generated from the modular DICOM Wizard Pro package; DSG 9.5.8 now loads the
+Generated from the modular DICOM Wizard Pro package; DSG 9.10.11 loads the
 source in ordered fragments while preserving the historical module namespace.
 """
-# DSG 9.5.8 transitional namespace-preserving source split.
+# DSG 9.10.11 namespace-preserving namespace-preserving source split.
 # Public API remains identical to the historical monolith.
 from .source_parts import exec_source_parts as _exec_source_parts
 

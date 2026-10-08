@@ -1,0 +1,23 @@
+DSG 9.10.2 - reparación del instalador en Windows / Blender 5.2
+
+- Detecta checkpoints en rutas Windows de más de 260 caracteres desde Blender.
+- Verifica imports, operaciones PyTorch y carga real de los modelos antes de dar éxito.
+- Reutiliza TotalSegmentator y ToothSeg ya instalados; conserva los pesos descargados.
+- Impide instalaciones simultáneas sobre el mismo runtime, incluso tras recargar Blender.
+- Conserva los registros anteriores del instalador y las solicitudes individuales.
+- Un fallo de un motor deja el resultado PARTIAL y muestra cada resultado por separado.
+- U-Mamba2: instalación nativa en Windows no soportada; no intenta compilar ni cambia dependencias compartidas.
+
+IMPORTANTE: este ZIP no convierte U-Mamba2 en un motor utilizable en Windows.
+El proyecto oficial documenta Linux/CUDA y publica pesos SSL de preentrenamiento;
+la inferencia necesita un checkpoint final ToothFairy3 válido.
+
+Verificación realizada con Blender 5.2.2 LTS y su Python 3.13:
+TotalSegmentator Dataset113 y Dataset115: modelos cargados correctamente en CPU.
+ToothSeg Dataset121 y Dataset123: modelos cargados correctamente en CPU.
+No se ha probado segmentación de un paciente con CBCT real.
+
+Fuentes:
+https://github.com/zhiqin1998/U-Mamba2/blob/master/documentation/competitions/Toothfairy3/readme.md
+https://github.com/state-spaces/mamba
+https://github.com/MIC-DKFZ/ToothSeg

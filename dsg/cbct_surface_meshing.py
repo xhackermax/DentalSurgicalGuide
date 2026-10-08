@@ -5,7 +5,7 @@ Pure numerical helpers: no bpy imports.
 v9.2.64 policy
 ---------------
 * Clinical dental geometry is never downsampled.
-* The primary UniversalLab path extracts all requested semantic tooth labels in
+* The primary normalized-label path extracts all requested semantic tooth labels in
   one ``vtkDiscreteFlyingEdges3D`` pass over one dentition crop.
 * No per-tooth binary masks are created on the VTK fast path.
 * Disconnected islands are rejected after surface extraction.
@@ -460,7 +460,7 @@ def _vtk_multilabel_flying_edges(
     except Exception as exc:
         raise RuntimeError(f"vtk.util.numpy_support no disponible: {exc}") from exc
 
-    # UniversalLab uses <=55, therefore uint8 preserves labels exactly and cuts
+    # The DSG compatibility map uses <=55, therefore uint8 preserves labels exactly and cuts
     # transfer bandwidth in half versus uint16/int32.
     crop_u8 = np.ascontiguousarray(arr, dtype=np.uint8)
     padded = np.pad(crop_u8, 1, mode="constant", constant_values=0)
@@ -622,7 +622,7 @@ def _vtk_multilabel_flying_edges(
         if len(local_f) < 4:
             continue
         # VTK image origin -1 exactly cancels the one-voxel padding. Crop origin
-        # restores global UniversalLab voxel coordinates.
+        # restores global normalized-label voxel coordinates.
         local_v = np.ascontiguousarray(local_v + origin[None, :], dtype=np.float64)
         items[int(label)] = LabelSurfaceExtraction(
             label=int(label), vertices_zyx=local_v,

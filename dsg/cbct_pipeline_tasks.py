@@ -84,7 +84,7 @@ def refine_single_source_canal(mask, origin, spacing):
     """Preserve the historical 0.65 mm canal closing without fake verification.
 
     DSG 9.5.7 called this path a fusion between a universal mask and a verifier
-    mask, but both masks came from the same TotalSegmentator task=teeth output.
+    mask, but both masks came from the same normalized DSG segmentation output.
     With identical inputs, the only geometry-changing step was a 0.65 mm binary
     closing followed by OR with the original mask.  Keep exactly that useful
     operation and report the real single-source provenance.
@@ -149,9 +149,9 @@ def _dentition_bounds(shape,boxes,present,margin=2):
 
 def prepare_tooth_meshes(labels,spacing_zyx,dims_zyx,out_dir:Path,status_cb:StatusCB|None=None):
     started=time.perf_counter(); present=_present_teeth(labels); boxes=_bbox_slices(labels,55)
-    if not present: raise RuntimeError('TotalSegmentator task=teeth no devolvió dientes individualizados')
+    if not present: raise RuntimeError('El motor seleccionado no devolvió dientes individualizados')
     bounds=_dentition_bounds(labels.shape,boxes,present,2)
-    if bounds is None: raise RuntimeError('No se pudo localizar la dentición TotalSegmentator')
+    if bounds is None: raise RuntimeError('No se pudo localizar la dentición segmentada')
     z0,z1,y0,y1,x0,x1=bounds
     crop=np.ascontiguousarray(labels[z0:z1,y0:y1,x0:x1])
     vtk=_load_vtk(); measure=_load_measure()
@@ -220,7 +220,7 @@ LOWER_SIMPLE_CLASSES = tuple(range(17, 33)) + (53,)
 def simple_arch_masks(labels):
     """Return exactly two binary crops for the SIMPLE implant route.
 
-    The TotalSegmentator compatibility map encodes permanent FDI internally,
+    The DSG compatibility map encodes permanent FDI internally,
     but SIMPLE deliberately discards that identity at the geometry boundary:
     upper jawbone + every upper tooth become one mask; lower jawbone + every
     lower tooth become the second. Pulp and mandibular canal are excluded.
@@ -245,7 +245,7 @@ def prepare_simple_arches_route_map(route_labels, spacing_zyx, dims_zyx, out_dir
         missing = []
         if upper is None: missing.append('superior')
         if lower is None: missing.append('inferior')
-        raise RuntimeError('TotalSegmentator no devolvió la arcada ' + ' y '.join(missing))
+        raise RuntimeError('El motor seleccionado no devolvió la arcada ' + ' y '.join(missing))
     return {
         'upper_arch': upper,
         'lower_arch': lower,
@@ -271,7 +271,7 @@ def prepare_simple_arches(labels, spacing_zyx, dims_zyx, out_dir: Path, status_c
         missing = []
         if upper is None: missing.append('superior')
         if lower is None: missing.append('inferior')
-        raise RuntimeError('TotalSegmentator no devolvió la arcada ' + ' y '.join(missing))
+        raise RuntimeError('El motor seleccionado no devolvió la arcada ' + ' y '.join(missing))
     return {
         'upper_arch': upper,
         'lower_arch': lower,
@@ -283,30 +283,32 @@ def prepare_simple_arches(labels, spacing_zyx, dims_zyx, out_dir: Path, status_c
 
 
 def run_teeth_task(req,status_cb:StatusCB|None=None):
-    """Prepare meshes from the TotalSegmentator compatibility labelmap.
+    """Prepare meshes from the normalized DSG compatibility labelmap.
 
-    TotalSegmentator already supplies permanent FDI identity. DSG therefore does
+    The selected engine supplies or is normalized to permanent FDI identity. DSG does
     not run the legacy arch/laterality relabeller or cross-model Tooth Path
     reconciliation here. The compatibility labels only adapt FDI to DSG's
     historical integer contract so the proven Blender mesh importer can stay
     unchanged.
     """
     started=time.perf_counter(); spacing=tuple(float(v) for v in req['spacing_zyx']); dims=tuple(int(v) for v in req['dims_zyx']); out=Path(req['output_dir']); out.mkdir(parents=True,exist_ok=True)
-    # v9.5.x does not relabel/correct the TotalSegmentator FDI map here.
+    engine_id=str(req.get('engine_id') or 'AI'); engine_name=str(req.get('segmentation_engine') or engine_id)
+    # DSG 9.10 does not relabel/correct the normalized FDI map here.
     # Use the memory-mapped SSOT directly instead of writing a byte-for-byte
     # duplicate full-volume `corrected` labelmap to the teeth worker folder.
-    corrected_path=Path(req['universal_labels_path']).resolve()
+    corrected_path=Path(req.get('normalized_labels_path') or req.get('universal_labels_path')).resolve()
     corrected=np.load(str(corrected_path),mmap_mode='r')
-    if status_cb: status_cb('TotalSegmentator · preparando dientes FDI a resolución CBCT…')
+    if status_cb: status_cb(f'{engine_name} · preparando dientes FDI a resolución CBCT…')
     present=_present_teeth(corrected)
-    semantic_info={'engine':'TotalSegmentator','task':'teeth','identity_authority':'FDI_FROM_MODEL','present_labels':present,'corrected':False}
-    path_stats={'engine':'TotalSegmentator','task':'teeth','corrected':False,'reason':'FDI identity supplied directly by TotalSegmentator','present_tooth_count':len(present)}
+    semantic_info={'engine':engine_name,'engine_id':engine_id,'task':'teeth','identity_authority':'FDI_NORMALIZED','present_labels':present,'corrected':False}
+    path_stats={'engine':engine_name,'engine_id':engine_id,'task':'teeth','corrected':False,'reason':'FDI identity normalized by selected engine adapter','present_tooth_count':len(present)}
     mesh=prepare_tooth_meshes(corrected,spacing,dims,out,status_cb)
     return {'task':'teeth','corrected_labels_path':str(corrected_path),'semantic_info':_json_safe(semantic_info),'path_stats':_json_safe(path_stats),'prepared_meshes':_json_safe(mesh),'elapsed_s':float(time.perf_counter()-started),'path_s':0.0}
 
 def run_surfaces_task(req,status_cb:StatusCB|None=None):
     started=time.perf_counter(); spacing=tuple(float(v) for v in req['spacing_zyx']); dims=tuple(int(v) for v in req['dims_zyx']); out=Path(req['output_dir']); out.mkdir(parents=True,exist_ok=True)
-    labels=np.load(req['universal_labels_path'],mmap_mode='r')
+    engine_id=str(req.get('engine_id') or 'AI'); engine_name=str(req.get('segmentation_engine') or engine_id)
+    labels=np.load(req.get('normalized_labels_path') or req.get('universal_labels_path'),mmap_mode='r')
     if status_cb: status_cb('Superficies · localizando maxila y mandíbula…')
     max_mask,max_o=compact_mask_for_classes(labels,(54,))
     man_mask,man_o=compact_mask_for_classes(labels,(53,))
@@ -320,8 +322,8 @@ def run_surfaces_task(req,status_cb:StatusCB|None=None):
     if refined_canal is not None and bool(refined_canal.any()):
         surf=_save_binary_surface(refined_canal,refined_o,spacing,dims,out,'canal',55)
         if surf is not None:
-            canal={'status':'SEGMENTED','vertices_path':surf['vertices_path'],'faces_array_path':surf['faces_path'],'faces':int(np.load(surf['faces_path'],mmap_mode='r').shape[0]),'voxels':int(refined_canal.sum()),'origin':tuple(int(v) for v in refined_o),'fusion':fusion,'verifier':{'independent':False,'reason':'single TotalSegmentator task=teeth source'}}
-    return {'task':'surfaces','prepared_surfaces':{'maxilla':maxilla,'mandible':mandible,'canal':canal,'maxilla_class':54,'maxilla_source':'TOTALSEGMENTATOR','mandible_class':53,'mandible_source':'TOTALSEGMENTATOR','surface_prepare_s':float(time.perf_counter()-started)},'elapsed_s':float(time.perf_counter()-started)}
+            canal={'status':'SEGMENTED','vertices_path':surf['vertices_path'],'faces_array_path':surf['faces_path'],'faces':int(np.load(surf['faces_path'],mmap_mode='r').shape[0]),'voxels':int(refined_canal.sum()),'origin':tuple(int(v) for v in refined_o),'fusion':fusion,'verifier':{'independent':False,'reason':f'single {engine_name} normalized source'}}
+    return {'task':'surfaces','prepared_surfaces':{'maxilla':maxilla,'mandible':mandible,'canal':canal,'maxilla_class':54,'maxilla_source':engine_id,'mandible_class':53,'mandible_source':engine_id,'surface_prepare_s':float(time.perf_counter()-started)},'elapsed_s':float(time.perf_counter()-started)}
 
 
 def run_task(req,status_cb=None):

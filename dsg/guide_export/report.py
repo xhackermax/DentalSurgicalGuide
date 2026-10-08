@@ -59,7 +59,6 @@ class ExportContext:
     implants: list[ImplantRecord] = field(default_factory=list)
     geometry: dict = field(default_factory=dict)          # triangles, volume, bbox…
     operator_options: dict = field(default_factory=dict)
-    irrigation_network: list = field(default_factory=list)  # sequential-opening designs
 
 
 def build_report(ctx: ExportContext, checks: Iterable[CheckResult], stl_path: str | os.PathLike,
@@ -78,7 +77,6 @@ def build_report(ctx: ExportContext, checks: Iterable[CheckResult], stl_path: st
         "plan_parameters": ctx.plan_parameters,
         "implants": [vars(i) for i in ctx.implants],
         "geometry": ctx.geometry,
-        "irrigation_network": ctx.irrigation_network,
         "quality": {"overall": overall, "checks": [c.as_dict() for c in checks]},
         "operator_options": ctx.operator_options,
         "disclaimer": ("Planning aid. The clinician is responsible for reviewing the plan, "

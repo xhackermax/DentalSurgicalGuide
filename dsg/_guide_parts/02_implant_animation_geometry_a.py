@@ -524,7 +524,7 @@ def _connect_rings_quads(bm, ring_a, ring_b):
         try:
             bm.faces.new((a0, a1, b1, b0))
         except ValueError:
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 def _cap_ring_with_center(bm, ring, z_value, flip=False):
@@ -539,7 +539,7 @@ def _cap_ring_with_center(bm, ring, z_value, flip=False):
             else:
                 bm.faces.new((center, v0, v1))
         except ValueError:
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 def _overlay_simple_symmetric_upper_body(mesh, stop_z_mm, guide_radius_mm):

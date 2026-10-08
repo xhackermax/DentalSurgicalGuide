@@ -1,0 +1,8 @@
+DSG 9.10.9 — botón de suavizado después de segmentar
+
+- SUAVIZAR DIENTES / DIENTES ORIGINALES en revisión FDI y alineación.
+- Visual intenso por defecto; Surface Nets fiel como opción experimental con rechazo por diente y grupo de contacto.
+- Cálculo externo, cancelar, caché y restauración persistente de las mallas originales.
+- Referencia ICP original, FDI, materiales y transformaciones conservados.
+- Informe visible por diente; no oculta los fallos topológicos de Surface Nets.
+- No se modifica la velocidad ni ejecución de la inferencia.

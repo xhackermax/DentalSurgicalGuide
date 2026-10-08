@@ -187,7 +187,7 @@ def canonical_implant_plan(
         steps.extend([
             dict(id="tooth_analysis", title="Segmentación IA + FDI revisado", status="pending",
                  auto_executable=False, requires_confirmation=True,
-                 note="DentalSegmentator + UniversalLab deben haber creado maxilar, mandíbula, canal y dientes individuales; FDI se revisa antes de seleccionar extracciones."),
+                 note="El motor CBCT seleccionado debe haber creado maxilar, mandíbula, canal y dientes individuales; FDI se revisa antes de seleccionar extracciones."),
             dict(id="virtual_extraction_review", title="Dientes H + modelos alveolares por arcada", status="pending",
                  auto_executable=False, requires_confirmation=True,
                  note="Selecciona dientes a extraer, ocúltalos con H y crea maxilar+dientes superiores visibles / mandíbula+dientes inferiores visibles. El nervio queda separado. Esta preparación ocurre antes del alineamiento."),
@@ -1005,23 +1005,18 @@ def _dispatch_operation(scene, op: str, args: dict[str, Any]) -> dict[str, Any]:
     if op == "get_case_state":
         return {"ok": True, "result": get_case_state(bpy.context)}
     if op == "get_segmentation_status":
-        import importlib
-        cbct_ai_runtime = importlib.import_module(f"{__package__}.cbct_ai_runtime")
+        from . import cbct_pipeline_client, segmentation_engines
         snapshot = dict(dicom_module.segmentation_progress_snapshot(bpy.context))
-        job = dict(cbct_ai_runtime.prediction_job_state())
-        started_at = float(job.get("started_at", 0.0) or 0.0)
-        finished_at = float(job.get("finished_at", 0.0) or 0.0)
-        job["elapsed_s"] = max(
-            0.0,
-            (finished_at if finished_at > 0.0 else time.time()) - started_at,
-        ) if started_at > 0.0 else 0.0
+        job = dict(cbct_pipeline_client.state())
         props = getattr(scene, "dicom_wizard_pro", None)
+        selected = str(getattr(props, "ai_segmentation_engine", "TOTALSEG") or "TOTALSEG") if props else "TOTALSEG"
+        engine_status = segmentation_engines.verify_engine(selected).public()
         return {"ok": True, "result": {
-            "schema": "dsg.segmentation_status.v1",
+            "schema": "dsg.segmentation_status.v2",
             "active": bool(snapshot.get("active") or job.get("running")),
             "progress": snapshot,
             "prediction_job": job,
-            "performance_plan": cbct_ai_runtime.last_performance_plan(),
+            "engine_status": engine_status,
             "ui_status": str(getattr(props, "status", "") or "") if props else "",
             "volume_loaded": bool(getattr(props, "volume_loaded", False)) if props else False,
             "surface_ready": bool(getattr(props, "surface_ready", False)) if props else False,
@@ -1046,7 +1041,7 @@ def _dispatch_operation(scene, op: str, args: dict[str, Any]) -> dict[str, Any]:
             raise RuntimeError(message)
         if not dicom_module._start_async_full_segmentation(bpy.context, structure="ALL"):
             raise RuntimeError("No se pudo iniciar la segmentación completa")
-        scene["DSG_cbct_requested_engine_route"] = "DENTALSEGMENTATOR+UNIVERSALLAB"
+        scene["DSG_cbct_requested_engine_route"] = "SELECTED_SEGMENTATION_ENGINE"
         scene["DSG_segmentation_started_by"] = "MCP"
         return _dispatch_operation(scene, "get_segmentation_status", {})
     if op == "get_patient_clinical_context":

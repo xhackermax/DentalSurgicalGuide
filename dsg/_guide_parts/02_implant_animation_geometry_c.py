@@ -1111,13 +1111,6 @@ def _normalize_direct_irrigation_controls(control_points, props, implant_obj=Non
     pts = [Vector(point) for point in list(control_points or [])]
     if len(pts) < 2 or not _irrigation_is_direct_channel_mode(props):
         return pts
-    if not is_valid_implant_obj(implant_obj):
-        # Callers (e.g. smooth_irrigation_centerline_controls) do not pass the
-        # implant. Falling back to props.implant_obj moved the first point of
-        # every *other* sleeve's channel (all Link branches) into the ACTIVE
-        # sleeve, so linked DIRECT sleeves were never opened. The saved first
-        # point lies inside its own sleeve: resolve the owner from it.
-        implant_obj = get_nearest_implant_to_point(props, pts[0])
     anchor_for_wall = pts[1]
     tip = get_direct_irrigation_lumen_tip(anchor_for_wall, props, implant_obj=implant_obj)
     if tip is not None:

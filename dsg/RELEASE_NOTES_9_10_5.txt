@@ -1,0 +1,7 @@
+DSG 9.10.5 - superficie suave elegible
+
+- Botón reversible en dentición FDI y alineamiento IOS.
+- Conserva la elección del usuario al cambiar de etapa y al generar nuevas superficies.
+- Incluye las referencias compuestas de alineamiento en el control visual.
+- Mantiene la referencia numérica de alineamiento en la malla original.
+- Conserva las correcciones de segmentación inmediata, SciPy, DICOM y CUDA.

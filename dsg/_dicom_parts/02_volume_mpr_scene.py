@@ -92,7 +92,7 @@ def build_vdb_preview(max_axis: int = 256, *, force_rebuild: bool = False) -> st
     if vdb is None:
         raise RuntimeError(
             "Esta instalación de Blender no expone OpenVDB. "
-            "Instala la versión oficial de Blender 5.1."
+            "Instala la versión oficial de Blender 5.2 LTS."
         )
     if not RUNTIME.is_loaded():
         raise RuntimeError("No hay volumen DICOM cargado")
@@ -497,7 +497,7 @@ def create_volume_object(collection: bpy.types.Collection, root: bpy.types.Objec
     obj.hide_select = True
     obj.hide_render = False
     try:
-        # Blender 5.1 VolumeDisplay uses LINEAR for the best speed/smoothness balance.
+        # Blender 5.2 VolumeDisplay uses LINEAR for the best speed/smoothness balance.
         data.display.interpolation_method = "LINEAR"
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
@@ -945,7 +945,7 @@ def _dicom_display_signs_xyz() -> tuple[float, float, float]:
     DICOM ``ImageOrientationPatient`` is already the physical authority for
     patient laterality.  Older DSG builds additionally multiplied local X by
     ``-1``.  That second, one-axis reflection mirrored every generated CBCT
-    surface (threshold STL, DentalSegmentator and UniversalLab meshes) even
+    surface (threshold STL and normalized AI meshes) even
     though the labelmap itself was correct.
 
     Keep the voxel-to-local transform right-handed and let
@@ -1002,7 +1002,7 @@ def ensure_collection_in_view_layer(context, collection: bpy.types.Collection) -
             scene.collection.children.link(collection)
         except RuntimeError:
             # It may have become linked between the test and the link call.
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
 
     try:
         collection.hide_viewport = False
@@ -1825,7 +1825,7 @@ def update_visibility(context: bpy.types.Context) -> None:
     in_threshold_preview = int(getattr(props, "step", 1)) == 3
     solid_ready = _surface_preview_matches(props) if in_threshold_preview else False
 
-    # Blender 5.1 production UI exposes a single preview mode: SURFACE.
+    # Blender 5.2 production UI exposes a single preview mode: SURFACE.
     # While that low-resolution surface is rebuilding we keep the volume visible;
     # as soon as the surface is ready the volume is hidden automatically.
     if segmentation_active:

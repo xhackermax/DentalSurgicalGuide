@@ -763,7 +763,7 @@ def get_implant_length_world(props, implant_obj=None):
 def get_sleeve_occlusal_sign(props, implant_obj=None):
     """Devuelve el lado del eje del implante donde debe ir el sleeve.
 
-    NUEVA LOGICA v5.0.2:
+    NUEVA LOGICA legacy geometry note:
     El usuario ya eligio el sentido clinico de entrada al capturar el eje desde
     la vista para generar el blockout. Por tanto, el sleeve debe quedar en el
     lado contrario a ese eje de insercion, es decir, hacia el lado abierto/oclusal
@@ -842,9 +842,178 @@ def _irrigation_entry_for_implant(props, implant_obj):
     return None
 
 
-# build_frangible_irrigation_seal_object() moved to 06_irrigation_d_frangible.py
-# (DSG 9.7.2): the membrane now sits inside every outlet channel instead of
-# floating in the drill bore, and the marks are printable.
+def build_frangible_irrigation_seal_object(context, props, implant_obj, name=None):
+    """Build a selective irrigation membrane with engraved target marks.
+
+    The membrane closes only the lateral irrigation outlet and keeps the main
+    axial sleeve lumen completely open. The inner face visible from the sleeve
+    lumen carries engraved guidance marks: a circular inset matching the outlet
+    diameter, an external target ring of 2.5 mm diameter and a central cross,
+    all engraved inward.
+    """
+    if not is_valid_implant_obj(implant_obj):
+        return None, 'invalid implant'
+    entry = _irrigation_entry_for_implant(props, implant_obj)
+    if not entry:
+        return None, 'irrigation path not found'
+    points = entry.get('points') or []
+    if len(points) < 2:
+        return None, 'irrigation path has no sleeve port'
+    parameters = dict(entry.get('parameters') or {})
+    entry_props = irrigation_props_overlay(props, parameters)
+    anchor = Vector(points[1])
+    port = get_sleeve_lateral_port_geometry(anchor, entry_props, implant_obj)
+    if not port:
+        return None, 'could not resolve lateral sleeve port'
+
+    radial = Vector(port['radial']).normalized()
+    inner_point = Vector(port['internal_overlap_point'])
+    lumen_radius = max(0.20, float(parameters.get('irr_inner_diameter', getattr(props, 'irr_inner_diameter', 1.0))) * 0.5)
+    seal_radius = max(0.35, lumen_radius * 1.08)
+    thickness = float(IRRIGATION_FRANGIBLE_SEAL_CENTER_THICKNESS_MM_FIXED)
+    groove_depth = min(float(IRRIGATION_FRANGIBLE_MARK_DEPTH_MM_FIXED), thickness * 0.33)
+    line_width = float(IRRIGATION_FRANGIBLE_MARK_LINE_WIDTH_MM_FIXED)
+    target_radius = float(IRRIGATION_FRANGIBLE_TARGET_RING_DIAMETER_MM_FIXED) * 0.5
+    cross_len = max(lumen_radius * 2.0, float(IRRIGATION_FRANGIBLE_TARGET_CROSS_LENGTH_MM_FIXED))
+
+    center = inner_point + radial * (thickness * 0.50)
+    z_axis = radial
+    x_hint = Vector(port['axis'])
+    x_axis = x_hint.cross(z_axis)
+    if x_axis.length < 1e-8:
+        x_axis = Vector((1, 0, 0)).cross(z_axis)
+    x_axis.normalize()
+    y_axis = z_axis.cross(x_axis).normalized()
+    mx = Matrix((x_axis, y_axis, z_axis)).transposed().to_4x4()
+    mx.translation = center
+
+    def _make_local_cylinder(name_local, radius, depth, z0, z1, segments=48):
+        bm = bmesh.new()
+        try:
+            ret = bmesh.ops.create_circle(bm, cap_ends=True, radius=radius, segments=segments)
+            geom = ret.get('geom', [])
+            verts = [g for g in geom if isinstance(g, bmesh.types.BMVert)]
+            faces = [g for g in geom if isinstance(g, bmesh.types.BMFace)]
+            if not verts:
+                raise RuntimeError('circle failed')
+            bmesh.ops.translate(bm, verts=verts, vec=Vector((0.0, 0.0, z0)))
+            region_geom = verts + faces + [e for e in bm.edges]
+            ext = bmesh.ops.extrude_face_region(bm, geom=region_geom)
+            ext_verts = [g for g in ext.get('geom', []) if isinstance(g, bmesh.types.BMVert)]
+            bmesh.ops.translate(bm, verts=ext_verts, vec=Vector((0.0, 0.0, z1 - z0)))
+            bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+            mesh = bpy.data.meshes.new(name_local + '_Mesh')
+            bm.to_mesh(mesh)
+            mesh.validate(clean_customdata=False)
+            mesh.update(calc_edges=True)
+        finally:
+            bm.free()
+        obj = bpy.data.objects.new(name_local, mesh)
+        link_object(context, obj)
+        obj.matrix_world = mx.copy()
+        return obj
+
+    def _make_local_box(name_local, size_x, size_y, z0, z1):
+        bm = bmesh.new()
+        try:
+            bmesh.ops.create_cube(bm, size=1.0)
+            sx = size_x * 0.5
+            sy = size_y * 0.5
+            sz = (z1 - z0) * 0.5
+            midz = (z1 + z0) * 0.5
+            for v in bm.verts:
+                v.co.x *= sx
+                v.co.y *= sy
+                v.co.z *= sz
+                v.co.z += midz
+            bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+            mesh = bpy.data.meshes.new(name_local + '_Mesh')
+            bm.to_mesh(mesh)
+            mesh.validate(clean_customdata=False)
+            mesh.update(calc_edges=True)
+        finally:
+            bm.free()
+        obj = bpy.data.objects.new(name_local, mesh)
+        link_object(context, obj)
+        obj.matrix_world = mx.copy()
+        return obj
+
+    obj_name = name or (IRRIGATION_FRANGIBLE_SEAL_PREFIX + implant_obj.name)
+    seal_obj = _make_local_cylinder(obj_name, seal_radius, thickness, 0.0, thickness)
+    seal_obj.display_type = 'WIRE'
+    seal_obj.show_in_front = True
+
+    cutter_objects = []
+    try:
+        # Groove matching the outlet diameter.
+        outlet_outer = max(lumen_radius + line_width, lumen_radius * 1.10)
+        cutter_objects.append(_make_local_cylinder(obj_name + '_OutletOuter', outlet_outer, groove_depth + 0.02, -0.01, groove_depth + 0.02))
+        cutter_objects.append(_make_local_cylinder(obj_name + '_OutletInner', lumen_radius, groove_depth + 0.03, -0.02, groove_depth + 0.03))
+        # Target ring Ø2.5 mm.
+        ring_outer = max(target_radius, outlet_outer + line_width * 1.5)
+        ring_inner = max(outlet_outer + 0.02, ring_outer - line_width)
+        cutter_objects.append(_make_local_cylinder(obj_name + '_TargetOuter', ring_outer, groove_depth + 0.02, -0.01, groove_depth + 0.02))
+        cutter_objects.append(_make_local_cylinder(obj_name + '_TargetInner', ring_inner, groove_depth + 0.03, -0.02, groove_depth + 0.03))
+        # Central crosshair.
+        cutter_objects.append(_make_local_box(obj_name + '_CrossX', cross_len, line_width, -0.01, groove_depth + 0.02))
+        cutter_objects.append(_make_local_box(obj_name + '_CrossY', line_width, cross_len, -0.01, groove_depth + 0.02))
+
+        # Turn paired cylinders into annular cutters, then subtract them.
+        # Annulus 1: outlet marker.
+        ok, _solver = apply_boolean_difference_fast(context, cutter_objects[0], cutter_objects[1], mod_name=obj_name + '_CutOutletRing', prefer_fast=False)
+        if ok:
+            safe_remove_object_with_data(cutter_objects[1])
+            cutter_objects[1] = None
+            ok, _solver = apply_boolean_difference_fast(context, seal_obj, cutter_objects[0], mod_name=obj_name + '_EngraveOutlet', prefer_fast=False)
+        if not ok:
+            raise RuntimeError('could not engrave outlet marker')
+        safe_remove_object_with_data(cutter_objects[0]); cutter_objects[0]=None
+
+        # Annulus 2: outer target ring.
+        ok, _solver = apply_boolean_difference_fast(context, cutter_objects[2], cutter_objects[3], mod_name=obj_name + '_CutTargetRing', prefer_fast=False)
+        if ok:
+            safe_remove_object_with_data(cutter_objects[3])
+            cutter_objects[3] = None
+            ok, _solver = apply_boolean_difference_fast(context, seal_obj, cutter_objects[2], mod_name=obj_name + '_EngraveTargetRing', prefer_fast=False)
+        if not ok:
+            raise RuntimeError('could not engrave target ring')
+        safe_remove_object_with_data(cutter_objects[2]); cutter_objects[2]=None
+
+        # Crosshair engravings.
+        for idx in (4, 5):
+            if cutter_objects[idx] is not None:
+                ok, _solver = apply_boolean_difference_fast(context, seal_obj, cutter_objects[idx], mod_name=obj_name + f'_EngraveCross_{idx}', prefer_fast=False)
+                if not ok:
+                    raise RuntimeError('could not engrave target cross')
+                safe_remove_object_with_data(cutter_objects[idx])
+                cutter_objects[idx] = None
+    except Exception as exc:
+        for cutter in list(cutter_objects):
+            if _valid_obj(cutter):
+                safe_remove_object_with_data(cutter)
+        if _valid_obj(seal_obj):
+            safe_remove_object_with_data(seal_obj)
+        return None, f'could not build lateral seal: {exc}'
+
+    try:
+        seal_obj['DSG_frangible_irrigation_seal'] = True
+        seal_obj['DSG_implant_name'] = implant_obj.name
+        seal_obj['DSG_seal_mode'] = 'LATERAL_PORT_FRANGIBLE_MEMBRANE'
+        seal_obj['DSG_axial_sleeve_lumen_preserved'] = True
+        seal_obj['DSG_lateral_port_center_world'] = json.dumps([float(v) for v in inner_point])
+        seal_obj['DSG_lateral_port_radial_world'] = json.dumps([float(v) for v in radial])
+        seal_obj['DSG_seal_radius_mm'] = float(seal_radius)
+        seal_obj['DSG_seal_center_thickness_mm'] = float(thickness)
+        seal_obj['DSG_internal_marker_shape'] = 'TARGET_RING_CROSS'
+        seal_obj['DSG_internal_marker_radius_mm'] = float(lumen_radius)
+        seal_obj['DSG_internal_marker_depth_mm'] = float(groove_depth)
+        seal_obj['DSG_internal_marker_line_width_mm'] = float(line_width)
+        seal_obj['DSG_target_ring_diameter_mm'] = float(IRRIGATION_FRANGIBLE_TARGET_RING_DIAMETER_MM_FIXED)
+        seal_obj['DSG_export_temporary'] = True
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
+    register_dsg_object(seal_obj, ROLE_IRRIGATION, obj_name)
+    return seal_obj, 'ok'
 
 
 def build_export_frangible_irrigation_seals(context, props):

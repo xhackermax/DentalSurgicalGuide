@@ -19,11 +19,32 @@ _DSG_LOG = _dsg_logging.getLogger(__name__)
 import logging
 import logging.handlers
 import os
+import re
 from pathlib import Path
 
 ROOT_LOGGER = "dsg"
 _HANDLER_TAG = "_dsg_handler"
 _FORMAT = "%(asctime)s %(levelname)-7s %(name)s:%(lineno)d  %(message)s"
+
+_PATH_WIN = re.compile(r"(?i)(?:[A-Z]:\\[^\s\n\r\t\"']+)")
+_PATH_UNIX = re.compile(r"(?<![\w:])/(?:[^\s\n\r\t\"']+/)+[^\s\n\r\t\"']+")
+_EMAIL = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I)
+_LONG_ID = re.compile(r"\b\d{8,}\b")
+
+def _privacy_redact(text: str) -> str:
+    value=str(text or "")
+    home=str(Path.home())
+    if home: value=value.replace(home,"<HOME>")
+    value=_PATH_WIN.sub("<PATH>",value)
+    value=_PATH_UNIX.sub("<PATH>",value)
+    value=_EMAIL.sub("<EMAIL>",value)
+    value=_LONG_ID.sub("<ID>",value)
+    return value
+
+class _PrivacyFormatter(logging.Formatter):
+    def format(self, record):
+        return _privacy_redact(super().format(record))
+
 
 
 def default_log_dir() -> Path:
@@ -53,7 +74,7 @@ def configure(log_dir: str | os.PathLike | None = None, *, level: int = logging.
     unconfigure()
     console = logging.StreamHandler()
     console.setLevel(logging.WARNING)
-    console.setFormatter(logging.Formatter("[DSG] %(levelname)s %(name)s: %(message)s"))
+    console.setFormatter(_PrivacyFormatter("[DSG] %(levelname)s %(name)s: %(message)s"))
     setattr(console, _HANDLER_TAG, True)
     logger.addHandler(console)
     try:
@@ -62,7 +83,7 @@ def configure(log_dir: str | os.PathLike | None = None, *, level: int = logging.
         path = directory / "dsg.log"
         handler = logging.handlers.RotatingFileHandler(path, maxBytes=5 * 1024 * 1024, backupCount=3,
                                                        encoding="utf-8")
-        handler.setFormatter(logging.Formatter(_FORMAT))
+        handler.setFormatter(_PrivacyFormatter(_FORMAT))
         setattr(handler, _HANDLER_TAG, True)
         logger.addHandler(handler)
         return path

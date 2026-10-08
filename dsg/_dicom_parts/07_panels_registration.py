@@ -115,6 +115,7 @@ class DICOMWIZARDPRO_PT_main(Panel):
 
     def draw(self, context):
         layout = self.layout
+        layout.operator('dsg.copy_pipeline_diagnostic',text='Copiar diagnóstico',icon='COPYDOWN')
         props = context.scene.dicom_wizard_pro
         layout.use_property_split = False
         layout.use_property_decorate = False
@@ -261,102 +262,70 @@ class DICOMWIZARDPRO_PT_segment(_DICOMChildPanel, Panel):
     def draw(self, context):
         layout = self.layout
         props = context.scene.dicom_wizard_pro
-        from . import totalseg_runtime
+        from . import segmentation_engines
+        from . import runtime_bootstrap
 
-        runtime = totalseg_runtime.quick_status()
-        install = totalseg_runtime.install_state()
+        selected_id = str(getattr(props, "ai_segmentation_engine", "TOTALSEG") or "TOTALSEG").upper()
+        statuses = segmentation_engines.verify_all(force=False)
+        selected = statuses.get(selected_id) or statuses[segmentation_engines.ENGINE_TOTALSEG]
+        install = segmentation_engines.install_state()
         engine = layout.box()
         engine.label(
-            text=_dw_t(props, "CBCT Dental AI", "IA dental CBCT"),
+            text=_dw_t(props, "CBCT Dental AI · 3-engine benchmark", "IA dental CBCT · benchmark 3 motores"),
             icon_value=icon_manager.icon_id('cbct'))
+        engine.prop(props, "ai_segmentation_engine", text=_dw_t(props, "Engine", "Motor"))
+
+        for engine_id in segmentation_engines.ENGINE_IDS:
+            st = statuses[engine_id]
+            unsupported = engine_id == "UMAMBA2" and os.name == "nt"
+            icon = 'CHECKMARK' if st.ready else ('ERROR' if st.experimental else 'INFO')
+            suffix = "NO COMPATIBLE CON WINDOWS" if unsupported else "READY" if st.ready else "PENDIENTE"
+            row = engine.row(align=True)
+            row.label(text=f"{st.label}: {suffix}", icon=icon)
+            if not st.ready and not unsupported:
+                op = row.operator(runtime_bootstrap.INSTALL_OPERATOR_ID, text="INSTALAR" if engine_id != "UMAMBA2" else "PREPARAR")
+                op.engine = engine_id
 
         if install.get("running"):
-            engine.label(text=str(install.get("message") or "Instalando motor IA…"),
-                         icon_value=icon_manager.icon_id('status_pending'))
+            engine.label(text=str(install.get("message") or "Instalando motor IA…")[:140], icon_value=icon_manager.icon_id('status_pending'))
             try:
                 percent = max(0, min(100, round(float(install.get("progress", 0.0)) * 100)))
-                engine.progress(
-                    factor=float(install.get("progress", 0.0)),
-                    type='BAR',
-                    text=f"{percent}% · {str(install.get('phase') or 'PREPARANDO')}"
-                )
+                engine.progress(factor=float(install.get("progress", 0.0)), type='BAR', text=f"{percent}% · {str(install.get('phase') or 'PREPARANDO')}")
             except Exception:
                 _DSG_LOG.debug("suppressed exception", exc_info=True)
         elif install.get("error"):
-            engine.label(text="Fallo al instalar TotalSegmentator", icon='ERROR')
-            engine.label(text=str(install.get("error"))[:140])
-            retry = ui_style.primary_action(engine)
-            retry.operator("dsg_suite.install_engines_core", text="REINTENTAR INSTALACIÓN", icon='FILE_REFRESH')
-        elif not runtime.dependencies_ready or not runtime.model_ready:
-            missing = []
-            if not runtime.dependencies_ready:
-                missing.append("runtime")
-            if not runtime.model_ready:
-                missing.append("TotalSegmentator task=teeth")
-            engine.label(
-                text=_dw_t(props, "AI dependency not installed", "Dependencia IA pendiente"),
-                icon_value=icon_manager.icon_id('status_info'))
-            engine.label(text=" + ".join(missing))
-            install_row = ui_style.primary_action(engine)
-            install_row.operator(
-                "dsg_suite.install_engines_core",
-                text=_dw_t(props, "PREPARE AI ENGINE OFFLINE", "INSTALAR MOTORES"),
-                icon_value=icon_manager.icon_id('continue'))
-        else:
-            engine.label(
-                text=_dw_t(props, "Runtime inside Blender", "Runtime dentro de Blender") + " ✓",
-                icon_value=icon_manager.icon_id('status_ok'))
-            engine.label(text=f"TotalSegmentator {runtime.version} ✓ · task=teeth ✓ · {runtime.device}")
-            detected = str(getattr(props, "ai_device_detected", "") or "")
-            if detected:
-                engine.label(
-                    text=detected[:110],
-                    icon_value=icon_manager.icon_id(
-                        'status_ok' if bool(getattr(props, "ai_cuda_available", False)) else 'status_info'))
-            compute = engine.row(align=True)
-            compute.prop(props, "ai_device_preference", text=_dw_t(props, "AI compute", "Cálculo IA"))
-            compute.prop(props, "ai_manage_blender_resources", text="Blender AUTO", toggle=True)
-            try:
-                nvidia_driver = bool(totalseg_runtime._nvidia_driver_present())
-            except Exception:
-                nvidia_driver = False
-            if nvidia_driver and not bool(getattr(props, "ai_cuda_available", False)):
-                # Automatic detection already ran after DICOM selection. This is
-                # now only a repair path for a NVIDIA driver with CPU-only Torch.
-                cuda_row = engine.row(align=True)
-                repair_op = cuda_row.operator(
-                    "dsg.install_totalseg",
-                    text=_dw_t(props, "REPAIR CUDA RUNTIME", "REPARAR RUNTIME CUDA"),
-                    icon_value=icon_manager.icon_id('settings'),
-                )
-                # Bypass the READY short-circuit: the runtime *is* installed,
-                # but with a CPU-only Torch build, so it must be re-extracted.
-                repair_op.force = True
-            perf = totalseg_runtime.last_performance_plan()
-            if perf:
-                actual = str(perf.get("actual_mode") or perf.get("mode") or "").replace("_", " ")
-                if actual:
-                    engine.label(text=f"Perfil: {actual}", icon_value=icon_manager.icon_id('status_ok'))
-                if float(perf.get("vram_total_gb", 0.0) or 0.0) > 0:
-                    engine.label(text=(
-                        f"VRAM {float(perf.get('vram_free_gb', 0.0)):.1f}/{float(perf.get('vram_total_gb', 0.0)):.1f} GB · "
-                        f"estimado {float(perf.get('estimated_vram_gb', 0.0)):.1f} GB"
-                    ))
-                timings = dict(perf.get("timings") or {})
-                if timings:
-                    engine.label(text=(
-                        f"Medido · red {float(timings.get('network_s', 0.0)):.1f}s · "
-                        f"salida {float(timings.get('export_s', 0.0)):.1f}s · "
-                        f"total IA {float(timings.get('total_predict_s', 0.0)):.1f}s"
-                    ))
-                if str(perf.get("resampling_mode", "")):
-                    engine.label(text=f"Salida: {str(perf.get('resampling_mode')).replace('_', ' ')}")
+            # Installation of ALL is intentionally partial-tolerant. Show the
+            # error but keep already verified engines usable.
+            engine.label(text=str(install.get("error"))[:140], icon='ERROR')
+
+        selected_row = engine.row()
+        selected_row.alert = not selected.ready
+        selected_row.label(
+            text=(f"Seleccionado: {selected.label} ✓" if selected.ready else f"Seleccionado pendiente: {selected.label}"),
+            icon='CHECKMARK' if selected.ready else 'ERROR')
+        if selected.error and not selected.ready:
+            engine.label(text=selected.error[:140])
+        if selected.engine == "TOOTHSEG":
+            engine.label(text="ToothSeg: dientes/FDI únicamente; no crea maxila, mandíbula ni canal", icon='INFO')
+        if selected.engine == "UMAMBA2" and not selected.model_ready:
+            engine.label(text="Requiere Linux/CUDA y checkpoint final ToothFairy3; no se instala en Windows", icon='INFO')
+
+        install_all = engine.row(align=True)
+        op_all = install_all.operator(runtime_bootstrap.INSTALL_OPERATOR_ID, text="INSTALAR / REPARAR MOTORES", icon='IMPORT')
+        op_all.engine = "ALL"
+        install_all.operator("dsg.runtime_preflight", text="REVISAR", icon='FILE_REFRESH')
+
+        compute = engine.row(align=True)
+        compute.prop(props, "ai_device_preference", text=_dw_t(props, "AI compute", "Cálculo IA"))
+        compute.prop(props, "ai_manage_blender_resources", text="Blender AUTO", toggle=True)
+        diagnostics = engine.row(align=True)
+        diagnostics.operator("dsg.run_safety_failtests", text="FAILTEST DSG", icon='CHECKMARK')
 
         ai_busy = semantic_workflow_busy()
         route = core.clinical_route(context.scene)
         target_fdi = core.target_fdi(context.scene)
-        semantic_ready = bool(runtime.dependencies_ready and runtime.model_ready)
-        dual_ready = semantic_ready
+        semantic_ready = bool(selected.ready)
+        dual_ready = bool(selected.ready and (selected.engine != "TOOTHSEG" or route != core.ROUTE_IMMEDIATE))
         idle = not bool(install.get("running")) and not ai_busy
 
         route_box = layout.box()
@@ -379,16 +348,15 @@ class DICOMWIZARDPRO_PT_segment(_DICOMChildPanel, Panel):
             immediate.operator(
                 DICOMWIZARDPRO_OT_segment_all.bl_idname,
                 text=_dw_t(props,
-                    "SEGMENT FOR IMMEDIATE IMPLANT · TOTALSEGMENTATOR",
-                    "SEGMENTAR PARA IMPLANTE INMEDIATO · TOTALSEGMENTATOR"),
+                    f"SEGMENT FOR IMMEDIATE IMPLANT · {selected.label}",
+                    f"SEGMENTAR PARA IMPLANTE INMEDIATO · {selected.label}"),
                 icon_value=icon_manager.icon_id('model'))
             route_box.label(
-                text=_dw_t(props,
-                    "TotalSegmentator supplies FDI, jawbones and canals in one inference.",
-                    "TotalSegmentator aporta FDI, maxilares y canales en una sola inferencia."))
+                text=("Motor compatible con FDI + maxilares + canal" if selected.engine != "TOOTHSEG" else "ToothSeg no es compatible con esta ruta"))
         else:
             route_box.label(text=_dw_t(props, "Exactly two colored arches", "Exactamente dos arcadas por color"), icon_value=icon_manager.icon_id('status_info'))
             simple = ui_style.primary_action(route_box)
+            simple.enabled = bool(selected.ready and selected.engine != "TOOTHSEG" and idle)
             op = simple.operator(DICOMWIZARDPRO_OT_segment_all.bl_idname, text=_dw_t(props, "SEGMENT 2 ARCHES", "SEGMENTAR 2 ARCADAS"), icon_value=icon_manager.icon_id('model'))
             op.route_mode = "SIMPLE_ARCHES"
 
@@ -400,8 +368,16 @@ class DICOMWIZARDPRO_PT_segment(_DICOMChildPanel, Panel):
             elapsed_s = float(snapshot.get("elapsed_s", 0.0) or 0.0)
 
             progress_box = layout.box()
+            loading_engine = factor <= 0.20 and any(
+                token in phase_text.lower()
+                for token in ("engine", "motor", "peso", "runtime", "totalsegmentator", "toothseg", "mamba")
+            )
             progress_box.label(
-                text=_dw_t(props, "SEGMENTATION IN PROGRESS", "SEGMENTACIÓN EN CURSO"),
+                text=_dw_t(
+                    props,
+                    "LOADING ENGINES AND WEIGHTS" if loading_engine else "SEGMENTATION IN PROGRESS",
+                    "CARGANDO MOTORES Y PESOS" if loading_engine else "SEGMENTACIÓN EN CURSO",
+                ),
                 icon_value=icon_manager.icon_id('model'),
             )
             try:
@@ -434,20 +410,14 @@ class DICOMWIZARDPRO_PT_segment(_DICOMChildPanel, Panel):
         info.label(
             text=_dw_t(props, "CBCT semantic classes", "Clases semánticas CBCT"),
             icon_value=icon_manager.icon_id('status_info'))
-        if runtime.model_ready:
-            info.label(text=_dw_t(props,
-                "TotalSegmentator teeth: individual FDI + upper/lower jawbone",
-                "TotalSegmentator teeth: FDI individual + maxila/mandíbula"))
-            info.label(text=_dw_t(props,
-                "Inferior alveolar canals are produced by the same model",
-                "Los canales alveolares inferiores salen del mismo modelo"))
-            info.label(text=_dw_t(props,
-                "One inference route · no dual-model reconciliation",
-                "Una ruta de inferencia · sin reconciliación de dos modelos"))
+        if selected.model_ready:
+            info.label(text=f"{selected.label}: FDI individual" + (" + maxila/mandíbula/canal" if "JAW" in set(selected.capabilities) else ""))
+            info.label(text="Salida normalizada · mismo pipeline de mallas DSG")
+            info.label(text="Benchmark comparable: motor, tiempo y geometría quedan registrados")
         else:
             info.label(text=_dw_t(props,
-                "Install TotalSegmentator task=teeth to segment CBCT",
-                "Instala TotalSegmentator task=teeth para segmentar CBCT"))
+                "Install the selected segmentation engine to segment CBCT",
+                "Instala el motor de segmentación seleccionado para segmentar CBCT"))
 
         back = ui_style.tertiary_action(layout)
         back.operator(
@@ -625,7 +595,7 @@ CLASSES = (
 def menu_import(self, context) -> None:
     self.layout.operator(
         "dicom_wizard_pro.select_file",
-        text="DICOM Wizard Pro 5.1",
+        text="DICOM Wizard Pro",
     )
 
 
@@ -724,7 +694,7 @@ def register() -> None:
         bpy.types.VIEW3D_HT_header.prepend(draw_mpr_global_header)
         _DICOM_HEADERS_OWNED = True
         # Depsgraph/undo handlers are intentionally NOT installed here.
-        # Blender 5.1 still exposes _RestrictData during this function and may
+        # Blender 5.2 still exposes _RestrictData during this function and may
         # invoke a newly appended handler immediately. deferred_post_register()
         # installs them after normal bpy.data access is confirmed.
         _DICOM_HANDLER_OWNED = False

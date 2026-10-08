@@ -145,7 +145,7 @@ class DSG_OT_install_dicom_runtime(Operator):
     bl_options = {"REGISTER"}
 
     def execute(self, context):
-        if full_pydicom_available():
+        if dicom_standard_cbct_ready():
             self.report({"INFO"}, "Motor DICOM completo ya disponible")
             return {"FINISHED"}
         # pip is intentionally executed from Blender's main thread in v9.2.
@@ -169,26 +169,30 @@ class DSG_OT_install_dicom_runtime(Operator):
 
 
 def _auto_detect_ai_device_after_dicom(context) -> dict:
-    """Cheap TotalSegmentator compute detection without importing Torch in Blender UI."""
+    """Cheap compute detection for the external DSG segmentation runtime."""
     props = context.scene.dicom_wizard_pro
     result = {"device":"AUTO","cuda":False,"gpu_name":"","vram_free_gb":0.0,"vram_total_gb":0.0,"detail":""}
     try:
-        from . import totalseg_runtime
-        quick=totalseg_runtime.quick_status()
-        if not quick.dependencies_ready:
-            props.ai_device_preference="AUTO"; props.ai_cuda_available=False; props.ai_device_detected="TotalSegmentator pendiente"
-            result["detail"]=props.ai_device_detected; return result
-        cuda=bool(totalseg_runtime._nvidia_driver_present())
-        props.ai_cuda_available=cuda; props.ai_gpu_name="NVIDIA GPU" if cuda else ""; props.ai_vram_free_gb=0.0; props.ai_vram_total_gb=0.0
-        props.ai_device_preference="CUDA" if cuda else "CPU"
-        detail="CUDA AUTO · TotalSegmentator" if cuda else "TotalSegmentator · CPU"
-        props.ai_device_detected=detail
-        result.update(device="CUDA" if cuda else "CPU",cuda=cuda,gpu_name=props.ai_gpu_name,detail=detail)
-        context.scene["DSG_ai_device_auto_detected"]=result["device"]; context.scene["DSG_cuda_available"]=cuda
+        from . import segmentation_engines
+        compute = segmentation_engines.runtime_compute_status()
+        cuda = bool(compute.get("cuda", False))
+        props.ai_cuda_available = cuda
+        props.ai_gpu_name = str(compute.get("gpu_name", ""))
+        props.ai_vram_free_gb = float(compute.get("vram_free_gb", 0.0))
+        props.ai_vram_total_gb = float(compute.get("vram_total_gb", 0.0))
+        props.ai_device_preference = "CUDA" if cuda else "CPU"
+        detail = "CUDA AUTO · runtime externo DSG" if cuda else "Runtime externo DSG · CPU"
+        props.ai_device_detected = detail
+        result.update(device="CUDA" if cuda else "CPU", cuda=cuda, gpu_name=props.ai_gpu_name, detail=detail)
+        context.scene["DSG_ai_device_auto_detected"] = result["device"]
+        context.scene["DSG_cuda_available"] = cuda
         return result
     except Exception as exc:
-        props.ai_device_preference="AUTO"; props.ai_cuda_available=False; props.ai_device_detected=f"TotalSegmentator · detección pendiente: {exc}"[:120]
-        result["detail"]=props.ai_device_detected; return result
+        props.ai_device_preference = "AUTO"
+        props.ai_cuda_available = False
+        props.ai_device_detected = f"Runtime IA · detección pendiente: {exc}"[:120]
+        result["detail"] = props.ai_device_detected
+        return result
 
 
 class DICOMWIZARDPRO_OT_select_file(Operator, ImportHelper):
@@ -227,9 +231,11 @@ class DICOMWIZARDPRO_OT_select_file(Operator, ImportHelper):
         except Exception as exc:
             _LAST_PROBE = None
             props.header_valid = False
-            props.status = f"Error: {exc}"
-            print("DICOM Wizard Pro probe error:", repr(exc))
-            self.report({"ERROR"}, str(exc))
+            props.status = "No se pudo leer este CBCT."
+            error_handling.log_exception(
+                _DSG_LOG, "DSG-E300", exc, context={"stage": "dicom_probe"}
+            )
+            self.report({"ERROR"}, "No se pudo leer este CBCT.")
             return {"CANCELLED"}
 
         support_ready, support_detail = dicom_transfer_syntax_support(probe.transfer_syntax_uid)
@@ -240,13 +246,9 @@ class DICOMWIZARDPRO_OT_select_file(Operator, ImportHelper):
             )
             self.report({"WARNING"}, props.status)
         elif probe.recovered_from_non_image:
-            self.report(
-                {"WARNING"},
-                f"El archivo elegido no era una imagen. {probe.recovery_note} "
-                f"Usando: {probe.filename}",
-            )
+            self.report({"INFO"}, "CBCT preparado")
         else:
-            self.report({"INFO"}, f"DICOM preparado: {probe.dimensions_text}")
+            self.report({"INFO"}, "CBCT preparado")
 
         compute_detail = str((compute or {}).get("detail", "") or "")
         if compute_detail:
@@ -296,7 +298,17 @@ class DICOMWIZARDPRO_OT_next(Operator):
                 self._message = str(message)
             self._payload = _decode_volume_payload(probe, cb)
         except Exception as exc:
-            self._error = f"{type(exc).__name__}: {exc}"
+            error_handling.log_exception(
+                _DSG_LOG,
+                "DSG-E300",
+                exc,
+                context={
+                    "stage": "dicom_decode",
+                    "source_kind": getattr(probe, "source_kind", ""),
+                    "transfer_syntax": getattr(probe, "transfer_syntax_uid", ""),
+                },
+            )
+            self._error = "No se pudo abrir este CBCT."
         finally:
             self._done = True
 
@@ -1792,7 +1804,7 @@ def _schedule_true_mpr_layout_build(
 
     Screen layout operators rebuild ``screen.areas`` asynchronously.  The old
     implementation executed three splits in one operator call and immediately
-    searched for the new Area, which is not reliable in Blender 5.1.  This
+    searched for the new Area, which is not reliable during UI rebuilds. This
     state machine waits until each split is visible in the Screen RNA before
     requesting the next one.
     """
@@ -3009,5 +3021,4 @@ def _safe_mpr_region_at_mouse(area, mouse_x, mouse_y):
         if region.x <= mouse_x < region.x + region.width and region.y <= mouse_y < region.y + region.height:
             return role, region
     return None, None
-
 

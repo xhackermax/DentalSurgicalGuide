@@ -17,8 +17,6 @@ _PARTS = (
     '05_frame_microscrews_sleeves_drill.py',
     '06_irrigation_a.py',
     '06_irrigation_b.py',
-    '06_irrigation_c_sequential.py',
-    '06_irrigation_d_frangible.py',
     '07_reinforcement_animation.py',
     '08_export_final_ui_registration.py',
 )

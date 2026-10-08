@@ -264,16 +264,6 @@ class DSG_Props(PropertyGroup):
     irr_junction_blend: FloatProperty(
         name="Junction Blend (mm)", default=0.0, min=0.0, max=2.0,
         description="Optional local blend; 0 prevents bulges around the funnel")
-    irr_sequential_opening: BoolProperty(
-        name="Sequential opening",
-        default=True,
-        description=("Linked irrigation: the initial sleeve stays open, linked sleeves get a marked "
-                     "0.10 mm frangible wall and every Y throttles the trunk towards the initial "
-                     "sleeve so each newly perforated sleeve takes most of the water"))
-    irr_open_branch_share: FloatProperty(
-        name="Water to newly opened sleeve",
-        default=0.75, min=0.55, max=0.90, subtype='FACTOR',
-        description="Target fraction of the flow reaching a Y that goes to the sleeve just perforated")
     irr_funnel_enabled: BoolProperty(
         name="Create Sleeve Funnel", default=True,
         description="The first irrigation point creates a cone whose length equals the sleeve height" )
@@ -1604,7 +1594,7 @@ def _normalized_or_fallback(vec, fallback):
 def build_engrave_orientation_matrix(location, normal, x_axis=None):
     """Crea una matriz mundo para colocar texto tangente a la superficie.
 
-    IMPORTANTE v5.0.20:
+    IMPORTANTE legacy geometry note:
     El eje local Z del texto apunta hacia fuera de la guía, es decir, en el
     sentido de la normal externa de la superficie. Esto evita que el texto se
     vea desde la cara trasera, que era la causa de que saliera como espejo.
@@ -4277,7 +4267,7 @@ class DSG_OT_CreateImplantEmergenceTubes(Operator):
 
         # Idempotent controller creation: repeated clicks must reuse the same
         # Object IDs instead of deleting/recreating them while the Outliner is
-        # drawing. This directly avoids stale AnimData/ID pointers in Blender 5.0.
+        # drawing. This directly avoids stale AnimData/ID pointers in Blender 5.2.
         valid_implant_names = {_safe_object_name(implant) for implant in implants}
         seen = set()
         for tube in list(get_implant_emergence_tubes()):

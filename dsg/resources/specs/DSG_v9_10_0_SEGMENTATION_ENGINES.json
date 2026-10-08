@@ -1,0 +1,12 @@
+{
+  "schema": "dsg.segmentation.engines.v1",
+  "version": "9.10.0",
+  "blender": "5.2",
+  "engines": [
+    {"id": "TOTALSEG", "name": "TotalSegmentator teeth", "auto_weights": true, "capabilities": ["TEETH", "FDI", "JAW", "CANAL", "SINUS", "PULP", "IMPLANT", "CROWN", "BRIDGE"]},
+    {"id": "TOOTHSEG", "name": "ToothSeg dual-branch", "auto_weights": true, "capabilities": ["TEETH", "FDI", "INSTANCE"]},
+    {"id": "UMAMBA2", "name": "U-Mamba2 ToothFairy3", "auto_weights": false, "requires_final_checkpoint": true, "capabilities": ["TEETH", "FDI", "JAW", "CANAL", "SINUS", "PULP"]}
+  ],
+  "normalized_labels": {"teeth": "1..32", "mandible": 53, "maxilla": 54, "mandibular_canal": 55},
+  "runtime": {"external_worker": true, "blender_legacy_runtime_adoption": false, "ready_requires_real_checkpoint": true}
+}

@@ -1,7 +1,7 @@
-"""DICOM Wizard Pro 5.x v1.13.0 - in-process CBCT AI, UniversalLab tooth instances/FDI and optimized surfaces.
+"""DICOM Wizard Pro 5.x v1.13.0 - external multi-engine CBCT segmentation and optimized surfaces.
 
 Generated from the modular DICOM Wizard Pro package so it can be installed
-directly as one .py file in Blender 5.1.
+directly as one .py file in Blender 5.2 LTS.
 """
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ from . import core
 from . import icon_manager
 from . import ui_style
 from . import tooth_analysis
+from . import error_handling
 
 # =============================================================================
 # MODULE: constants.py
@@ -29,7 +30,7 @@ from . import tooth_analysis
 ADDON_NAME = "Dental DICOM · Bilingual Workflow"
 ADDON_VERSION = (1, 13, 0)
 ADDON_VERSION_STR = ".".join(str(part) for part in ADDON_VERSION)
-BLENDER_MIN_VERSION = (5, 0, 0)
+BLENDER_MIN_VERSION = (5, 2, 0)
 TAB_NAME = "DSG"
 
 # Shared workflow protocol has one source of truth in core.py. Local aliases
@@ -645,7 +646,7 @@ def _activate_dicom_vendor(path: Path) -> None:
             try:
                 sys.path.remove(old)
             except ValueError:
-                pass
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
     text = str(path)
     while text in sys.path:
         sys.path.remove(text)
@@ -686,6 +687,7 @@ DICOM_RUNTIME_REQUIREMENTS = (
     "pylibjpeg-libjpeg==2.4.0",
     "pylibjpeg-openjpeg==2.5.0",
     "pylibjpeg-rle==2.2.0",
+    "pyjpegls==1.5.1",
 )
 
 _DICOM_RUNTIME_LOCK = threading.Lock()
@@ -761,11 +763,12 @@ _DICOM_RLE = "1.2.840.10008.1.2.5"
 
 
 def dicom_transfer_syntax_support(uid: str) -> tuple[bool, str]:
-    """Return exact decoder readiness for a selected DICOM Transfer Syntax.
+    """Return whether DSG can *attempt* this DICOM transfer syntax.
 
-    This is intentionally stricter than checking whether ``pydicom`` imports.
-    A package existing on disk is not proof that JPEG/JPEG-LS/JPEG2000 DLLs
-    actually load in the embedded Blender/Mixar Python process.
+    9.9.2 deliberately avoids blocking a valid CBCT during the lightweight
+    selection step merely because one preferred pixel codec is missing. The
+    real decoder runs in the background and tries pydicom's registered plugins
+    first, then the full Dataset path, then SimpleITK/GDCM when available.
     """
     uid = str(uid or "").strip()
     status = dicom_runtime_status()
@@ -776,26 +779,26 @@ def dicom_transfer_syntax_support(uid: str) -> tuple[bool, str]:
     openjpeg = bool(status.get("openjpeg"))
     jpeg_ls = bool(status.get("jpeg_ls"))
 
+    if not base_reader:
+        return False, "falta lector DICOM"
     if not uid:
-        return bool(base_reader), "lector DICOM disponible" if base_reader else "falta lector DICOM"
+        return True, "lector DICOM disponible"
     if uid in _DICOM_NATIVE_LE:
-        return bool(base_reader), "DICOM sin compresión compatible" if base_reader else "falta lector DICOM"
+        return True, "DICOM sin compresión compatible"
     if uid in _DICOM_NATIVE_FULL_ONLY:
-        return full, "pydicom completo disponible" if full else "requiere pydicom completo"
+        return (True, "pydicom completo disponible") if full else (True, "decodificación alternativa disponible si el runtime la admite")
     if uid == _DICOM_RLE:
-        return full, "RLE soportado por pydicom" if full else "RLE requiere pydicom completo"
+        ready = full
+        return True, "RLE listo" if ready else "RLE: DSG intentará decodificación alternativa"
     if uid in _DICOM_JPEG_LIBJPEG:
-        ok = full and (libjpeg or gdcm or (uid.endswith((".80", ".81")) and jpeg_ls))
-        return ok, (
-            "JPEG/JPEG-LS decoder listo" if ok else
-            "requiere pydicom + pylibjpeg-libjpeg (o GDCM/pyjpegls para JPEG-LS)"
-        )
+        ready = full and (libjpeg or gdcm or (uid.endswith((".80", ".81")) and jpeg_ls))
+        return True, "JPEG/JPEG-LS decoder listo" if ready else "JPEG/JPEG-LS: DSG intentará decodificación alternativa"
     if uid in _DICOM_JPEG2000:
-        ok = full and (openjpeg or gdcm)
-        return ok, "JPEG2000/HTJ2K decoder listo" if ok else "requiere pydicom + pylibjpeg-openjpeg (o GDCM)"
+        ready = full and (openjpeg or gdcm)
+        return True, "JPEG2000/HTJ2K decoder listo" if ready else "JPEG2000/HTJ2K: DSG intentará decodificación alternativa"
     if uid.startswith("1.2.840.10008.1.2.4."):
-        return False, f"Transfer Syntax encapsulada no validada para volumen CBCT: {uid}"
-    return full, "Transfer Syntax legible con pydicom completo" if full else f"Transfer Syntax {uid} requiere pydicom completo"
+        return True, "DICOM encapsulado: decodificación automática"
+    return True, "Transfer Syntax DICOM: decodificación automática"
 
 
 def dicom_standard_cbct_ready() -> bool:
@@ -932,20 +935,15 @@ def load_openvdb():
 
 
 def _load_scientific_module(module_name: str):
-    """Load an optional scientific module, including DSG's private AI runtime.
-
-    The SIMPLE route must not require the AI stack, but the IMMEDIATE route
-    legitimately installs scipy/scikit-image inside ``dsg_ai_runtime_*``.
-    v9.2.1 only searched Blender + the DICOM codec folder, so an already
-    installed scikit-image could be invisible to dicom_module.  Retry after
-    exposing the current DSG AI runtime, without installing anything here.
-    """
+    """Load an optional scientific module from Blender or DSG 9.10 runtime."""
     module = load_module(module_name)
     if module is not None:
         return module
     try:
-        from . import cbct_ai_runtime
-        cbct_ai_runtime._prepend_runtime_paths()
+        from . import segmentation_engines
+        for path in reversed(segmentation_engines.active_site_paths(None)):
+            if path and path not in sys.path:
+                sys.path.insert(0, path)
         importlib.invalidate_caches()
     except Exception:
         return None
@@ -1026,4 +1024,3 @@ def dependency_summary() -> dict[str, str | bool]:
 # =============================================================================
 # MODULE: utils.py
 # =============================================================================
-

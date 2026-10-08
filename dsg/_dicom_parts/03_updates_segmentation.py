@@ -1245,7 +1245,7 @@ def _component_filter_from_seeds(support, seeds, *, min_mm3=8.0,
 
     Uses SciPy's C implementation when available.  The dependency-free RLE
     implementation is mathematically the same connectivity criterion and keeps
-    Blender 5.1 functional even without binary wheels.
+    Blender 5.2 functional even without binary wheels.
     """
     np = load_numpy()
     support = np.ascontiguousarray(support, dtype=bool)
@@ -1398,7 +1398,7 @@ def _automatic_teeth_mask(props, *, support_low=None, upper=None):
 
 
 # =============================================================================
-# DSG 8.7 · SEMANTIC CBCT DENTALSEGMENTATOR
+# DSG 9.10 · NORMALIZED CBCT SEMANTIC HELPERS
 # =============================================================================
 
 SEMANTIC_CLASS_LABELS = {
@@ -1437,14 +1437,11 @@ def _semantic_model_kind_for_structure(structure: str) -> str:
     """Return the primary engine for a requested segmentation structure.
 
     DSG HYBRID restores the proven 8.7 responsibility split instead of routing
-    every mineralized structure through UniversalLab:
+    every mineralized structure through the selected normalized engine:
 
-    * BONE / BONE_ONLY -> DentalSegmentator (Dataset112, classes 1..5).
-    * TEETH -> UniversalLab is the identity/FDI authority, but the interactive
-      TEETH workflow first runs DentalSegmentator as anatomical continuity
-      support and then UniversalLab.
-    * MANDIBULAR_CANAL -> UniversalLab class 55 is the identity source and the
-      full workflow additionally verifies continuity with DentalSegmentator 5.
+    * BONE / BONE_ONLY -> normalized DSG jaw labels.
+    * TEETH -> selected engine adapter supplies normalized FDI identity.
+    * MANDIBULAR_CANAL -> normalized DSG class 55.
 
     This function returns only the *primary* labelmap kind. Multi-model routing
     is orchestrated explicitly by the asynchronous clinical workflow.
@@ -1502,122 +1499,16 @@ def _store_semantic_result(labels, *, kind: str, signature: str, metadata=None, 
 
 
 def predict_semantic_cbct_labels_sync(context, *, force: bool = False, model_kind: str | None = None):
-    """Explicit synchronous compatibility path for scripts, never called by DSG UI.
-
-    The interactive workflow uses :func:`start_prediction_job`; keeping the word
-    ``sync`` in this API makes a potentially blocking operation impossible to
-    mistake for a cache query.
-
-    DSG 8.8 removes the 8.7 chain ``NPY -> external Python -> SimpleITK ->
-    NIfTI -> nnUNetv2_predict -> NIfTI -> NPY``. The raw CBCT is calibrated,
-    optionally cropped without interpolation, inferred and restored in memory.
-    """
-    np = load_numpy()
-    if np is None or not RUNTIME.is_loaded():
-        raise RuntimeError("Carga primero un CBCT")
+    """Compatibility cache query. DSG 9.10 never runs neural inference on Blender's UI thread."""
     props = context.scene.dicom_wizard_pro
     kind = str(model_kind or _semantic_model_kind_for_structure(props.segmentation_structure)).lower()
-    signature = _semantic_source_signature()
     cached = get_cached_semantic_cbct_labels(model_kind=kind, require_current_source=True)
-    if not force and cached is not None:
+    if cached is not None and not force:
         return cached
-
-    from . import cbct_ai_runtime
-    status = cbct_ai_runtime.runtime_status()
-    if not status.dependencies_ready:
-        raise RuntimeError(
-            "Motor IA interno no instalado. Pulsa «INSTALAR MOTORES»; "
-            "DSG lo instala dentro de Blender sin Python/Slicer externos."
-        )
-    if kind == "universal" and not status.universal_model_ready:
-        raise RuntimeError(
-            "Falta UniversalLab (dientes individuales + FDI). "
-            "Pulsa «INSTALAR MOTORES»."
-        )
-    if kind == "semantic" and not status.semantic_model_ready:
-        raise RuntimeError("Falta el checkpoint DentalSegmentator incluido con DSG")
-
-    def status_cb(message: str):
-        props.status = str(message)
-        force_ui_redraw()
-
-    status_cb("Preparando CBCT en memoria…")
-    # UniversalLab benefits strongly from the conservative no-interpolation crop
-    # used by BATCHDENTALSEG. The proven DSG 8.7 semantic model keeps full FOV
-    # for strict clinical equivalence during migration.
-    calibrated, crop_slices, crop_info = cbct_ai_runtime.calibrate_and_autocrop(
-        RUNTIME.volume,
-        RUNTIME.slopes,
-        RUNTIME.intercepts,
-        RUNTIME.spacing_zyx_mm,
-        enable_crop=(kind == "universal"),
-        margin_mm=15.0,
-        min_reduction_fraction=0.15,
+    raise RuntimeError(
+        "DSG 9.10 ejecuta TotalSegmentator, ToothSeg y U-Mamba2 únicamente en el worker externo. "
+        "Inicia la segmentación desde el panel DICOM y vuelve a consultar el resultado cuando termine."
     )
-    if crop_info.get("cropped"):
-        retained = 100.0 * float(crop_info.get("retained_fraction", 1.0))
-        status_cb(f"ROI dentomaxilar · {retained:.0f}% del volumen · iniciando IA…")
-
-    metadata = cbct_ai_runtime.model_metadata(kind)
-    perf_plan = cbct_ai_runtime.build_inference_plan(
-        crop_info.get("crop_shape_zyx", calibrated.shape), RUNTIME.spacing_zyx_mm,
-        kind=kind, device_preference=str(getattr(props, "ai_device_preference", "AUTO")),
-        metadata=metadata,
-    )
-    perf_plan, ok_ram, available_ram, safe_budget = cbct_ai_runtime._enable_disk_accumulator_if_needed(
-        perf_plan, calibrated.shape, RUNTIME.spacing_zyx_mm, metadata
-    )
-    estimated_peak = float(perf_plan.get("estimated_ram_gb", 0.0))
-    crop_info["performance_plan"] = dict(perf_plan)
-    crop_info["estimated_additional_ram_gb"] = float(estimated_peak)
-    crop_info["available_ram_gb"] = float(available_ram) if available_ram is not None else None
-    crop_info["safe_budget_ram_gb"] = float(safe_budget) if safe_budget is not None else None
-    if not ok_ram:
-        del calibrated
-        raise RuntimeError(
-            f"Memoria insuficiente incluso con respaldo en disco: hacen falta ~{estimated_peak:.1f} GB de RAM; "
-            f"hay ~{available_ram:.1f} GB libres y DSG puede usar de forma segura ~{safe_budget:.1f} GB."
-        )
-    if bool(perf_plan.get("disk_accumulator")):
-        status_cb(
-            f"RAM baja · acumulador nnU-Net temporal en disco "
-            f"(~{float(perf_plan.get('estimated_swap_file_gb', 0.0)):.1f} GB)…"
-        )
-
-    labels_crop = cbct_ai_runtime.predict_volume(
-        calibrated,
-        RUNTIME.spacing_zyx_mm,
-        kind=kind,
-        device_preference=str(getattr(props, "ai_device_preference", "AUTO")),
-        use_tta=False,  # matches DSG 8.7 --disable_tta and avoids doubling inference time
-        low_memory_export=True,
-        status_cb=status_cb,
-        performance_plan=perf_plan,
-    )
-    crop_info["performance_plan_actual"] = cbct_ai_runtime.last_performance_plan()
-    del calibrated
-    labels = cbct_ai_runtime.restore_crop(labels_crop, RUNTIME.dims_zyx, crop_slices)
-    del labels_crop
-
-    if kind == "universal":
-        # Preserve UniversalLab's learned instances and only resolve the known
-        # left/right mirroring failure mode in the original DICOM coordinate system.
-        try:
-            from . import cbct_dental_module
-            mirror = cbct_dental_module.correct_universal_mirroring(labels)
-            crop_info["mirroring"] = mirror
-        except Exception as exc:
-            crop_info["mirroring"] = {"checked": False, "error": str(exc)}
-
-    active_labels = _store_semantic_result(
-        labels, kind=kind, signature=signature, metadata=metadata, crop_info=crop_info
-    )
-    props.status = (
-        "UniversalLab · dientes individualizados + FDI listos"
-        if kind == "universal"
-        else "DentalSegmentator · segmentación CBCT lista"
-    )
-    return RUNTIME.semantic_labels
 
 
 # Legacy API name retained for third-party scripts. DSG itself never calls it.
@@ -1645,7 +1536,7 @@ def _semantic_mask_for_structure(labels, structure: str):
     classes = _semantic_classes_for_structure(structure, RUNTIME.semantic_model_kind)
     if not classes:
         raise RuntimeError(f"El modo {structure} no tiene clases semánticas configuradas")
-    # UniversalLab labels are compact uint8. np.isin is acceptable only for the
+    # Normalized DSG labels are compact uint8. np.isin is acceptable only for the
     # already-cropped clinical state; the full label map itself remains one byte/voxel.
     return np.isin(labels, np.asarray(classes, dtype=np.uint8))
 
@@ -1746,12 +1637,11 @@ def _ellipsoid_structure(radius_mm: float):
 
 def _fuse_mandibular_canal_masks(universal_mask, universal_origin,
                                   verifier_mask=None, verifier_origin=None):
-    """Conservative ensemble of UniversalLab-55 and DentalSegmentator-5.
+    """Conservative canal cleanup for normalized DSG class 55.
 
     Rules:
-    * UniversalLab remains accepted evidence.
-    * Full connected components from the dedicated DentalSegmentator canal class
-      are kept when they overlap/approach UniversalLab, plus up to the two largest
+    * The selected engine remains the accepted evidence.
+    * Optional verifier components are kept when they overlap/approach the primary canal, plus up to the two largest
       substantial components so an entirely missed contralateral canal can be
       recovered.
     * No long synthetic path is drawn.
@@ -1809,7 +1699,7 @@ def _fuse_mandibular_canal_masks(universal_mask, universal_origin,
                 comp = (cc == comp_id)
                 touches = bool(np.any(comp & near)) if universal_voxels else False
                 substantial = int(sizes[comp_id]) >= max(12, int(round(largest * 0.12))) if largest else False
-                # Preserve model-backed bilateral canals even if UniversalLab
+                # Preserve model-backed bilateral canals even if the primary engine
                 # missed one whole side. Do not accept an unlimited zoo of blobs.
                 bilateral_recovery = rank < 2 and substantial
                 if touches or bilateral_recovery:
@@ -1845,8 +1735,8 @@ def _fuse_mandibular_canal_masks(universal_mask, universal_origin,
     added = int((fused & ~U).sum())
     return np.ascontiguousarray(fused, dtype=np.bool_), starts, {
         "source": (
-            "ENSEMBLE_UNIVERSALLAB55_DENTALSEGMENTATOR5"
-            if verifier_voxels else "UNIVERSALLAB55_NATIVE"
+            "ENSEMBLE_NORMALIZED_CANAL_WITH_VERIFIER"
+            if verifier_voxels else "NORMALIZED_CANAL_NATIVE"
         ),
         "universal_voxels": universal_voxels,
         "verifier_voxels": verifier_voxels,
@@ -1938,8 +1828,7 @@ def build_mandibular_canal_surface(context, labels, *,
                                      verifier_stats=None, prepared=None):
     """Materialise the IAN canal at native mask resolution.
 
-    UniversalLab class 55 is fused conservatively with the dedicated
-    DentalSegmentator class 5 when the verifier is available. The label mask is
+    Normalized class 55 may be fused conservatively with an optional verifier mask. The label mask is
     never stride-downsampled before marching cubes.
     """
     np = load_numpy()
@@ -2018,7 +1907,7 @@ def build_mandibular_canal_surface(context, labels, *,
     obj["DSG_verifier_semantic_class"] = 5
     obj["DSG_structure"] = "MANDIBULAR_CANAL"
     obj["DSG_safety_structure"] = True
-    obj["DSG_source"] = str(fusion.get("source", "UNIVERSALLAB55_NATIVE"))
+    obj["DSG_source"] = str(fusion.get("source", "NORMALIZED_CANAL_NATIVE"))
     obj["DSG_segmentation_status"] = "SEGMENTED"
     obj["DSG_voxel_count"] = voxels
     obj["DSG_surface_faces"] = int(len(faces))
@@ -2095,7 +1984,7 @@ def segment_tissue_semantically(context, structure: str | None = None) -> dict:
     sync_segmentation_properties(props)
     if kind == "universal" and structure == "TEETH":
         tooth_count = sum(1 for value in np.unique(labels) if 1 <= int(value) <= 52)
-        props.status = f"UniversalLab · {tooth_count} dientes individualizados · {count:,} voxels"
+        props.status = f"Motor CBCT · {tooth_count} dientes individualizados · {count:,} voxels"
     else:
         props.status = f"Máscara IA · {SEGMENTATION_STRUCTURES[structure]['label']} · {count:,} voxels"
     return state

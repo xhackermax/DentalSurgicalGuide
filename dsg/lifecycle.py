@@ -131,3 +131,10 @@ def cancel_all_timers() -> None:
             _DSG_LOG.debug("suppressed exception", exc_info=True)
         _TIMER_WRAPPERS.discard(wrapper)
     _TIMER_BY_CALLBACK.clear()
+
+
+def cancel_named_timers(module_name, callback_names):
+    """Cancel stage callbacks already completed synchronously by history."""
+    for callback in list(_TIMER_BY_CALLBACK):
+        if callback.__module__ == module_name and callback.__name__ in callback_names:
+            unregister_timer(callback)

@@ -1,5 +1,21 @@
 # Changelog
 
+## 9.10.11 — contratos y diagnóstico del pipeline
+
+Actualización desde el ZIP original del autor (8 de octubre de 2026).
+
+- Contratos de volumen, calibración, spacing, labelmap y manifest con `schema_version=1` y `run_id`.
+- Diagnóstico persistente con etapas, duración, estado y fallbacks; botón **Copiar diagnóstico**.
+- Núcleo comprobable sin Blender, 20 tests puros, control de métricas e índice de código regenerable.
+- Conserva labels anatómicos, motores, suavizado, geometría e historial Ctrl+Z.
+- Incluye manual en español, explicación de funcionamiento, verificación y hoja de ruta.
+
+Actualización acumulada desde 9.7.5: motores de la serie 9.10 y registro DICOM (9.10.0–1), reparación Windows/DICOM/CUDA/SciPy (9.10.2–4), suavizado reversible (9.10.5–9) e historial de etapas (9.10.9–10). No se atribuyen estos cambios previos a 9.10.11.
+
+Detalle: [mejoras](docs/MEJORAS_9_10_11.md), [changelog del paquete](dsg/docs/CHANGELOG.md) y [limitaciones de pruebas](docs/VERIFICACION_9_10_11.md).
+
+## Historial anterior del repositorio
+
 ## 9.7.5 — instalación de motores en Windows
 
 ### Corregido

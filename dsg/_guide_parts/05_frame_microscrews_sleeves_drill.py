@@ -3418,7 +3418,7 @@ class DSG_OT_AddDrillChannel(Operator):
                     unverified_parts += 1
 
             # 2) Todos los ejes clínicos se conservan como un único cutter multi-shell.
-            # Blender 5.1 puede cerrar dentro de meshintersect cuando encadena
+            # Blender 5.2 puede cerrar dentro de meshintersect cuando encadena
             # DIFFERENCE EXACT (componente × implante). Los cutters son cilindros
             # analíticos cerrados, por lo que se aplica una sola MANIFOLD por
             # componente de guía y nunca se invoca EXACT en este paso.

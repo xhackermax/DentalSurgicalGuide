@@ -241,7 +241,7 @@ def create_glyph_mesh_object(
         except ValueError:
             # A face can already exist only if malformed duplicate input slipped
             # through. The glyph library deliberately continues safely.
-            pass
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
 
     bm.verts.ensure_lookup_table()
     bm.edges.ensure_lookup_table()

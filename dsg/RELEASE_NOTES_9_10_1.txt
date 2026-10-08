@@ -1,0 +1,11 @@
+DSG 9.10.1 · Blender 5.2 multi-engine segmentation test build
+
+- Removed the active DenseVNet, DentalSegmentator and UniversalLab runtime paths.
+- Removed runtime adoption from older Blender installations.
+- Added selectable TotalSegmentator `teeth`, ToothSeg dual-branch and U-Mamba2 adapters.
+- Added real checkpoint validation before an engine can show READY.
+- Added shared external worker and normalized label contract so all three engines use the
+  same downstream Blender mesh pipeline.
+- TotalSegmentator and ToothSeg can fetch official weights automatically.
+- U-Mamba2 remains PENDING until a final inferable ToothFairy3 checkpoint is present.
+- ToothSeg is blocked from immediate-implant / two-arch routes that require jaw/canal output.

@@ -4,11 +4,11 @@ _DSG_LOG = _dsg_logging.getLogger(__name__)
 # parsing ``bl_info`` with ``ast.literal_eval`` before it imports the package;
 # values such as ``DSG_VERSION`` are therefore not valid here.
 # ``version`` MUST equal ``version.DSG_VERSION`` (enforced by
-# tests/test_version_ssot.py and by the runtime check in register()).
+# the runtime check in register() and Blender registration tests).
 bl_info = {
     "name": "DSG Dental Surgical Guide",
     "author": "Max Tiburcio",
-    "version": (9, 7, 5),
+    "version": (9, 10, 11),
     "blender": (5, 2, 0),
     "location": "3D View > Sidebar > DSG (MCP: separate DSG MCP tab)",
     "description": "Dental surgical guide planning: DICOM/CBCT + IOS, implants, sleeves and guide export",
@@ -16,30 +16,7 @@ bl_info = {
     "category": "3D View",
 }
 
-
-def _purge_stale_child_modules() -> None:
-    """Forget ``dsg.*`` modules cached from a previously installed version.
-
-    Installing a DSG ZIP over an enabled DSG makes Blender *reload* this
-    package in the same process.  A reload re-executes this file, but relative
-    imports such as ``from .version import …`` are answered from
-    ``sys.modules`` — i.e. by the OLD version's modules, so the package
-    reported the old version while ``guide_module`` (loaded fresh) reported
-    the new one and the mixed-build guard refused to start.
-    Purging before the first relative import guarantees every child module is
-    read from the files on disk.  On a first import nothing is cached, so this
-    is a no-op.
-    """
-    import sys as _sys
-
-    prefix = f"{__name__}."
-    for cached_name in [n for n in _sys.modules if n.startswith(prefix)]:
-        _sys.modules.pop(cached_name, None)
-
-
-_purge_stale_child_modules()
-
-from .version import DSG_VERSION, DSG_VERSION_STR  # noqa: E402  (after the purge on purpose)
+from .version import DSG_VERSION, DSG_VERSION_STR
 
 
 """DSG package bootstrap.
@@ -50,7 +27,7 @@ when an add-on is updated/re-enabled in the same process.  Importing a module
 such as ``alignment_module`` or ``roadmap_module`` from here while ``dsg`` is
 still only partially initialized can therefore make their relative
 ``from . import dicom_module`` imports resolve against a half-built package and
-raise the misleading circular-import error seen in Blender 5.1.
+raise misleading circular-import errors during Blender add-on reloads.
 
 Blender first imports this file completely and only then calls ``register()``.
 We take advantage of that contract: all DSG submodules are loaded lazily from
@@ -64,7 +41,10 @@ import sys
 import traceback
 from pathlib import Path
 
-import bpy
+def _blender_api():
+    # Loading pure contracts must also work in standalone worker/test Python.
+    import bpy
+    return bpy
 
 # Child modules are bound as package globals by ``_load_modules()`` during
 # register().  They are intentionally *not* pre-declared as ``None``: a
@@ -83,8 +63,7 @@ _LAZY_SUBMODULES = frozenset({
     "dental_mapping",
     "tooth_analysis",
     "dicom_module",
-    "cbct_ai_runtime",
-    "totalseg_runtime",
+    "segmentation_engines",
     "cbct_dental_module",
     "alignment_module",
     "guide_module",
@@ -100,6 +79,9 @@ _LAZY_SUBMODULES = frozenset({
     "agent_scene_graph",
     "agent_facade",
     "runtime_bootstrap",
+    "blender_compat",
+    "error_handling",
+    "failtests",
 })
 
 
@@ -148,7 +130,7 @@ def _ensure_package_path():
 def _validate_installation():
     """Fail early with a precise message if Blender kept a partial install."""
     required = (
-        "version.py", "source_parts.py", "dsg_logging.py",
+        "version.py", "blender_compat.py", "source_parts.py", "dsg_logging.py", "error_handling.py", "failtests.py", "installation_lock.py", "engine_preflight.py", "compute_probe.py", "dicom_probe.py",
         "lifecycle.py", "ui_style.py", "icon_manager.py", "glyph_library.py",
         "dental_assets.py", "dental_asset_blender.py", "tooth_analysis.py", "anatomy_refine.py",
         "dental_mapping/__init__.py", "dental_mapping/service.py", "dental_mapping/library.py",
@@ -158,8 +140,9 @@ def _validate_installation():
         "dental_mapping/proximal_fit.py", "dental_mapping/occlusal_fit.py",
         "dental_mapping/emergence.py", "dental_mapping/scoring.py", "dental_mapping/surgical_context.py", "dental_mapping/mesh_distance_core.py", "dental_mapping/eoff.py", "dental_mapping/eoff_core.py", "dental_mapping/migration.py",
         "core.py", "common_surface_match.py", "dental_surface_geometry.py", "dicom_module.py", "runtime_bootstrap.py",
-        "cbct_ai_runtime.py", "totalseg_runtime.py", "engine_install_worker.py", "engine_install/__init__.py", "engine_install/identity.py", "engine_install/manifest.py", "engine_install/download.py", "engine_install/archive.py", "engine_install/builder.py", "engine_install/installer.py", "cbct_dental_module.py", "alignment_module.py",
-        "guide_module.py", "irrigation_network.py", "frangible_seal.py", "_guide_parts/06_irrigation_d_frangible.py", "_guide_parts/06_irrigation_c_sequential.py", "guide_assets.py", "resources/guide_assets/manifest.json", "resources/guide_assets/drill_visual_template.b85", "resources/guide_assets/implant_template.b85", "resources/guide_assets/microscrew_visual_template.b85", "guide_export/__init__.py", "guide_export/policy.py", "guide_export/mesh_checks.py", "guide_export/report.py", "guide_export/blender_adapter.py", "guide_export/service.py", "frame_structural_core.py", "frame_fem_core.py", "frame_structural.py", "roadmap_module.py", "agent_core.py", "agent_scene_graph.py", "agent_facade.py", "clinical_core.py", "clinical_context.py", "evidence_core.py", "evidence_context.py",
+        "pipeline_core/__init__.py", "pipeline_core/contracts.py", "pipeline_core/trace.py",
+        "segmentation_engines.py", "segmentation_install_worker.py", "cbct_pipeline_worker.py", "cbct_pipeline_client.py", "cbct_dental_module.py", "alignment_module.py",
+        "guide_module.py", "guide_assets.py", "resources/guide_assets/manifest.json", "resources/guide_assets/drill_visual_template.b85", "resources/guide_assets/implant_template.b85", "resources/guide_assets/microscrew_visual_template.b85", "guide_export/__init__.py", "guide_export/policy.py", "guide_export/mesh_checks.py", "guide_export/report.py", "guide_export/blender_adapter.py", "guide_export/service.py", "frame_structural_core.py", "frame_fem_core.py", "frame_structural.py", "roadmap_module.py", "agent_core.py", "agent_scene_graph.py", "agent_facade.py", "clinical_core.py", "clinical_context.py", "evidence_core.py", "evidence_context.py",
         "resources/dental_assets/asset_contract_v1.json",
         "resources/clinical/source_registry.json",
         "resources/clinical/patient_context_schema_v1.json",
@@ -167,8 +150,7 @@ def _validate_installation():
         "resources/evidence/rules.json", "resources/evidence/journals.json",
         "resources/evidence/expert_watchlist.json", "resources/evidence/search_queries.json",
         "resources/frame/frame_structural_contract_v1.json",
-        "resources/specs/DSG_v9_2_1_PATIENT_FIRST_WORKFLOW.json",
-        "resources/runtime/OFFLINE_RUNTIME_MANIFEST.json",
+        "resources/specs/DSG_v9_10_0_SEGMENTATION_ENGINES.json",
         "THIRD_PARTY_MODEL_NOTICE.txt",
     )
     base = _addon_dir()
@@ -241,9 +223,10 @@ def _import_submodule(name: str):
 def _load_modules():
     """Load DSG modules once, in dependency order, after ``dsg`` is ready."""
     global _MODULES_LOADED, _MODULES
+    global DSG_VERSION, DSG_VERSION_STR
     global lifecycle, core, ui_style, icon_manager, glyph_library
     global dental_assets, dental_asset_blender, dental_mapping, tooth_analysis
-    global dicom_module, cbct_ai_runtime, totalseg_runtime, cbct_dental_module, runtime_bootstrap
+    global dicom_module, segmentation_engines, cbct_dental_module, runtime_bootstrap
     global alignment_module, guide_module, frame_structural_core, frame_fem_core, frame_structural, roadmap_module, agent_core, agent_scene_graph, agent_facade, clinical_core, clinical_context, evidence_core, evidence_context
 
     if _MODULES_LOADED:
@@ -259,6 +242,15 @@ def _load_modules():
         if cached_name.startswith(prefix):
             sys.modules.pop(cached_name, None)
 
+    # Reload the version module only after cached DSG children have been purged.
+    # Blender may re-execute this package while an older dsg.version is still
+    # present in sys.modules during Install from Disk.  Reading it before the
+    # purge creates a mixed-version false positive even when the files on disk
+    # are coherent.
+    version_module = _import_submodule("version")
+    DSG_VERSION = tuple(version_module.DSG_VERSION)
+    DSG_VERSION_STR = str(version_module.DSG_VERSION_STR)
+
     # Foundation modules first.  They do not depend on the clinical modules.
     lifecycle = _import_submodule("lifecycle")
     ui_style = _import_submodule("ui_style")
@@ -273,8 +265,7 @@ def _load_modules():
     # DICOM is the root of the clinical workflow.  Load it before modules that
     # intentionally reference it at module scope (Alignment/Roadmap).
     dicom_module = _import_submodule("dicom_module")
-    cbct_ai_runtime = _import_submodule("cbct_ai_runtime")
-    totalseg_runtime = _import_submodule("totalseg_runtime")
+    segmentation_engines = _import_submodule("segmentation_engines")
     cbct_dental_module = _import_submodule("cbct_dental_module")
     runtime_bootstrap = _import_submodule("runtime_bootstrap")
     alignment_module = _import_submodule("alignment_module")
@@ -287,8 +278,7 @@ def _load_modules():
         raise RuntimeError(
             "DSG internal version mismatch in the installed files: "
             f"package={DSG_VERSION} guide_module={loaded_guide_version}. "
-            "Restart Blender and enable DSG again; if it persists, remove the existing "
-            "dsg add-on folder and install one complete DSG ZIP. "
+            "Remove the existing dsg add-on folder and install one complete DSG ZIP. "
             "This guard prevents Blender from running a partially mixed clinical build."
         )
     frame_structural_core = _import_submodule("frame_structural_core")
@@ -338,7 +328,7 @@ def _quiesce_legacy_handlers():
         "redo_post",
         "load_post",
     ):
-        handlers = getattr(bpy.app.handlers, group_name, None)
+        handlers = getattr(_blender_api().app.handlers, group_name, None)
         if handlers is None:
             continue
         for handler in list(handlers):
@@ -401,8 +391,8 @@ def _configure_panels():
 def _normal_data_available():
     try:
         return (
-            getattr(bpy.data, "objects", None) is not None
-            and getattr(bpy.data, "scenes", None) is not None
+            getattr(_blender_api().data, "objects", None) is not None
+            and getattr(_blender_api().data, "scenes", None) is not None
         )
     except Exception:
         return False
@@ -417,7 +407,7 @@ def _deferred_initialize():
         return 0.20 if _DEFERRED_INIT_ATTEMPTS < 50 else None
 
     try:
-        for scene in bpy.data.scenes:
+        for scene in _blender_api().data.scenes:
             if core.SUITE_LANGUAGE_KEY not in scene:
                 scene[core.SUITE_LANGUAGE_KEY] = "ES"
             if core.SUITE_STAGE_KEY not in scene:
@@ -430,7 +420,7 @@ def _deferred_initialize():
         if not (cbct_ready and dicom_ready and guide_ready):
             return 0.20 if _DEFERRED_INIT_ATTEMPTS < 50 else None
 
-        scene = getattr(bpy.context, "scene", None)
+        scene = getattr(_blender_api().context, "scene", None)
         dsg_props = getattr(scene, "dsg_props", None) if scene is not None else None
         if (
             scene is not None
@@ -438,7 +428,7 @@ def _deferred_initialize():
             and dsg_props is not None
             and int(getattr(dsg_props, "current_step", 0)) == 0
         ):
-            core.prepare_guide_entry_view(bpy.context)
+            core.prepare_guide_entry_view(_blender_api().context)
 
         # First-run dependency bootstrap.  This is deliberately deferred until
         # Blender/Mixar has left _RestrictData and all DSG modules are registered.
@@ -453,7 +443,7 @@ def _deferred_initialize():
             _missing = [k for k in ("dicom_engine", "ai_dependencies", "semantic_model", "universal_model") if not _health.get(k)]
             _text = "DSG listo · DICOM + segmentación verificados" if not _missing else "DSG preflight · falta: " + ", ".join(_missing)
             try:
-                bpy.context.workspace.status_text_set(_text)
+                _blender_api().context.workspace.status_text_set(_text)
             except Exception:
                 _DSG_LOG.debug("suppressed exception", exc_info=True)
         except Exception:
@@ -492,6 +482,13 @@ def register():
         print(f"[DSG] logging setup warning: {exc}")
 
     try:
+        from . import blender_compat
+        blender_compat.assert_supported_runtime()
+    except Exception as exc:
+        print(f"[DSG] Blender compatibility check failed: {type(exc).__name__}: {exc}")
+        raise
+
+    try:
         _load_modules()
     except Exception as exc:
         print(f"[DSG] Module bootstrap failed: {type(exc).__name__}: {exc}")
@@ -508,12 +505,16 @@ def register():
         icon_manager.register()
         icons_registered = True
         ui_style.apply_dsg_theme()
+        from . import workflow_history
+        workflow_history.prepare_operators((core,*_MODULES))
         core.register()
         _REGISTERED.append(core)
         _configure_panels()
         for module in _MODULES:
             module.register()
             _REGISTERED.append(module)
+        workflow_history.register()
+        _REGISTERED.append(workflow_history)
         _register_deferred_initializer()
         print(f"[DSG] REGISTERED v{DSG_VERSION_STR} | {__file__}")
     except Exception:
@@ -550,14 +551,6 @@ def unregister():
     except Exception as exc:
         print(f"[DSG] Pipeline shutdown warning: {exc}")
 
-    # Stop the persistent background Blender before unloading DSG modules.
-    try:
-        if _loaded("cbct_ai_runtime") is not None:
-            shutdown = getattr(_loaded("cbct_ai_runtime"), "shutdown_persistent_worker", None)
-            if callable(shutdown):
-                shutdown()
-    except Exception as exc:
-        print(f"[DSG] AI worker shutdown warning: {exc}")
 
     _unregister_deferred_initializer()
     for module in reversed(list(_REGISTERED)):

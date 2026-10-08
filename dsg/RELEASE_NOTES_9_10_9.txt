@@ -1,0 +1,8 @@
+DSG 9.10.9 — Pipeline reversible con Ctrl+Z
+
+- Deshacer nativo de las operaciones DSG de geometría, FDI, máscaras y etapas.
+- Commit explícito de suavizado y segmentación asíncronos.
+- Versiones de arrays en disco, deduplicación por contenido y mmap.
+- Checkpoints .blend de escena completos por etapa; no sobrescribe el archivo de trabajo.
+- Ctrl+Z recupera etapas archivadas cuando se agota el historial nativo (proyecto de una escena).
+- Cancela workers antes de invalidar referencias de Blender.

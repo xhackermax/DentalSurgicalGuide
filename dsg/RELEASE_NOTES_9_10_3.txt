@@ -1,0 +1,15 @@
+DSG 9.10.3 - DICOM completo y PyTorch CUDA
+
+- Incluye seis ruedas DICOM: pydicom, pylibjpeg, libjpeg, openjpeg, rle, pyjpegls.
+- El instalador principal prepara DICOM y valida los códecs con datos sintéticos.
+- Detecta PyTorch y prueba CUDA/cuDNN; un controlador NVIDIA por sí solo no implica CUDA operativo.
+- Instala PyTorch 2.14.1+cu126 / torchvision 0.29.1+cu126 cuando NVIDIA está disponible.
+- Mantiene el build CUDA al reparar dependencias de los motores.
+- El estado completo exige DICOM estándar y PyTorch verificado.
+- El botón DICOM repara códecs aunque pydicom ya esté presente.
+- Los cuatro checkpoints compatibles también superan una prueba de red GPU de 64x64x64.
+- Conserva las reparaciones 9.10.2 de rutas largas, bloqueo y fallos individuales.
+
+Pruebas locales: Blender 5.2.2 LTS, Python 3.13, RTX 2070 8 GB.
+No se ha probado un CBCT de paciente. U-Mamba2 sigue requiriendo Linux/CUDA
+y un checkpoint final ToothFairy3, ausente; no se anuncia como instalado.

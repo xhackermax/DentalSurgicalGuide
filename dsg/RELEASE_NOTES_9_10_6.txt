@@ -1,0 +1,9 @@
+DSG 9.10.6 - suavizado medido con volumen conservado
+
+- Sustituye el suavizado Laplaciano apenas visible por Windowed Sinc/Nuttall.
+- Conserva el volumen por componente con tolerancia relativa 1e-6.
+- Limita el movimiento a la mitad del menor espaciado nativo del CBCT.
+- Mantiene las coordenadas originales, etiquetas, topología y referencia ICP.
+- Calcula bajo demanda y reutiliza una caché invalidada por cambios de malla.
+- Rechaza superficies abiertas o resultados que no pasan los límites.
+- Mantiene las correcciones de segmentación inmediata, DICOM, SciPy y CUDA.

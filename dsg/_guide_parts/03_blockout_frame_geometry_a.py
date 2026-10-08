@@ -140,10 +140,8 @@ def repair_manifold_difference_boundary(obj, max_boundary_edges=256, merge_dist=
 def apply_difference_manifold_checked(context, base_obj, cutter_obj, modifier_name):
     """Apply one transactional MANIFOLD difference without invoking EXACT.
 
-    This path is reserved for clean analytic drill-protection cutters. Blender
-    5.1 can crash natively inside meshintersect when several EXACT Boolean
-    modifiers are evaluated consecutively on recently rebuilt multi-shell
-    guide parts. MANIFOLD is sufficient here because both operands are closed
+    This path is reserved for clean analytic drill-protection cutters. Legacy Blender builds could crash natively inside meshintersect when several EXACT Boolean
+    modifiers were evaluated consecutively on recently rebuilt multi-shell guide parts. MANIFOLD is sufficient here because both operands are closed
     by construction. A failed result is rolled back and reported instead of
     retrying with EXACT.
     """
@@ -215,7 +213,7 @@ def apply_drill_insertion_protection_to_components(context, components, cutters)
     """Apply axial protection with one combined MANIFOLD cut per component.
 
     Combining all implant cylinders avoids the previous chain of repeated EXACT
-    modifiers (component × implant), which could crash Blender 5.1 inside the
+    modifiers (component × implant), which could crash Blender 5.2 inside the
     native mesh-intersection code.
     """
     valid_components = [obj for obj in components if _valid_obj(obj) and obj.type == 'MESH']
@@ -2968,12 +2966,6 @@ def auto_assign_irrigation_gate_defaults(props):
             _DSG_LOG.debug("suppressed exception", exc_info=True)
         if previous != sealed:
             changed.append(implant.name)
-    # Linked networks: the order of opening follows the trunk geometry (from
-    # the initial sleeve towards the inlet), not the order of creation.
-    try:
-        changed.extend(refresh_irrigation_network_roles(props))
-    except Exception as exc:
-        _DSG_LOG.warning('irrigation network roles not refreshed: %s', exc, exc_info=True)
     return changed
 
 
@@ -3017,9 +3009,9 @@ def sync_irrigation_gate_metadata(guide_obj, props):
             IRRIGATION_FRANGIBLE_SEAL_RIM_THICKNESS_MM_FIXED)
         guide_obj['DSG_irrigation_frangible_seal_mode'] = (
             IRRIGATION_FRANGIBLE_SEAL_MODE if names else 'NONE')
-        guide_obj['DSG_irrigation_frangible_marker_shape'] = FRANGIBLE_MARKER_SHAPE
+        guide_obj['DSG_irrigation_frangible_marker_shape'] = 'CYLINDRICAL_RECESS'
         guide_obj['DSG_irrigation_frangible_marker_depth_mm'] = float(
-            frangible_seal_design().countersink_depth_mm)
+            IRRIGATION_FRANGIBLE_MARK_DEPTH_MM_FIXED)
         guide_obj['DSG_irrigation_frangible_seal_export_only'] = True
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
