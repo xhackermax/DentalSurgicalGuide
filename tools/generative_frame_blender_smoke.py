@@ -37,11 +37,13 @@ def main():
         category, identifier = op_id.split(".", 1)
         getattr(getattr(bpy.ops, category), identifier).get_rna_type()
 
-    cls = bpy.types.DSG_OT_InspectFinalBooleanSection
-    assert cls.bl_rna.properties.get("section_axis") is not None
-    assert cls.bl_rna.properties.get("nominal_diameter_mm") is not None
-    cls_profile = bpy.types.DSG_OT_InspectFinalBooleanPath
-    assert cls_profile.bl_rna.properties.get("station_count") is not None
+    # Blender exposes registered operators via bpy.ops RNA, while bpy.types
+    # need not export their Python implementation classes as module attrs.
+    cls = bpy.ops.dsg.inspect_final_boolean_section.get_rna_type()
+    assert cls.properties.get("section_axis") is not None
+    assert cls.properties.get("nominal_diameter_mm") is not None
+    cls_profile = bpy.ops.dsg.inspect_final_boolean_path.get_rna_type()
+    assert cls_profile.properties.get("station_count") is not None
 
     bpy.ops.mesh.primitive_cube_add(size=2.0, location=(0, 0, 0))
     cube = bpy.context.active_object
