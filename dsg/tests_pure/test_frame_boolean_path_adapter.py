@@ -78,6 +78,28 @@ class BlenderPathAdapterTests(unittest.TestCase):
             fn(ctx,interior_centerline_mm=[[-4,2,0],[4,2,0]],
                mesh_arrays_fn=arrays)
 
+
+    def test_diagnostics_remain_visible_after_reinforcements_confirmed(self):
+        root=Path(__file__).resolve().parents[1]
+        tree=ast.parse((root/"_guide_parts/08_export_final_ui_registration.py")
+                       .read_text("utf8"))
+        helper=next(x for x in tree.body if isinstance(x,ast.FunctionDef)
+                    and x.name=="_draw_geodesic_research_tools")
+        draw=next(x for x in tree.body if isinstance(x,ast.FunctionDef)
+                  and x.name=="_draw_step_reinforcement")
+        calls=[
+            x for x in ast.walk(draw)
+            if isinstance(x,ast.Call) and isinstance(x.func,ast.Name)
+            and x.func.id=="_draw_geodesic_research_tools"
+        ]
+        self.assertEqual(len(calls),2)
+        self.assertTrue(any(isinstance(x,ast.Constant) and
+                            x.value=="dsg.analyze_geodesic_groups"
+                            for x in ast.walk(helper)))
+        self.assertTrue(any(isinstance(x,ast.Constant) and
+                            x.value=="dsg.preview_geodesic_frame_fem"
+                            for x in ast.walk(helper)))
+
     def test_operator_is_registered_and_final_step_button_exists(self):
         root=Path(__file__).resolve().parents[1]
         tree=ast.parse((root/"frame_structural.py").read_text("utf8"))
