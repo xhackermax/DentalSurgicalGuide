@@ -149,7 +149,15 @@ def prune_geodesic_groups(nodes, elements, load_cases, monitor_nodes,
                 raise InvalidGeodesicGroups("geodesic group must contain active visible beams")
         seen.update(indices)
     fixed_ids = {i for i, b in enumerate(elements) if i not in seen and b.active}
-    if any(b.active and b.render and not b.virtual and i not in seen for i,b in enumerate(elements)):
+    # The geodesic perimeter is an always-present, nonprunable anatomical
+    # frame member, not one of the optional reinforcement topology groups.
+    # Its material and stiffness stay in *every* compact candidate solve.
+    def fixed_frame_member(element):
+        return (element.render and element.active and not element.virtual
+                and element.locked_radius and not element.prunable
+                and str(element.tag).startswith("FRAME_PERIMETER_E"))
+    if any(b.active and b.render and not b.virtual and i not in seen
+           and not fixed_frame_member(b) for i,b in enumerate(elements)):
         raise InvalidGeodesicGroups("unclassified renderable FEM beam")
     loads = [load_cases] if isinstance(load_cases, fem.LoadCase) else list(load_cases)
     if not loads:
