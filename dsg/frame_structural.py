@@ -29,6 +29,7 @@ from . import frame_geodesic_fem as geodesic_fem
 from . import frame_contact_core as contact_core
 from . import frame_geodesic_groups as geodesic_groups
 from . import frame_boolean_section_core as boolean_sections
+from . import frame_swept_clearance_core as swept_clearance
 
 FRAME_STRUCTURAL_SCHEMA = core.SCHEMA
 SUPPORT_KEY = "DSG_frame_support_nodes_json"
@@ -670,6 +671,20 @@ def _fem_build_geodesic_model(context=None) -> dict:
     new_elements = list(virtual)
     accepted = []
     rejected = []
+    # Build hard protected *lumen* cylinders from the existing DSG sleeve context.
+    # The permissive anatomical contact surface is intentionally not excluded
+    # here: the tube must intersect it for later Boolean adaptation.
+    lumen_zones = []
+    for sleeve in model.get("frame_context", {}).get("sleeves", []):
+        if not bool(sleeve.get("lumen_keep_out", True)):
+            raise RuntimeError("GEODESIC_SLEEVE_LUMEN_POLICY_MISSING")
+        lumen_zones.append(swept_clearance.CylinderKeepOut(
+            label=f"{sleeve['id']}:LUMEN",
+            center_mm=tuple(float(v) for v in sleeve["center"]),
+            axis=tuple(float(v) for v in sleeve["axis"]),
+            radius_mm=float(sleeve["inner_radius_mm"]),
+            half_height_mm=0.5 * float(sleeve["height_mm"]),
+        ))
     # The nominal tubular FEM remains a design aid; no post-Boolean sections
     # or contact retention claims are made by this analysis.
     for candidate in candidate_beams:
@@ -725,6 +740,18 @@ def _fem_build_geodesic_model(context=None) -> dict:
             raise RuntimeError(
                 "GEODESIC_FEM_MODEL_TOO_LARGE: refine/condense the route before solving"
             )
+        sweep = swept_clearance.check_swept_tube_clearance(
+            fine, [float(candidate.radius_mm)] * len(fine), lumen_zones,
+            sample_spacing_mm=0.20, margin_mm=0.0,
+        )
+        if not sweep.clear:
+            rejected.append({
+                "candidate": label,
+                "reason": f"SWEPT_LUMEN_{sweep.status}",
+                "zone": sweep.nearest_zone,
+                "lower_bound_mm": float(sweep.conservative_min_clearance_mm),
+            })
+            continue
         ids = geodesic_fem.append_geodesic_beams(
             nodes, new_elements, fine,
             start_node=int(candidate.i), end_node=int(candidate.j),
@@ -738,6 +765,9 @@ def _fem_build_geodesic_model(context=None) -> dict:
             "surface_length_mm": float(route.surface_length_mm),
             "terminal_transition_mm": float(terminal_offset.length),
             "geodesic_backend": str(route.backend),
+            "swept_lumen_clearance_mm": float(sweep.conservative_min_clearance_mm),
+            "swept_lumen_zone_count": int(sweep.declared_zone_count),
+            "whole_anatomy_sweep_validated": False,
         })
 
     if len(accepted) < 2:
