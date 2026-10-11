@@ -61,6 +61,35 @@ class JunctionTests(unittest.TestCase):
             preflight_sleeve_junction([[float("nan"),0,0],[3,0,0]],[1,1],
                                       [sleeve("S1")],target_sleeve_id="S1")
 
+    def test_four_cardinal_outer_welds_are_all_provisional(self):
+        for direct in ([1,0,0], [0,1,0], [-1,0,0], [0,-1,0]):
+            with self.subTest(direction=direct):
+                start=[7*v for v in direct]
+                mid=[5*v for v in direct]
+                end=[3.03*v for v in direct]
+                report=preflight_sleeve_junction(
+                    [start,mid,end],[1.25]*3,[sleeve("S1")],
+                    target_sleeve_id="S1",maximum_deferred_tip_mm=2.1)
+                self.assertTrue(report.candidate_admissible)
+                self.assertTrue(report.post_boolean_lumen_validation_required)
+                self.assertFalse(report.final_lumen_clear)
+
+    def test_multiple_sleeves_only_own_outer_wall_is_exempt(self):
+        report=preflight_sleeve_junction(
+            [[7,0,0],[5,0,0],[3.03,0,0]],[1.25]*3,
+            [sleeve("S1"),sleeve("S2",center=(50,0,0))],
+            target_sleeve_id="S1",maximum_deferred_tip_mm=2.1)
+        self.assertTrue(report.candidate_admissible)
+        self.assertEqual(report.declared_lumens,2)
+        self.assertEqual(report.non_target_lumens_checked,1)
+        self.assertFalse(report.final_lumen_clear)
+
+    def test_axially_misaligned_weld_is_rejected(self):
+        with self.assertRaisesRegex(InvalidSleeveJunction,"OUTER_WALL"):
+            preflight_sleeve_junction(
+                [[7,0,0],[5,0,0],[3,0,4]], [1]*3,
+                [sleeve("S1")], target_sleeve_id="S1")
+
     def test_determinism(self):
         kwargs=dict(target_sleeve_id="S1",maximum_deferred_tip_mm=2.1)
         a=preflight_sleeve_junction([[7,0,0],[3,0,0]],[1,1],[sleeve("S1")],**kwargs)
