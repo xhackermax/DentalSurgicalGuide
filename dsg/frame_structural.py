@@ -863,6 +863,11 @@ def analyze_geodesic_frame_fem(context=None) -> dict:
         routing_mode=model["route_mode"],
         geodesic_routes=model["geodesic_routes"],
         rejected_geodesic_routes=model["rejected_geodesic_routes"],
+        perimeter_length_mm=float(model.get("perimeter_length_mm", 0.0)),
+        perimeter_beam_elements=sum(len(e["beam_indices"]) for e in model.get("perimeter_routes", [])),
+        perimeter_included_in_nominal_volume=bool(model.get("perimeter_included_in_nominal_volume")),
+        perimeter_support_contact_calibrated=False,
+        post_boolean_lumen_validated=False,
         experimental=True,
         post_boolean_section_validated=False,
         geometry_mutated=False,
@@ -950,6 +955,9 @@ def estimate_geodesic_frame_contact(context=None, *, policy: contact_core.Contac
         "retained_volume_planar_estimate_mm3": float(sum(
             x["retained_volume_planar_estimate_mm3"] for x in route_results)),
         "hard_safe_nominal_fem": bool(result.hard_safe),
+        "perimeter_included_in_nominal_volume": bool(model.get("perimeter_included_in_nominal_volume")),
+        "perimeter_support_contact_calibrated": False,
+        "post_boolean_lumen_validated": False,
         "warning": ("This is an uncalibrated local tangent-plane diagnostic; "
                     "no actual Boolean, retention measurement or validated "
                     "post-Boolean FEM was performed."),
@@ -983,7 +991,11 @@ def analyze_geodesic_group_topology(context=None) -> dict:
     )
     return {
         "schema": "dsg.geodesic_group_pruning.v1",
-        "objective": "BALANCED_MATERIAL_STIFFNESS",
+        "objective": "BALANCED_NOMINAL_VOLUME_AND_COMPLIANCE",
+        "perimeter_length_mm": float(model.get("perimeter_length_mm", 0.0)),
+        "perimeter_included_in_nominal_volume": bool(model.get("perimeter_included_in_nominal_volume")),
+        "perimeter_support_contact_calibrated": False,
+        "post_boolean_lumen_validated": False,
         "active_groups": list(result.active_groups),
         "removed_groups": list(result.removed_groups),
         "material_volume_mm3": float(result.material_volume_mm3),
