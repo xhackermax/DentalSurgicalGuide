@@ -2878,6 +2878,34 @@ def _draw_step_irrigation(layout, b, context, props):
         dimensions.prop(props, 'irr_wall_thickness', text=_ui_text(props, 'Thickness', 'Grosor'))
 
 
+def _draw_geodesic_research_tools(b, props):
+    """Show all diagnostic-only FEM tools also after routes are confirmed."""
+    research = _secondary_box(
+        b, props, 'Research · geodesic and contact diagnostics',
+        'Investigación · geodésicas, FEM y contacto')
+    row = _secondary_action(research)
+    row.operator(
+        'dsg.analyze_geodesic_frame_fem',
+        text=_ui_text(props, 'Analyze surface FEM (EXPERIMENTAL)',
+                      'Analizar FEM superficial (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
+    row.operator(
+        'dsg.preview_geodesic_frame_fem',
+        text=_ui_text(props, 'Preview geodesic FEM (EXPERIMENTAL)',
+                      'Vista previa FEM geodésico (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
+    row.operator(
+        'dsg.estimate_geodesic_contact',
+        text=_ui_text(props, 'Estimate contact (EXPERIMENTAL)',
+                      'Estimar contacto (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
+    row.operator(
+        'dsg.analyze_geodesic_groups',
+        text=_ui_text(props, 'Analyze whole-route topology (EXPERIMENTAL)',
+                      'Analizar topología por rutas (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
+
+
 def _draw_step_reinforcement(layout, b, context, props):
     pending = get_pending_reinforcement_preview(props)
     confirmed = get_confirmed_reinforcement_curves()
@@ -2914,6 +2942,7 @@ def _draw_step_reinforcement(layout, b, context, props):
             'dsg.remove_last_reinforcement',
             text=_ui_text(props, 'Delete last reinforcement', 'Eliminar último refuerzo'),
             icon_value=icon_manager.icon_id('delete'))
+        _draw_geodesic_research_tools(b, props)
         return
 
     # KISS: una acción principal. FEM decide topología, radios, poda y rigidez;
@@ -2936,26 +2965,6 @@ def _draw_step_reinforcement(layout, b, context, props):
         'dsg.skip_reinforcement',
         text=_ui_text(props, 'Continue without', 'Continuar sin refuerzo'),
         icon_value=icon_manager.icon_id('continue'))
-    tools.operator(
-        'dsg.analyze_geodesic_frame_fem',
-        text=_ui_text(props, 'Analyze surface routes (EXPERIMENTAL)',
-                      'Analizar rutas superficiales (EXPERIMENTAL)'),
-        icon_value=icon_manager.icon_id('reinforcement'))
-    tools.operator(
-        'dsg.preview_geodesic_frame_fem',
-        text=_ui_text(props, 'Preview geodesic FEM (EXPERIMENTAL)',
-                      'Vista previa FEM geodésico (EXPERIMENTAL)'),
-        icon_value=icon_manager.icon_id('reinforcement'))
-    tools.operator(
-        'dsg.estimate_geodesic_contact',
-        text=_ui_text(props, 'Estimate contact (EXPERIMENTAL)',
-                      'Estimar contacto (EXPERIMENTAL)'),
-        icon_value=icon_manager.icon_id('reinforcement'))
-    tools.operator(
-        'dsg.analyze_geodesic_groups',
-        text=_ui_text(props, 'Evaluate whole-route topology (EXPERIMENTAL)',
-                      'Evaluar topología por rutas (EXPERIMENTAL)'),
-        icon_value=icon_manager.icon_id('reinforcement'))
     if _tertiary_header(
             optional, props, 'show_reinforcement_options',
             'Accessory · manual dimensions', 'Accesorio · medidas manuales'):
@@ -2963,6 +2972,8 @@ def _draw_step_reinforcement(layout, b, context, props):
         advanced.prop(
             props, 'connector_diameter',
             text=_ui_text(props, 'Manual connector thickness', 'Grosor manual'))
+
+    _draw_geodesic_research_tools(b, props)
 
 
 def _draw_step_drill(layout, b, context, props):
