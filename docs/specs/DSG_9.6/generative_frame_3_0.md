@@ -1,10 +1,10 @@
 # GenerativeFrame 3.0 — roadmap audit and implementation contract
 
-**Audit:** 2026-10-11 · PR #1 `feature/generative-frame-3-geodesic-h0` · baseline audited commit `26a5515b10dbfd78db1cec5d9110149a945da42f`
+**Audit:** 2026-10-11 · PR #1 `feature/generative-frame-3-geodesic-h0` · live branch CI; clinical main unchanged
 
 **Status:** EXPERIMENTAL, not ready for clinical use or merger. This document is the project's **single roadmap/status contract**. The original goal remains unchanged: optimize **perimeter frame + reinforcement network together**, on anatomical geodesics, allowing controlled contact/penetration and using post-Boolean structural evidence.
 
-The last audited CI completed 115 Python tests (114 passed, 1 skipped) and built a ZIP. Its workflow does not execute Blender 5.2, so passing CI does **not** prove addon registration, operator behavior, real Boolean geometry or clinical suitability. Do not claim any H0-H7 stage complete until its explicit acceptance gate passes.
+Branch CI now contains a **real Blender 5.2.2 LTS** workflow with verified official download/SHA256, addon registration/unregistration, UI operator resolution and evaluated-mesh cross-section tests, **plus** portable Python tests/ZIP build. This does not prove real geodesic candidate generation, patient fitting, full Boolean/Undo/export or clinical suitability. No H0-H7 stage is declared complete until all its acceptance gates pass.
 
 ## Nonnegotiable invariants
 
@@ -19,11 +19,11 @@ The last audited CI completed 115 Python tests (114 passed, 1 skipped) and built
 
 | Stage | Status | Existing implementation | Missing acceptance gate |
 |---|---|---|---|
-| H0 — reproducibility/transaction | Foundation; not closed | `create_fem_reinforcements` stages candidates and retains older confirmation on failure; pure tests via simulated Blender objects | Real Blender 5.2: install/register, Undo, redo, failed solver/stage, metadata and naming idempotence, clinical export unaffected |
+| H0 — reproducibility/transaction | Partial; Blender smoke passing | Transactional candidate replacement and simulated rollback tests; real Blender 5.2.2 addon registration/unregistration/UI RNA and evaluated-mesh diagnostic smoke now on CI | Real Blender generation/Undo/redo/failure recovery, metadata idempotence and unchanged clinical export |
 | H1 — unified surface geodesics | Partial | Shared underlying graph kernel; exact-face anchors in `frame_geodesic_paths`; original frame routes through its own Blender adapter | One *authoritative* route/smoothing/anchor/forbidden-mask contract for both frame and reinforcements. Test complex folds, occlusal/interproximal contours and sleeve exits |
 | H2 — adaptive contact/penetration | Analytical prototype | `frame_contact_core`: local planar chord/contact, retained area, bending second moments, policy feasibility | Actually generate radius/depth-controlled tubes; validate inserted depth, residual geometry, fit and attachment transitions using final mesh; demonstrate nontrivial contact |
 | H3 — post-Boolean section/clearance | Diagnostic prototype | `frame_boolean_section_core`, `frame_boolean_path_core`, `frame_swept_clearance_core`; single/multistation read-only final-mesh inspection | Automatically obtain **inside-solid** tracing paths for every generated member, sample actual post-Boolean sections, add all forbidden meshes and insertion clearance |
-| H4 — structural FEM | Partial | `frame_fem_core` with Euler-Bernoulli beams; curved-chain discretization and nominal group evaluation | Include **perimeter frame** in the stiffness network and volume, local residual section properties, connections/merges and non-ideal contact supports; validate predictions against reference FEM and bench loads |
+| H4 — structural FEM | Partial, perimeter now modeled | `frame_fem_core`, curved beam-chain discretization, **four-edge nonprunable geodesic perimeter** in experimental network and nominal volume/group-pruning candidates | P1-P4 are still fully clamped, so the loop cannot yet add realistic contact-supported stiffness; measured post-Boolean sections, junctions and bench-model calibration remain missing |
 | H5 — joint topology/material objective | Partial prototype | `frame_geodesic_groups`: balanced whole-route deletion on nominal FEM; radii resizing separately | Real joint search across perimeter frame, path connectivity, reinforcement groups, beam diameter, embedding depth and manufacturability, with Pareto/baseline comparison |
 | H6 — Blender application, UX and export | Pending | Experimental viewport/report tools, isolated from applied clinical guide | Transactional end-to-end generation → preview → validation → apply → Boolean → verify → STL/PDF/report/Undo; real Blender 5.2 automated/manual smoke |
 | H7 — physical/clinical qualification | Pending | None claimed | Repeatable printed-guide fit, path of insertion, seating, dimensional control, fatigue/deflection, sleeve precision, retentive force and material-process evidence |
@@ -31,21 +31,21 @@ The last audited CI completed 115 Python tests (114 passed, 1 skipped) and built
 ## Confirmed implementation gaps (prioritized)
 
 ### P0-1 — real Blender 5.2 integration and lifecycle tests
-**Evidence:** `.github/workflows/ci.yml` runs Python 3.13, installs NumPy, runs `compileall`, `unittest` and ZIP build; it does **not** start Blender or exercise actual operations or the SciPy sparse FEM backend.
+**Updated evidence:** `.github/workflows/blender-5.2-smoke.yml` now runs official SHA256-verified Blender 5.2.2 registration/unregistration, UI RNA resolution and evaluated mesh section profiles. The full guide generation, external SciPy backend and Undo/rollback paths are **still not tested in actual Blender**.
 
 **Remedy:** add a headless Blender 5.2 job (registration, route/preview, finalize, export, undo, reset, repeated runs, cleanup) on synthetic arches and real anonymized IOS fixtures. Ensure production SciPy and NumPy fallback match analytical reference cases.
 
 **Acceptance:** zero failed operators; unchanged established clinical outputs; rollback restores original objects; deterministic output across repeated runs; no dangling previews or orphan meshes.
 
 ### P0-2 — protect sleeve lumen without forbidding every legitimate sleeve connection
-**Evidence:** `_fem_build_geodesic_model` checks the full constant-radius candidate tube up to a sleeve attachment near `1.01 * outer_radius`. When the candidate radius exceeds available solid sleeve wall, a properly fused connector can be rejected before the final drilling Boolean even though its *post-Boolean lumen* could remain open. In general `r_attach - r_beam < r_lumen` makes an endpoint swept tube overlap the ideal lumen cylinder.
+**Updated evidence:** `frame_sleeve_junction_core.preflight_sleeve_junction` now checks all non-target sleeve lumens along the full swept tube and the target lumen upstream, allowing only a **bounded outer-wall terminal weld** (at most 2.5 mm) as a provisional candidate. Accepted candidates explicitly retain `final_lumen_clear=False` and require final Boolean lumen validation. Full residual lumen/wall/drill tests have **not** yet been built.
 
 **Remedy:** distinguish valid connector-to-outer-sleeve union (including smoothly tapered ends) from the **actual lumen void**. Validate the lumen on the final union/Boolean mesh; reject solid obstruction and insufficient sleeve wall, not every temporary pre-Boolean volume intersection. Add clinical sleeve-radius cases and all four cardinal attachments, including multi-sleeve cases.
 
 **Acceptance:** bona fide exterior welds survive, no residual lumen obstruction; final real wall thickness and drill access measured; illegal through-lumen paths fail.
 
 ### P0-3 — perimeter frame absent from the experimental FEM network
-**Evidence:** `_fem_build_model` fixes P1-P4 in all six DOFs, then adds support→sleeve candidates and virtual sleeve spokes. It does **not** mesh the actual geodesic perimeter P1–P2–P3–P4–P1. `analyze_geodesic_group_topology` therefore evaluates support-reinforcement candidates **without frame stiffness or perimeter material volume**.
+**Updated evidence:** `_fem_build_geodesic_model` now adds all four geodesic perimeter paths through the same face-anchor router and keeps them fixed in each experimental group-pruning solve; perimeter material is counted in nominal beam volume. **P1–P4 remain fixed in all 6 DOF**: support assumptions do not reproduce actual retention/compliance, and perimeter contribution to actual deflection is uncalibrated.
 
 **Remedy:** discretize the existing frame loop with shared geodesic station IDs and junction continuity, model contacts as physically justified (not four blanket clamped points), retain cross-member attachment identity. Validate against reference assembled meshes.
 
@@ -87,9 +87,34 @@ Bench-test printed guides using the intended resin/printer/postcure; compare pre
 
 ## Next immediate development action
 
-**Do not add more independent analytical engines first.** Run Blender 5.2 integration and fix the sleeve-connection sweep and perimeter-FEM omissions. They are upstream dependencies: optimizing geometry before they work can falsely rank or reject every candidate.
+**Next:** extend real Blender 5.2.2 CI from install/RNA/section smoke to a synthetic 1-sleeve and 2-sleeve guide end-to-end generation/Boolean/Undo test; verify the actual post-Boolean lumen and wall after the provisional target-sleeve weld, then replace P1–P4 hard clamps with justified contact boundary conditions. Do not claim mechanical improvement solely from adding frame volume.
 
 ## Notes
 
 - Numeric defaults in FEM and contact dialogs are software fixtures, not evidence-based clinical limits.
 - Source evidence: `dsg/frame_structural.py` (`_fem_build_model`, `_fem_build_geodesic_model`, preview/apply); `dsg/frame_fem_core.py`; `dsg/frame_contact_core.py`; `dsg/frame_geodesic_groups.py`; `dsg/frame_boolean_path_core.py`; `dsg/frame_swept_clearance_core.py`; `.github/workflows/ci.yml`; `AGENTS.md`.
+
+## 2026-10-11 implementation evidence and strict limitations
+- **Blender real CI:** `.github/workflows/blender-5.2-smoke.yml` downloads
+  official **Blender 5.2.2 LTS** and checks the upstream SHA256.
+  `tools/blender_smoke.py` covers addon registration/unregistration (twice)
+  and the entire UI-operator reference surface. `tools/generative_frame_blender_smoke.py`
+  inspects actual registered experimental operator RNA properties and a
+  real evaluated Blender cube's geometric sections, without scene mutation.
+- **Sleeve preflight:** `frame_sleeve_junction_core.py` replaces the
+  blanket "tube must not touch even its target sleeve" preBoolean rejection:
+  non-target lumens remain forbidden on the whole tube; target lumen remains
+  protected outside the explicit terminal outer-wall weld segment.
+  No result ever reports final lumen clear without a postBoolean geometry test.
+- **Perimeter network:** `frame_perimeter_fem.py` appends all four frame edges
+  atomically as locked/nonprunable geodesic FEM chains. The whole nominal
+  perimeter volume stays in the group's balanced comparison. Group removal
+  can never delete only a portion of the perimeter.
+- **Not yet structural validation:** support P1–P4 remain artificially fixed.
+  The loop adds real *accounting* of nominal frame material, but not a
+  clinically meaningful change in measured stiffness until contact boundary
+  conditions are calibrated. Nominal tube radii are not the final solid's
+  postBoolean properties.
+- **Next build gate:** real one- and two-sleeve end-to-end Blender assemblies,
+  final clear lumen + wall + drilling path checks, Undo/rollback and variable
+  contact-supported FEM comparison to reference deflections.
