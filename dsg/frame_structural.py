@@ -1292,16 +1292,25 @@ class DSG_OT_EstimateGeodesicContact(Operator):
     bl_description = "Local-planar contact estimate only; not a validated clinical retention test"
     bl_options = {'REGISTER'}
 
-    min_contact_width_mm: FloatProperty(name="Minimum interface width (mm)", default=0.8,
-                                        min=0.0, max=8.0, precision=3)
-    min_area_ratio: FloatProperty(name="Minimum retained area fraction", default=0.65,
-                                  min=0.0, max=1.0, precision=3)
-    min_inertia_ratio: FloatProperty(name="Minimum bending inertia fraction", default=0.30,
-                                     min=0.0, max=1.0, precision=3)
-    min_penetration_mm: FloatProperty(name="Minimum overlap (mm)", default=0.01,
-                                      min=0.0, max=5.0, precision=3)
-    max_penetration_mm: FloatProperty(name="Maximum overlap (mm)", default=0.7,
-                                      min=0.0, max=5.0, precision=3)
+    # The module uses postponed annotations; Blender requires actual
+    # deferred RNA property objects in __annotations__, not annotation strings.
+    __annotations__ = {
+        "min_contact_width_mm": FloatProperty(
+            name="Minimum interface width (mm)", default=0.8,
+            min=0.0, max=8.0, precision=3),
+        "min_area_ratio": FloatProperty(
+            name="Minimum retained area fraction", default=0.65,
+            min=0.0, max=1.0, precision=3),
+        "min_inertia_ratio": FloatProperty(
+            name="Minimum bending inertia fraction", default=0.30,
+            min=0.0, max=1.0, precision=3),
+        "min_penetration_mm": FloatProperty(
+            name="Minimum overlap (mm)", default=0.01,
+            min=0.0, max=5.0, precision=3),
+        "max_penetration_mm": FloatProperty(
+            name="Maximum overlap (mm)", default=0.7,
+            min=0.0, max=5.0, precision=3),
+    }
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self, width=420)
