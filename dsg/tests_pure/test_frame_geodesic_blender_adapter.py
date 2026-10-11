@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import numpy as np
 
 from dsg import frame_fem_core as fem, frame_geodesic_fem
+from dsg import frame_swept_clearance_core as swept_clearance
 
 
 class Vec(tuple):
@@ -77,6 +78,7 @@ class ExperimentalAdapterTests(unittest.TestCase):
                 NoValidSurfaceRoute=ValueError,
             ),
             "geodesic_fem": frame_geodesic_fem,
+            "swept_clearance": swept_clearance,
             "fem": fem,
             "np": np,
             "math": __import__("math"),
@@ -97,6 +99,31 @@ class ExperimentalAdapterTests(unittest.TestCase):
         self.assertFalse(model["config"].enable_topology_growth)
         self.assertEqual(model["route_mode"], "SURFACE_GEODESIC_EXPERIMENTAL_READ_ONLY")
         self.assertGreater(len(model["nodes"]), 3)
+
+
+    def test_swept_lumen_blocks_a_colliding_tube_not_just_centerline(self):
+        fn, base, seen = self.create()
+        base["frame_context"] = {"sleeves": [{
+            "id": "S1", "lumen_keep_out": True,
+            "center": [0, 0, 0], "axis": [0, 0, 1],
+            "inner_radius_mm": 0.45, "height_mm": 6.0
+        }]}
+        with self.assertRaisesRegex(RuntimeError, "NO_VALID_GEODESIC_FEM_MODEL"):
+            fn("mock")
+        self.assertEqual(len(seen), 2)
+
+    def test_swept_clearance_reports_which_explicit_zones_are_checked(self):
+        fn, base, seen = self.create()
+        base["frame_context"] = {"sleeves": [{
+            "id": "S1", "lumen_keep_out": True,
+            "center": [100, 100, 100], "axis": [0, 0, 1],
+            "inner_radius_mm": 1.0, "height_mm": 6.0
+        }]}
+        model=fn("mock")
+        self.assertTrue(all(route["swept_lumen_zone_count"] == 1
+                            for route in model["geodesic_routes"]))
+        self.assertTrue(all(not route["whole_anatomy_sweep_validated"]
+                            for route in model["geodesic_routes"]))
 
     def test_invalid_intrinsic_routes_fail_instead_of_using_chords(self):
         fn, base, seen = self.create(fail_routes=True)
