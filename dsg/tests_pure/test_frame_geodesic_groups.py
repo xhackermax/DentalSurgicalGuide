@@ -60,6 +60,17 @@ class GeodesicGroupPruningTests(unittest.TestCase):
         with self.assertRaisesRegex(InvalidGeodesicGroups, "unclassified"):
             self.run_optimizer()
 
+    def test_perimeter_is_fixed_and_counted_in_each_candidate_volume(self):
+        baseline = self.run_optimizer(min_remaining_groups=2)
+        self.e.append(fem.BeamElement(
+            0, 2, 0.7, tag="FRAME_PERIMETER_E1:SEG000", locked_radius=True,
+            prunable=False, render=True))
+        coupled = self.run_optimizer(min_remaining_groups=2)
+        self.assertGreater(coupled.material_volume_mm3, baseline.material_volume_mm3)
+        self.assertEqual(coupled.removed_groups, ())
+        # The P1/P2 anchors are still all-DOF fixed. This accounts for
+        # perimeter MATERIAL, but does not calibrate retention/contact stiffness.
+
     def test_non_finite_weight_rejected(self):
         with self.assertRaises(ValueError):
             self.run_optimizer(stiffness_weight=float("nan"))
