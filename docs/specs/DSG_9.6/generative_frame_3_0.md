@@ -95,3 +95,20 @@ Confirmed manual reinforcements cannot be overwritten.
   reports topology recommendations but **never applies** an optimized guide.
 - Results remain based on nominal circular beams, not the real Boolean solid.
   Full-frame topology and contact-calibrated FEM are still pending.
+
+## H3: actual post-Boolean section measurement (experimental diagnostic)
+- `dsg/frame_boolean_section_core.py` slices a closed triangular mesh at an
+  arbitrary section plane and computes cross-sectional area, centroid, principal
+  bending moments of inertia, distinct components and nested material voids.
+- Fail closed on open/nonmanifold contour, ambiguous coplanar intersections,
+  probe outside actual solid, probe in a hole or an unboundedly large mesh.
+- `inspect_final_boolean_guide_section()` accepts **only** a DSG guide with
+  `DSG_final_cut_completed`, and uses the existing `guide_export.blender_adapter.mesh_arrays`
+  to inspect Blender's evaluated, world-coordinate geometry.
+- The optional final-export-stage button measures a plane through the 3D cursor;
+  the cursor must be **inside the material**, and the plane normal must match
+  the direction of the region being evaluated.
+- This is a **single human-requested section**, not sampled full-guide FEM,
+  and never auto-approves exported STL or modifies the final guide.
+- Physical retentive performance, insertion safety, anisotropic resin,
+  torsional constants and globally connected-frame behavior remain unverified.

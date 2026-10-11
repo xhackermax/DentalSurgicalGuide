@@ -3007,6 +3007,19 @@ def _draw_step_name_export(layout, b, context, props):
         'dsg.export_guide_stl',
         text=_ui_text(props, 'EXPORT STL', 'EXPORTAR STL'),
         icon_value=icon_manager.icon_id('export_stl'))
+    if _valid_obj(guide) and bool(guide.get('DSG_final_cut_completed', False)):
+        diagnostic = _secondary_box(
+            b, props, 'Research · actual Boolean section',
+            'Investigación · sección tras booleana')
+        diagnostic.label(
+            text=_ui_text(props, 'Place cursor inside final guide',
+                          'Sitúa el cursor dentro de la guía final'),
+            icon='INFO')
+        diagnostic.operator(
+            'dsg.inspect_final_boolean_section',
+            text=_ui_text(props, 'Measure section (EXPERIMENTAL)',
+                          'Medir sección (EXPERIMENTAL)'),
+            icon='MESH_DATA')
 
     if _tertiary_header(
             b, props, 'show_name_tools',

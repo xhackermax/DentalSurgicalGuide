@@ -18,7 +18,7 @@ from typing import Any
 import bpy
 import numpy as np
 from bpy.types import Operator
-from bpy.props import FloatProperty
+from bpy.props import FloatProperty, FloatVectorProperty
 from mathutils import Matrix, Vector
 
 from . import guide_module
@@ -28,6 +28,7 @@ from . import frame_geodesic_paths as geodesic_paths
 from . import frame_geodesic_fem as geodesic_fem
 from . import frame_contact_core as contact_core
 from . import frame_geodesic_groups as geodesic_groups
+from . import frame_boolean_section_core as boolean_sections
 
 FRAME_STRUCTURAL_SCHEMA = core.SCHEMA
 SUPPORT_KEY = "DSG_frame_support_nodes_json"
@@ -1375,6 +1376,103 @@ class DSG_OT_AnalyzeGeodesicGroups(Operator):
         return {'FINISHED'}
 
 
+def inspect_final_boolean_guide_section(context=None, *, point_mm, axis,
+                                        mesh_arrays_fn=None) -> dict:
+    """Measure one requested section of the *actual* final Boolean guide.
+
+    Only a DSG guide explicitly marked as final-cut-completed is accepted.
+    Explicit interior probe/section point prevents assigning unrelated
+    implants, sleeves or neighbouring frame branches to this cross-section.
+    A failure leaves all Blender objects untouched and does not affect export.
+    """
+    context = context or bpy.context
+    guide = guide_module.get_active_guide_obj(context.scene.dsg_props)
+    if (not guide_module._valid_obj(guide)
+            or getattr(guide, 'type', None) != 'MESH'
+            or not bool(guide.get("DSG_final_cut_completed", False))):
+        raise RuntimeError(
+            "BOOLEAN_SECTION_REQUIRES_FINAL_GUIDE: apply the validated final "
+            "Boolean first; preview curves/pre-Boolean guides cannot be measured"
+        )
+    if mesh_arrays_fn is None:
+        # Reuse the actual export adapter: evaluated mesh, world coordinates.
+        from .guide_export.blender_adapter import mesh_arrays
+        mesh_arrays_fn = mesh_arrays
+    vertices, triangles = mesh_arrays_fn(guide)
+    section = boolean_sections.measure_boolean_section(
+        vertices, triangles, point_mm, axis, probe_point_mm=point_mm,
+        require_closed=True,
+    )
+    return {
+        "schema": "dsg.actual_boolean_section.v1",
+        "guide_name": str(guide.name),
+        "method": section.backend,
+        "section_area_mm2": float(section.area_mm2),
+        "principal_inertia_min_mm4": float(section.principal_inertia_min_mm4),
+        "principal_inertia_max_mm4": float(section.principal_inertia_max_mm4),
+        "boundary_count": int(section.boundary_count),
+        "hole_count": int(section.hole_count),
+        "component_count": int(section.global_component_count),
+        "experimental": True,
+        "mesh_is_post_boolean": True,
+        "design_approved": False,
+        "retention_validated": False,
+        "full_frame_fem_validated": False,
+        "geometry_mutated": False,
+    }
+
+
+class DSG_OT_InspectFinalBooleanSection(Operator):
+    bl_idname = "dsg.inspect_final_boolean_section"
+    bl_label = "Inspect Final Guide Section (Experimental)"
+    bl_description = (
+        "Measure real cross-section at the 3D cursor inside the final Boolean guide; "
+        "never modifies the guide or exports a mesh"
+    )
+    bl_options = {'REGISTER'}
+
+    # Blender requires actual property descriptors with postponed annotations.
+    __annotations__ = {
+        "section_axis": FloatVectorProperty(
+            name="Plane normal / beam tangent",
+            description="Local beam direction of the requested section in world XYZ",
+            subtype='DIRECTION', size=3, default=(1.0, 0.0, 0.0)),
+    }
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=430)
+
+    def draw(self, context):
+        col = self.layout.column(align=True)
+        col.label(text="Place the 3D cursor INSIDE the final guide", icon='INFO')
+        col.label(text="Not a retention / clinical acceptance test", icon='ERROR')
+        col.prop(self, "section_axis")
+
+    def execute(self, context):
+        try:
+            guide = guide_module.get_active_guide_obj(context.scene.dsg_props)
+            if not guide_module._valid_obj(guide) or not bool(guide.get("DSG_final_cut_completed", False)):
+                raise RuntimeError("Se necesita una guía con booleana final aplicada")
+            point = tuple(float(v) for v in context.scene.cursor.location)
+            report = inspect_final_boolean_guide_section(
+                context, point_mm=point, axis=tuple(float(v) for v in self.section_axis))
+        except Exception as exc:
+            guide_module._dsg_report(
+                self, {'ERROR'},
+                f"Final-guide section measurement failed: {exc}",
+                f"No se pudo medir la sección final: {exc}")
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"Actual guide section: {report['section_area_mm2']:.2f} mm², "
+            f"Imin={report['principal_inertia_min_mm4']:.3f} mm⁴, "
+            f"holes={report['hole_count']}. Research only.",
+            f"Sección real: {report['section_area_mm2']:.2f} mm², "
+            f"Imin={report['principal_inertia_min_mm4']:.3f} mm⁴, "
+            f"huecos={report['hole_count']}. Solo investigación.")
+        return {'FINISHED'}
+
+
 class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
     bl_idname = "dsg.analyze_geodesic_frame_fem"
     bl_label = "Analyze Surface-Geodesic FEM (Experimental)"
@@ -1408,7 +1506,7 @@ class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
         return {'FINISHED'}
 
 
-_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM, DSG_OT_EstimateGeodesicContact, DSG_OT_AnalyzeGeodesicGroups)
+_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM, DSG_OT_EstimateGeodesicContact, DSG_OT_AnalyzeGeodesicGroups, DSG_OT_InspectFinalBooleanSection)
 
 
 def register():
