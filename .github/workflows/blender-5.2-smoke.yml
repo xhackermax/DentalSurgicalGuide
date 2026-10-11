@@ -1,0 +1,39 @@
+name: Blender 5.2 smoke (GenerativeFrame)
+on:
+  pull_request:
+    paths:
+      - 'dsg/**'
+      - 'tools/blender_smoke.py'
+      - 'tools/generative_frame_blender_smoke.py'
+      - '.github/workflows/blender-5.2-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  blender-5-2-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch pinned Blender 5.2.2 LTS and verify official SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=https://download.blender.org/release/Blender5.2
+          ARCHIVE=blender-5.2.2-linux-x64.tar.xz
+          mkdir -p "$RUNNER_TEMP/blender-5.2"
+          cd "$RUNNER_TEMP/blender-5.2"
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 600 --output "$ARCHIVE" "$BASE/$ARCHIVE"
+          curl --fail --location --retry 3 --connect-timeout 20 --max-time 120 --output blender-5.2.2.sha256 "$BASE/blender-5.2.2.sha256"
+          grep -F "$ARCHIVE" blender-5.2.2.sha256 | sha256sum --check --status
+          tar -xJf "$ARCHIVE"
+          test -x blender-5.2.2-linux-x64/blender
+          echo "$RUNNER_TEMP/blender-5.2/blender-5.2.2-linux-x64" >> "$GITHUB_PATH"
+      - name: Verify Blender version
+        run: blender --background --factory-startup --python-expr "import bpy; assert bpy.app.version[:2] == (5,2), bpy.app.version"
+      - name: Register / unregister and render panel layouts in real Blender
+        run: blender --background --factory-startup --python-exit-code 1 --python tools/blender_smoke.py
+      - name: Exercise measured sections and new RNA operators in real Blender
+        run: blender --background --factory-startup --python-exit-code 1 --python tools/generative_frame_blender_smoke.py
