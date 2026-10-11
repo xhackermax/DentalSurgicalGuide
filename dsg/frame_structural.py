@@ -1377,6 +1377,7 @@ class DSG_OT_AnalyzeGeodesicGroups(Operator):
 
 
 def inspect_final_boolean_guide_section(context=None, *, point_mm, axis,
+                                        nominal_radius_mm=None,
                                         mesh_arrays_fn=None) -> dict:
     """Measure one requested section of the *actual* final Boolean guide.
 
@@ -1403,7 +1404,17 @@ def inspect_final_boolean_guide_section(context=None, *, point_mm, axis,
         vertices, triangles, point_mm, axis, probe_point_mm=point_mm,
         require_closed=True,
     )
+    comparison = (boolean_sections.compare_section_to_nominal_circle(
+        section, nominal_radius_mm=float(nominal_radius_mm))
+        if nominal_radius_mm is not None else None)
     return {
+        "geometry_reference_area_ratio": (
+            float(comparison.measured_area_ratio) if comparison else None),
+        "geometry_reference_weak_inertia_ratio": (
+            float(comparison.measured_weak_axis_bending_ratio) if comparison else None),
+        "nominal_section_radius_mm": (
+            float(comparison.nominal_radius_mm) if comparison else None),
+        "section_may_include_merged_frame": True,
         "schema": "dsg.actual_boolean_section.v1",
         "guide_name": str(guide.name),
         "method": section.backend,
@@ -1437,6 +1448,10 @@ class DSG_OT_InspectFinalBooleanSection(Operator):
             name="Plane normal / beam tangent",
             description="Local beam direction of the requested section in world XYZ",
             subtype='DIRECTION', size=3, default=(1.0, 0.0, 0.0)),
+        "nominal_diameter_mm": FloatProperty(
+            name="Reference cylinder diameter (mm)",
+            description="For geometric comparison only: not measured automatically and not a structural pass/fail limit",
+            default=2.5, min=0.1, max=25.0, precision=3),
     }
 
     def invoke(self, context, event):
@@ -1447,6 +1462,8 @@ class DSG_OT_InspectFinalBooleanSection(Operator):
         col.label(text="Place the 3D cursor INSIDE the final guide", icon='INFO')
         col.label(text="Not a retention / clinical acceptance test", icon='ERROR')
         col.prop(self, "section_axis")
+        col.prop(self, "nominal_diameter_mm")
+        col.label(text="Reference is only a comparison, not a safety threshold", icon='INFO')
 
     def execute(self, context):
         try:
@@ -1455,7 +1472,8 @@ class DSG_OT_InspectFinalBooleanSection(Operator):
                 raise RuntimeError("Se necesita una guía con booleana final aplicada")
             point = tuple(float(v) for v in context.scene.cursor.location)
             report = inspect_final_boolean_guide_section(
-                context, point_mm=point, axis=tuple(float(v) for v in self.section_axis))
+                context, point_mm=point, axis=tuple(float(v) for v in self.section_axis),
+                nominal_radius_mm=float(self.nominal_diameter_mm) * 0.5)
         except Exception as exc:
             guide_module._dsg_report(
                 self, {'ERROR'},
@@ -1466,10 +1484,10 @@ class DSG_OT_InspectFinalBooleanSection(Operator):
             self, {'INFO'},
             f"Actual guide section: {report['section_area_mm2']:.2f} mm², "
             f"Imin={report['principal_inertia_min_mm4']:.3f} mm⁴, "
-            f"holes={report['hole_count']}. Research only.",
+            f"holes={report['hole_count']}, I/Icircle={report['geometry_reference_weak_inertia_ratio']:.2f}. Research only.",
             f"Sección real: {report['section_area_mm2']:.2f} mm², "
             f"Imin={report['principal_inertia_min_mm4']:.3f} mm⁴, "
-            f"huecos={report['hole_count']}. Solo investigación.")
+            f"huecos={report['hole_count']}, I/Icírculo={report['geometry_reference_weak_inertia_ratio']:.2f}. Solo investigación.")
         return {'FINISHED'}
 
 
