@@ -31,6 +31,7 @@ from . import frame_geodesic_groups as geodesic_groups
 from . import frame_boolean_section_core as boolean_sections
 from . import frame_swept_clearance_core as swept_clearance
 from . import frame_sleeve_junction_core as sleeve_junction
+from . import frame_perimeter_fem as perimeter_fem
 from . import frame_boolean_path_core as boolean_paths
 
 FRAME_STRUCTURAL_SCHEMA = core.SCHEMA
@@ -671,6 +672,59 @@ def _fem_build_geodesic_model(context=None) -> dict:
     candidate_beams = [e for e in original if e.render and not e.virtual]
     nodes = model["nodes"]
     new_elements = list(virtual)
+    # The existing P1-P4 frame must be represented in the *same* experimental
+    # stiffness/volume network. All four frame paths use the identical
+    # triangle-face geodesic routing primitive as the reinforcement routes.
+    if len(model.get("frame_context", {}).get("support_nodes", [])) != 4:
+        raise RuntimeError("PERIMETER_SUPPORT_IDENTITIES_MISSING")
+    perimeter_paths = []
+    for start_id, end_id in ((0,1),(1,2),(2,3),(3,0)):
+        start = Vector(tuple(float(v) for v in nodes[start_id].xyz))
+        finish = Vector(tuple(float(v) for v in nodes[end_id].xyz))
+        p0 = guide_module._frame_surface_projection(
+            cache, start, max_distance_mm=1.0)
+        p1 = guide_module._frame_surface_projection(
+            cache, finish, max_distance_mm=1.0)
+        if (p0 is None or p1 is None or not p0.get("triangle_vertices")
+                or not p1.get("triangle_vertices")):
+            raise RuntimeError(
+                f"NO_VALID_PERIMETER_SURFACE_ANCHOR: P{start_id+1}/P{end_id+1}"
+            )
+        route = geodesic_paths.route_surface_face_anchors(
+            cache["coords"], cache["csr_offsets"], cache["csr_dst"],
+            cache["csr_weights"], p0["triangle_vertices"], tuple(p0["point"]),
+            p1["triangle_vertices"], tuple(p1["point"]),
+        )
+        coords = [np.array(nodes[start_id].xyz, dtype=float)]
+        coords.extend(np.asarray(p, dtype=float) for p in route.points_mm)
+        coords.append(np.array(nodes[end_id].xyz, dtype=float))
+        samples = [coords[0]]
+        for a, b in zip(coords, coords[1:]):
+            distance = float(np.linalg.norm(b-a))
+            if distance <= 1e-7:
+                continue
+            for k in range(1, max(1, int(math.ceil(distance/1.5)))+1):
+                count = max(1, int(math.ceil(distance/1.5)))
+                samples.append(a+(b-a)*k/count)
+        if len(samples)>1 and np.linalg.norm(samples[0]-samples[-1]) <= 1e-8:
+            raise RuntimeError("PERIMETER_DEGENERATE_EDGE")
+        perimeter_paths.append(samples)
+    frame_radius = float(model["frame_context"]["frame_radius_mm"])
+    frame_template = _fem_material_element(
+        0, 1, frame_radius, tag="FRAME_PERIMETER",
+        render=True, locked_radius=True, prunable=False, virtual=False,
+    )
+    frame_loop = perimeter_fem.append_perimeter_loop(
+        nodes, new_elements, (0,1,2,3), perimeter_paths,
+        radius_mm=frame_radius, template=frame_template,
+        max_segment_mm=1.51,
+    )
+    if len(nodes)>2200:
+        raise RuntimeError("PERIMETER_FEM_MODEL_TOO_LARGE")
+    model["perimeter_routes"] = list(frame_loop.edges)
+    model["perimeter_length_mm"] = float(frame_loop.length_mm)
+    model["perimeter_included_in_nominal_volume"] = True
+    model["perimeter_support_contact_calibrated"] = False
     accepted = []
     rejected = []
     sleeve_list = list(model.get("frame_context", {}).get("sleeves", []))
