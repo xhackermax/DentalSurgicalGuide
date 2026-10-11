@@ -18,7 +18,7 @@ from typing import Any
 import bpy
 import numpy as np
 from bpy.types import Operator
-from bpy.props import FloatProperty, FloatVectorProperty
+from bpy.props import FloatProperty, FloatVectorProperty, IntProperty
 from mathutils import Matrix, Vector
 
 from . import guide_module
@@ -30,6 +30,7 @@ from . import frame_contact_core as contact_core
 from . import frame_geodesic_groups as geodesic_groups
 from . import frame_boolean_section_core as boolean_sections
 from . import frame_swept_clearance_core as swept_clearance
+from . import frame_boolean_path_core as boolean_paths
 
 FRAME_STRUCTURAL_SCHEMA = core.SCHEMA
 SUPPORT_KEY = "DSG_frame_support_nodes_json"
@@ -1463,6 +1464,134 @@ def inspect_final_boolean_guide_section(context=None, *, point_mm, axis,
     }
 
 
+def inspect_final_boolean_guide_path(
+    context=None, *, interior_centerline_mm, nominal_radii_mm=None,
+    sample_count=9, mesh_arrays_fn=None,
+) -> dict:
+    """Sample true mesh sections along an explicitly INSIDE-the-solid path.
+
+    No silent projection of surface geodesics into the Boolean-cut volume:
+    a path must be supplied through retained material. No guide mutations.
+    """
+    context = context or bpy.context
+    guide = guide_module.get_active_guide_obj(context.scene.dsg_props)
+    if (not guide_module._valid_obj(guide)
+            or getattr(guide, 'type', None) != 'MESH'
+            or not bool(guide.get("DSG_final_cut_completed", False))):
+        raise RuntimeError("BOOLEAN_PATH_REQUIRES_FINAL_GUIDE")
+    if mesh_arrays_fn is None:
+        from .guide_export.blender_adapter import mesh_arrays
+        mesh_arrays_fn = mesh_arrays
+    vertices, triangles = mesh_arrays_fn(guide)
+    profile = boolean_paths.profile_boolean_path(
+        vertices, triangles, interior_centerline_mm,
+        nominal_radii_mm=nominal_radii_mm, sample_count=int(sample_count),
+    )
+    return {
+        "schema": "dsg.actual_boolean_path_profile.v1",
+        "guide_name": str(guide.name),
+        "method": "ACTUAL_EVALUATED_FINAL_GUIDE_MULTI_STATION",
+        "total_path_length_mm": float(profile.arclength_mm),
+        "station_count": int(profile.probe_count),
+        "area_min_mm2": float(profile.area_min_mm2),
+        "area_median_mm2": float(profile.area_median_mm2),
+        "weak_inertia_min_mm4": float(profile.weak_inertia_min_mm4),
+        "weak_inertia_median_mm4": float(profile.weak_inertia_median_mm4),
+        "worst_station_by_area": int(profile.worst_station_index_by_area),
+        "worst_station_by_inertia": int(profile.worst_station_index_by_inertia),
+        "stations": [{
+            "index": station.index,
+            "arclength_mm": station.arclength_mm,
+            "point_mm": list(station.point_mm),
+            "area_mm2": station.area_mm2,
+            "principal_inertia_min_mm4": station.principal_inertia_min_mm4,
+            "hole_count": station.hole_count,
+            "nominal_weak_inertia_ratio": station.nominal_weak_inertia_ratio,
+        } for station in profile.stations],
+        "experimental": True,
+        "complete": True,
+        "geometry_mutated": False,
+        "retention_validated": False,
+        "post_boolean_fem_validated": False,
+    }
+
+
+class DSG_OT_InspectFinalBooleanPath(Operator):
+    bl_idname = "dsg.inspect_final_boolean_path"
+    bl_label = "Profile Sections Along Final Guide (Experimental)"
+    bl_description = (
+        "Read several actual cross-sections along a selected POLY curve INSIDE "
+        "the final guide material. Copies research JSON to clipboard only."
+    )
+    bl_options = {'REGISTER'}
+
+    __annotations__ = {
+        "station_count": IntProperty(
+            name="Cross-section stations", default=9, min=2, max=25,
+            description="All samples must be in retained solid, or the scan fails"),
+        "nominal_diameter_mm": FloatProperty(
+            name="Reference diameter (mm)", default=2.5, min=0.1, max=25,
+            precision=3, description="Geometry comparison only, not a clinical limit"),
+    }
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=420)
+
+    def draw(self, context):
+        col = self.layout.column(align=True)
+        col.label(text="Select a NON-PREVIEW POLY curve inside the final solid",
+                  icon='INFO')
+        col.label(text="All samples must be inside guide material", icon='ERROR')
+        col.prop(self, "station_count")
+        col.prop(self, "nominal_diameter_mm")
+        col.label(text="Results copied as research-only JSON", icon='INFO')
+
+    def execute(self, context):
+        try:
+            curve = context.active_object
+            if (curve is None or getattr(curve, "type", None) != 'CURVE'
+                    or bool(curve.get("DSG_geodesic_preview_only", False))):
+                raise RuntimeError(
+                    "Selecciona una curva POLY independiente dentro del material, "
+                    "no una vista previa geodésica superficial"
+                )
+            if len(curve.data.splines) != 1:
+                raise RuntimeError("Se necesita exactamente una spline POLY no cíclica")
+            spline = curve.data.splines[0]
+            if spline.type != 'POLY' or spline.use_cyclic_u or len(spline.points) < 2:
+                raise RuntimeError("Se necesita una curva abierta POLY de dos o más puntos")
+            path = [
+                tuple(float(v) for v in (curve.matrix_world @ Vector(
+                    (float(p.co[0]), float(p.co[1]), float(p.co[2])))))
+                for p in spline.points
+            ]
+            report = inspect_final_boolean_guide_path(
+                context, interior_centerline_mm=path,
+                nominal_radii_mm=[float(self.nominal_diameter_mm) * 0.5] * len(path),
+                sample_count=int(self.station_count),
+            )
+            context.window_manager.clipboard = json.dumps(
+                report, separators=(",", ":"), ensure_ascii=False,
+                allow_nan=False,
+            )
+        except Exception as exc:
+            guide_module._dsg_report(
+                self, {'ERROR'},
+                f"Final Boolean path profile failed: {exc}",
+                f"Falló el perfil de secciones finales: {exc}")
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"{report['station_count']} actual sections, minimum area "
+            f"{report['area_min_mm2']:.2f} mm², min I "
+            f"{report['weak_inertia_min_mm4']:.3f} mm⁴. JSON copied, no guide changes.",
+            f"{report['station_count']} secciones reales, área mínima "
+            f"{report['area_min_mm2']:.2f} mm², I mínima "
+            f"{report['weak_inertia_min_mm4']:.3f} mm⁴. JSON copiado, guía intacta.",
+        )
+        return {'FINISHED'}
+
+
 class DSG_OT_InspectFinalBooleanSection(Operator):
     bl_idname = "dsg.inspect_final_boolean_section"
     bl_label = "Inspect Final Guide Section (Experimental)"
@@ -1554,7 +1683,7 @@ class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
         return {'FINISHED'}
 
 
-_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM, DSG_OT_EstimateGeodesicContact, DSG_OT_AnalyzeGeodesicGroups, DSG_OT_InspectFinalBooleanSection)
+_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM, DSG_OT_EstimateGeodesicContact, DSG_OT_AnalyzeGeodesicGroups, DSG_OT_InspectFinalBooleanSection, DSG_OT_InspectFinalBooleanPath)
 
 
 def register():
