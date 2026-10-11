@@ -176,12 +176,11 @@ def route_surface_face_anchors(
         penalty.shape != (n,) or not np.isfinite(penalty).all() or (penalty < 0).any()
     ):
         raise ValueError("invalid surface penalty")
-    for u in range(n):
-        for k in range(int(offsets[u]), int(offsets[u + 1])):
-            v = int(destinations[k])
-            distance = float(np.linalg.norm(xyz[u] - xyz[v]))
-            if abs(float(lengths[k]) - distance) > max(1e-5, distance * 1e-3):
-                raise ValueError("surface graph edge length is inconsistent with coordinates")
+    # Vectorized validation: dense IOS meshes have millions of directed edges.
+    source_ids = np.repeat(np.arange(n, dtype=np.int64), np.diff(offsets))
+    edge_distance = np.linalg.norm(xyz[source_ids] - xyz[destinations], axis=1)
+    if np.any(np.abs(lengths - edge_distance) > np.maximum(1e-5, edge_distance * 1e-3)):
+        raise ValueError("surface graph edge length is inconsistent with coordinates")
     start_offsets = [float(np.linalg.norm(xyz[v] - p0)) for v in first]
     end_offsets = [float(np.linalg.norm(xyz[v] - p1)) for v in last]
     route = frame_surface_corridor.weighted_route(
