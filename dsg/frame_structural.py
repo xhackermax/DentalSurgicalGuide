@@ -729,6 +729,8 @@ def _fem_build_geodesic_model(context=None) -> dict:
         accepted.append({
             "candidate": label,
             "beam_elements": len(ids),
+            "beam_indices": list(ids),
+            "curve_points_mm": [list(map(float, point)) for point in fine],
             "surface_length_mm": float(route.surface_length_mm),
             "terminal_transition_mm": float(terminal_offset.length),
             "geodesic_backend": str(route.backend),
@@ -1031,6 +1033,126 @@ class DSG_OT_OptimizeFrameFEM(Operator):
         return {'FINISHED'}
 
 
+
+def preview_geodesic_fem_paths(context=None) -> dict:
+    """Create nonexported Blender previews from exactly the curved FEM chains.
+
+    A preview is *not* an approved reinforcement or a final guide component.
+    Existing previews are preserved if any construction/commit step fails.
+    """
+    context = context or bpy.context
+    model = _fem_build_geodesic_model(context)
+    result = fem.optimize_reinforcement(
+        model["nodes"], model["elements"], model["load_cases"],
+        monitor_nodes=model["monitor_nodes"], config=model["config"],
+        keep_out_check=model["keep_out"],
+    )
+    summary = _fem_summary(model, result)
+    prefix = "DSG_GeodesicFEM_Preview_"
+    old = [obj for obj in list(bpy.data.objects)
+           if obj.name.startswith(prefix) and bool(obj.get("DSG_geodesic_preview_only", False))]
+    staged = []
+    previous_state = []
+    try:
+        for serial, route in enumerate(model["geodesic_routes"]):
+            points = [Vector(point) for point in route["curve_points_mm"]]
+            edges = [model["elements"][int(i)] for i in route["beam_indices"]]
+            if len(points) != len(edges) + 1:
+                raise RuntimeError("GEODESIC_PREVIEW_FEM_MISMATCH: different geometry and FEM path")
+            name = f"DSG_GeodesicFEM_Staging_{serial:03d}"
+            if bpy.data.objects.get(name) is not None:
+                raise RuntimeError(f"GEODESIC_PREVIEW_STAGING_CONFLICT: {name}")
+            curve = guide_module.create_poly_curve_object(
+                context, name, points, bevel_radius=1.0, bevel_resolution=8, cyclic=False
+            )
+            if not guide_module._valid_obj(curve):
+                raise RuntimeError(f"GEODESIC_PREVIEW_BUILD_FAILED: {name}")
+            staged.append(curve)
+            # Blender POLY spline radii are multiplied by bevel_depth (1 mm).
+            # Each vertex receives the mean radius of adjacent FEM elements.
+            radii = [float(edges[0].radius_mm)]
+            radii.extend((float(a.radius_mm) + float(b.radius_mm)) * 0.5
+                         for a, b in zip(edges, edges[1:]))
+            radii.append(float(edges[-1].radius_mm))
+            spline = curve.data.splines[0]
+            if len(spline.points) != len(radii):
+                raise RuntimeError("GEODESIC_PREVIEW_SPLINE_MISMATCH")
+            for point, radius in zip(spline.points, radii):
+                point.radius = radius
+            curve["DSG_geodesic_preview_only"] = True
+            curve["DSG_geodesic_fem_label"] = str(route["candidate"])
+            curve["DSG_geodesic_post_boolean_validated"] = False
+            curve.hide_render = True
+
+        if not staged:
+            raise RuntimeError("GEODESIC_PREVIEW_EMPTY")
+        # Commit: old previews are only archived after every replacement exists.
+        for obj in old:
+            previous_state.append((obj, str(obj.name), bool(obj.hide_get()), bool(obj.hide_render)))
+            obj.name = f"DSG_GeodesicFEM_Archive_{obj.name}"
+            obj.hide_set(True)
+        for serial, obj in enumerate(staged):
+            name = f"{prefix}{serial:03d}"
+            if bpy.data.objects.get(name) is not None:
+                raise RuntimeError(f"GEODESIC_PREVIEW_NAME_CONFLICT: {name}")
+            obj.name = name
+            obj.hide_set(False)
+    except Exception:
+        for obj in staged:
+            if guide_module._valid_obj(obj):
+                guide_module.safe_remove_object(obj)
+        for obj, name, hidden, hide_render in previous_state:
+            if guide_module._valid_obj(obj):
+                obj.name = name
+                obj.hide_set(hidden)
+                obj.hide_render = hide_render
+        raise
+
+    for obj, _name, _hidden, _render in previous_state:
+        try:
+            if guide_module._valid_obj(obj):
+                guide_module.safe_remove_object(obj)
+        except Exception:
+            _DSG_LOG.warning("Geodesic preview archive cleanup failed", exc_info=True)
+    summary.update(
+        geodesic_routes=model["geodesic_routes"],
+        rejected_geodesic_routes=model["rejected_geodesic_routes"],
+        experimental=True,
+        geometry_mutated=True,
+        guide_geometry_mutated=False,
+        preview_only=True,
+        post_boolean_section_validated=False,
+    )
+    return summary
+
+
+class DSG_OT_PreviewGeodesicFrameFEM(Operator):
+    bl_idname = "dsg.preview_geodesic_frame_fem"
+    bl_label = "Preview Surface-Geodesic Reinforcements (Experimental)"
+    bl_description = "Build viewport-only FEM-geodesic paths without altering the surgical guide"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        try:
+            if int(getattr(context.scene.dsg_props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+                raise RuntimeError("La vista previa geodésica requiere el paso de refuerzos")
+            result = preview_geodesic_fem_paths(context)
+        except Exception as exc:
+            guide_module._dsg_report(
+                self, {'ERROR'}, f"Geodesic preview failed: {exc}",
+                f"No se pudo generar la vista previa geodésica: {exc}",
+            )
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"Experimental surface preview: {len(result['geodesic_routes'])} FEM-matched paths; "
+            "not included in clinical guide/export.",
+            f"Vista previa experimental: {len(result['geodesic_routes'])} rutas FEM geodésicas; "
+            "no se aplican ni exportan con la guía.",
+        )
+        return {'FINISHED'}
+
+
 class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
     bl_idname = "dsg.analyze_geodesic_frame_fem"
     bl_label = "Analyze Surface-Geodesic FEM (Experimental)"
@@ -1064,7 +1186,7 @@ class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
         return {'FINISHED'}
 
 
-_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM)
+_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM)
 
 
 def register():
