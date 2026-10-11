@@ -30,7 +30,7 @@ class ExperimentalOperatorContracts(unittest.TestCase):
     def test_registered_operator_is_invoked_by_visible_workflow(self):
         src = (ROOT / "frame_structural.py").read_text("utf-8")
         ui = (ROOT / "_guide_parts/08_export_final_ui_registration.py").read_text("utf-8")
-        self.assertIn("DSG_OT_EstimateGeodesicContact)", src)
+        self.assertIn("DSG_OT_EstimateGeodesicContact, DSG_OT_AnalyzeGeodesicGroups)", src)
         self.assertIn("'dsg.estimate_geodesic_contact'", ui)
         self.assertIn("'dsg.analyze_geodesic_groups'", ui)
 
