@@ -133,12 +133,12 @@ class ExperimentalAdapterTests(unittest.TestCase):
 
     def test_swept_clearance_reports_which_explicit_zones_are_checked(self):
         fn, base, seen = self.create()
-        base["frame_context"] = {"sleeves": [{
+        base["frame_context"]["sleeves"] = [{
             "id": "S1", "lumen_keep_out": True,
             "center": [8, 0, 0], "axis": [0, 0, 1],
             "inner_radius_mm": 0.4, "outer_radius_mm": 3.0,
             "height_mm": 6.0
-        }]}
+        }]
         model=fn("mock")
         self.assertTrue(all(route["post_boolean_lumen_validation_required"]
                             and not route["final_lumen_clear"]
@@ -150,9 +150,9 @@ class ExperimentalAdapterTests(unittest.TestCase):
 
     def test_invalid_intrinsic_routes_fail_instead_of_using_chords(self):
         fn, base, seen = self.create(fail_routes=True)
-        with self.assertRaisesRegex(RuntimeError, "NO_VALID_GEODESIC_FEM_MODEL"):
+        with self.assertRaisesRegex(ValueError, "NO_VALID_SURFACE_ROUTE"):
             fn("mock")
-        self.assertEqual(len(seen), 6)
+        self.assertEqual(len(seen), 1)
 
 
 if __name__ == "__main__":
