@@ -1,155 +1,95 @@
-# DSG GenerativeFrame 3.0: development contract (H0-H1)
+# GenerativeFrame 3.0 — roadmap audit and implementation contract
 
-Status: EXPERIMENTAL. No clinical approval or material/load calibration is implied.
-Applies to Blender 5.2; baseline main commit 1bf193b (DSG 9.10.11).
+**Audit:** 2026-10-11 · PR #1 `feature/generative-frame-3-geodesic-h0` · baseline audited commit `26a5515b10dbfd78db1cec5d9110149a945da42f`
 
-## Product objective
-Optimize the **frame and reinforcement network together**, balancing normalized
-post-Boolean volume and mechanical compliance. No weighted score may override
-clinical, fabrication, geometric, or structural hard constraints.
+**Status:** EXPERIMENTAL, not ready for clinical use or merger. This document is the project's **single roadmap/status contract**. The original goal remains unchanged: optimize **perimeter frame + reinforcement network together**, on anatomical geodesics, allowing controlled contact/penetration and using post-Boolean structural evidence.
 
-## Surface routing invariant
-1. Frame and reinforcement candidates use the same intrinsic surface graph and
-   existing `frame_surface_corridor` engine. The pure vertex-route contract is
-   implemented in `dsg/frame_geodesic_paths.py`.
-2. Paths may use only real mesh-surface adjacency. Euclidean proximity does not
-   establish connectivity; never traverse through the passive/blockout solid.
-3. Excluded vertices, including endpoints, must remain excluded.
-4. No silent straight-line fallback when a surface corridor is disconnected.
-   Emit `NO_VALID_SURFACE_ROUTE` and leave existing geometry untouched.
-5. Smooth paths must remain surface-constrained. Transitions to sleeve envelopes
-   are distinct 3D entities requiring volume-clearance verification.
-6. Exact triangle-face anchors are supported in the new shared geodesic
-   wrapper. A curved route can be discretized into nonprunable FEM elements,
-   with no automatic chord replacement.
-7. The experimental `dsg.analyze_geodesic_frame_fem` command computes a
-   read-only surface-constrained candidate FEM model. The separate
-   `dsg.preview_geodesic_frame_fem` command renders viewport-only
-   variable-radius preview curves directly from the same FEM beam chain.
-8. Both features are deliberately **not** used by the clinical frame/refinement
-   apply/export pipeline. No post-Boolean structural/contact validation exists.
-9. Complete swept-volume collision checks, empirically defined penetration,
-   contact/retention metrics, group-aware route pruning and load calibration
-   remain subsequent milestones.
+The last audited CI completed 115 Python tests (114 passed, 1 skipped) and built a ZIP. Its workflow does not execute Blender 5.2, so passing CI does **not** prove addon registration, operator behavior, real Boolean geometry or clinical suitability. Do not claim any H0-H7 stage complete until its explicit acceptance gate passes.
 
-## Contact and structure (future H2-H5)
-Penetration is optimized for verified support/contact area *and* adequate
-post-Boolean resistant cross-sections. Never assume that maximizing overlap
-alone establishes retention, or that nominal circular beam properties remain
-valid after material is removed by Boolean operations.
+## Nonnegotiable invariants
 
-## Limitations of the current experimental surface adapter
-- It starts from existing support-to-sleeve candidate identities, without
-  optimizing the perimeter frame or the global topological connectivity.
-- Sleeve transitions are explicitly checked with current keep-out helpers;
-  the geometry still needs an independent full swept-volume and insertion
-  clearance validator.
-- The FEM still treats nominal circular cross-sections, not post-Boolean
-  material sections. Its ratings cannot be interpreted as clinical safety.
-- Large graph paths are bounded; if the full geometric FEM is too large,
-  fail with an actionable message rather than silently straightening.
-- The experimental Blender preview is hidden from rendering and excluded
-  from DSG's confirmed reinforcement role; the original clinical guide
-  is never replaced by it.
+1. Frame and reinforcements follow the **same authorized anatomical surface corridor**, through user anchors in order. Reuse `frame_surface_corridor.weighted_route`; no free-space Euclidean shortcut and no second independent routing engine.
+2. Contact is intentional: a *controlled* portion of tubes intersects the passive/blockout model to provide seating/contact after Boolean subtraction. Both insufficient contact and excessive loss of retained structure are invalid.
+3. A measured guide after Boolean is the geometric authority. Pre-Boolean circular tube inertia `I=πr⁴/4` and polar inertia `J=πr⁴/2` are not automatically properties of trimmed or merged solids.
+4. Hard keep-outs cover **SLEEVE_LUMEN, DRILL_PATH, IRRIGATION_CHANNEL, LATERAL_OPENING, FRANGIBLE_WALL**, plus insertion-path constraints and minimum fabricated wall requirements. Check the entire swept tube volume, not centerline only. Valid connections into the sleeve's *solid outer wall* are not equivalent to forbidden lumen penetration.
+5. Patient/clinical guide objects are never replaced by unvalidated experimental candidate or viewport preview geometry. Every potentially destructive transition is atomic with rollback, Undo and repeated-run tests.
+6. Print material, build orientation, processing, loads and contact support assumptions remain uncalibrated until measured. Engineering metrics are **research aids**, not patient safety approval.
 
-## H0 transactional invariant
-For `create_fem_reinforcements`, solve and build every replacement candidate
-before retiring prior confirmed FEM objects. On candidate failure, remove only
-temporary geometry and preserve the previous confirmed set and guide metadata.
-Confirmed manual reinforcements cannot be overwritten.
+## H0-H7 verified status at audit
 
-## Acceptance to advance
-- Pure tests exercise disconnected folds, excluded endpoints, determinism and
-  invalid graph edges.
-- Blender regression: solver failure and staging failure preserve prior geometry;
-  successful reruns leave only the new confirmed set.
-- Blender 5.2 install/register, operator audit, export validation and Ctrl+Z
-  must pass before claiming completion.
-- Legacy clinical workflows and STEP_FRAME behavior remain unchanged until
-  the curved paths have separate post-Boolean and structural validation.
+| Stage | Status | Existing implementation | Missing acceptance gate |
+|---|---|---|---|
+| H0 — reproducibility/transaction | Foundation; not closed | `create_fem_reinforcements` stages candidates and retains older confirmation on failure; pure tests via simulated Blender objects | Real Blender 5.2: install/register, Undo, redo, failed solver/stage, metadata and naming idempotence, clinical export unaffected |
+| H1 — unified surface geodesics | Partial | Shared underlying graph kernel; exact-face anchors in `frame_geodesic_paths`; original frame routes through its own Blender adapter | One *authoritative* route/smoothing/anchor/forbidden-mask contract for both frame and reinforcements. Test complex folds, occlusal/interproximal contours and sleeve exits |
+| H2 — adaptive contact/penetration | Analytical prototype | `frame_contact_core`: local planar chord/contact, retained area, bending second moments, policy feasibility | Actually generate radius/depth-controlled tubes; validate inserted depth, residual geometry, fit and attachment transitions using final mesh; demonstrate nontrivial contact |
+| H3 — post-Boolean section/clearance | Diagnostic prototype | `frame_boolean_section_core`, `frame_boolean_path_core`, `frame_swept_clearance_core`; single/multistation read-only final-mesh inspection | Automatically obtain **inside-solid** tracing paths for every generated member, sample actual post-Boolean sections, add all forbidden meshes and insertion clearance |
+| H4 — structural FEM | Partial | `frame_fem_core` with Euler-Bernoulli beams; curved-chain discretization and nominal group evaluation | Include **perimeter frame** in the stiffness network and volume, local residual section properties, connections/merges and non-ideal contact supports; validate predictions against reference FEM and bench loads |
+| H5 — joint topology/material objective | Partial prototype | `frame_geodesic_groups`: balanced whole-route deletion on nominal FEM; radii resizing separately | Real joint search across perimeter frame, path connectivity, reinforcement groups, beam diameter, embedding depth and manufacturability, with Pareto/baseline comparison |
+| H6 — Blender application, UX and export | Pending | Experimental viewport/report tools, isolated from applied clinical guide | Transactional end-to-end generation → preview → validation → apply → Boolean → verify → STL/PDF/report/Undo; real Blender 5.2 automated/manual smoke |
+| H7 — physical/clinical qualification | Pending | None claimed | Repeatable printed-guide fit, path of insertion, seating, dimensional control, fatigue/deflection, sleeve precision, retentive force and material-process evidence |
 
-## H2 local-planar contact estimates (research only)
-- `dsg/frame_contact_core.py` computes interface chord width, residual area,
-  centroid, and bending second moments after an ideal local plane section.
-  It does not claim torsional stiffness of the cropped shape.
-- `select_contact_section` minimizes penetration subject to **explicit**
-  contact, remaining-section, and maximum-overlap requirements; impossible
-  constraints fail closed.
-- `frame_structural.estimate_geodesic_frame_contact` reports provisional
-  results from surface-projected FEM samples and current optimized beam radii,
-  without modifying Blender guide geometry.
-- The optional `dsg.estimate_geodesic_contact` dialog is research-only.
-  Numeric defaults are software fixtures, not clinically validated limits.
-- **Pending H3:** real post-Boolean volume/section measurement, insertion
-  clearance, undercuts, contact/retention tests, materials and loads calibration.
+## Confirmed implementation gaps (prioritized)
 
-## H4/H5 prototype: balanced, whole-route FEM group pruning
-- `frame_geodesic_groups.py` reruns FEM for each **complete curved route**
-  proposed for deletion. It removes orphaned FEM nodes from each trial so that
-  a removed chain cannot leave artificial singular 6-DOF systems.
-- Accept only group deletions that pass all nominal FEM hard and recommended
-  limits and lower `0.5*(V/V0)+0.5*(compliance/C0)`.
-- Evaluate loads and monitoring points on the compact graph; invalid/
-  disconnected loading fails closed. Do not mutate live FEM input or Blender.
-- `dsg.analyze_geodesic_groups` is a read-only experimental operator; it
-  reports topology recommendations but **never applies** an optimized guide.
-- Results remain based on nominal circular beams, not the real Boolean solid.
-  Full-frame topology and contact-calibrated FEM are still pending.
+### P0-1 — real Blender 5.2 integration and lifecycle tests
+**Evidence:** `.github/workflows/ci.yml` runs Python 3.13, installs NumPy, runs `compileall`, `unittest` and ZIP build; it does **not** start Blender or exercise actual operations or the SciPy sparse FEM backend.
 
-## H3: actual post-Boolean section measurement (experimental diagnostic)
-- `dsg/frame_boolean_section_core.py` slices a closed triangular mesh at an
-  arbitrary section plane and computes cross-sectional area, centroid, principal
-  bending moments of inertia, distinct components and nested material voids.
-- Fail closed on open/nonmanifold contour, ambiguous coplanar intersections,
-  probe outside actual solid, probe in a hole or an unboundedly large mesh.
-- `inspect_final_boolean_guide_section()` accepts **only** a DSG guide with
-  `DSG_final_cut_completed`, and uses the existing `guide_export.blender_adapter.mesh_arrays`
-  to inspect Blender's evaluated, world-coordinate geometry.
-- The optional final-export-stage button measures a plane through the 3D cursor;
-  the cursor must be **inside the material**, and the plane normal must match
-  the direction of the region being evaluated.
-- This is a **single human-requested section**, not sampled full-guide FEM,
-  and never auto-approves exported STL or modifies the final guide.
-- Physical retentive performance, insertion safety, anisotropic resin,
-  torsional constants and globally connected-frame behavior remain unverified.
+**Remedy:** add a headless Blender 5.2 job (registration, route/preview, finalize, export, undo, reset, repeated runs, cleanup) on synthetic arches and real anonymized IOS fixtures. Ensure production SciPy and NumPy fallback match analytical reference cases.
 
-## H3 reference comparison
-- The final-guide section inspector accepts an optional **user-specified**
-  nominal circular beam diameter. It reports `A_actual/A_circle` and
-  `I_min_actual/I_circle` as geometry-only diagnostic ratios.
-- These ratios do **not** calibrate Saint-Venant torsion, local buckling,
-  bonding to anatomy, placement fit, resin fatigue or true contact retention.
-- The section may include multiple merged mesh features. Never treat the
-  ratio as an isolated bar's beam stiffness or an automatic acceptance gate.
-- To measure an anatomical region, put the Blender 3D cursor **inside**
-  the final guide material, align the plane normal with the local tangent,
-  and use the step-11 research section-inspection button. A cursor on the
-  section boundary, inside a hole, or outside the mesh produces a failure.
+**Acceptance:** zero failed operators; unchanged established clinical outputs; rollback restores original objects; deterministic output across repeated runs; no dangling previews or orphan meshes.
 
-## H3 multi-station actual-section research scan
-- Pure `frame_boolean_path_core.profile_boolean_path` samples several planes
-  perpendicular to an explicitly interior centerline. Any open mesh, unverified
-  probe or sharp reverse path makes the entire scan fail closed.
-- At the final guide export step, select a **separate open POLY curve** with
-  all control points and sample positions inside the retained Boolean solid.
-  The `dsg.inspect_final_boolean_path` operator reads the evaluated guide
-  mesh using the existing export adapter. It never uses raw surface geodesic
-  previews, which generally run exactly on the Boolean boundary.
-- After a complete scan it reports the weakest actual section by area and by
-  principal bending second moment, and copies de-identified research JSON
-  to the clipboard. Never modifies, approves or reexports the clinical guide.
-- An observed weak section may include fused parts of the frame, sleeves or
-  adjacent branches; it is NOT direct nominal-to-postBoolean FEM equivalence.
+### P0-2 — protect sleeve lumen without forbidding every legitimate sleeve connection
+**Evidence:** `_fem_build_geodesic_model` checks the full constant-radius candidate tube up to a sleeve attachment near `1.01 * outer_radius`. When the candidate radius exceeds available solid sleeve wall, a properly fused connector can be rejected before the final drilling Boolean even though its *post-Boolean lumen* could remain open. In general `r_attach - r_beam < r_lumen` makes an endpoint swept tube overlap the ideal lumen cylinder.
 
-## H3 swept-envelope protected-volume precheck
-- New pure `frame_swept_clearance_core.py` validates variable-radius polyline
-  tubes against **explicit spheres and finite cylinders**, using signed-distance
-  functions and conservative between-sample bounds.
-- The experimental geodesic candidate adapter evaluates tube envelopes
-  against the actual sleeves' finite `SLEEVE_LUMEN` cylinders. An uncertain
-  gap or actual overlap is rejected before appending FEM beam chains.
-- The passive-model anatomical interface is *not* a keep-out because some
-  overlap is required for final Boolean adaptation.
-- Other hard forbidden regions (drill paths, irrigation, frangible walls) and
-  triangle-mesh anatomical self-clearance require a further full swept mesh
-  validator. The cylinder-only result never asserts whole-anatomy safety.
+**Remedy:** distinguish valid connector-to-outer-sleeve union (including smoothly tapered ends) from the **actual lumen void**. Validate the lumen on the final union/Boolean mesh; reject solid obstruction and insufficient sleeve wall, not every temporary pre-Boolean volume intersection. Add clinical sleeve-radius cases and all four cardinal attachments, including multi-sleeve cases.
+
+**Acceptance:** bona fide exterior welds survive, no residual lumen obstruction; final real wall thickness and drill access measured; illegal through-lumen paths fail.
+
+### P0-3 — perimeter frame absent from the experimental FEM network
+**Evidence:** `_fem_build_model` fixes P1-P4 in all six DOFs, then adds support→sleeve candidates and virtual sleeve spokes. It does **not** mesh the actual geodesic perimeter P1–P2–P3–P4–P1. `analyze_geodesic_group_topology` therefore evaluates support-reinforcement candidates **without frame stiffness or perimeter material volume**.
+
+**Remedy:** discretize the existing frame loop with shared geodesic station IDs and junction continuity, model contacts as physically justified (not four blanket clamped points), retain cross-member attachment identity. Validate against reference assembled meshes.
+
+**Acceptance:** frame alone and frame+reinforcements yield distinct, defensible stiffness and total volume. A reinforcement removal may never eliminate the last viable connectivity branch.
+
+### P0-4 — post-Boolean measurements not attached to the experimental candidate
+**Evidence:** `dsg.inspect_final_boolean_path` requires the user to select a separate **inside-solid POLY curve** on a previously finalized clinical guide. The experimental geodesic candidate is not merged with that guide. Thus these measurements do not currently validate the very candidate being optimized.
+
+**Remedy:** perform candidate assembly and Boolean on a disposable work copy; derive/prove an interior trace automatically for each member, identify branch vs merged junction sections, sample true section and contact area, and map measurements back to stable candidate/beam identifiers.
+
+**Acceptance:** every accepted candidate has traceable pre- and post-Boolean sections and contact metrics; a missing/inaccessible interior trace makes that candidate fail closed.
+
+### P1-5 — complete forbidden swept volumes, surface masks and insertion
+Existing swept checker only knows explicitly supplied spheres/cylinders; the Blender adapter passes sleeve-lumen cylinders. Add canal/drill shafts, irrigation channels, lateral windows, frangible walls and calibrated minimal distances using real mesh/BVH clearance. Keep intentional resting-surface overlap separate from forbidden through-model tunnels. Verify insertion-axis collisions and undercuts; demonstrate the guide can be placed/removed.
+
+### P1-6 — optimized contact on real geometry
+`frame_contact_core` selects an ideal shallowest planar penetration, but the Blender preview currently uses nominal surface centerlines and FEM radii; the chosen embedding depth is **not** applied to its actual geometry. Add bounded depth fields and smooth tapering, contact-patch estimation and Boolean feedback. Use no universal assumed clinical depth.
+
+### P1-7 — post-Boolean FEM + beam-group continuity
+The FEM still uses full circular sections for axial, bending and torsion. Do not simply replace `I` or `J` from a measured 2D cross-section while leaving merged junction kinematics unchanged. Introduce validated equivalent beam sections where slender-beam assumptions hold, and a higher-fidelity solid FEM fallback for junctions. Couple radius changes along whole curved members and ensure rendered taper matches solved geometry.
+
+### P1-8 — joint optimization, reproducibility and runtime
+Current geodesic mode disables topology growth and prunes only candidate reinforcements; the full objective `J=0.5 V/V0 + 0.5 C/C0` applies to nominal reinforcement elements, not the whole guide. Optimize discrete perimeter/connectivity choices plus continuous path, radius and penetration variables. Add constrained Pareto front, fallback to last feasible design, deterministic seeds, cap graph/FEM size, cache route/mesh features, compare real execution time and peak RAM with baseline.
+
+### P2-9 — workflow/observability/spec synchronization
+Keep one canonical planning file (this document). Separate labels `experimental`, `geometry measured`, `FEM validated`, `manufacturing qualified`. Reports must identify exact mesh checksum, Blender/DSG version, loads, material calibration, candidate ID, limits and all skipped/failed checks. No optional missing-region mask should be silently interpreted as "clear".
+
+### P2-10 — physical and clinical design validation
+Bench-test printed guides using the intended resin/printer/postcure; compare predicted and measured contact, deflection, fracture, fatigue, seating, removal force and sleeve position. Establish acceptance thresholds from device design inputs and risk analysis. No production clinical automation before this evidence and professional review.
+
+## Practical PR sequence / dependencies
+
+1. **PR-A · repair and prove P0-1/P0-2:** real Blender integration fixtures, correct allowable sleeve junction while forbidding actual lumen obstruction. **Gate:** real Blender passes, plus a valid one-sleeve and a valid multi-sleeve guide both route successfully.
+2. **PR-B · P0-3:** include actual geodesic perimeter frame and non-ideal support conditions in coupled FEM. **Gate:** frame+reinforcement mechanical/volume measurements reconciled against reference assembly.
+3. **PR-C · P0-4/P1-6:** transactional candidate Boolean, auto interior tracing, adaptively embedded geometry and post-Boolean sections. **Gate:** no ideal-circle phantom stiffness; valid contact and residual structure for all members.
+4. **PR-D · P1-5/P1-7:** full swept clearance, insertion feasibility and calibrated effective beams or solid FEM near junctions. **Gate:** zero forbidden cut-path obstruction and stress/deflection benchmark within documented tolerance.
+5. **PR-E · P1-8:** joint Pareto search of frame + reinforcement + contact + thickness. **Gate:** no worse than manually selected baseline across all hard constraints; measured volume/compliance objective improves if a feasible candidate exists, otherwise report no improvement.
+6. **PR-F · H6/H7:** apply/undo/export workflow, measured prototyping and manufacturing evidence. **Gate:** Blender 5.2 clinical workflow and independent physical design-validation checklist pass.
+
+## Next immediate development action
+
+**Do not add more independent analytical engines first.** Run Blender 5.2 integration and fix the sleeve-connection sweep and perimeter-FEM omissions. They are upstream dependencies: optimizing geometry before they work can falsely rank or reject every candidate.
+
+## Notes
+
+- Numeric defaults in FEM and contact dialogs are software fixtures, not evidence-based clinical limits.
+- Source evidence: `dsg/frame_structural.py` (`_fem_build_model`, `_fem_build_geodesic_model`, preview/apply); `dsg/frame_fem_core.py`; `dsg/frame_contact_core.py`; `dsg/frame_geodesic_groups.py`; `dsg/frame_boolean_path_core.py`; `dsg/frame_swept_clearance_core.py`; `.github/workflows/ci.yml`; `AGENTS.md`.
