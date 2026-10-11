@@ -61,6 +61,16 @@ class FinalSectionAdapterTests(unittest.TestCase):
         self.assertFalse(r["full_frame_fem_validated"])
         self.assertFalse(r["geometry_mutated"])
 
+
+    def test_nominal_reference_is_comparison_only(self):
+        fn,ctx,calls,arrays=self.function()
+        r=fn(ctx,point_mm=[0,0,0],axis=[1,0,0],
+             nominal_radius_mm=1.0,mesh_arrays_fn=arrays)
+        self.assertAlmostEqual(r["geometry_reference_area_ratio"],4/np.pi)
+        self.assertAlmostEqual(r["geometry_reference_weak_inertia_ratio"],16/(3*np.pi))
+        self.assertTrue(r["section_may_include_merged_frame"])
+        self.assertFalse(r["design_approved"])
+
     def test_before_final_boolean_rejected_before_extraction(self):
         fn,ctx,calls,arrays=self.function(final=False)
         with self.assertRaisesRegex(RuntimeError,"REQUIRES_FINAL_GUIDE"):
