@@ -2936,6 +2936,11 @@ def _draw_step_reinforcement(layout, b, context, props):
         'dsg.skip_reinforcement',
         text=_ui_text(props, 'Continue without', 'Continuar sin refuerzo'),
         icon_value=icon_manager.icon_id('continue'))
+    tools.operator(
+        'dsg.analyze_geodesic_frame_fem',
+        text=_ui_text(props, 'Analyze surface routes (EXPERIMENTAL)',
+                      'Analizar rutas superficiales (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
     if _tertiary_header(
             optional, props, 'show_reinforcement_options',
             'Accessory · manual dimensions', 'Accesorio · medidas manuales'):

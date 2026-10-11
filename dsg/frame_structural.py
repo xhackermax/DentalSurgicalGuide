@@ -1031,7 +1031,40 @@ class DSG_OT_OptimizeFrameFEM(Operator):
         return {'FINISHED'}
 
 
-_CLASSES = (DSG_OT_OptimizeFrameFEM,)
+class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
+    bl_idname = "dsg.analyze_geodesic_frame_fem"
+    bl_label = "Analyze Surface-Geodesic FEM (Experimental)"
+    bl_description = (
+        "Analyze FEM beam chains following the passive surface, without "
+        "changing or applying any guide geometry"
+    )
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        try:
+            if int(getattr(context.scene.dsg_props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+                raise RuntimeError("El análisis geodésico requiere el paso de refuerzos")
+            summary = analyze_geodesic_frame_fem(context)
+        except Exception as exc:
+            guide_module._dsg_report(
+                self, {'ERROR'},
+                f"Experimental geodesic FEM failed: {exc}",
+                f"Análisis geodésico experimental fallido: {exc}",
+            )
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"Geodesic FEM (design aid): {len(summary['geodesic_routes'])} surface routes, "
+            f"{summary['active_reinforcements']} beam elements, "
+            f"U={summary['max_utilization']:.2f}; no geometry changed.",
+            f"FEM geodésico (experimental): {len(summary['geodesic_routes'])} rutas, "
+            f"{summary['active_reinforcements']} elementos, "
+            f"U={summary['max_utilization']:.2f}; geometría intacta.",
+        )
+        return {'FINISHED'}
+
+
+_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM)
 
 
 def register():
