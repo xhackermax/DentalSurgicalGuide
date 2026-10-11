@@ -23,6 +23,8 @@ from mathutils import Matrix, Vector
 from . import guide_module
 from . import frame_structural_core as core
 from . import frame_fem_core as fem
+from . import frame_geodesic_paths as geodesic_paths
+from . import frame_geodesic_fem as geodesic_fem
 
 FRAME_STRUCTURAL_SCHEMA = core.SCHEMA
 SUPPORT_KEY = "DSG_frame_support_nodes_json"
@@ -520,7 +522,7 @@ def _fem_build_keep_out(context, sleeves: list[dict]):
     return check
 
 
-def _fem_build_model(context=None):
+def _fem_build_model(context=None, *, geodesic_candidates=False):
     context = context or bpy.context
     props = context.scene.dsg_props
     frame_ctx = get_frame_context(context)
@@ -585,7 +587,9 @@ def _fem_build_model(context=None):
                 L = float(np.linalg.norm(b - a))
                 if L < 1.5 or L > 65.0:
                     continue
-                if keep_out(a, b):
+                # Experimental geodesic model builds curved surface paths later.
+                # A rejected straight chord must not exclude a valid geodesic.
+                if not geodesic_candidates and keep_out(a, b):
                     continue
                 elements.append(_fem_material_element(
                     support_idx, attach_idx, connector_radius,
@@ -633,6 +637,135 @@ def _fem_build_model(context=None):
         "sleeve_records": sleeve_records,
         "config": _fem_profile_config(props),
     }
+
+
+
+def _fem_build_geodesic_model(context=None) -> dict:
+    """Read-only experimental FEM model with true surface-following beam chains.
+
+    This does not mutate Blender geometry and is not the clinical STEP 6
+    replacement. Exact triangular anchors are routed on the evaluated passive
+    surface using the same graph as the native DSG frame.
+    """
+    context = context or bpy.context
+    model = _fem_build_model(context, geodesic_candidates=True)
+    passive = _passive_obj(context)
+    if not guide_module._valid_obj(passive):
+        raise RuntimeError("GEODESIC_NO_PASSIVE_SURFACE: el modelo pasivo no está disponible")
+    cache, _reused, error = guide_module._build_frame_surface_graph_cache(context, passive)
+    if cache is None:
+        raise RuntimeError(f"GEODESIC_GRAPH_UNAVAILABLE: {error}")
+    tree, _mx, _inv, reason = guide_module._frame_width_surface_bvh(context, passive, cache)
+    if tree is None:
+        raise RuntimeError(f"GEODESIC_SURFACE_BVH_UNAVAILABLE: {reason}")
+
+    original = list(model["elements"])
+    virtual = [e for e in original if e.virtual]
+    candidate_beams = [e for e in original if e.render and not e.virtual]
+    nodes = model["nodes"]
+    new_elements = list(virtual)
+    accepted = []
+    rejected = []
+    # The nominal tubular FEM remains a design aid; no post-Boolean sections
+    # or contact retention claims are made by this analysis.
+    for candidate in candidate_beams:
+        label = str(candidate.tag)
+        support = Vector(tuple(float(v) for v in nodes[candidate.i].xyz))
+        attachment = Vector(tuple(float(v) for v in nodes[candidate.j].xyz))
+        source = guide_module._frame_surface_projection(cache, support, max_distance_mm=1.0)
+        target = guide_module._frame_surface_projection(cache, attachment)
+        if source is None or target is None or not source.get("triangle_vertices") or not target.get("triangle_vertices"):
+            rejected.append({"candidate": label, "reason": "NO_SURFACE_FACE_ANCHOR"})
+            continue
+        # Sleeve transitions must depart towards the outer surface, not through
+        # the passive model. A longer transition is allowed only after a future
+        # explicit multi-surface clearance validator is implemented.
+        terminal_offset = attachment - Vector(target["point"])
+        normal = Vector(target["normal"])
+        if terminal_offset.length > 12.0 or terminal_offset.dot(normal) < -0.05:
+            rejected.append({"candidate": label, "reason": "UNSAFE_SLEEVE_TRANSITION"})
+            continue
+        if terminal_offset.length > 0.02 and model["keep_out"](
+            np.asarray(tuple(target["point"]), dtype=float),
+            np.asarray(tuple(attachment), dtype=float),
+        ):
+            rejected.append({"candidate": label, "reason": "TRANSITION_CROSSES_PROTECTED_VOLUME"})
+            continue
+        try:
+            route = geodesic_paths.route_surface_face_anchors(
+                cache["coords"], cache["csr_offsets"], cache["csr_dst"], cache["csr_weights"],
+                source["triangle_vertices"], tuple(source["point"]),
+                target["triangle_vertices"], tuple(target["point"]),
+            )
+        except (ValueError, geodesic_paths.NoValidSurfaceRoute) as exc:
+            rejected.append({"candidate": label, "reason": str(exc)})
+            continue
+
+        anchors = [np.asarray(tuple(support), dtype=float)]
+        # Preserve every intrinsic bend. Splitting single surface edges is
+        # permitted; joining nonadjacent vertices with a chord is not.
+        anchors.extend(np.asarray(point, dtype=float) for point in route.points_mm)
+        anchors.append(np.asarray(tuple(attachment), dtype=float))
+        fine = [anchors[0]]
+        for a, b in zip(anchors, anchors[1:]):
+            length = float(np.linalg.norm(b - a))
+            if length < 0.02:
+                continue
+            divisions = max(1, int(math.ceil(length / 1.5)))
+            for k in range(1, divisions + 1):
+                fine.append(a + (b - a) * (k / divisions))
+        # Ensure exact FEM node poses even when coincident samples were removed.
+        fine[0] = np.array(nodes[candidate.i].xyz, dtype=float)
+        fine[-1] = np.array(nodes[candidate.j].xyz, dtype=float)
+        if len(fine) < 2 or len(nodes) + len(fine) > 2200:
+            raise RuntimeError(
+                "GEODESIC_FEM_MODEL_TOO_LARGE: refine/condense the route before solving"
+            )
+        ids = geodesic_fem.append_geodesic_beams(
+            nodes, new_elements, fine,
+            start_node=int(candidate.i), end_node=int(candidate.j),
+            beam_template=candidate, label=label, max_segment_mm=1.51,
+        )
+        accepted.append({
+            "candidate": label,
+            "beam_elements": len(ids),
+            "surface_length_mm": float(route.surface_length_mm),
+            "terminal_transition_mm": float(terminal_offset.length),
+            "geodesic_backend": str(route.backend),
+        })
+
+    if len(accepted) < 2:
+        raise RuntimeError(
+            "NO_VALID_GEODESIC_FEM_MODEL: se requieren al menos dos ramas válidas. "
+            f"Descartadas: {rejected[:6]}"
+        )
+    model["elements"] = new_elements
+    model["config"].enable_topology_growth = False
+    model["config"].max_growth_rounds = 0
+    model["route_mode"] = "SURFACE_GEODESIC_EXPERIMENTAL_READ_ONLY"
+    model["geodesic_routes"] = accepted
+    model["rejected_geodesic_routes"] = rejected
+    return model
+
+
+def analyze_geodesic_frame_fem(context=None) -> dict:
+    """Compare stiffness/volume of curved routes without replacing clinical guides."""
+    model = _fem_build_geodesic_model(context)
+    result = fem.optimize_reinforcement(
+        model["nodes"], model["elements"], model["load_cases"],
+        monitor_nodes=model["monitor_nodes"], config=model["config"],
+        keep_out_check=model["keep_out"],
+    )
+    summary = _fem_summary(model, result)
+    summary.update(
+        routing_mode=model["route_mode"],
+        geodesic_routes=model["geodesic_routes"],
+        rejected_geodesic_routes=model["rejected_geodesic_routes"],
+        experimental=True,
+        post_boolean_section_validated=False,
+        geometry_mutated=False,
+    )
+    return summary
 
 
 def _fem_summary(model: dict, result: fem.OptimizationResult) -> dict:
