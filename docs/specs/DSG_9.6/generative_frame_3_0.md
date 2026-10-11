@@ -112,3 +112,16 @@ Confirmed manual reinforcements cannot be overwritten.
   and never auto-approves exported STL or modifies the final guide.
 - Physical retentive performance, insertion safety, anisotropic resin,
   torsional constants and globally connected-frame behavior remain unverified.
+
+## H3 reference comparison
+- The final-guide section inspector accepts an optional **user-specified**
+  nominal circular beam diameter. It reports `A_actual/A_circle` and
+  `I_min_actual/I_circle` as geometry-only diagnostic ratios.
+- These ratios do **not** calibrate Saint-Venant torsion, local buckling,
+  bonding to anatomy, placement fit, resin fatigue or true contact retention.
+- The section may include multiple merged mesh features. Never treat the
+  ratio as an isolated bar's beam stiffness or an automatic acceptance gate.
+- To measure an anatomical region, put the Blender 3D cursor **inside**
+  the final guide material, align the plane normal with the local tangent,
+  and use the step-11 research section-inspection button. A cursor on the
+  section boundary, inside a hole, or outside the mesh produces a failure.
