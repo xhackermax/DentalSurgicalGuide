@@ -18,6 +18,7 @@ from typing import Any
 import bpy
 import numpy as np
 from bpy.types import Operator
+from bpy.props import FloatProperty
 from mathutils import Matrix, Vector
 
 from . import guide_module
@@ -1241,6 +1242,57 @@ class DSG_OT_PreviewGeodesicFrameFEM(Operator):
         return {'FINISHED'}
 
 
+class DSG_OT_EstimateGeodesicContact(Operator):
+    bl_idname = "dsg.estimate_geodesic_contact"
+    bl_label = "Evaluate Contact Profile (Experimental)"
+    bl_description = "Local-planar contact estimate only; not a validated clinical retention test"
+    bl_options = {'REGISTER'}
+
+    min_contact_width_mm: FloatProperty(name="Minimum interface width (mm)", default=0.8,
+                                        min=0.0, max=8.0, precision=3)
+    min_area_ratio: FloatProperty(name="Minimum retained area fraction", default=0.65,
+                                  min=0.0, max=1.0, precision=3)
+    min_inertia_ratio: FloatProperty(name="Minimum bending inertia fraction", default=0.30,
+                                     min=0.0, max=1.0, precision=3)
+    min_penetration_mm: FloatProperty(name="Minimum overlap (mm)", default=0.01,
+                                      min=0.0, max=5.0, precision=3)
+    max_penetration_mm: FloatProperty(name="Maximum overlap (mm)", default=0.7,
+                                      min=0.0, max=5.0, precision=3)
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=420)
+
+    def draw(self, context):
+        col = self.layout.column(align=True)
+        col.label(text="RESEARCH ONLY: planar estimate, not clinical proof", icon='ERROR')
+        for attr in ("min_contact_width_mm", "min_area_ratio", "min_inertia_ratio",
+                     "min_penetration_mm", "max_penetration_mm"):
+            col.prop(self, attr)
+
+    def execute(self, context):
+        try:
+            if int(getattr(context.scene.dsg_props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+                raise RuntimeError("El diagnóstico de contacto requiere el paso de refuerzos")
+            report = estimate_geodesic_frame_contact(context, policy=contact_core.ContactPolicy(
+                min_contact_width_mm=float(self.min_contact_width_mm),
+                min_retained_area_ratio=float(self.min_area_ratio),
+                min_bending_inertia_ratio=float(self.min_inertia_ratio),
+                min_penetration_mm=float(self.min_penetration_mm),
+                max_penetration_mm=float(self.max_penetration_mm),
+            ))
+        except Exception as exc:
+            guide_module._dsg_report(self, {'ERROR'},
+                f"Contact research estimate failed: {exc}",
+                f"Falló la estimación experimental de contacto: {exc}")
+            return {'CANCELLED'}
+        guide_module._dsg_report(self, {'INFO'},
+            f"Experimental contact: {report['feasible_routes']} routes, interface "
+            f"estimate {report['contact_area_planar_estimate_mm2']:.1f} mm². Not clinically validated.",
+            f"Contacto experimental: {report['feasible_routes']} rutas, superficie "
+            f"estimada {report['contact_area_planar_estimate_mm2']:.1f} mm². Sin validación clínica.")
+        return {'FINISHED'}
+
+
 class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
     bl_idname = "dsg.analyze_geodesic_frame_fem"
     bl_label = "Analyze Surface-Geodesic FEM (Experimental)"
@@ -1274,7 +1326,7 @@ class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
         return {'FINISHED'}
 
 
-_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM)
+_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM, DSG_OT_EstimateGeodesicContact)
 
 
 def register():

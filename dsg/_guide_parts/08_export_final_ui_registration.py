@@ -2946,6 +2946,11 @@ def _draw_step_reinforcement(layout, b, context, props):
         text=_ui_text(props, 'Preview geodesic FEM (EXPERIMENTAL)',
                       'Vista previa FEM geodésico (EXPERIMENTAL)'),
         icon_value=icon_manager.icon_id('reinforcement'))
+    tools.operator(
+        'dsg.estimate_geodesic_contact',
+        text=_ui_text(props, 'Estimate contact (EXPERIMENTAL)',
+                      'Estimar contacto (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
     if _tertiary_header(
             optional, props, 'show_reinforcement_options',
             'Accessory · manual dimensions', 'Accesorio · medidas manuales'):

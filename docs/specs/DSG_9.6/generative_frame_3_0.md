@@ -67,3 +67,18 @@ Confirmed manual reinforcements cannot be overwritten.
   must pass before claiming completion.
 - Legacy clinical workflows and STEP_FRAME behavior remain unchanged until
   the curved paths have separate post-Boolean and structural validation.
+
+## H2 local-planar contact estimates (research only)
+- `dsg/frame_contact_core.py` computes interface chord width, residual area,
+  centroid, and bending second moments after an ideal local plane section.
+  It does not claim torsional stiffness of the cropped shape.
+- `select_contact_section` minimizes penetration subject to **explicit**
+  contact, remaining-section, and maximum-overlap requirements; impossible
+  constraints fail closed.
+- `frame_structural.estimate_geodesic_frame_contact` reports provisional
+  results from surface-projected FEM samples and current optimized beam radii,
+  without modifying Blender guide geometry.
+- The optional `dsg.estimate_geodesic_contact` dialog is research-only.
+  Numeric defaults are software fixtures, not clinically validated limits.
+- **Pending H3:** real post-Boolean volume/section measurement, insertion
+  clearance, undercuts, contact/retention tests, materials and loads calibration.
