@@ -260,3 +260,37 @@ def measure_boolean_section(
         section_origin_mm=tuple(map(float,orig)),
         section_axis=tuple(map(float,axis)),
     )
+
+
+@dataclass(frozen=True)
+class SectionReferenceComparison:
+    """Geometry ratio only. This cannot validate stiffness or device strength."""
+    nominal_radius_mm: float
+    nominal_area_mm2: float
+    nominal_bending_inertia_mm4: float
+    measured_area_ratio: float
+    measured_weak_axis_bending_ratio: float
+    section_contains_merged_geometry: bool = True
+    post_boolean_FEM_validated: bool = False
+
+
+def compare_section_to_nominal_circle(
+    actual: BooleanSection, *, nominal_radius_mm: float,
+) -> SectionReferenceComparison:
+    """Compare real section area/weak-axis bending to an *ideal* circular bar.
+
+    The section may include sleeve junctions and merged frame components, so
+    neither ratio is a replacement for calibrated post-Boolean FEM or a proof
+    of strength, fit, retention or implant safety.
+    """
+    radius=float(nominal_radius_mm)
+    if not math.isfinite(radius) or radius<=0:
+        raise ValueError("nominal_radius_mm must be finite and positive")
+    ideal_area=math.pi*radius**2
+    ideal_bending=math.pi*radius**4/4
+    return SectionReferenceComparison(
+        nominal_radius_mm=radius, nominal_area_mm2=ideal_area,
+        nominal_bending_inertia_mm4=ideal_bending,
+        measured_area_ratio=float(actual.area_mm2/ideal_area),
+        measured_weak_axis_bending_ratio=float(actual.principal_inertia_min_mm4/ideal_bending),
+    )
