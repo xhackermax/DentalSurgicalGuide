@@ -64,8 +64,44 @@ def main():
     after = (len(cube.data.vertices), len(cube.data.polygons), tuple(cube.location))
     assert after == before, "Read-only section analyses mutated Blender mesh"
 
+    # Exercise the REAL Blender registered operator, not just its RNA/pure
+    # kernel. The cube is a synthetic final-guide fixture, never patient data.
+    from dsg import guide_module
+    cube = guide_module.register_dsg_object(
+        cube, guide_module.ROLE_GUIDE, guide_module.GUIDE_NAME)
+    bpy.context.scene.dsg_props.guide_obj = cube
+    cube["DSG_final_cut_completed"] = True
+    bpy.context.scene.cursor.location = (0, 0, 0)
+    result = bpy.ops.dsg.inspect_final_boolean_section(
+        section_axis=(1, 0, 0), nominal_diameter_mm=2.0)
+    assert result == {'FINISHED'}, f"Real section operator failed: {result}"
+
+    # The second operator reads a deliberately separate interior POLY trace
+    # and writes only de-identified technical JSON to Blender clipboard.
+    trace_data = bpy.data.curves.new("Synthetic interior frame trace", "CURVE")
+    trace_data.dimensions = "3D"
+    poly = trace_data.splines.new("POLY")
+    poly.points.add(1)
+    poly.points[0].co = (-0.75, 0.0, 0.0, 1)
+    poly.points[1].co = (0.75, 0.0, 0.0, 1)
+    trace = bpy.data.objects.new("DSG_Synthetic_Interior_Trace", trace_data)
+    bpy.context.scene.collection.objects.link(trace)
+    bpy.ops.object.select_all(action="DESELECT")
+    trace.select_set(True)
+    bpy.context.view_layer.objects.active = trace
+    result = bpy.ops.dsg.inspect_final_boolean_path(
+        station_count=5, nominal_diameter_mm=2.0)
+    assert result == {'FINISHED'}, f"Real Boolean path operator failed: {result}"
+    import json
+    report = json.loads(bpy.context.window_manager.clipboard)
+    assert report["station_count"] == 5
+    assert math.isclose(report["area_min_mm2"], 4.0, abs_tol=1e-6)
+    assert not report["post_boolean_fem_validated"]
+    assert (len(cube.data.vertices),len(cube.data.polygons),tuple(cube.location)) == before
+
     addon_utils.disable("dsg", default_set=True)
-    print("GENERATIVE FRAME BLENDER 5.2 SMOKE PASS: RNA + evaluated mesh + 5 real sections")
+    print("GENERATIVE FRAME BLENDER 5.2 SMOKE PASS: RNA + actual registered"
+          " operators + evaluated mesh + 5 measured sections")
 
 
 if __name__ == "__main__":
