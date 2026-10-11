@@ -19,15 +19,38 @@ clinical, fabrication, geometric, or structural hard constraints.
    Emit `NO_VALID_SURFACE_ROUTE` and leave existing geometry untouched.
 5. Smooth paths must remain surface-constrained. Transitions to sleeve envelopes
    are distinct 3D entities requiring volume-clearance verification.
-6. Face/barycentric anchors, complete swept-volume collision checks, and the
-   FEM beam-polyline discretization are follow-up milestones, **not delivered
-   by the H1 pure vertex-route primitive**.
+6. Exact triangle-face anchors are supported in the new shared geodesic
+   wrapper. A curved route can be discretized into nonprunable FEM elements,
+   with no automatic chord replacement.
+7. The experimental `dsg.analyze_geodesic_frame_fem` command computes a
+   read-only surface-constrained candidate FEM model. The separate
+   `dsg.preview_geodesic_frame_fem` command renders viewport-only
+   variable-radius preview curves directly from the same FEM beam chain.
+8. Both features are deliberately **not** used by the clinical frame/refinement
+   apply/export pipeline. No post-Boolean structural/contact validation exists.
+9. Complete swept-volume collision checks, empirically defined penetration,
+   contact/retention metrics, group-aware route pruning and load calibration
+   remain subsequent milestones.
 
 ## Contact and structure (future H2-H5)
 Penetration is optimized for verified support/contact area *and* adequate
 post-Boolean resistant cross-sections. Never assume that maximizing overlap
 alone establishes retention, or that nominal circular beam properties remain
 valid after material is removed by Boolean operations.
+
+## Limitations of the current experimental surface adapter
+- It starts from existing support-to-sleeve candidate identities, without
+  optimizing the perimeter frame or the global topological connectivity.
+- Sleeve transitions are explicitly checked with current keep-out helpers;
+  the geometry still needs an independent full swept-volume and insertion
+  clearance validator.
+- The FEM still treats nominal circular cross-sections, not post-Boolean
+  material sections. Its ratings cannot be interpreted as clinical safety.
+- Large graph paths are bounded; if the full geometric FEM is too large,
+  fail with an actionable message rather than silently straightening.
+- The experimental Blender preview is hidden from rendering and excluded
+  from DSG's confirmed reinforcement role; the original clinical guide
+  is never replaced by it.
 
 ## H0 transactional invariant
 For `create_fem_reinforcements`, solve and build every replacement candidate
