@@ -78,6 +78,23 @@ class BooleanSectionTests(unittest.TestCase):
         with self.assertRaisesRegex(InvalidBooleanSection,"NO_INTERSECTION"):
             box_section(v,t)
 
+
+    def test_post_boolean_measurement_never_assumes_nominal_circle_stiffness(self):
+        from dsg.frame_boolean_section_core import compare_section_to_nominal_circle
+        v,t=cube(-2,2,-0.5,0.5,-0.5,0.5)
+        actual=box_section(v,t)
+        result=compare_section_to_nominal_circle(actual,nominal_radius_mm=1.0)
+        self.assertAlmostEqual(result.measured_area_ratio,1/math.pi)
+        self.assertAlmostEqual(result.measured_weak_axis_bending_ratio,1/(3*math.pi))
+        self.assertFalse(result.post_boolean_FEM_validated)
+        self.assertTrue(result.section_contains_merged_geometry)
+
+    def test_nominal_circle_reference_radius_must_be_real(self):
+        from dsg.frame_boolean_section_core import compare_section_to_nominal_circle
+        v,t=cube(-2,2,-0.5,0.5,-0.5,0.5)
+        with self.assertRaises(ValueError):
+            compare_section_to_nominal_circle(box_section(v,t),nominal_radius_mm=0)
+
     def test_untouched_bounding_box_not_clinical_approval(self):
         v,t=cube(-2,2,-1,1,-1,1)
         self.assertEqual(box_section(v,t).backend,"ACTUAL_TRIANGULATED_BOOLEAN_MESH")
