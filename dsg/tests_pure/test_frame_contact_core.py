@@ -40,7 +40,7 @@ class ContactSectionTests(unittest.TestCase):
         s = circular_section_after_planar_cut(r, p)
         ys = np.linspace(-r + p, r, 10001)
         widths = 2 * np.sqrt(np.maximum(0, r*r - ys*ys))
-        ref_area = float(np.trapz(widths, ys))
+        ref_area = float(np.trapezoid(widths, ys))
         self.assertAlmostEqual(s.retained_area_mm2, ref_area, delta=0.0004)
 
     def test_contact_depth_is_shallowest_feasible(self):
@@ -55,6 +55,7 @@ class ContactSectionTests(unittest.TestCase):
         with self.assertRaisesRegex(NoFeasibleContact, "INERTIA"):
             select_contact_section(1, policy(min_contact_width_mm=2.0,
                                              min_bending_inertia_ratio=0.9,
+                                             min_retained_area_ratio=0.49,
                                              max_penetration_mm=1.0))
 
     def test_no_solution_if_depth_is_too_shallow(self):
