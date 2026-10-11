@@ -9,6 +9,7 @@ import numpy as np
 from dsg import frame_fem_core as fem, frame_geodesic_fem
 from dsg import frame_swept_clearance_core as swept_clearance
 from dsg import frame_sleeve_junction_core as sleeve_junction
+from dsg import frame_perimeter_fem as perimeter_fem
 
 
 class Vec(tuple):
@@ -31,22 +32,25 @@ class ExperimentalAdapterTests(unittest.TestCase):
         nodes = [
             fem.Node([0, 0, 0], [True] * 6, "KEEP_IN_SUPPORT"),
             fem.Node([0, 2, 0], [True] * 6, "KEEP_IN_SUPPORT"),
-            fem.Node([2, 0, 0], [False] * 6, "LOAD"),
+            fem.Node([2, 2, 0], [True] * 6, "KEEP_IN_SUPPORT"),
+            fem.Node([2, 0, 0], [True] * 6, "KEEP_IN_SUPPORT"),
+            fem.Node([5, 0, 0], [False] * 6, "LOAD"),
         ]
         base = {
             "nodes": nodes,
-            "elements": [fem.BeamElement(0, 2, 1.0, tag="CAND_A"),
-                         fem.BeamElement(1, 2, 1.0, tag="CAND_B")],
+            "elements": [fem.BeamElement(0, 4, 1.0, tag="CAND_A"),
+                         fem.BeamElement(1, 4, 1.0, tag="CAND_B")],
             "load_cases": [fem.LoadCase("FAKE")],
-            "monitor_nodes": [2],
+            "monitor_nodes": [4],
             "keep_out": lambda *_a: False,
             "config": fem.OptimizationConfig(),
             "frame_context": {"sleeves": [{
-                "id": "S1", "center": [5, 0, 0], "axis": [0, 0, 1],
+                "id": "S1", "center": [8, 0, 0], "axis": [0, 0, 1],
                 "inner_radius_mm": 2.1, "outer_radius_mm": 3.0,
                 "height_mm": 7.0, "lumen_keep_out": True,
-            }]},
-            "sleeve_records": [{"id": "S1", "attachment_nodes": [2]}],
+            }], "support_nodes": [{"id": f"P{i}"} for i in range(1,5)],
+                 "frame_radius_mm": 0.8},
+            "sleeve_records": [{"id": "S1", "attachment_nodes": [4]}],
         }
         cache = {"coords": [], "csr_offsets": [], "csr_dst": [], "csr_weights": []}
         guide = SimpleNamespace(
@@ -86,6 +90,8 @@ class ExperimentalAdapterTests(unittest.TestCase):
             ),
             "geodesic_fem": frame_geodesic_fem,
             "swept_clearance": swept_clearance,
+            "perimeter_fem": perimeter_fem,
+            "_fem_material_element": lambda i, j, radius_mm, **kwargs: fem.BeamElement(i, j, radius_mm, **kwargs),
             "sleeve_junction": sleeve_junction,
             "fem": fem,
             "np": np,
@@ -98,34 +104,38 @@ class ExperimentalAdapterTests(unittest.TestCase):
     def test_replaces_straight_candidates_with_fem_beam_paths(self):
         fn, base, seen = self.create()
         model = fn("mock")
-        self.assertEqual(len(seen), 2)
+        self.assertEqual(len(seen), 6)
         self.assertEqual(len(model["geodesic_routes"]), 2)
         self.assertGreater(len(model["elements"]), 2)
-        self.assertTrue(all(element.tag.startswith("CAND_") and ":SEG" in element.tag
+        self.assertTrue(any(element.tag.startswith("FRAME_PERIMETER_E")
                             for element in model["elements"]))
+        self.assertTrue(all(element.tag.startswith(("CAND_", "FRAME_PERIMETER_", "VIRTUAL_"))
+                            and ":SEG" in element.tag for element in model["elements"]))
+        self.assertTrue(model["perimeter_included_in_nominal_volume"])
+        self.assertFalse(model["perimeter_support_contact_calibrated"])
         self.assertTrue(all(not element.prunable for element in model["elements"]))
         self.assertFalse(model["config"].enable_topology_growth)
         self.assertEqual(model["route_mode"], "SURFACE_GEODESIC_EXPERIMENTAL_READ_ONLY")
-        self.assertGreater(len(model["nodes"]), 3)
+        self.assertGreater(len(model["nodes"]), 5)
 
 
     def test_swept_lumen_blocks_a_colliding_tube_not_just_centerline(self):
         fn, base, seen = self.create()
-        base["frame_context"] = {"sleeves": [{
+        base["frame_context"]["sleeves"] = [{
             "id": "S1", "lumen_keep_out": True,
             "center": [0, 0, 0], "axis": [0, 0, 1],
-            "inner_radius_mm": 1.4, "outer_radius_mm": 2.0,
+            "inner_radius_mm": 4.0, "outer_radius_mm": 5.0,
             "height_mm": 6.0
-        }]}
+        }]
         with self.assertRaisesRegex(RuntimeError, "NO_VALID_GEODESIC_FEM_MODEL"):
             fn("mock")
-        self.assertEqual(len(seen), 2)
+        self.assertEqual(len(seen), 6)
 
     def test_swept_clearance_reports_which_explicit_zones_are_checked(self):
         fn, base, seen = self.create()
         base["frame_context"] = {"sleeves": [{
             "id": "S1", "lumen_keep_out": True,
-            "center": [5, 0, 0], "axis": [0, 0, 1],
+            "center": [8, 0, 0], "axis": [0, 0, 1],
             "inner_radius_mm": 0.4, "outer_radius_mm": 3.0,
             "height_mm": 6.0
         }]}
@@ -142,7 +152,7 @@ class ExperimentalAdapterTests(unittest.TestCase):
         fn, base, seen = self.create(fail_routes=True)
         with self.assertRaisesRegex(RuntimeError, "NO_VALID_GEODESIC_FEM_MODEL"):
             fn("mock")
-        self.assertEqual(len(seen), 2)
+        self.assertEqual(len(seen), 6)
 
 
 if __name__ == "__main__":
