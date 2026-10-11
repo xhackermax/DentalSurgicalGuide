@@ -37,7 +37,7 @@ class ProfileTests(unittest.TestCase):
     def test_open_mesh_fails_closed(self):
         v,t=cuboid(-5,5,-1,1,-1,1)
         with self.assertRaisesRegex(InvalidBooleanSection,"NON_MANIFOLD"):
-            profile_boolean_path(v,t,[[-4,0,0],[4,0,0]],sample_count=3,triangles=t[:-1])
+            profile_boolean_path(v,t[:-1],[[-4,0,0],[4,0,0]],sample_count=3)
 
     def test_reference_radius_length_must_match_path(self):
         v,t=cuboid(-5,5,-1,1,-1,1)
