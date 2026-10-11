@@ -27,6 +27,7 @@ from . import frame_fem_core as fem
 from . import frame_geodesic_paths as geodesic_paths
 from . import frame_geodesic_fem as geodesic_fem
 from . import frame_contact_core as contact_core
+from . import frame_geodesic_groups as geodesic_groups
 
 FRAME_STRUCTURAL_SCHEMA = core.SCHEMA
 SUPPORT_KEY = "DSG_frame_support_nodes_json"
@@ -671,7 +672,7 @@ def _fem_build_geodesic_model(context=None) -> dict:
     # The nominal tubular FEM remains a design aid; no post-Boolean sections
     # or contact retention claims are made by this analysis.
     for candidate in candidate_beams:
-        label = str(candidate.tag)
+        label = f"{candidate.tag}_ATT{int(candidate.j)}"
         support = Vector(tuple(float(v) for v in nodes[candidate.i].xyz))
         attachment = Vector(tuple(float(v) for v in nodes[candidate.j].xyz))
         source = guide_module._frame_surface_projection(cache, support, max_distance_mm=1.0)
@@ -855,6 +856,49 @@ def estimate_geodesic_frame_contact(context=None, *, policy: contact_core.Contac
         "warning": ("This is an uncalibrated local tangent-plane diagnostic; "
                     "no actual Boolean, retention measurement or validated "
                     "post-Boolean FEM was performed."),
+    }
+
+
+
+
+def analyze_geodesic_group_topology(context=None) -> dict:
+    """Balanced, read-only group pruning after the nominal curved-beam FEM run.
+
+    Entire routes are removed or retained. This is not the clinical apply path.
+    """
+    context = context or bpy.context
+    model = _fem_build_geodesic_model(context)
+    solved = fem.optimize_reinforcement(
+        model["nodes"], model["elements"], model["load_cases"],
+        monitor_nodes=model["monitor_nodes"], config=model["config"],
+        keep_out_check=model["keep_out"],
+    )
+    if not solved.hard_safe:
+        raise RuntimeError("BASELINE_FEM_UNSAFE: geodesic candidate network is not structurally feasible")
+    groups = {str(route["candidate"]): tuple(int(i) for i in route["beam_indices"])
+              for route in model["geodesic_routes"]}
+    if len(groups) != len(model["geodesic_routes"]):
+        raise RuntimeError("DUPLICATED_GEODESIC_GROUP_LABEL")
+    result = geodesic_groups.prune_geodesic_groups(
+        model["nodes"], model["elements"], model["load_cases"], model["monitor_nodes"],
+        groups, config=model["config"], stiffness_weight=0.5,
+        min_remaining_groups=2,
+    )
+    return {
+        "schema": "dsg.geodesic_group_pruning.v1",
+        "objective": "BALANCED_MATERIAL_STIFFNESS",
+        "active_groups": list(result.active_groups),
+        "removed_groups": list(result.removed_groups),
+        "material_volume_mm3": float(result.material_volume_mm3),
+        "compliance_Nmm": float(result.compliance_Nmm),
+        "balanced_objective": float(result.balanced_objective),
+        "max_utilization": float(result.max_utilization),
+        "max_displacement_mm": float(result.max_displacement_mm),
+        "history": list(result.iterations),
+        "experimental": True,
+        "geometry_mutated": False,
+        "post_boolean_validated": False,
+        "contact_retention_validated": False,
     }
 
 
@@ -1293,6 +1337,35 @@ class DSG_OT_EstimateGeodesicContact(Operator):
         return {'FINISHED'}
 
 
+class DSG_OT_AnalyzeGeodesicGroups(Operator):
+    bl_idname = "dsg.analyze_geodesic_groups"
+    bl_label = "Optimize Geodesic Groups (Experimental, Read-only)"
+    bl_description = (
+        "Test removal of whole curved FEM routes under balanced volume/compliance; "
+        "does not apply or export any optimized geometry"
+    )
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        try:
+            if int(getattr(context.scene.dsg_props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+                raise RuntimeError("El análisis de topología requiere el paso de refuerzos")
+            report = analyze_geodesic_group_topology(context)
+        except Exception as exc:
+            guide_module._dsg_report(self, {'ERROR'},
+                f"Geodesic group analysis failed: {exc}",
+                f"Falló el análisis experimental de grupos: {exc}")
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"Balanced research FEM: {len(report['active_groups'])} active path groups, "
+            f"{len(report['removed_groups'])} candidate removals. No geometry changed.",
+            f"FEM experimental equilibrado: {len(report['active_groups'])} rutas activas, "
+            f"{len(report['removed_groups'])} grupos eliminables. Geometría intacta.",
+        )
+        return {'FINISHED'}
+
+
 class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
     bl_idname = "dsg.analyze_geodesic_frame_fem"
     bl_label = "Analyze Surface-Geodesic FEM (Experimental)"
@@ -1326,7 +1399,7 @@ class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
         return {'FINISHED'}
 
 
-_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM, DSG_OT_EstimateGeodesicContact)
+_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM, DSG_OT_EstimateGeodesicContact, DSG_OT_AnalyzeGeodesicGroups)
 
 
 def register():

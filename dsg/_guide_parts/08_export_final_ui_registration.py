@@ -2951,6 +2951,11 @@ def _draw_step_reinforcement(layout, b, context, props):
         text=_ui_text(props, 'Estimate contact (EXPERIMENTAL)',
                       'Estimar contacto (EXPERIMENTAL)'),
         icon_value=icon_manager.icon_id('reinforcement'))
+    tools.operator(
+        'dsg.analyze_geodesic_groups',
+        text=_ui_text(props, 'Evaluate whole-route topology (EXPERIMENTAL)',
+                      'Evaluar topología por rutas (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
     if _tertiary_header(
             optional, props, 'show_reinforcement_options',
             'Accessory · manual dimensions', 'Accesorio · medidas manuales'):

@@ -82,3 +82,16 @@ Confirmed manual reinforcements cannot be overwritten.
   Numeric defaults are software fixtures, not clinically validated limits.
 - **Pending H3:** real post-Boolean volume/section measurement, insertion
   clearance, undercuts, contact/retention tests, materials and loads calibration.
+
+## H4/H5 prototype: balanced, whole-route FEM group pruning
+- `frame_geodesic_groups.py` reruns FEM for each **complete curved route**
+  proposed for deletion. It removes orphaned FEM nodes from each trial so that
+  a removed chain cannot leave artificial singular 6-DOF systems.
+- Accept only group deletions that pass all nominal FEM hard and recommended
+  limits and lower `0.5*(V/V0)+0.5*(compliance/C0)`.
+- Evaluate loads and monitoring points on the compact graph; invalid/
+  disconnected loading fails closed. Do not mutate live FEM input or Blender.
+- `dsg.analyze_geodesic_groups` is a read-only experimental operator; it
+  reports topology recommendations but **never applies** an optimized guide.
+- Results remain based on nominal circular beams, not the real Boolean solid.
+  Full-frame topology and contact-calibrated FEM are still pending.
