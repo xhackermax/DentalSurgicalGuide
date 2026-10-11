@@ -8,6 +8,7 @@ import numpy as np
 
 from dsg import frame_fem_core as fem, frame_geodesic_fem
 from dsg import frame_swept_clearance_core as swept_clearance
+from dsg import frame_sleeve_junction_core as sleeve_junction
 
 
 class Vec(tuple):
@@ -40,6 +41,12 @@ class ExperimentalAdapterTests(unittest.TestCase):
             "monitor_nodes": [2],
             "keep_out": lambda *_a: False,
             "config": fem.OptimizationConfig(),
+            "frame_context": {"sleeves": [{
+                "id": "S1", "center": [5, 0, 0], "axis": [0, 0, 1],
+                "inner_radius_mm": 2.1, "outer_radius_mm": 3.0,
+                "height_mm": 7.0, "lumen_keep_out": True,
+            }]},
+            "sleeve_records": [{"id": "S1", "attachment_nodes": [2]}],
         }
         cache = {"coords": [], "csr_offsets": [], "csr_dst": [], "csr_weights": []}
         guide = SimpleNamespace(
@@ -79,6 +86,7 @@ class ExperimentalAdapterTests(unittest.TestCase):
             ),
             "geodesic_fem": frame_geodesic_fem,
             "swept_clearance": swept_clearance,
+            "sleeve_junction": sleeve_junction,
             "fem": fem,
             "np": np,
             "math": __import__("math"),
@@ -106,7 +114,8 @@ class ExperimentalAdapterTests(unittest.TestCase):
         base["frame_context"] = {"sleeves": [{
             "id": "S1", "lumen_keep_out": True,
             "center": [0, 0, 0], "axis": [0, 0, 1],
-            "inner_radius_mm": 0.45, "height_mm": 6.0
+            "inner_radius_mm": 1.4, "outer_radius_mm": 2.0,
+            "height_mm": 6.0
         }]}
         with self.assertRaisesRegex(RuntimeError, "NO_VALID_GEODESIC_FEM_MODEL"):
             fn("mock")
@@ -116,10 +125,14 @@ class ExperimentalAdapterTests(unittest.TestCase):
         fn, base, seen = self.create()
         base["frame_context"] = {"sleeves": [{
             "id": "S1", "lumen_keep_out": True,
-            "center": [100, 100, 100], "axis": [0, 0, 1],
-            "inner_radius_mm": 1.0, "height_mm": 6.0
+            "center": [5, 0, 0], "axis": [0, 0, 1],
+            "inner_radius_mm": 0.4, "outer_radius_mm": 3.0,
+            "height_mm": 6.0
         }]}
         model=fn("mock")
+        self.assertTrue(all(route["post_boolean_lumen_validation_required"]
+                            and not route["final_lumen_clear"]
+                            for route in model["geodesic_routes"]))
         self.assertTrue(all(route["swept_lumen_zone_count"] == 1
                             for route in model["geodesic_routes"]))
         self.assertTrue(all(not route["whole_anatomy_sweep_validated"]
