@@ -125,3 +125,31 @@ Confirmed manual reinforcements cannot be overwritten.
   the final guide material, align the plane normal with the local tangent,
   and use the step-11 research section-inspection button. A cursor on the
   section boundary, inside a hole, or outside the mesh produces a failure.
+
+## H3 multi-station actual-section research scan
+- Pure `frame_boolean_path_core.profile_boolean_path` samples several planes
+  perpendicular to an explicitly interior centerline. Any open mesh, unverified
+  probe or sharp reverse path makes the entire scan fail closed.
+- At the final guide export step, select a **separate open POLY curve** with
+  all control points and sample positions inside the retained Boolean solid.
+  The `dsg.inspect_final_boolean_path` operator reads the evaluated guide
+  mesh using the existing export adapter. It never uses raw surface geodesic
+  previews, which generally run exactly on the Boolean boundary.
+- After a complete scan it reports the weakest actual section by area and by
+  principal bending second moment, and copies de-identified research JSON
+  to the clipboard. Never modifies, approves or reexports the clinical guide.
+- An observed weak section may include fused parts of the frame, sleeves or
+  adjacent branches; it is NOT direct nominal-to-postBoolean FEM equivalence.
+
+## H3 swept-envelope protected-volume precheck
+- New pure `frame_swept_clearance_core.py` validates variable-radius polyline
+  tubes against **explicit spheres and finite cylinders**, using signed-distance
+  functions and conservative between-sample bounds.
+- The experimental geodesic candidate adapter evaluates tube envelopes
+  against the actual sleeves' finite `SLEEVE_LUMEN` cylinders. An uncertain
+  gap or actual overlap is rejected before appending FEM beam chains.
+- The passive-model anatomical interface is *not* a keep-out because some
+  overlap is required for final Boolean adaptation.
+- Other hard forbidden regions (drill paths, irrigation, frangible walls) and
+  triangle-mesh anatomical self-clearance require a further full swept mesh
+  validator. The cylinder-only result never asserts whole-anatomy safety.

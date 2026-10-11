@@ -3020,6 +3020,11 @@ def _draw_step_name_export(layout, b, context, props):
             text=_ui_text(props, 'Measure section (EXPERIMENTAL)',
                           'Medir sección (EXPERIMENTAL)'),
             icon='MESH_DATA')
+        diagnostic.operator(
+            'dsg.inspect_final_boolean_path',
+            text=_ui_text(props, 'Profile sections along POLY trace (EXPERIMENTAL)',
+                          'Analizar secciones en curva POLY (EXPERIMENTAL)'),
+            icon='CURVE_PATH')
 
     if _tertiary_header(
             b, props, 'show_name_tools',
