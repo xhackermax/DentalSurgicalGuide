@@ -705,9 +705,11 @@ def _remove_existing_fem_reinforcements():
 
 
 def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
-    """Run FEM and create confirmed reinforcement CURVE objects for review.
+    """Stage a complete FEM candidate before replacing previously confirmed geometry.
 
-    Geometry remains non-destructive until the existing APPLY AND CONTINUE step.
+    A solver failure or temporary curve error leaves the previous frame and
+    reinforcements untouched.  No old object is destroyed before the new
+    objects and report are ready.  The commit is reversible until cleanup.
     """
     context = context or bpy.context
     props = context.scene.dsg_props
@@ -721,10 +723,11 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
         raise RuntimeError(
             "Hay refuerzos manuales confirmados. Aplícalos o elimínalos antes de optimizar automáticamente."
         )
-    if replace_existing:
-        _remove_existing_fem_reinforcements()
-        props.reinforcement_count = 0
+    previous = [obj for obj in existing if bool(obj.get("DSG_reinforcement_fem_generated", False))]
+    if previous and not replace_existing:
+        raise RuntimeError("Ya existen refuerzos FEM. Confirma su sustitución antes de continuar.")
 
+    # This calculation is pure in-memory and must precede any scene mutation.
     model = _fem_build_model(context)
     result = fem.optimize_reinforcement(
         model["nodes"], model["elements"], model["load_cases"],
@@ -733,19 +736,34 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
         keep_out_check=model["keep_out"],
     )
     summary = _fem_summary(model, result)
-
     if not result.hard_safe:
         raise RuntimeError(
             f"El FEM no alcanza los límites duros: U={summary['max_utilization']:.2f}, "
             f"desplazamiento={summary['sleeve_displacement_mm']:.3f} mm. "
-            "DSG no genera refuerzos inseguros automáticamente."
+            "DSG conserva los refuerzos originales."
         )
 
-    created = []
+    staged = []
+    previous_state = []
+    old_count = int(props.reinforcement_count)
+    guide_updates = {
+        "DSG_frame_fem_schema": FRAME_FEM_SCHEMA,
+        "DSG_frame_fem_profile": FRAME_FEM_PROFILE,
+        "DSG_frame_fem_hard_safe": bool(summary["hard_safe"]),
+        "DSG_frame_fem_recommended": bool(summary["recommended"]),
+        "DSG_frame_fem_volume_mm3": float(summary["volume_mm3"]),
+        "DSG_frame_fem_max_utilization": float(summary["max_utilization"]),
+        "DSG_frame_fem_sleeve_displacement_mm": float(summary["sleeve_displacement_mm"]),
+        "DSG_frame_fem_history_json": json.dumps(summary["history"], separators=(",", ":")),
+        "DSG_frame_fem_element_count": 0,
+        "DSG_frame_fem_design_aid_not_validation": True,
+    }
+    guide_state = {key: (key in guide, guide.get(key)) for key in guide_updates}
     bundle = result.final_bundle
-    bevel_resolution = max(5, int(getattr(props, 'reinforcement_bevel_resolution', 8)))
+    bevel_resolution = max(5, int(getattr(props, "reinforcement_bevel_resolution", 8)))
+
     try:
-        for serial, element_index in enumerate(result.active_elements):
+        for element_index in result.active_elements:
             e = model["elements"][element_index]
             if not e.active or not e.render or e.virtual:
                 continue
@@ -757,8 +775,10 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
             if (p1 - p0).length < 0.5:
                 continue
 
-            name = f"{guide_module.REINFORCEMENT_PREFIX}{serial:02d}"
-            guide_module.safe_remove_by_name(name)
+            serial = len(staged)
+            name = f"{guide_module.REINFORCEMENT_PREFIX}FEM_STAGING_{serial:03d}"
+            if bpy.data.objects.get(name) is not None:
+                raise RuntimeError(f"Existe una geometría temporal sin resolver: {name}")
             obj = guide_module.create_poly_curve_object(
                 context, name, [p0, p1],
                 bevel_radius=float(e.radius_mm),
@@ -766,11 +786,12 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
                 cyclic=False,
             )
             if not guide_module._valid_obj(obj):
-                raise RuntimeError(f"No se pudo crear el elemento FEM {element_index}")
-
+                raise RuntimeError(f"No se pudo construir el elemento FEM {element_index}")
+            # Track the candidate *before* metadata calls that may fail.
+            staged.append(obj)
             metadata = {
                 "DSG_reinforcement_preview": False,
-                "DSG_reinforcement_confirmed": True,
+                "DSG_reinforcement_confirmed": False,
                 "DSG_reinforcement_index": int(serial),
                 "DSG_reinforcement_diameter": float(e.radius_mm * 2.0),
                 "DSG_reinforcement_fem_generated": True,
@@ -783,34 +804,67 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
                 "DSG_fem_tag": str(e.tag),
             }
             obj = guide_module.register_dsg_object(
-                obj, guide_module.ROLE_REINFORCEMENT, name, metadata)
+                obj, guide_module.ROLE_REINFORCEMENT, name, metadata
+            )
+            staged[-1] = obj
             obj.show_in_front = False
-            created.append(obj)
 
-        if not created:
+        if not staged:
             raise RuntimeError("El FEM no produjo barras renderizables")
 
-        props.reinforcement_count = len(created)
+        # Save and hide existing output only after staging completed.
+        for obj in previous:
+            previous_state.append((
+                obj, str(obj.name),
+                bool(obj.get("DSG_reinforcement_confirmed", True)),
+                bool(obj.hide_get()), bool(obj.hide_render),
+            ))
+            obj.name = f"DSG_FEM_PREVIOUS_{obj.name}"
+            obj["DSG_reinforcement_confirmed"] = False
+            obj.hide_set(True)
+            obj.hide_render = True
+
+        for serial, obj in enumerate(staged):
+            target_name = f"{guide_module.REINFORCEMENT_PREFIX}{serial:02d}"
+            if bpy.data.objects.get(target_name) is not None:
+                raise RuntimeError(f"Nombre de refuerzo ocupado: {target_name}")
+            obj.name = target_name
+            obj["DSG_reinforcement_confirmed"] = True
+
+        props.reinforcement_count = len(staged)
         props.reinforcement_preview_obj = None
-        guide["DSG_frame_fem_schema"] = FRAME_FEM_SCHEMA
-        guide["DSG_frame_fem_profile"] = FRAME_FEM_PROFILE
-        guide["DSG_frame_fem_hard_safe"] = bool(summary["hard_safe"])
-        guide["DSG_frame_fem_recommended"] = bool(summary["recommended"])
-        guide["DSG_frame_fem_volume_mm3"] = float(summary["volume_mm3"])
-        guide["DSG_frame_fem_max_utilization"] = float(summary["max_utilization"])
-        guide["DSG_frame_fem_sleeve_displacement_mm"] = float(summary["sleeve_displacement_mm"])
-        guide["DSG_frame_fem_history_json"] = json.dumps(summary["history"], separators=(",", ":"))
-        guide["DSG_frame_fem_element_count"] = int(len(created))
-        guide["DSG_frame_fem_design_aid_not_validation"] = True
-        if created:
-            guide_module.set_active(context, created[0])
-        return summary
+        guide_updates["DSG_frame_fem_element_count"] = len(staged)
+        for key, value in guide_updates.items():
+            guide[key] = value
+        guide_module.set_active(context, staged[0])
+
     except Exception:
-        for obj in created:
+        # Roll back staged geometry *and* restored original object identities.
+        for obj in staged:
             if guide_module._valid_obj(obj):
                 guide_module.safe_remove_object(obj)
-        props.reinforcement_count = 0
+        for obj, original_name, confirmed, hidden, render_hidden in previous_state:
+            if guide_module._valid_obj(obj):
+                obj.name = original_name
+                obj["DSG_reinforcement_confirmed"] = confirmed
+                obj.hide_set(hidden)
+                obj.hide_render = render_hidden
+        props.reinforcement_count = old_count
+        for key, (had_value, value) in guide_state.items():
+            if had_value:
+                guide[key] = value
+            elif key in guide:
+                del guide[key]
         raise
+
+    # Cleanup after a successful commit: it must never invalidate the new result.
+    for obj, _name, _confirmed, _hidden, _render_hidden in previous_state:
+        try:
+            if guide_module._valid_obj(obj):
+                guide_module.safe_remove_object(obj)
+        except Exception:
+            _DSG_LOG.warning("Could not remove archived FEM geometry after commit", exc_info=True)
+    return summary
 
 
 class DSG_OT_OptimizeFrameFEM(Operator):
