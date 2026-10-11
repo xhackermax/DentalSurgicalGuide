@@ -25,6 +25,7 @@ from . import frame_structural_core as core
 from . import frame_fem_core as fem
 from . import frame_geodesic_paths as geodesic_paths
 from . import frame_geodesic_fem as geodesic_fem
+from . import frame_contact_core as contact_core
 
 FRAME_STRUCTURAL_SCHEMA = core.SCHEMA
 SUPPORT_KEY = "DSG_frame_support_nodes_json"
@@ -768,6 +769,93 @@ def analyze_geodesic_frame_fem(context=None) -> dict:
         geometry_mutated=False,
     )
     return summary
+
+
+
+def estimate_geodesic_frame_contact(context=None, *, policy: contact_core.ContactPolicy) -> dict:
+    """Read-only local planar contact estimate using the actual optimized FEM radii.
+
+    The estimated contact and remaining section are based on normals of the
+    passive model. They are NOT post-Boolean measurements, and do not assert
+    adequate clinical retention or mechanical strength.
+    """
+    context = context or bpy.context
+    model = _fem_build_geodesic_model(context)
+    result = fem.optimize_reinforcement(
+        model["nodes"], model["elements"], model["load_cases"],
+        monitor_nodes=model["monitor_nodes"], config=model["config"],
+        keep_out_check=model["keep_out"],
+    )
+    passive = _passive_obj(context)
+    cache, _reused, error = guide_module._build_frame_surface_graph_cache(context, passive)
+    if cache is None:
+        raise RuntimeError(f"CONTACT_NO_SURFACE: {error}")
+
+    route_results = []
+    for route in model["geodesic_routes"]:
+        points = np.asarray(route["curve_points_mm"], dtype=float)
+        beams = [model["elements"][int(i)] for i in route["beam_indices"]]
+        if len(points) != len(beams) + 1:
+            raise RuntimeError("CONTACT_FEM_ROUTE_MISMATCH")
+        radii = [
+            float(beams[0].radius_mm),
+            *[(float(a.radius_mm) + float(b.radius_mm)) * 0.5
+              for a, b in zip(beams, beams[1:])],
+            float(beams[-1].radius_mm),
+        ]
+        surf_positions, normals, sample_indices = [], [], []
+        for index, point in enumerate(points):
+            projection = guide_module._frame_surface_projection(
+                cache, Vector(tuple(float(v) for v in point)), max_distance_mm=0.03
+            )
+            if projection is None:
+                continue
+            if float(projection["distance_mm"]) > 0.03:
+                continue
+            surf_positions.append(tuple(float(v) for v in projection["point"]))
+            normals.append(tuple(float(v) for v in projection["normal"]))
+            sample_indices.append(index)
+        if (len(sample_indices) < 2 or
+                sample_indices[-1] - sample_indices[0] + 1 != len(sample_indices)):
+            raise RuntimeError(
+                "CONTACT_SURFACE_ROUTE_INCOMPLETE: model path has unverified surface samples"
+            )
+        estimate = contact_core.estimate_contact_route(
+            surf_positions, normals,
+            [radii[i] for i in sample_indices], policy
+        )
+        route_results.append({
+            "label": str(route["candidate"]),
+            "surface_samples": len(sample_indices),
+            "contact_area_planar_estimate_mm2": float(estimate.estimated_contact_area_mm2),
+            "retained_volume_planar_estimate_mm3": float(estimate.estimated_retained_volume_mm3),
+            "nominal_volume_planar_estimate_mm3": float(estimate.nominal_volume_mm3),
+            "min_retained_area_ratio": float(estimate.min_retained_area_ratio),
+            "min_bending_inertia_ratio": float(estimate.min_bending_inertia_ratio),
+            "min_penetration_mm": min(float(x.penetration_mm) for x in estimate.sections),
+            "max_penetration_mm": max(float(x.penetration_mm) for x in estimate.sections),
+            "max_center_offset_mm": max(float(x.center_offset_mm) for x in estimate.sections),
+        })
+    return {
+        "schema": "dsg.generative_frame_contact_estimate.v1",
+        "mode": "READ_ONLY_LOCAL_PLANAR_APPROXIMATION",
+        "experimental": True,
+        "post_boolean_validated": False,
+        "retention_validated": False,
+        "torsion_after_boolean_validated": False,
+        "material_calibrated": False,
+        "feasible_routes": len(route_results),
+        "routes": route_results,
+        "contact_area_planar_estimate_mm2": float(sum(
+            x["contact_area_planar_estimate_mm2"] for x in route_results)),
+        "retained_volume_planar_estimate_mm3": float(sum(
+            x["retained_volume_planar_estimate_mm3"] for x in route_results)),
+        "hard_safe_nominal_fem": bool(result.hard_safe),
+        "warning": ("This is an uncalibrated local tangent-plane diagnostic; "
+                    "no actual Boolean, retention measurement or validated "
+                    "post-Boolean FEM was performed."),
+    }
+
 
 
 def _fem_summary(model: dict, result: fem.OptimizationResult) -> dict:
