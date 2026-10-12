@@ -105,13 +105,17 @@ Bench-test printed guides using the intended resin/printer/postcure; compare pre
 - Build artifact now has an explicit GF3 experimental filename, a Blender
   warning and generated SHA-256 manifest of exact packaged files, retaining
   the original 9.10.11 provenance manifest independently.
-- Additional failure/rollback/contract TDD; Blender 5.2.2 smoke still limited
-  to registration, RNA, synthetic cube section and read-only profile operators.
-  No real full-arch generation/Boolean/Undo/clinical qualification.
+- Additional failure/rollback/contract TDD; Blender 5.2.2 smoke now also
+  constructs **one- and two-sleeve synthetic fused guides**, applies real
+  Blender EXACT UNION and DIFFERENCE booleans, tests lumen/annular section
+  topology and independent radial ray checks, verifies repeated deterministic
+  runs and rejects an undrilled control model. Successful synthetic mesh tests
+  **do not** substitute for complete DSG operator generation/Undo/export,
+  anatomical drilling envelopes, fitting or clinical qualification.
 
 ## Next immediate development action
 
-**Next:** extend real Blender 5.2.2 CI from install/RNA/section smoke to a synthetic 1-sleeve and 2-sleeve guide end-to-end generation/Boolean/Undo test; verify the actual post-Boolean lumen and wall after the provisional target-sleeve weld, then replace P1–P4 hard clamps with justified contact boundary conditions. Do not claim mechanical improvement solely from adding frame volume.
+**Next:** the *isolated* one-/two-sleeve real Boolean and lumen checks now pass. Extend these fixtures to execute the **actual DSG** full flow (support P1–P4, frame build, sleeves, reinforcement preparation, drilling, final-cut operator, export and Ctrl+Z/rollback), first using synthetic dental arches and then independent anonymized data. Require a postBoolean lumen/wall check on the disposable candidate before a clinical transition and calibrated non-clamped contact boundary conditions. Do not claim mechanical improvement solely from adding frame volume.
 
 ## Notes
 
@@ -142,3 +146,23 @@ Bench-test printed guides using the intended resin/printer/postcure; compare pre
 - **Next build gate:** real one- and two-sleeve end-to-end Blender assemblies,
   final clear lumen + wall + drilling path checks, Undo/rollback and variable
   contact-supported FEM comparison to reference deflections.
+
+## 2026-10-12 synthetic Blender Boolean evidence
+
+- **Actual Blender 5.2.2 test CI (not mock):** `tools/generative_frame_boolean_junction_smoke.py`
+  builds one/two sleeve shell unions and reinforcement attachments, performs
+  the actual final cylindrical bore Boolean, and checks multi-station retained
+  cross-section topology. Expected void probes fail as void, while annular
+  material points remain inside the measured solid.
+- A second fixture `tools/generative_frame_boolean_blender_smoke.py`
+  uses independent 24-angle radial probes at five axial stations per sleeve,
+  repeats each one/two sleeve construction and rejects an undrilled negative
+  control. Ray positions must be transformed to Blender object-local space;
+  numerical rays lying exactly on tessellation seams require robust sampling.
+- **Passing baseline:** commit `8f2bbfc72f327b47aceb7d21fa25b5edb8ac2c18`,
+  GitHub Actions `38248992840` (Blender) and `38248993025` (portable/ZIP).
+- This is a **synthetic research-gate milestone, not H6/H7 completion**.
+  Remaining blockers include actual DSG operator-to-operator run, final
+  Boolean on the actual candidate, rollback/Undo of patient-scene transitions,
+  verified drilling and lateral/irrigation keep-outs, calibrated limits,
+  non-clamped FEM support/contact and physical validation.
