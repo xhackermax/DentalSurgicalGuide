@@ -1946,7 +1946,8 @@ def build_mandibular_canal_surface(context, labels, *,
 
 def segment_tissue_semantically(context, structure: str | None = None) -> dict:
     np = load_numpy()
-    props = context.scene.dicom_wizard_pro
+    scene = context.scene
+    props = scene.dicom_wizard_pro
     if structure and structure in SEGMENTATION_STRUCTURES:
         props.segmentation_structure = structure
     structure = str(props.segmentation_structure).upper()

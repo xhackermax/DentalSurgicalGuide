@@ -587,7 +587,7 @@ def main(trace=None,stop_event=None):
     del xyz, image
 
     status('labelmap','Comprobando el contrato de salida del motor…',0.79)
-    labelmap=Labelmap.parse(labels,dims,spacing,engine)
+    labelmap=Labelmap.parse(labels,dims,spacing,engine,require_teeth=route_mode != 'SIMPLE_ARCHES')
 
     status("normalize", "Salida normalizada · preparando geometría común DSG…", 0.80)
     normalized_path = job / f"{engine.lower()}_normalized_labels.npy"

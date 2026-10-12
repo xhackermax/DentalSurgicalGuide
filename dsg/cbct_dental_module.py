@@ -1568,6 +1568,7 @@ def _join_immediate_arch_sources(context, *, arch: str, bone_obj, teeth, output_
     teeth.  The mandibular nerve is never part of ``sources`` and therefore can
     never be swallowed by this Ctrl+J composite.
     """
+    from . import dicom_module
     if bone_obj is None or getattr(bone_obj, "type", None) != "MESH":
         raise RuntimeError(f"No se encontró el hueso separado para {arch}")
     _delete_named_mesh(output_name)
@@ -1681,14 +1682,21 @@ def build_immediate_arch_composites(context, *, excluded_fdis) -> dict[str, Any]
         elif arch == "MANDIBLE":
             lower_teeth.append(tooth)
 
-    upper = _join_immediate_arch_sources(
-        context, arch="MAXILLA", bone_obj=maxilla, teeth=upper_teeth,
-        output_name=IMMEDIATE_UPPER_COMPOSITE_NAME, excluded_fdis=excluded,
-    )
-    lower = _join_immediate_arch_sources(
-        context, arch="MANDIBLE", bone_obj=mandible, teeth=lower_teeth,
-        output_name=IMMEDIATE_LOWER_COMPOSITE_NAME, excluded_fdis=excluded,
-    )
+    # Both model builds form one logical operation. Never leave only the
+    # first composite if the second Ctrl+J or metadata setup fails.
+    try:
+        upper = _join_immediate_arch_sources(
+            context, arch="MAXILLA", bone_obj=maxilla, teeth=upper_teeth,
+            output_name=IMMEDIATE_UPPER_COMPOSITE_NAME, excluded_fdis=excluded,
+        )
+        lower = _join_immediate_arch_sources(
+            context, arch="MANDIBLE", bone_obj=mandible, teeth=lower_teeth,
+            output_name=IMMEDIATE_LOWER_COMPOSITE_NAME, excluded_fdis=excluded,
+        )
+    except Exception:
+        _delete_named_mesh(IMMEDIATE_UPPER_COMPOSITE_NAME)
+        _delete_named_mesh(IMMEDIATE_LOWER_COMPOSITE_NAME)
+        raise
 
     # Display exactly the two joined jaw models plus the independent nerve.
     for source in dentition_objects(context):

@@ -12,7 +12,7 @@ from pathlib import Path
 from . import error_handling
 from .pipeline_core import ResultManifest,ContractError
 
-_JOB={'process':None,'log':None,'job_dir':'','request_path':'','started':0.0,'consumed':False,'error':'','fallback_attempted':False,'env':None,'fallback_events':[],'run_id':'','diagnostic_path':''}
+_JOB={'process':None,'log':None,'job_dir':'','request_path':'','started':0.0,'consumed':False,'error':'','fallback_attempted':False,'env':None,'fallback_events':[],'run_id':'','diagnostic_path':'','route_mode':'FULL'}
 
 def _tail(path,n=5000):
     try: return path.read_text(encoding='utf-8',errors='replace')[-n:]
@@ -98,16 +98,17 @@ def start_full_pipeline(*, volume_path,slopes_path,intercepts_path,dims_zyx,spac
             shutil.rmtree(job,ignore_errors=True)
             raise RuntimeError(error_handling.user_message("DSG-E210")) from fallback_exc
         fallback_attempted=True
-    _JOB.update(process=p,log=log,job_dir=str(job),request_path=str(rp),started=time.perf_counter(),consumed=False,error='',fallback_attempted=fallback_attempted,env=env,fallback_events=fallback_events,run_id=run_id,diagnostic_path=str(diagnostic))
+    _JOB.update(process=p,log=log,job_dir=str(job),request_path=str(rp),started=time.perf_counter(),consumed=False,error='',fallback_attempted=fallback_attempted,env=env,fallback_events=fallback_events,run_id=run_id,diagnostic_path=str(diagnostic),route_mode=req['route_mode'])
     return True
 
 def state():
-    proc=_JOB.get('process'); job=Path(str(_JOB.get('job_dir') or ''))
-    payload={'running':False,'done':False,'error':'','phase':'','message':'','factor':0.0,'fallback_events':list(_JOB.get('fallback_events') or []),'elapsed_s':max(0.0,time.perf_counter()-float(_JOB.get('started') or time.perf_counter()))}
-    if job and (job/'status.json').is_file():
+    proc=_JOB.get('process'); job_name=str(_JOB.get('job_dir') or '')
+    job=Path(job_name) if job_name else None
+    payload={'running':False,'done':False,'error':str(_JOB.get('error') or ''),'phase':'','message':'','factor':0.0,'fallback_events':list(_JOB.get('fallback_events') or []),'elapsed_s':max(0.0,time.perf_counter()-float(_JOB.get('started') or time.perf_counter()))}
+    if job is not None and (job/'status.json').is_file():
         try: payload.update(json.loads((job/'status.json').read_text(encoding='utf-8')))
         except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
-    if proc is None: return payload
+    if proc is None or _JOB.get('error'): return payload
     rc=proc.poll(); payload['running']=rc is None
     if rc is None:
         # A worker must publish status.json almost immediately, before model load.
@@ -118,12 +119,20 @@ def state():
             try: proc.terminate()
             except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
             payload['running']=False
-            payload['error']=error_handling.user_message('DSG-E210'); _DSG_LOG.error('DSG-E210 worker startup timeout | tail=%s', error_handling.redact(_tail(job/'pipeline.log',2200)))
+            payload['error']=error_handling.user_message('DSG-E210')
+            _JOB['error']=payload['error']
+            _JOB['fallback_attempted']=True  # Terminal timeout: no silent retry on next poll.
+            _DSG_LOG.error('DSG-E210 worker startup timeout | tail=%s', error_handling.redact(_tail(job/'pipeline.log',2200)))
         return payload
     manifest=job/'manifest.json'
     if manifest.is_file():
         try:
-            meta=ResultManifest.parse(json.loads(manifest.read_text(encoding='utf-8')),_JOB['run_id']).payload
+            meta=ResultManifest.parse(
+                json.loads(manifest.read_text(encoding='utf-8')),
+                _JOB['run_id'],
+                require_teeth=str(_JOB.get('route_mode','FULL')).upper()!='SIMPLE_ARCHES',
+                expected_route_mode=_JOB.get('route_mode','FULL'),
+            ).payload
             if str(meta.get('status')).upper()=='OK': payload['done']=True; payload['factor']=max(float(payload.get('factor',0.0)),0.94)
             else: payload['error']=str(meta.get('error') or f'Pipeline terminó con código {rc}')
         except Exception as exc: error_handling.log_exception(_DSG_LOG,'DSG-E240',exc,context={'manifest':str(manifest)}); payload['error']=str(exc) if isinstance(exc,ContractError) else error_handling.user_message('DSG-E240')
@@ -140,8 +149,12 @@ def state():
                 request=json.loads(request_path.read_text(encoding='utf-8'))
                 request['launcher_fallbacks'].append('PYTHON_WORKER_NO_MANIFEST')
                 request_path.write_text(json.dumps(request,ensure_ascii=False),encoding='utf-8')
+                # The old direct worker's status can falsely make the fallback
+                # appear ready. Reset both the timer and stale progress file.
+                (job/'status.json').unlink(missing_ok=True)
                 p=_launch_blender_fallback(job,request_path,lg,_JOB.get('env') or os.environ.copy())
                 _JOB['process']=p; _JOB['fallback_attempted']=True
+                _JOB['started']=time.perf_counter(); _JOB['error']=''
                 event=error_handling.log_fallback(_DSG_LOG,'DSG-F210',reason=f'python_worker_rc={rc}',context={'phase':'retry'}); _JOB.setdefault('fallback_events',[]).append(event); payload.update(running=True,error='',message=error_handling.user_message('DSG-F210'))
                 return payload
             except Exception as exc:
@@ -204,7 +217,12 @@ def snapshot_failure_diagnostics():
 def consume_manifest():
     st=state()
     if not st.get('done') or _JOB.get('consumed'): return None
-    job=Path(str(_JOB.get('job_dir') or '')); meta=ResultManifest.parse(json.loads((job/'manifest.json').read_text(encoding='utf-8')),_JOB['run_id']).payload; _JOB['consumed']=True; return meta
+    job=Path(str(_JOB.get('job_dir') or '')); meta=ResultManifest.parse(
+        json.loads((job/'manifest.json').read_text(encoding='utf-8')),
+        _JOB['run_id'],
+        require_teeth=str(_JOB.get('route_mode','FULL')).upper()!='SIMPLE_ARCHES',
+        expected_route_mode=_JOB.get('route_mode','FULL'),
+    ).payload; _JOB['consumed']=True; return meta
 
 def diagnostic_text(diagnostics_root=None):
     """Copy only the structured run record, never private request/log contents."""
@@ -247,7 +265,7 @@ def cancel():
 
 def cleanup_artifacts():
     cancel(); job=str(_JOB.get('job_dir') or '')
-    _JOB.update(job_dir='',request_path='',consumed=False,started=0.0,fallback_attempted=False,env=None,fallback_events=[])
+    _JOB.update(job_dir='',request_path='',consumed=False,started=0.0,fallback_attempted=False,env=None,fallback_events=[],route_mode='FULL')
     if job:
         try: shutil.rmtree(job,ignore_errors=True)
         except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
