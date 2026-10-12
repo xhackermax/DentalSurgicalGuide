@@ -391,6 +391,11 @@ def _strict_multiframe_orientation(dataset: Any, frame_count: int):
             raise RuntimeError("DICOM_MULTIFRAME_INVALID_ORIENTATION") from exc
         if value.shape != (6,) or not np.isfinite(value).all():
             raise RuntimeError("DICOM_MULTIFRAME_INVALID_ORIENTATION")
+        x, y = value[:3], value[3:]
+        if (abs(float(np.linalg.norm(x)) - 1.0) > 1e-3
+                or abs(float(np.linalg.norm(y)) - 1.0) > 1e-3
+                or abs(float(np.dot(x, y))) > 1e-3):
+            raise RuntimeError("DICOM_MULTIFRAME_INVALID_ORIENTATION")
         axes.append(value)
     if any(not np.allclose(value, axes[0], atol=1e-4) for value in axes[1:]):
         raise RuntimeError("DICOM_MULTIFRAME_VARIABLE_ORIENTATION: no es una pila uniforme")
@@ -1287,33 +1292,82 @@ def _decode_volume_payload(probe: SourceProbe, callback: ProgressCallback | None
     origin = image_position(geometry_header, 0) or image_position(probe.header, 0) or (0.0, 0.0, 0.0)
 
     spacing_zyx = tuple(float(v) for v in probe.spacing_zyx_mm)
-    if probe.source_kind == "MULTIFRAME":
+    if probe.source_kind in {"MULTIFRAME", "SERIES"} and z_count > 1:
         from . import dicom_multiframe_geometry
 
-        # Required: ordered source pixels, per-frame HU slope/intercept, physical
-        # origin, and positive slice spacing must refer to the SAME planes.
-        _strict_multiframe_orientation(geometry_header, z_count)
-        positions = _strict_multiframe_positions(geometry_header, z_count)
-        try:
-            geometry = dicom_multiframe_geometry.normalize_multiframe_geometry(
-                volume, slopes, intercepts, orientation, positions,
+        if probe.source_kind == "SERIES":
+            # Classic files were pre-sorted by physical position, but older
+            # vendor series can silently fall back to InstanceNumber or
+            # SliceLocation. A clinical 3-D reconstruction must not guess its
+            # orientation or slice order in that situation.
+            if len(datasets) != z_count:
+                raise RuntimeError("DICOM_SERIES_HEADER_COUNT_MISMATCH")
+            reference_iop = getattr(datasets[0], "ImageOrientationPatient", None)
+            if reference_iop is None:
+                raise RuntimeError(
+                    "DICOM_SERIES_ORIENTATION_MISSING: no hay orientación "
+                    "anatómica explícita; no se puede generar un STL fiable."
+                )
+            reference_orientation = np.asarray(reference_iop, dtype=float)
+            positions = []
+            for i, dataset in enumerate(datasets):
+                position = image_position(dataset, 0)
+                raw = getattr(dataset, "ImageOrientationPatient", None)
+                if position is None or raw is None:
+                    raise RuntimeError(
+                        f"DICOM_SERIES_POSITION_MISSING: corte {i+1}/{z_count} "
+                        "sin posición u orientación anatómica."
+                    )
+                try:
+                    axes = np.asarray(raw, dtype=float)
+                except (ValueError, TypeError) as exc:
+                    raise RuntimeError("DICOM_SERIES_INVALID_ORIENTATION") from exc
+                if (axes.shape != (6,) or not np.isfinite(axes).all()
+                        or not np.allclose(axes, reference_orientation, atol=1e-4)):
+                    raise RuntimeError("DICOM_SERIES_VARIABLE_ORIENTATION")
+                positions.append(position)
+            try:
+                geometry = dicom_multiframe_geometry.normalize_multiframe_geometry(
+                    volume, slopes, intercepts, orientation, positions,
+                )
+            except dicom_multiframe_geometry.MultiframeGeometryError as exc:
+                raise RuntimeError(f"No se puede validar geometría de serie: {exc}") from exc
+            volume, slopes, intercepts = geometry.volume, geometry.slopes, geometry.intercepts
+            origin = geometry.origin_lps
+            spacing_zyx = (geometry.spacing_z_mm, spacing_zyx[1], spacing_zyx[2])
+            if geometry.reordered:
+                datasets = [datasets[i] for i in geometry.source_frame_indices]
+                probe.source_files = [probe.source_files[i] for i in geometry.source_frame_indices]
+            _DSG_LOG.info(
+                "DICOM classic geometry verified | reordered=%s | frames=%d | z_spacing_mm=%.5f",
+                geometry.reordered, z_count, geometry.spacing_z_mm,
             )
-        except dicom_multiframe_geometry.MultiframeGeometryError as exc:
-            raise RuntimeError(f"No se puede validar orientación multiframe: {exc}") from exc
-        volume = geometry.volume
-        slopes = geometry.slopes
-        intercepts = geometry.intercepts
-        origin = geometry.origin_lps
-        row_spacing, column_spacing = pixel_spacing(geometry_header)
-        if not row_spacing or not column_spacing:
-            raise RuntimeError("DICOM_MULTIFRAME_PIXEL_SPACING_MISSING")
-        spacing_zyx = (
-            geometry.spacing_z_mm, float(row_spacing), float(column_spacing),
-        )
-        _DSG_LOG.info(
-            "DICOM multi-frame geometry verified | reordered=%s | frames=%d | z_spacing_mm=%.5f",
-            geometry.reordered, z_count, geometry.spacing_z_mm,
-        )
+
+        if probe.source_kind == "MULTIFRAME":
+            # Required: ordered source pixels, per-frame HU slope/intercept, physical
+            # origin, and positive slice spacing must refer to the SAME planes.
+            _strict_multiframe_orientation(geometry_header, z_count)
+            positions = _strict_multiframe_positions(geometry_header, z_count)
+            try:
+                geometry = dicom_multiframe_geometry.normalize_multiframe_geometry(
+                    volume, slopes, intercepts, orientation, positions,
+                )
+            except dicom_multiframe_geometry.MultiframeGeometryError as exc:
+                raise RuntimeError(f"No se puede validar orientación multiframe: {exc}") from exc
+            volume = geometry.volume
+            slopes = geometry.slopes
+            intercepts = geometry.intercepts
+            origin = geometry.origin_lps
+            row_spacing, column_spacing = pixel_spacing(geometry_header)
+            if not row_spacing or not column_spacing:
+                raise RuntimeError("DICOM_MULTIFRAME_PIXEL_SPACING_MISSING")
+            spacing_zyx = (
+                geometry.spacing_z_mm, float(row_spacing), float(column_spacing),
+            )
+            _DSG_LOG.info(
+                "DICOM multi-frame geometry verified | reordered=%s | frames=%d | z_spacing_mm=%.5f",
+                geometry.reordered, z_count, geometry.spacing_z_mm,
+            )
 
     data_min, data_max, auto_low, auto_high = _sample_density_statistics(volume, slopes, intercepts)
     if callback:
