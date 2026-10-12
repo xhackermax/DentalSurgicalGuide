@@ -1087,6 +1087,120 @@ def _remove_existing_fem_reinforcements():
     return removed
 
 
+def _validate_fem_candidate_sweep(context, model: dict, result) -> dict:
+    """Hard preBoolean sweep before replacing any previously confirmed curves.
+
+    A bounded outer-sleeve terminal weld is provisional. It still requires
+    the actual final Boolean lumen/wall and manufacturer drill-access gates.
+    """
+    frame_ctx = model.get("frame_context") or {}
+    sleeves = list(frame_ctx.get("sleeves") or [])
+    sleeve_records = list(model.get("sleeve_records") or [])
+    if not sleeves or len(sleeves) != len(sleeve_records):
+        raise RuntimeError("FEM_SWEEP_MISSING_SLEEVE_RECORDS")
+    attachments = {}
+    for record in sleeve_records:
+        for idx in record.get("attachment_nodes", ()):
+            if int(idx) in attachments:
+                raise RuntimeError("FEM_SWEEP_AMBIGUOUS_SLEEVE_ATTACHMENT")
+            attachments[int(idx)] = str(record["id"])
+    if not attachments:
+        raise RuntimeError("FEM_SWEEP_NO_VALID_SLEEVE_ATTACHMENTS")
+
+    lumens, drill_extensions = [], []
+    for sleeve in sleeves:
+        center = np.asarray(sleeve["center"], dtype=float)
+        axis = np.asarray(sleeve["axis"], dtype=float)
+        length = float(np.linalg.norm(axis))
+        radius = float(sleeve["inner_radius_mm"])
+        height = float(sleeve["height_mm"])
+        if (center.shape != (3,) or not np.isfinite(center).all()
+                or axis.shape != (3,) or not np.isfinite(axis).all()
+                or length < 1e-9 or not np.isfinite([radius,height]).all()
+                or radius <= 0 or height <= 0):
+            raise RuntimeError("FEM_SWEEP_INVALID_SLEEVE")
+        axis /= length
+        lumens.append(swept_clearance.CylinderKeepOut(
+            f"{sleeve['id']}:LUMEN", tuple(center), tuple(axis),radius,height*0.5))
+        # Deliberately conservative 20mm uncalibrated access on BOTH ends.
+        # This is a precheck, not verified patient/tool drilling clearance.
+        extension=20.0
+        for sign in (-1,1):
+            shifted = center + axis * sign * (height*0.5 + extension*0.5)
+            drill_extensions.append(swept_clearance.CylinderKeepOut(
+                f"{sleeve['id']}:DRILL_{sign:+d}", tuple(shifted),
+                tuple(axis),radius,extension*0.5))
+
+    protected = []
+    for obj in bpy.data.objects:
+        if not (bool(obj.get("DSG_irrigation_wall_confirmed",False))
+                or bool(obj.get("DSG_microscrew_confirmed",False))):
+            continue
+        if getattr(obj,"type",None) != 'MESH':
+            raise RuntimeError(f"FEM_SWEEP_UNSUPPORTED_PROTECTED_OBJECT: {obj.name}")
+        bvh = guide_module._build_world_surface_bvh(context,obj)
+        if bvh is None:
+            raise RuntimeError(f"FEM_SWEEP_PROTECTED_BVH_UNAVAILABLE: {obj.name}")
+        protected.append((str(obj.name), bvh))
+
+    checked=0
+    for idx in result.active_elements:
+        beam=model["elements"][idx]
+        if not beam.active or not beam.render or beam.virtual:
+            continue
+        a=np.asarray(model["nodes"][beam.i].xyz,dtype=float)
+        b=np.asarray(model["nodes"][beam.j].xyz,dtype=float)
+        radius=float(beam.radius_mm)
+        if not np.isfinite([*a,*b,radius]).all() or radius<=0:
+            raise RuntimeError("FEM_SWEEP_NONFINITE_BEAM")
+        length=float(np.linalg.norm(b-a))
+        if length<=0.1:
+            raise RuntimeError("FEM_SWEEP_DEGENERATE_BEAM")
+        path=[a,b]
+        radii=[radius,radius]
+        target_id=attachments.get(int(beam.j))
+        if target_id:
+            pre=sleeve_junction.preflight_sleeve_junction(
+                path,radii,sleeves,target_sleeve_id=target_id,
+                maximum_deferred_tip_mm=min(2.5,max(0.25,length*0.25)))
+            if not pre.candidate_admissible:
+                raise RuntimeError(
+                    f"FEM_SWEEP_TARGET_LUMEN_{pre.status}: {beam.tag}")
+        else:
+            full=swept_clearance.check_swept_tube_clearance(
+                path,radii,lumens,sample_spacing_mm=0.2)
+            if not full.clear:
+                raise RuntimeError(f"FEM_SWEEP_LUMEN_{full.status}: {beam.tag}")
+
+        drill=swept_clearance.check_swept_tube_clearance(
+            path,radii,drill_extensions,sample_spacing_mm=0.2)
+        if not drill.clear:
+            raise RuntimeError(f"FEM_SWEEP_DRILL_{drill.status}: {beam.tag}")
+        if protected:
+            intervals=max(1,int(math.ceil(length/0.5)))
+            for step in range(intervals+1):
+                point=Vector(tuple(float(x) for x in
+                    (a+(b-a)*(step/intervals))))
+                for name,tree in protected:
+                    hit=tree.find_nearest(point)
+                    if not hit or hit[0] is None or hit[1] is None:
+                        raise RuntimeError(f"FEM_SWEEP_NO_SURFACE: {name}")
+                    surface,normal=Vector(hit[0]),Vector(hit[1])
+                    if (point-surface).length<=radius+0.2 or (point-surface).dot(normal)<0:
+                        raise RuntimeError(f"FEM_SWEEP_PROTECTED_OBJECT: {name}")
+        checked+=1
+    if checked==0:
+        raise RuntimeError("FEM_SWEEP_NO_RENDERABLE_BEAMS")
+    return {
+        "candidate_tubes":checked,
+        "sleeve_lumens":len(lumens),
+        "drill_extension_zones":len(drill_extensions),
+        "protected_meshes":len(protected),
+        "post_boolean_lumen_validated":False,
+        "clinical_acceptance":False,
+    }
+
+
 def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
     """Stage a complete FEM candidate before replacing previously confirmed geometry.
 
@@ -1132,6 +1246,10 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
             "DSG conserva los refuerzos originales."
         )
 
+    # Numerical FEM safety never substitutes for geometric swept clearance.
+    # Fail BEFORE staging if a proposed tube intersects protected volumes.
+    summary["sweep_preflight"] = _validate_fem_candidate_sweep(context, model, result)
+
     staged = []
     previous_state = []
     old_count = int(props.reinforcement_count)
@@ -1146,6 +1264,7 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
         "DSG_frame_fem_history_json": json.dumps(summary["history"], separators=(",", ":")),
         "DSG_frame_fem_element_count": 0,
         "DSG_frame_fem_design_aid_not_validation": True,
+        "DSG_frame_fem_lumen_post_boolean_validation_pending": True,
     }
     guide_state = {key: (key in guide, guide.get(key)) for key in guide_updates}
     bundle = result.final_bundle
@@ -1191,6 +1310,8 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
                 "DSG_fem_radius_mm": float(e.radius_mm),
                 "DSG_fem_length_mm": float(r["length_mm"]),
                 "DSG_fem_tag": str(e.tag),
+                "DSG_fem_pre_boolean_sweep_passed": True,
+                "DSG_fem_post_boolean_lumen_validated": False,
             }
             obj = guide_module.register_dsg_object(
                 obj, guide_module.ROLE_REINFORCEMENT, name, metadata
