@@ -61,6 +61,13 @@ def build_synthetic_guide(number_of_sleeves, *, drill=True, add_connector=True):
     inner_radius=2.1
     guide=None
     for i, x in enumerate(centers):
+        # Do not rely on UNION to join disjoint bodies. In the two-sleeve
+        # fixture, install the shared perimeter member before the second
+        # sleeve, creating a genuinely overlapping continuous union.
+        if i==1 and add_connector:
+            bridge=add_member('Synthetic_perimeter',
+                              (centers[0],3.08,0),(centers[1],3.08,0),0.9)
+            guide=boolean_apply(guide,bridge,'UNION')
         tube=add_cylinder(f'Synthetic_sleeve_{i}',(x,0,0),outer_radius,7.)
         guide=tube if guide is None else boolean_apply(guide,tube,'UNION')
     if add_connector:
@@ -71,10 +78,6 @@ def build_synthetic_guide(number_of_sleeves, *, drill=True, add_connector=True):
                 (x+side*2.9,0,0),(x+side*7.8,0,0),
                 1.1)
             guide=boolean_apply(guide,member,'UNION')
-        if len(centers)==2:
-            bridge=add_member('Synthetic_perimeter',
-                              (-7.,3.08,0),(7.,3.08,0),0.9)
-            guide=boolean_apply(guide,bridge,'UNION')
     # Final Boolean bore always occurs AFTER unioning the terminal outer weld.
     if drill:
         for i,x in enumerate(centers):
