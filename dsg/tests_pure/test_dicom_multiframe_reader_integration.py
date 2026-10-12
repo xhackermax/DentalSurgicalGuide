@@ -134,7 +134,7 @@ class DicomReaderIntegration(unittest.TestCase):
         self.assertEqual(result["slopes"].tolist(),[3.,2.,1.])
         self.assertEqual(result["intercepts"].tolist(),[103.,102.,101.])
         self.assertEqual(stats.call_args.args[0][:,0,0].tolist(),[12,11,10])
-        self.assertEqual(cache.call_args.args[1].tolist(),[3.,2.,1.])
+        self.assertEqual(cache.call_args.args[2].tolist(),[3.,2.,1.])
 
     def test_classic_downward_files_keep_header_order_in_sync(self):
         run,probe,stats,cache=self.payload_factory("SERIES",(4.,3.,2.))
