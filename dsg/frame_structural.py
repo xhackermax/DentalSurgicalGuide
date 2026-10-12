@@ -333,6 +333,12 @@ def propose_frame_reinforcements(context=None, max_candidates: int = 4,
     frame_ctx = get_frame_context(context)
     supports = {row["id"]: Vector(row["xyz"]) for row in frame_ctx["support_nodes"]}
     sleeves = frame_ctx["sleeves"]
+    max_candidates = int(max_candidates)
+    if max_candidates < (4 if len(sleeves) == 1 else 1):
+        raise ValueError(
+            "P1..P4 requires at least four primary proposals for a single sleeve; "
+            "increase max_candidates rather than silently violating connectivity"
+        )
     candidates = []
 
     # Primary invariant branches.  For a single sleeve this exactly represents
@@ -359,7 +365,7 @@ def propose_frame_reinforcements(context=None, max_candidates: int = 4,
     # highest-ranked peripheral spans and terminate on the nearest sleeve shell.
     segment_by_id = {row["id"]: row for row in analysis["segments"]}
     for seg_id in analysis["structural_need_ranking"]:
-        if len(candidates) >= max(4, int(max_candidates)) + (4 if len(sleeves) == 1 else 0):
+        if len(candidates) >= max_candidates:
             break
         row = segment_by_id[seg_id]
         if not row.get("midpoint") or not row.get("sleeve_attachment"):
@@ -1090,6 +1096,12 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
     """
     context = context or bpy.context
     props = context.scene.dsg_props
+    # The MCP/service entrypoint must enforce the same gates as the UI
+    # operator; direct callers cannot bypass the clinical workflow step.
+    if int(getattr(props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+        raise RuntimeError("La optimización FEM solo se permite en el paso de refuerzos")
+    if guide_module.get_pending_reinforcement_preview(props):
+        raise RuntimeError("Confirma o descarta el refuerzo manual pendiente")
     guide = guide_module.get_active_guide_obj(props)
     if not guide_module._valid_obj(guide):
         raise RuntimeError("DSG_Guide no está disponible")
