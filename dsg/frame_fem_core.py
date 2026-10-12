@@ -67,6 +67,9 @@ class BeamElement:
     process_safety_factor: float = 1.15
     buckling_safety: float = 2.0
     effective_length_factor: float = 1.0
+    # Continuous slender-member unsupported length. Never use tiny mesh
+    # discretization spans as independent column lengths.
+    buckling_length_mm: float | None = None
     up_hint: np.ndarray | None = None
     active: bool = True
     tag: str = ""
@@ -240,6 +243,13 @@ def _active_element_indices(elements: list[BeamElement]) -> list[int]:
 def assemble_stiffness(nodes: list[Node], elements: list[BeamElement]):
     """Assemble K; SciPy sparse when available, NumPy dense otherwise."""
     n_dof = len(nodes) * 6
+    # Guard BEFORE allocating a dense NxN stiffness matrix. A 2200-node
+    # geodesic mesh would otherwise consume around 1.4 GiB just for K.
+    if not _HAVE_SCIPY and n_dof > 2400:
+        raise StructuralSolveError(
+            "FEM_SPARSE_BACKEND_REQUIRED: modelo demasiado grande sin SciPy; "
+            "simplifica la red o instala el backend sparse por el instalador DSG"
+        )
     K = lil_matrix((n_dof, n_dof), dtype=float) if _HAVE_SCIPY else np.zeros((n_dof, n_dof), dtype=float)
 
     for e in elements:
@@ -304,7 +314,10 @@ def _element_result(nodes: list[Node], e: BeamElement, u: np.ndarray) -> dict:
     torsion_ratio = (math.sqrt(3.0) * tau_torsion) / allow
 
     if N < 0.0:
-        Le = max(e.effective_length_factor * L, 1e-9)
+        measured_length = L if e.buckling_length_mm is None else float(e.buckling_length_mm)
+        if not math.isfinite(measured_length) or measured_length < L - 1e-7:
+            raise StructuralSolveError("FEM_INVALID_BUCKLING_LENGTH: member length must cover its segment")
+        Le = max(e.effective_length_factor * measured_length, 1e-9)
         Pcr = (math.pi**2 * e.E * e.I) / (Le**2)
         buckling_ratio = (abs(N) * e.buckling_safety) / max(Pcr, 1e-12)
     else:
@@ -386,6 +399,10 @@ def solve_load_cases(
                 u[free] = lu.solve(F[free]) if sparse_backend else np.linalg.solve(Kff, F[free])
             except Exception as exc:
                 raise StructuralSolveError(f"Fallo al resolver {load.name}") from exc
+        if not np.isfinite(u).all():
+            raise StructuralSolveError(
+                f"FEM_NONFINITE_DISPLACEMENT: solución no válida para {load.name}"
+            )
 
         displacements.append(u)
         case_results = [_element_result(nodes, e, u) if e.active else None for e in elements]

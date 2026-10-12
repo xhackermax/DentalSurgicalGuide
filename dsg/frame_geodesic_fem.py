@@ -59,8 +59,12 @@ def append_geodesic_beams(
     ]
     first_new_node = len(nodes)
     chain_nodes = [start_node, *range(first_new_node, first_new_node + len(mids)), end_node]
+    # Euler buckling is based on the full uninterrupted member, not on
+    # segmentation spacing. Bends/junctions still need a calibrated model.
+    member_length_mm = float(np.sum(lengths))
     beams = [
         replace(beam_template, i=int(i), j=int(j), tag=f"{label}:SEG{k:03d}",
+                buckling_length_mm=member_length_mm,
                 prunable=False, active=True, render=True, virtual=False)
         for k, (i, j) in enumerate(zip(chain_nodes, chain_nodes[1:]))
     ]

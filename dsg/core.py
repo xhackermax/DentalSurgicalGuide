@@ -1372,6 +1372,8 @@ class DSG_SUITE_OT_StartImmediateRoute(Operator):
             self.report({"WARNING"}, "Implante inmediato ya se está iniciando")
             return {"CANCELLED"}
 
+        previous_route = clinical_route(scene)
+        previous_step = str(scene.get(ROUTE_STEP_KEY, "CBCT_READY") or "CBCT_READY")
         capture_dicom_route_checkpoint(context)
 
         # Lock synchronously, but DO NOT enter the heavy segmentation operator
@@ -1396,20 +1398,27 @@ class DSG_SUITE_OT_StartImmediateRoute(Operator):
             _DSG_LOG.debug("suppressed exception", exc_info=True)
 
         scene_name = str(scene.name)
+        from . import lifecycle, workflow_history
+        launch_undo_epoch = workflow_history._UNDO_EPOCH
 
         def _deferred_launch():
             global _IMMEDIATE_ROUTE_EXECUTING
+            if workflow_history._UNDO_EPOCH != launch_undo_epoch:
+                _IMMEDIATE_ROUTE_EXECUTING = False
+                return None
             target_scene = bpy.data.scenes.get(scene_name)
             if target_scene is None:
                 _IMMEDIATE_ROUTE_EXECUTING = False
                 return None
+            retry_pending = False
             try:
                 # Revalidate the volume immediately before the expensive call.
                 from . import dicom_module
                 if not bool(dicom_module.RUNTIME.is_loaded()):
                     raise RuntimeError("El CBCT ya no está cargado")
                 if bool(getattr(dicom_module.RUNTIME, "update_lock", False)):
-                    # One more UI tick rather than competing with DICOM updates.
+                    # Keep the re-entry lock for the entire deferred retry.
+                    retry_pending = True
                     return 0.20
                 if bool(dicom_module.semantic_workflow_busy()):
                     raise RuntimeError("Ya hay una segmentación CBCT en curso")
@@ -1425,16 +1434,17 @@ class DSG_SUITE_OT_StartImmediateRoute(Operator):
                 except Exception:
                     _DSG_LOG.debug("suppressed exception", exc_info=True)
             except Exception as exc:
-                target_scene[ROUTE_STEP_KEY] = "CBCT_READY"
+                target_scene[ROUTE_STEP_KEY] = previous_step
                 target_scene[IMMEDIATE_GATE_ARMED_KEY] = False
                 try:
-                    target_scene.dsg_suite_settings.workflow_route = ROUTE_SIMPLE
+                    target_scene.dsg_suite_settings.workflow_route = previous_route
                     target_scene.dicom_wizard_pro.status = f"Error: {exc}"
                 except Exception:
                     _DSG_LOG.debug("suppressed exception", exc_info=True)
                 print(f"[DSG 9.2.71] Immediate launch cancelled: {exc}")
             finally:
-                _IMMEDIATE_ROUTE_EXECUTING = False
+                if not retry_pending:
+                    _IMMEDIATE_ROUTE_EXECUTING = False
                 try:
                     for window in bpy.context.window_manager.windows:
                         if window.screen:
@@ -1445,7 +1455,14 @@ class DSG_SUITE_OT_StartImmediateRoute(Operator):
             return None
 
         # Deliberate short defer: the click handler returns immediately.
-        bpy.app.timers.register(_deferred_launch, first_interval=0.25)
+        try:
+            lifecycle.register_timer(_deferred_launch, first_interval=0.25)
+        except Exception as exc:
+            _IMMEDIATE_ROUTE_EXECUTING = False
+            scene.dsg_suite_settings.workflow_route = previous_route
+            scene[ROUTE_STEP_KEY] = previous_step
+            self.report({"ERROR"}, f"No se pudo programar implante inmediato: {exc}")
+            return {"CANCELLED"}
         self.report({"INFO"}, "Implante inmediato · arranque seguro programado")
         return {"FINISHED"}
 
