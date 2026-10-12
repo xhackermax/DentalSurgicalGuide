@@ -101,7 +101,9 @@ def sampled_bore_and_wall(guide,centers,expected_inner_radius):
     for cx in centers:
         for z in (-2.4,-1.2,0.,1.2,2.4):
             for k in range(24):
-                theta=2*math.pi*k/24
+                # Avoid ray directions exactly coincident with cylinder
+                # tessellation seam/vertex rays (96 facets / 24 probes).
+                theta=2*math.pi*(k+0.37)/24
                 direct=Vector((math.cos(theta),math.sin(theta),0.))
                 axis_point=Vector((cx,0,z))
                 # Object.ray_cast accepts OBJECT-LOCAL coordinates. The
