@@ -18,11 +18,21 @@ from typing import Any
 import bpy
 import numpy as np
 from bpy.types import Operator
+from bpy.props import FloatProperty, FloatVectorProperty, IntProperty
 from mathutils import Matrix, Vector
 
 from . import guide_module
 from . import frame_structural_core as core
 from . import frame_fem_core as fem
+from . import frame_geodesic_paths as geodesic_paths
+from . import frame_geodesic_fem as geodesic_fem
+from . import frame_contact_core as contact_core
+from . import frame_geodesic_groups as geodesic_groups
+from . import frame_boolean_section_core as boolean_sections
+from . import frame_swept_clearance_core as swept_clearance
+from . import frame_sleeve_junction_core as sleeve_junction
+from . import frame_perimeter_fem as perimeter_fem
+from . import frame_boolean_path_core as boolean_paths
 
 FRAME_STRUCTURAL_SCHEMA = core.SCHEMA
 SUPPORT_KEY = "DSG_frame_support_nodes_json"
@@ -323,6 +333,12 @@ def propose_frame_reinforcements(context=None, max_candidates: int = 4,
     frame_ctx = get_frame_context(context)
     supports = {row["id"]: Vector(row["xyz"]) for row in frame_ctx["support_nodes"]}
     sleeves = frame_ctx["sleeves"]
+    max_candidates = int(max_candidates)
+    if max_candidates < (4 if len(sleeves) == 1 else 1):
+        raise ValueError(
+            "P1..P4 requires at least four primary proposals for a single sleeve; "
+            "increase max_candidates rather than silently violating connectivity"
+        )
     candidates = []
 
     # Primary invariant branches.  For a single sleeve this exactly represents
@@ -349,7 +365,7 @@ def propose_frame_reinforcements(context=None, max_candidates: int = 4,
     # highest-ranked peripheral spans and terminate on the nearest sleeve shell.
     segment_by_id = {row["id"]: row for row in analysis["segments"]}
     for seg_id in analysis["structural_need_ranking"]:
-        if len(candidates) >= max(4, int(max_candidates)) + (4 if len(sleeves) == 1 else 0):
+        if len(candidates) >= max_candidates:
             break
         row = segment_by_id[seg_id]
         if not row.get("midpoint") or not row.get("sleeve_attachment"):
@@ -520,7 +536,7 @@ def _fem_build_keep_out(context, sleeves: list[dict]):
     return check
 
 
-def _fem_build_model(context=None):
+def _fem_build_model(context=None, *, geodesic_candidates=False):
     context = context or bpy.context
     props = context.scene.dsg_props
     frame_ctx = get_frame_context(context)
@@ -585,7 +601,9 @@ def _fem_build_model(context=None):
                 L = float(np.linalg.norm(b - a))
                 if L < 1.5 or L > 65.0:
                     continue
-                if keep_out(a, b):
+                # Experimental geodesic model builds curved surface paths later.
+                # A rejected straight chord must not exclude a valid geodesic.
+                if not geodesic_candidates and keep_out(a, b):
                     continue
                 elements.append(_fem_material_element(
                     support_idx, attach_idx, connector_radius,
@@ -633,6 +651,371 @@ def _fem_build_model(context=None):
         "sleeve_records": sleeve_records,
         "config": _fem_profile_config(props),
     }
+
+
+
+def _fem_build_geodesic_model(context=None) -> dict:
+    """Read-only experimental FEM model with true surface-following beam chains.
+
+    This does not mutate Blender geometry and is not the clinical STEP 6
+    replacement. Exact triangular anchors are routed on the evaluated passive
+    surface using the same graph as the native DSG frame.
+    """
+    context = context or bpy.context
+    model = _fem_build_model(context, geodesic_candidates=True)
+    passive = _passive_obj(context)
+    if not guide_module._valid_obj(passive):
+        raise RuntimeError("GEODESIC_NO_PASSIVE_SURFACE: el modelo pasivo no está disponible")
+    cache, _reused, error = guide_module._build_frame_surface_graph_cache(context, passive)
+    if cache is None:
+        raise RuntimeError(f"GEODESIC_GRAPH_UNAVAILABLE: {error}")
+    tree, _mx, _inv, reason = guide_module._frame_width_surface_bvh(context, passive, cache)
+    if tree is None:
+        raise RuntimeError(f"GEODESIC_SURFACE_BVH_UNAVAILABLE: {reason}")
+
+    original = list(model["elements"])
+    virtual = [e for e in original if e.virtual]
+    candidate_beams = [e for e in original if e.render and not e.virtual]
+    nodes = model["nodes"]
+    new_elements = list(virtual)
+    # The existing P1-P4 frame must be represented in the *same* experimental
+    # stiffness/volume network. All four frame paths use the identical
+    # triangle-face geodesic routing primitive as the reinforcement routes.
+    if len(model.get("frame_context", {}).get("support_nodes", [])) != 4:
+        raise RuntimeError("PERIMETER_SUPPORT_IDENTITIES_MISSING")
+    perimeter_paths = []
+    for start_id, end_id in ((0,1),(1,2),(2,3),(3,0)):
+        start = Vector(tuple(float(v) for v in nodes[start_id].xyz))
+        finish = Vector(tuple(float(v) for v in nodes[end_id].xyz))
+        p0 = guide_module._frame_surface_projection(
+            cache, start, max_distance_mm=1.0)
+        p1 = guide_module._frame_surface_projection(
+            cache, finish, max_distance_mm=1.0)
+        if (p0 is None or p1 is None or not p0.get("triangle_vertices")
+                or not p1.get("triangle_vertices")):
+            raise RuntimeError(
+                f"NO_VALID_PERIMETER_SURFACE_ANCHOR: P{start_id+1}/P{end_id+1}"
+            )
+        route = geodesic_paths.route_surface_face_anchors(
+            cache["coords"], cache["csr_offsets"], cache["csr_dst"],
+            cache["csr_weights"], p0["triangle_vertices"], tuple(p0["point"]),
+            p1["triangle_vertices"], tuple(p1["point"]),
+        )
+        coords = [np.array(nodes[start_id].xyz, dtype=float)]
+        coords.extend(np.asarray(p, dtype=float) for p in route.points_mm)
+        coords.append(np.array(nodes[end_id].xyz, dtype=float))
+        samples = [coords[0]]
+        for a, b in zip(coords, coords[1:]):
+            distance = float(np.linalg.norm(b-a))
+            if distance <= 1e-7:
+                continue
+            for k in range(1, max(1, int(math.ceil(distance/1.5)))+1):
+                count = max(1, int(math.ceil(distance/1.5)))
+                samples.append(a+(b-a)*k/count)
+        if len(samples)>1 and np.linalg.norm(samples[0]-samples[-1]) <= 1e-8:
+            raise RuntimeError("PERIMETER_DEGENERATE_EDGE")
+        perimeter_paths.append(samples)
+    frame_radius = float(model["frame_context"]["frame_radius_mm"])
+    frame_template = _fem_material_element(
+        0, 1, frame_radius, tag="FRAME_PERIMETER",
+        render=True, locked_radius=True, prunable=False, virtual=False,
+    )
+    frame_loop = perimeter_fem.append_perimeter_loop(
+        nodes, new_elements, (0,1,2,3), perimeter_paths,
+        radius_mm=frame_radius, template=frame_template,
+        max_segment_mm=1.51,
+    )
+    if len(nodes)>2200:
+        raise RuntimeError("PERIMETER_FEM_MODEL_TOO_LARGE")
+    model["perimeter_routes"] = list(frame_loop.edges)
+    model["perimeter_length_mm"] = float(frame_loop.length_mm)
+    model["perimeter_included_in_nominal_volume"] = True
+    model["perimeter_support_contact_calibrated"] = False
+    accepted = []
+    rejected = []
+    sleeve_list = list(model.get("frame_context", {}).get("sleeves", []))
+    sleeve_by_attachment = {}
+    for record in model.get("sleeve_records", []):
+        sleeve_id = str(record["id"])
+        for node_id in record["attachment_nodes"]:
+            if int(node_id) in sleeve_by_attachment:
+                raise RuntimeError("DUPLICATE_SLEEVE_ATTACHMENT_OWNER")
+            sleeve_by_attachment[int(node_id)] = sleeve_id
+    if not sleeve_list or not sleeve_by_attachment:
+        raise RuntimeError("GEODESIC_LUMEN_GEOMETRY_MISSING: sleeve mapping required")
+    # The nominal tubular FEM remains a design aid; no post-Boolean sections
+    # or contact retention claims are made by this analysis.
+    for candidate in candidate_beams:
+        label = f"{candidate.tag}_ATT{int(candidate.j)}"
+        support = Vector(tuple(float(v) for v in nodes[candidate.i].xyz))
+        attachment = Vector(tuple(float(v) for v in nodes[candidate.j].xyz))
+        source = guide_module._frame_surface_projection(cache, support, max_distance_mm=1.0)
+        target = guide_module._frame_surface_projection(cache, attachment)
+        if source is None or target is None or not source.get("triangle_vertices") or not target.get("triangle_vertices"):
+            rejected.append({"candidate": label, "reason": "NO_SURFACE_FACE_ANCHOR"})
+            continue
+        # Sleeve transitions must depart towards the outer surface, not through
+        # the passive model. A longer transition is allowed only after a future
+        # explicit multi-surface clearance validator is implemented.
+        terminal_offset = attachment - Vector(target["point"])
+        normal = Vector(target["normal"])
+        if terminal_offset.length > 12.0 or terminal_offset.dot(normal) < -0.05:
+            rejected.append({"candidate": label, "reason": "UNSAFE_SLEEVE_TRANSITION"})
+            continue
+        if terminal_offset.length > 0.02 and model["keep_out"](
+            np.asarray(tuple(target["point"]), dtype=float),
+            np.asarray(tuple(attachment), dtype=float),
+        ):
+            rejected.append({"candidate": label, "reason": "TRANSITION_CROSSES_PROTECTED_VOLUME"})
+            continue
+        try:
+            route = geodesic_paths.route_surface_face_anchors(
+                cache["coords"], cache["csr_offsets"], cache["csr_dst"], cache["csr_weights"],
+                source["triangle_vertices"], tuple(source["point"]),
+                target["triangle_vertices"], tuple(target["point"]),
+            )
+        except (ValueError, geodesic_paths.NoValidSurfaceRoute) as exc:
+            rejected.append({"candidate": label, "reason": str(exc)})
+            continue
+
+        anchors = [np.asarray(tuple(support), dtype=float)]
+        # Preserve every intrinsic bend. Splitting single surface edges is
+        # permitted; joining nonadjacent vertices with a chord is not.
+        anchors.extend(np.asarray(point, dtype=float) for point in route.points_mm)
+        anchors.append(np.asarray(tuple(attachment), dtype=float))
+        fine = [anchors[0]]
+        for a, b in zip(anchors, anchors[1:]):
+            length = float(np.linalg.norm(b - a))
+            if length < 0.02:
+                continue
+            divisions = max(1, int(math.ceil(length / 1.5)))
+            for k in range(1, divisions + 1):
+                fine.append(a + (b - a) * (k / divisions))
+        # Ensure exact FEM node poses even when coincident samples were removed.
+        fine[0] = np.array(nodes[candidate.i].xyz, dtype=float)
+        fine[-1] = np.array(nodes[candidate.j].xyz, dtype=float)
+        if len(fine) < 2 or len(nodes) + len(fine) > 2200:
+            raise RuntimeError(
+                "GEODESIC_FEM_MODEL_TOO_LARGE: refine/condense the route before solving"
+            )
+        target_sleeve_id = sleeve_by_attachment.get(int(candidate.j))
+        if target_sleeve_id is None:
+            rejected.append({"candidate": label, "reason": "UNMAPPED_SLEEVE_ATTACHMENT"})
+            continue
+        try:
+            sweep = sleeve_junction.preflight_sleeve_junction(
+                fine, [float(candidate.radius_mm)] * len(fine), sleeve_list,
+                target_sleeve_id=target_sleeve_id,
+                maximum_deferred_tip_mm=2.0,
+            )
+        except (sleeve_junction.InvalidSleeveJunction,
+                swept_clearance.InvalidClearanceGeometry) as exc:
+            rejected.append({"candidate": label,
+                             "reason": f"JUNCTION_PRECHECK_INVALID: {exc}"})
+            continue
+        if not sweep.candidate_admissible:
+            rejected.append({
+                "candidate": label,
+                "reason": sweep.status,
+                "target_sleeve": target_sleeve_id,
+            })
+            continue
+        ids = geodesic_fem.append_geodesic_beams(
+            nodes, new_elements, fine,
+            start_node=int(candidate.i), end_node=int(candidate.j),
+            beam_template=candidate, label=label, max_segment_mm=1.51,
+        )
+        accepted.append({
+            "candidate": label,
+            "beam_elements": len(ids),
+            "beam_indices": list(ids),
+            "curve_points_mm": [list(map(float, point)) for point in fine],
+            "surface_length_mm": float(route.surface_length_mm),
+            "terminal_transition_mm": float(terminal_offset.length),
+            "geodesic_backend": str(route.backend),
+            "sleeve_junction_preflight": sweep.status,
+            "target_sleeve": sweep.target_sleeve,
+            "deferred_weld_tip_mm": float(sweep.deferred_tip_mm),
+            "swept_lumen_zone_count": int(sweep.declared_lumens),
+            "post_boolean_lumen_validation_required": True,
+            "final_lumen_clear": False,
+            "whole_anatomy_sweep_validated": False,
+        })
+
+    if len(accepted) < 2:
+        raise RuntimeError(
+            "NO_VALID_GEODESIC_FEM_MODEL: se requieren al menos dos ramas válidas. "
+            f"Descartadas: {rejected[:6]}"
+        )
+    model["elements"] = new_elements
+    model["config"].enable_topology_growth = False
+    model["config"].max_growth_rounds = 0
+    model["route_mode"] = "SURFACE_GEODESIC_EXPERIMENTAL_READ_ONLY"
+    model["geodesic_routes"] = accepted
+    model["rejected_geodesic_routes"] = rejected
+    return model
+
+
+def analyze_geodesic_frame_fem(context=None) -> dict:
+    """Compare stiffness/volume of curved routes without replacing clinical guides."""
+    model = _fem_build_geodesic_model(context)
+    result = fem.optimize_reinforcement(
+        model["nodes"], model["elements"], model["load_cases"],
+        monitor_nodes=model["monitor_nodes"], config=model["config"],
+        keep_out_check=model["keep_out"],
+    )
+    summary = _fem_summary(model, result)
+    summary.update(
+        routing_mode=model["route_mode"],
+        geodesic_routes=model["geodesic_routes"],
+        rejected_geodesic_routes=model["rejected_geodesic_routes"],
+        perimeter_length_mm=float(model.get("perimeter_length_mm", 0.0)),
+        perimeter_beam_elements=sum(len(e["beam_indices"]) for e in model.get("perimeter_routes", [])),
+        perimeter_included_in_nominal_volume=bool(model.get("perimeter_included_in_nominal_volume")),
+        perimeter_support_contact_calibrated=False,
+        post_boolean_lumen_validated=False,
+        experimental=True,
+        post_boolean_section_validated=False,
+        geometry_mutated=False,
+    )
+    return summary
+
+
+
+def estimate_geodesic_frame_contact(context=None, *, policy: contact_core.ContactPolicy) -> dict:
+    """Read-only local planar contact estimate using the actual optimized FEM radii.
+
+    The estimated contact and remaining section are based on normals of the
+    passive model. They are NOT post-Boolean measurements, and do not assert
+    adequate clinical retention or mechanical strength.
+    """
+    context = context or bpy.context
+    model = _fem_build_geodesic_model(context)
+    result = fem.optimize_reinforcement(
+        model["nodes"], model["elements"], model["load_cases"],
+        monitor_nodes=model["monitor_nodes"], config=model["config"],
+        keep_out_check=model["keep_out"],
+    )
+    passive = _passive_obj(context)
+    cache, _reused, error = guide_module._build_frame_surface_graph_cache(context, passive)
+    if cache is None:
+        raise RuntimeError(f"CONTACT_NO_SURFACE: {error}")
+
+    route_results = []
+    for route in model["geodesic_routes"]:
+        points = np.asarray(route["curve_points_mm"], dtype=float)
+        beams = [model["elements"][int(i)] for i in route["beam_indices"]]
+        if len(points) != len(beams) + 1:
+            raise RuntimeError("CONTACT_FEM_ROUTE_MISMATCH")
+        radii = [
+            float(beams[0].radius_mm),
+            *[(float(a.radius_mm) + float(b.radius_mm)) * 0.5
+              for a, b in zip(beams, beams[1:])],
+            float(beams[-1].radius_mm),
+        ]
+        surf_positions, normals, sample_indices = [], [], []
+        for index, point in enumerate(points):
+            projection = guide_module._frame_surface_projection(
+                cache, Vector(tuple(float(v) for v in point)), max_distance_mm=0.03
+            )
+            if projection is None:
+                continue
+            if float(projection["distance_mm"]) > 0.03:
+                continue
+            surf_positions.append(tuple(float(v) for v in projection["point"]))
+            normals.append(tuple(float(v) for v in projection["normal"]))
+            sample_indices.append(index)
+        if (len(sample_indices) < 2 or
+                sample_indices[-1] - sample_indices[0] + 1 != len(sample_indices)):
+            raise RuntimeError(
+                "CONTACT_SURFACE_ROUTE_INCOMPLETE: model path has unverified surface samples"
+            )
+        estimate = contact_core.estimate_contact_route(
+            surf_positions, normals,
+            [radii[i] for i in sample_indices], policy
+        )
+        route_results.append({
+            "label": str(route["candidate"]),
+            "surface_samples": len(sample_indices),
+            "contact_area_planar_estimate_mm2": float(estimate.estimated_contact_area_mm2),
+            "retained_volume_planar_estimate_mm3": float(estimate.estimated_retained_volume_mm3),
+            "nominal_volume_planar_estimate_mm3": float(estimate.nominal_volume_mm3),
+            "min_retained_area_ratio": float(estimate.min_retained_area_ratio),
+            "min_bending_inertia_ratio": float(estimate.min_bending_inertia_ratio),
+            "min_penetration_mm": min(float(x.penetration_mm) for x in estimate.sections),
+            "max_penetration_mm": max(float(x.penetration_mm) for x in estimate.sections),
+            "max_center_offset_mm": max(float(x.center_offset_mm) for x in estimate.sections),
+        })
+    return {
+        "schema": "dsg.generative_frame_contact_estimate.v1",
+        "mode": "READ_ONLY_LOCAL_PLANAR_APPROXIMATION",
+        "experimental": True,
+        "post_boolean_validated": False,
+        "retention_validated": False,
+        "torsion_after_boolean_validated": False,
+        "material_calibrated": False,
+        "feasible_routes": len(route_results),
+        "routes": route_results,
+        "contact_area_planar_estimate_mm2": float(sum(
+            x["contact_area_planar_estimate_mm2"] for x in route_results)),
+        "retained_volume_planar_estimate_mm3": float(sum(
+            x["retained_volume_planar_estimate_mm3"] for x in route_results)),
+        "hard_safe_nominal_fem": bool(result.hard_safe),
+        "perimeter_included_in_nominal_volume": bool(model.get("perimeter_included_in_nominal_volume")),
+        "perimeter_support_contact_calibrated": False,
+        "post_boolean_lumen_validated": False,
+        "warning": ("This is an uncalibrated local tangent-plane diagnostic; "
+                    "no actual Boolean, retention measurement or validated "
+                    "post-Boolean FEM was performed."),
+    }
+
+
+
+
+def analyze_geodesic_group_topology(context=None) -> dict:
+    """Balanced, read-only group pruning after the nominal curved-beam FEM run.
+
+    Entire routes are removed or retained. This is not the clinical apply path.
+    """
+    context = context or bpy.context
+    model = _fem_build_geodesic_model(context)
+    solved = fem.optimize_reinforcement(
+        model["nodes"], model["elements"], model["load_cases"],
+        monitor_nodes=model["monitor_nodes"], config=model["config"],
+        keep_out_check=model["keep_out"],
+    )
+    if not solved.hard_safe:
+        raise RuntimeError("BASELINE_FEM_UNSAFE: geodesic candidate network is not structurally feasible")
+    groups = {str(route["candidate"]): tuple(int(i) for i in route["beam_indices"])
+              for route in model["geodesic_routes"]}
+    if len(groups) != len(model["geodesic_routes"]):
+        raise RuntimeError("DUPLICATED_GEODESIC_GROUP_LABEL")
+    result = geodesic_groups.prune_geodesic_groups(
+        model["nodes"], model["elements"], model["load_cases"], model["monitor_nodes"],
+        groups, config=model["config"], stiffness_weight=0.5,
+        min_remaining_groups=2,
+    )
+    return {
+        "schema": "dsg.geodesic_group_pruning.v1",
+        "objective": "BALANCED_NOMINAL_VOLUME_AND_COMPLIANCE",
+        "perimeter_length_mm": float(model.get("perimeter_length_mm", 0.0)),
+        "perimeter_included_in_nominal_volume": bool(model.get("perimeter_included_in_nominal_volume")),
+        "perimeter_support_contact_calibrated": False,
+        "post_boolean_lumen_validated": False,
+        "active_groups": list(result.active_groups),
+        "removed_groups": list(result.removed_groups),
+        "material_volume_mm3": float(result.material_volume_mm3),
+        "compliance_Nmm": float(result.compliance_Nmm),
+        "balanced_objective": float(result.balanced_objective),
+        "max_utilization": float(result.max_utilization),
+        "max_displacement_mm": float(result.max_displacement_mm),
+        "history": list(result.iterations),
+        "experimental": True,
+        "geometry_mutated": False,
+        "post_boolean_validated": False,
+        "contact_retention_validated": False,
+    }
+
 
 
 def _fem_summary(model: dict, result: fem.OptimizationResult) -> dict:
@@ -704,13 +1087,135 @@ def _remove_existing_fem_reinforcements():
     return removed
 
 
-def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
-    """Run FEM and create confirmed reinforcement CURVE objects for review.
+def _validate_fem_candidate_sweep(context, model: dict, result) -> dict:
+    """Hard preBoolean sweep before replacing any previously confirmed curves.
 
-    Geometry remains non-destructive until the existing APPLY AND CONTINUE step.
+    A bounded outer-sleeve terminal weld is provisional. It still requires
+    the actual final Boolean lumen/wall and manufacturer drill-access gates.
+    """
+    frame_ctx = model.get("frame_context") or {}
+    sleeves = list(frame_ctx.get("sleeves") or [])
+    sleeve_records = list(model.get("sleeve_records") or [])
+    if not sleeves or len(sleeves) != len(sleeve_records):
+        raise RuntimeError("FEM_SWEEP_MISSING_SLEEVE_RECORDS")
+    attachments = {}
+    for record in sleeve_records:
+        for idx in record.get("attachment_nodes", ()):
+            if int(idx) in attachments:
+                raise RuntimeError("FEM_SWEEP_AMBIGUOUS_SLEEVE_ATTACHMENT")
+            attachments[int(idx)] = str(record["id"])
+    if not attachments:
+        raise RuntimeError("FEM_SWEEP_NO_VALID_SLEEVE_ATTACHMENTS")
+
+    lumens, drill_extensions = [], []
+    for sleeve in sleeves:
+        center = np.asarray(sleeve["center"], dtype=float)
+        axis = np.asarray(sleeve["axis"], dtype=float)
+        length = float(np.linalg.norm(axis))
+        radius = float(sleeve["inner_radius_mm"])
+        height = float(sleeve["height_mm"])
+        if (center.shape != (3,) or not np.isfinite(center).all()
+                or axis.shape != (3,) or not np.isfinite(axis).all()
+                or length < 1e-9 or not np.isfinite([radius,height]).all()
+                or radius <= 0 or height <= 0):
+            raise RuntimeError("FEM_SWEEP_INVALID_SLEEVE")
+        axis /= length
+        lumens.append(swept_clearance.CylinderKeepOut(
+            f"{sleeve['id']}:LUMEN", tuple(center), tuple(axis),radius,height*0.5))
+        # Deliberately conservative 20mm uncalibrated access on BOTH ends.
+        # This is a precheck, not verified patient/tool drilling clearance.
+        extension=20.0
+        for sign in (-1,1):
+            shifted = center + axis * sign * (height*0.5 + extension*0.5)
+            drill_extensions.append(swept_clearance.CylinderKeepOut(
+                f"{sleeve['id']}:DRILL_{sign:+d}", tuple(shifted),
+                tuple(axis),radius,extension*0.5))
+
+    protected = []
+    for obj in bpy.data.objects:
+        if not (bool(obj.get("DSG_irrigation_wall_confirmed",False))
+                or bool(obj.get("DSG_microscrew_confirmed",False))):
+            continue
+        if getattr(obj,"type",None) != 'MESH':
+            raise RuntimeError(f"FEM_SWEEP_UNSUPPORTED_PROTECTED_OBJECT: {obj.name}")
+        bvh = guide_module._build_world_surface_bvh(context,obj)
+        if bvh is None:
+            raise RuntimeError(f"FEM_SWEEP_PROTECTED_BVH_UNAVAILABLE: {obj.name}")
+        protected.append((str(obj.name), bvh))
+
+    checked=0
+    for idx in result.active_elements:
+        beam=model["elements"][idx]
+        if not beam.active or not beam.render or beam.virtual:
+            continue
+        a=np.asarray(model["nodes"][beam.i].xyz,dtype=float)
+        b=np.asarray(model["nodes"][beam.j].xyz,dtype=float)
+        radius=float(beam.radius_mm)
+        if not np.isfinite([*a,*b,radius]).all() or radius<=0:
+            raise RuntimeError("FEM_SWEEP_NONFINITE_BEAM")
+        length=float(np.linalg.norm(b-a))
+        if length<=0.1:
+            raise RuntimeError("FEM_SWEEP_DEGENERATE_BEAM")
+        path=[a,b]
+        radii=[radius,radius]
+        target_id=attachments.get(int(beam.j))
+        if target_id:
+            pre=sleeve_junction.preflight_sleeve_junction(
+                path,radii,sleeves,target_sleeve_id=target_id,
+                maximum_deferred_tip_mm=min(2.5,max(0.25,length*0.25)))
+            if not pre.candidate_admissible:
+                raise RuntimeError(
+                    f"FEM_SWEEP_TARGET_LUMEN_{pre.status}: {beam.tag}")
+        else:
+            full=swept_clearance.check_swept_tube_clearance(
+                path,radii,lumens,sample_spacing_mm=0.2)
+            if not full.clear:
+                raise RuntimeError(f"FEM_SWEEP_LUMEN_{full.status}: {beam.tag}")
+
+        drill=swept_clearance.check_swept_tube_clearance(
+            path,radii,drill_extensions,sample_spacing_mm=0.2)
+        if not drill.clear:
+            raise RuntimeError(f"FEM_SWEEP_DRILL_{drill.status}: {beam.tag}")
+        if protected:
+            intervals=max(1,int(math.ceil(length/0.5)))
+            for step in range(intervals+1):
+                point=Vector(tuple(float(x) for x in
+                    (a+(b-a)*(step/intervals))))
+                for name,tree in protected:
+                    hit=tree.find_nearest(point)
+                    if not hit or hit[0] is None or hit[1] is None:
+                        raise RuntimeError(f"FEM_SWEEP_NO_SURFACE: {name}")
+                    surface,normal=Vector(hit[0]),Vector(hit[1])
+                    if (point-surface).length<=radius+0.2 or (point-surface).dot(normal)<0:
+                        raise RuntimeError(f"FEM_SWEEP_PROTECTED_OBJECT: {name}")
+        checked+=1
+    if checked==0:
+        raise RuntimeError("FEM_SWEEP_NO_RENDERABLE_BEAMS")
+    return {
+        "candidate_tubes":checked,
+        "sleeve_lumens":len(lumens),
+        "drill_extension_zones":len(drill_extensions),
+        "protected_meshes":len(protected),
+        "post_boolean_lumen_validated":False,
+        "clinical_acceptance":False,
+    }
+
+
+def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
+    """Stage a complete FEM candidate before replacing previously confirmed geometry.
+
+    A solver failure or temporary curve error leaves the previous frame and
+    reinforcements untouched.  No old object is destroyed before the new
+    objects and report are ready.  The commit is reversible until cleanup.
     """
     context = context or bpy.context
     props = context.scene.dsg_props
+    # The MCP/service entrypoint must enforce the same gates as the UI
+    # operator; direct callers cannot bypass the clinical workflow step.
+    if int(getattr(props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+        raise RuntimeError("La optimización FEM solo se permite en el paso de refuerzos")
+    if guide_module.get_pending_reinforcement_preview(props):
+        raise RuntimeError("Confirma o descarta el refuerzo manual pendiente")
     guide = guide_module.get_active_guide_obj(props)
     if not guide_module._valid_obj(guide):
         raise RuntimeError("DSG_Guide no está disponible")
@@ -721,10 +1226,11 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
         raise RuntimeError(
             "Hay refuerzos manuales confirmados. Aplícalos o elimínalos antes de optimizar automáticamente."
         )
-    if replace_existing:
-        _remove_existing_fem_reinforcements()
-        props.reinforcement_count = 0
+    previous = [obj for obj in existing if bool(obj.get("DSG_reinforcement_fem_generated", False))]
+    if previous and not replace_existing:
+        raise RuntimeError("Ya existen refuerzos FEM. Confirma su sustitución antes de continuar.")
 
+    # This calculation is pure in-memory and must precede any scene mutation.
     model = _fem_build_model(context)
     result = fem.optimize_reinforcement(
         model["nodes"], model["elements"], model["load_cases"],
@@ -733,19 +1239,39 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
         keep_out_check=model["keep_out"],
     )
     summary = _fem_summary(model, result)
-
     if not result.hard_safe:
         raise RuntimeError(
             f"El FEM no alcanza los límites duros: U={summary['max_utilization']:.2f}, "
             f"desplazamiento={summary['sleeve_displacement_mm']:.3f} mm. "
-            "DSG no genera refuerzos inseguros automáticamente."
+            "DSG conserva los refuerzos originales."
         )
 
-    created = []
+    # Numerical FEM safety never substitutes for geometric swept clearance.
+    # Fail BEFORE staging if a proposed tube intersects protected volumes.
+    summary["sweep_preflight"] = _validate_fem_candidate_sweep(context, model, result)
+
+    staged = []
+    previous_state = []
+    old_count = int(props.reinforcement_count)
+    guide_updates = {
+        "DSG_frame_fem_schema": FRAME_FEM_SCHEMA,
+        "DSG_frame_fem_profile": FRAME_FEM_PROFILE,
+        "DSG_frame_fem_hard_safe": bool(summary["hard_safe"]),
+        "DSG_frame_fem_recommended": bool(summary["recommended"]),
+        "DSG_frame_fem_volume_mm3": float(summary["volume_mm3"]),
+        "DSG_frame_fem_max_utilization": float(summary["max_utilization"]),
+        "DSG_frame_fem_sleeve_displacement_mm": float(summary["sleeve_displacement_mm"]),
+        "DSG_frame_fem_history_json": json.dumps(summary["history"], separators=(",", ":")),
+        "DSG_frame_fem_element_count": 0,
+        "DSG_frame_fem_design_aid_not_validation": True,
+        "DSG_frame_fem_lumen_post_boolean_validation_pending": True,
+    }
+    guide_state = {key: (key in guide, guide.get(key)) for key in guide_updates}
     bundle = result.final_bundle
-    bevel_resolution = max(5, int(getattr(props, 'reinforcement_bevel_resolution', 8)))
+    bevel_resolution = max(5, int(getattr(props, "reinforcement_bevel_resolution", 8)))
+
     try:
-        for serial, element_index in enumerate(result.active_elements):
+        for element_index in result.active_elements:
             e = model["elements"][element_index]
             if not e.active or not e.render or e.virtual:
                 continue
@@ -757,8 +1283,10 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
             if (p1 - p0).length < 0.5:
                 continue
 
-            name = f"{guide_module.REINFORCEMENT_PREFIX}{serial:02d}"
-            guide_module.safe_remove_by_name(name)
+            serial = len(staged)
+            name = f"{guide_module.REINFORCEMENT_PREFIX}FEM_STAGING_{serial:03d}"
+            if bpy.data.objects.get(name) is not None:
+                raise RuntimeError(f"Existe una geometría temporal sin resolver: {name}")
             obj = guide_module.create_poly_curve_object(
                 context, name, [p0, p1],
                 bevel_radius=float(e.radius_mm),
@@ -766,11 +1294,12 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
                 cyclic=False,
             )
             if not guide_module._valid_obj(obj):
-                raise RuntimeError(f"No se pudo crear el elemento FEM {element_index}")
-
+                raise RuntimeError(f"No se pudo construir el elemento FEM {element_index}")
+            # Track the candidate *before* metadata calls that may fail.
+            staged.append(obj)
             metadata = {
                 "DSG_reinforcement_preview": False,
-                "DSG_reinforcement_confirmed": True,
+                "DSG_reinforcement_confirmed": False,
                 "DSG_reinforcement_index": int(serial),
                 "DSG_reinforcement_diameter": float(e.radius_mm * 2.0),
                 "DSG_reinforcement_fem_generated": True,
@@ -781,36 +1310,71 @@ def create_fem_reinforcements(context=None, *, replace_existing=True) -> dict:
                 "DSG_fem_radius_mm": float(e.radius_mm),
                 "DSG_fem_length_mm": float(r["length_mm"]),
                 "DSG_fem_tag": str(e.tag),
+                "DSG_fem_pre_boolean_sweep_passed": True,
+                "DSG_fem_post_boolean_lumen_validated": False,
             }
             obj = guide_module.register_dsg_object(
-                obj, guide_module.ROLE_REINFORCEMENT, name, metadata)
+                obj, guide_module.ROLE_REINFORCEMENT, name, metadata
+            )
+            staged[-1] = obj
             obj.show_in_front = False
-            created.append(obj)
 
-        if not created:
+        if not staged:
             raise RuntimeError("El FEM no produjo barras renderizables")
 
-        props.reinforcement_count = len(created)
+        # Save and hide existing output only after staging completed.
+        for obj in previous:
+            previous_state.append((
+                obj, str(obj.name),
+                bool(obj.get("DSG_reinforcement_confirmed", True)),
+                bool(obj.hide_get()), bool(obj.hide_render),
+            ))
+            obj.name = f"DSG_FEM_PREVIOUS_{obj.name}"
+            obj["DSG_reinforcement_confirmed"] = False
+            obj.hide_set(True)
+            obj.hide_render = True
+
+        for serial, obj in enumerate(staged):
+            target_name = f"{guide_module.REINFORCEMENT_PREFIX}{serial:02d}"
+            if bpy.data.objects.get(target_name) is not None:
+                raise RuntimeError(f"Nombre de refuerzo ocupado: {target_name}")
+            obj.name = target_name
+            obj["DSG_reinforcement_confirmed"] = True
+
+        props.reinforcement_count = len(staged)
         props.reinforcement_preview_obj = None
-        guide["DSG_frame_fem_schema"] = FRAME_FEM_SCHEMA
-        guide["DSG_frame_fem_profile"] = FRAME_FEM_PROFILE
-        guide["DSG_frame_fem_hard_safe"] = bool(summary["hard_safe"])
-        guide["DSG_frame_fem_recommended"] = bool(summary["recommended"])
-        guide["DSG_frame_fem_volume_mm3"] = float(summary["volume_mm3"])
-        guide["DSG_frame_fem_max_utilization"] = float(summary["max_utilization"])
-        guide["DSG_frame_fem_sleeve_displacement_mm"] = float(summary["sleeve_displacement_mm"])
-        guide["DSG_frame_fem_history_json"] = json.dumps(summary["history"], separators=(",", ":"))
-        guide["DSG_frame_fem_element_count"] = int(len(created))
-        guide["DSG_frame_fem_design_aid_not_validation"] = True
-        if created:
-            guide_module.set_active(context, created[0])
-        return summary
+        guide_updates["DSG_frame_fem_element_count"] = len(staged)
+        for key, value in guide_updates.items():
+            guide[key] = value
+        guide_module.set_active(context, staged[0])
+
     except Exception:
-        for obj in created:
+        # Roll back staged geometry *and* restored original object identities.
+        for obj in staged:
             if guide_module._valid_obj(obj):
                 guide_module.safe_remove_object(obj)
-        props.reinforcement_count = 0
+        for obj, original_name, confirmed, hidden, render_hidden in previous_state:
+            if guide_module._valid_obj(obj):
+                obj.name = original_name
+                obj["DSG_reinforcement_confirmed"] = confirmed
+                obj.hide_set(hidden)
+                obj.hide_render = render_hidden
+        props.reinforcement_count = old_count
+        for key, (had_value, value) in guide_state.items():
+            if had_value:
+                guide[key] = value
+            elif key in guide:
+                del guide[key]
         raise
+
+    # Cleanup after a successful commit: it must never invalidate the new result.
+    for obj, _name, _confirmed, _hidden, _render_hidden in previous_state:
+        try:
+            if guide_module._valid_obj(obj):
+                guide_module.safe_remove_object(obj)
+        except Exception:
+            _DSG_LOG.warning("Could not remove archived FEM geometry after commit", exc_info=True)
+    return summary
 
 
 class DSG_OT_OptimizeFrameFEM(Operator):
@@ -844,7 +1408,492 @@ class DSG_OT_OptimizeFrameFEM(Operator):
         return {'FINISHED'}
 
 
-_CLASSES = (DSG_OT_OptimizeFrameFEM,)
+
+def preview_geodesic_fem_paths(context=None) -> dict:
+    """Create nonexported Blender previews from exactly the curved FEM chains.
+
+    A preview is *not* an approved reinforcement or a final guide component.
+    Existing previews are preserved if any construction/commit step fails.
+    """
+    context = context or bpy.context
+    model = _fem_build_geodesic_model(context)
+    result = fem.optimize_reinforcement(
+        model["nodes"], model["elements"], model["load_cases"],
+        monitor_nodes=model["monitor_nodes"], config=model["config"],
+        keep_out_check=model["keep_out"],
+    )
+    summary = _fem_summary(model, result)
+    prefix = "DSG_GeodesicFEM_Preview_"
+    old = [obj for obj in list(bpy.data.objects)
+           if obj.name.startswith(prefix) and bool(obj.get("DSG_geodesic_preview_only", False))]
+    staged = []
+    previous_state = []
+    try:
+        for serial, route in enumerate(model["geodesic_routes"]):
+            points = [Vector(point) for point in route["curve_points_mm"]]
+            edges = [model["elements"][int(i)] for i in route["beam_indices"]]
+            if len(points) != len(edges) + 1:
+                raise RuntimeError("GEODESIC_PREVIEW_FEM_MISMATCH: different geometry and FEM path")
+            name = f"DSG_GeodesicFEM_Staging_{serial:03d}"
+            if bpy.data.objects.get(name) is not None:
+                raise RuntimeError(f"GEODESIC_PREVIEW_STAGING_CONFLICT: {name}")
+            curve = guide_module.create_poly_curve_object(
+                context, name, points, bevel_radius=1.0, bevel_resolution=8, cyclic=False
+            )
+            if not guide_module._valid_obj(curve):
+                raise RuntimeError(f"GEODESIC_PREVIEW_BUILD_FAILED: {name}")
+            staged.append(curve)
+            # Blender POLY spline radii are multiplied by bevel_depth (1 mm).
+            # Each vertex receives the mean radius of adjacent FEM elements.
+            radii = [float(edges[0].radius_mm)]
+            radii.extend((float(a.radius_mm) + float(b.radius_mm)) * 0.5
+                         for a, b in zip(edges, edges[1:]))
+            radii.append(float(edges[-1].radius_mm))
+            spline = curve.data.splines[0]
+            if len(spline.points) != len(radii):
+                raise RuntimeError("GEODESIC_PREVIEW_SPLINE_MISMATCH")
+            for point, radius in zip(spline.points, radii):
+                point.radius = radius
+            curve["DSG_geodesic_preview_only"] = True
+            curve["DSG_geodesic_fem_label"] = str(route["candidate"])
+            curve["DSG_geodesic_post_boolean_validated"] = False
+            curve.hide_render = True
+
+        if not staged:
+            raise RuntimeError("GEODESIC_PREVIEW_EMPTY")
+        # Commit: old previews are only archived after every replacement exists.
+        for obj in old:
+            previous_state.append((obj, str(obj.name), bool(obj.hide_get()), bool(obj.hide_render)))
+            obj.name = f"DSG_GeodesicFEM_Archive_{obj.name}"
+            obj.hide_set(True)
+        for serial, obj in enumerate(staged):
+            name = f"{prefix}{serial:03d}"
+            if bpy.data.objects.get(name) is not None:
+                raise RuntimeError(f"GEODESIC_PREVIEW_NAME_CONFLICT: {name}")
+            obj.name = name
+            obj.hide_set(False)
+    except Exception:
+        for obj in staged:
+            if guide_module._valid_obj(obj):
+                guide_module.safe_remove_object(obj)
+        for obj, name, hidden, hide_render in previous_state:
+            if guide_module._valid_obj(obj):
+                obj.name = name
+                obj.hide_set(hidden)
+                obj.hide_render = hide_render
+        raise
+
+    for obj, _name, _hidden, _render in previous_state:
+        try:
+            if guide_module._valid_obj(obj):
+                guide_module.safe_remove_object(obj)
+        except Exception:
+            _DSG_LOG.warning("Geodesic preview archive cleanup failed", exc_info=True)
+    summary.update(
+        geodesic_routes=model["geodesic_routes"],
+        rejected_geodesic_routes=model["rejected_geodesic_routes"],
+        experimental=True,
+        geometry_mutated=True,
+        guide_geometry_mutated=False,
+        preview_only=True,
+        post_boolean_section_validated=False,
+    )
+    return summary
+
+
+class DSG_OT_PreviewGeodesicFrameFEM(Operator):
+    bl_idname = "dsg.preview_geodesic_frame_fem"
+    bl_label = "Preview Surface-Geodesic Reinforcements (Experimental)"
+    bl_description = "Build viewport-only FEM-geodesic paths without altering the surgical guide"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        try:
+            if int(getattr(context.scene.dsg_props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+                raise RuntimeError("La vista previa geodésica requiere el paso de refuerzos")
+            result = preview_geodesic_fem_paths(context)
+        except Exception as exc:
+            guide_module._dsg_report(
+                self, {'ERROR'}, f"Geodesic preview failed: {exc}",
+                f"No se pudo generar la vista previa geodésica: {exc}",
+            )
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"Experimental surface preview: {len(result['geodesic_routes'])} FEM-matched paths; "
+            "not included in clinical guide/export.",
+            f"Vista previa experimental: {len(result['geodesic_routes'])} rutas FEM geodésicas; "
+            "no se aplican ni exportan con la guía.",
+        )
+        return {'FINISHED'}
+
+
+class DSG_OT_EstimateGeodesicContact(Operator):
+    bl_idname = "dsg.estimate_geodesic_contact"
+    bl_label = "Evaluate Contact Profile (Experimental)"
+    bl_description = "Local-planar contact estimate only; not a validated clinical retention test"
+    bl_options = {'REGISTER'}
+
+    # The module uses postponed annotations; Blender requires actual
+    # deferred RNA property objects in __annotations__, not annotation strings.
+    __annotations__ = {
+        "min_contact_width_mm": FloatProperty(
+            name="Minimum interface width (mm)", default=0.8,
+            min=0.0, max=8.0, precision=3),
+        "min_area_ratio": FloatProperty(
+            name="Minimum retained area fraction", default=0.65,
+            min=0.0, max=1.0, precision=3),
+        "min_inertia_ratio": FloatProperty(
+            name="Minimum bending inertia fraction", default=0.30,
+            min=0.0, max=1.0, precision=3),
+        "min_penetration_mm": FloatProperty(
+            name="Minimum overlap (mm)", default=0.01,
+            min=0.0, max=5.0, precision=3),
+        "max_penetration_mm": FloatProperty(
+            name="Maximum overlap (mm)", default=0.7,
+            min=0.0, max=5.0, precision=3),
+    }
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=420)
+
+    def draw(self, context):
+        col = self.layout.column(align=True)
+        col.label(text="RESEARCH ONLY: planar estimate, not clinical proof", icon='ERROR')
+        for attr in ("min_contact_width_mm", "min_area_ratio", "min_inertia_ratio",
+                     "min_penetration_mm", "max_penetration_mm"):
+            col.prop(self, attr)
+
+    def execute(self, context):
+        try:
+            if int(getattr(context.scene.dsg_props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+                raise RuntimeError("El diagnóstico de contacto requiere el paso de refuerzos")
+            report = estimate_geodesic_frame_contact(context, policy=contact_core.ContactPolicy(
+                min_contact_width_mm=float(self.min_contact_width_mm),
+                min_retained_area_ratio=float(self.min_area_ratio),
+                min_bending_inertia_ratio=float(self.min_inertia_ratio),
+                min_penetration_mm=float(self.min_penetration_mm),
+                max_penetration_mm=float(self.max_penetration_mm),
+            ))
+        except Exception as exc:
+            guide_module._dsg_report(self, {'ERROR'},
+                f"Contact research estimate failed: {exc}",
+                f"Falló la estimación experimental de contacto: {exc}")
+            return {'CANCELLED'}
+        guide_module._dsg_report(self, {'INFO'},
+            f"Experimental contact: {report['feasible_routes']} routes, interface "
+            f"estimate {report['contact_area_planar_estimate_mm2']:.1f} mm². Not clinically validated.",
+            f"Contacto experimental: {report['feasible_routes']} rutas, superficie "
+            f"estimada {report['contact_area_planar_estimate_mm2']:.1f} mm². Sin validación clínica.")
+        return {'FINISHED'}
+
+
+class DSG_OT_AnalyzeGeodesicGroups(Operator):
+    bl_idname = "dsg.analyze_geodesic_groups"
+    bl_label = "Optimize Geodesic Groups (Experimental, Read-only)"
+    bl_description = (
+        "Test removal of whole curved FEM routes under balanced volume/compliance; "
+        "does not apply or export any optimized geometry"
+    )
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        try:
+            if int(getattr(context.scene.dsg_props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+                raise RuntimeError("El análisis de topología requiere el paso de refuerzos")
+            report = analyze_geodesic_group_topology(context)
+        except Exception as exc:
+            guide_module._dsg_report(self, {'ERROR'},
+                f"Geodesic group analysis failed: {exc}",
+                f"Falló el análisis experimental de grupos: {exc}")
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"Balanced research FEM: {len(report['active_groups'])} active path groups, "
+            f"{len(report['removed_groups'])} candidate removals. No geometry changed.",
+            f"FEM experimental equilibrado: {len(report['active_groups'])} rutas activas, "
+            f"{len(report['removed_groups'])} grupos eliminables. Geometría intacta.",
+        )
+        return {'FINISHED'}
+
+
+def inspect_final_boolean_guide_section(context=None, *, point_mm, axis,
+                                        nominal_radius_mm=None,
+                                        mesh_arrays_fn=None) -> dict:
+    """Measure one requested section of the *actual* final Boolean guide.
+
+    Only a DSG guide explicitly marked as final-cut-completed is accepted.
+    Explicit interior probe/section point prevents assigning unrelated
+    implants, sleeves or neighbouring frame branches to this cross-section.
+    A failure leaves all Blender objects untouched and does not affect export.
+    """
+    context = context or bpy.context
+    guide = guide_module.get_active_guide_obj(context.scene.dsg_props)
+    if (not guide_module._valid_obj(guide)
+            or getattr(guide, 'type', None) != 'MESH'
+            or not bool(guide.get("DSG_final_cut_completed", False))):
+        raise RuntimeError(
+            "BOOLEAN_SECTION_REQUIRES_FINAL_GUIDE: apply the validated final "
+            "Boolean first; preview curves/pre-Boolean guides cannot be measured"
+        )
+    if mesh_arrays_fn is None:
+        # Reuse the actual export adapter: evaluated mesh, world coordinates.
+        from .guide_export.blender_adapter import mesh_arrays
+        mesh_arrays_fn = mesh_arrays
+    vertices, triangles = mesh_arrays_fn(guide)
+    section = boolean_sections.measure_boolean_section(
+        vertices, triangles, point_mm, axis, probe_point_mm=point_mm,
+        require_closed=True,
+    )
+    comparison = (boolean_sections.compare_section_to_nominal_circle(
+        section, nominal_radius_mm=float(nominal_radius_mm))
+        if nominal_radius_mm is not None else None)
+    return {
+        "geometry_reference_area_ratio": (
+            float(comparison.measured_area_ratio) if comparison else None),
+        "geometry_reference_weak_inertia_ratio": (
+            float(comparison.measured_weak_axis_bending_ratio) if comparison else None),
+        "nominal_section_radius_mm": (
+            float(comparison.nominal_radius_mm) if comparison else None),
+        "section_may_include_merged_frame": True,
+        "schema": "dsg.actual_boolean_section.v1",
+        "guide_name": str(guide.name),
+        "method": section.backend,
+        "section_area_mm2": float(section.area_mm2),
+        "principal_inertia_min_mm4": float(section.principal_inertia_min_mm4),
+        "principal_inertia_max_mm4": float(section.principal_inertia_max_mm4),
+        "boundary_count": int(section.boundary_count),
+        "hole_count": int(section.hole_count),
+        "component_count": int(section.global_component_count),
+        "experimental": True,
+        "mesh_is_post_boolean": True,
+        "design_approved": False,
+        "retention_validated": False,
+        "full_frame_fem_validated": False,
+        "geometry_mutated": False,
+    }
+
+
+def inspect_final_boolean_guide_path(
+    context=None, *, interior_centerline_mm, nominal_radii_mm=None,
+    sample_count=9, mesh_arrays_fn=None,
+) -> dict:
+    """Sample true mesh sections along an explicitly INSIDE-the-solid path.
+
+    No silent projection of surface geodesics into the Boolean-cut volume:
+    a path must be supplied through retained material. No guide mutations.
+    """
+    context = context or bpy.context
+    guide = guide_module.get_active_guide_obj(context.scene.dsg_props)
+    if (not guide_module._valid_obj(guide)
+            or getattr(guide, 'type', None) != 'MESH'
+            or not bool(guide.get("DSG_final_cut_completed", False))):
+        raise RuntimeError("BOOLEAN_PATH_REQUIRES_FINAL_GUIDE")
+    if mesh_arrays_fn is None:
+        from .guide_export.blender_adapter import mesh_arrays
+        mesh_arrays_fn = mesh_arrays
+    vertices, triangles = mesh_arrays_fn(guide)
+    profile = boolean_paths.profile_boolean_path(
+        vertices, triangles, interior_centerline_mm,
+        nominal_radii_mm=nominal_radii_mm, sample_count=int(sample_count),
+    )
+    return {
+        "schema": "dsg.actual_boolean_path_profile.v1",
+        "guide_name": str(guide.name),
+        "method": "ACTUAL_EVALUATED_FINAL_GUIDE_MULTI_STATION",
+        "total_path_length_mm": float(profile.arclength_mm),
+        "station_count": int(profile.probe_count),
+        "area_min_mm2": float(profile.area_min_mm2),
+        "area_median_mm2": float(profile.area_median_mm2),
+        "weak_inertia_min_mm4": float(profile.weak_inertia_min_mm4),
+        "weak_inertia_median_mm4": float(profile.weak_inertia_median_mm4),
+        "worst_station_by_area": int(profile.worst_station_index_by_area),
+        "worst_station_by_inertia": int(profile.worst_station_index_by_inertia),
+        "stations": [{
+            "index": station.index,
+            "arclength_mm": station.arclength_mm,
+            "point_mm": list(station.point_mm),
+            "area_mm2": station.area_mm2,
+            "principal_inertia_min_mm4": station.principal_inertia_min_mm4,
+            "hole_count": station.hole_count,
+            "nominal_weak_inertia_ratio": station.nominal_weak_inertia_ratio,
+        } for station in profile.stations],
+        "experimental": True,
+        "complete": True,
+        "geometry_mutated": False,
+        "retention_validated": False,
+        "post_boolean_fem_validated": False,
+    }
+
+
+class DSG_OT_InspectFinalBooleanPath(Operator):
+    bl_idname = "dsg.inspect_final_boolean_path"
+    bl_label = "Profile Sections Along Final Guide (Experimental)"
+    bl_description = (
+        "Read several actual cross-sections along a selected POLY curve INSIDE "
+        "the final guide material. Copies research JSON to clipboard only."
+    )
+    bl_options = {'REGISTER'}
+
+    __annotations__ = {
+        "station_count": IntProperty(
+            name="Cross-section stations", default=9, min=2, max=25,
+            description="All samples must be in retained solid, or the scan fails"),
+        "nominal_diameter_mm": FloatProperty(
+            name="Reference diameter (mm)", default=2.5, min=0.1, max=25,
+            precision=3, description="Geometry comparison only, not a clinical limit"),
+    }
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=420)
+
+    def draw(self, context):
+        col = self.layout.column(align=True)
+        col.label(text="Select a NON-PREVIEW POLY curve inside the final solid",
+                  icon='INFO')
+        col.label(text="All samples must be inside guide material", icon='ERROR')
+        col.prop(self, "station_count")
+        col.prop(self, "nominal_diameter_mm")
+        col.label(text="Results copied as research-only JSON", icon='INFO')
+
+    def execute(self, context):
+        try:
+            curve = context.active_object
+            if (curve is None or getattr(curve, "type", None) != 'CURVE'
+                    or bool(curve.get("DSG_geodesic_preview_only", False))):
+                raise RuntimeError(
+                    "Selecciona una curva POLY independiente dentro del material, "
+                    "no una vista previa geodésica superficial"
+                )
+            if len(curve.data.splines) != 1:
+                raise RuntimeError("Se necesita exactamente una spline POLY no cíclica")
+            spline = curve.data.splines[0]
+            if spline.type != 'POLY' or spline.use_cyclic_u or len(spline.points) < 2:
+                raise RuntimeError("Se necesita una curva abierta POLY de dos o más puntos")
+            path = [
+                tuple(float(v) for v in (curve.matrix_world @ Vector(
+                    (float(p.co[0]), float(p.co[1]), float(p.co[2])))))
+                for p in spline.points
+            ]
+            report = inspect_final_boolean_guide_path(
+                context, interior_centerline_mm=path,
+                nominal_radii_mm=[float(self.nominal_diameter_mm) * 0.5] * len(path),
+                sample_count=int(self.station_count),
+            )
+            context.window_manager.clipboard = json.dumps(
+                report, separators=(",", ":"), ensure_ascii=False,
+                allow_nan=False,
+            )
+        except Exception as exc:
+            guide_module._dsg_report(
+                self, {'ERROR'},
+                f"Final Boolean path profile failed: {exc}",
+                f"Falló el perfil de secciones finales: {exc}")
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"{report['station_count']} actual sections, minimum area "
+            f"{report['area_min_mm2']:.2f} mm², min I "
+            f"{report['weak_inertia_min_mm4']:.3f} mm⁴. JSON copied, no guide changes.",
+            f"{report['station_count']} secciones reales, área mínima "
+            f"{report['area_min_mm2']:.2f} mm², I mínima "
+            f"{report['weak_inertia_min_mm4']:.3f} mm⁴. JSON copiado, guía intacta.",
+        )
+        return {'FINISHED'}
+
+
+class DSG_OT_InspectFinalBooleanSection(Operator):
+    bl_idname = "dsg.inspect_final_boolean_section"
+    bl_label = "Inspect Final Guide Section (Experimental)"
+    bl_description = (
+        "Measure real cross-section at the 3D cursor inside the final Boolean guide; "
+        "never modifies the guide or exports a mesh"
+    )
+    bl_options = {'REGISTER'}
+
+    # Blender requires actual property descriptors with postponed annotations.
+    __annotations__ = {
+        "section_axis": FloatVectorProperty(
+            name="Plane normal / beam tangent",
+            description="Local beam direction of the requested section in world XYZ",
+            subtype='DIRECTION', size=3, default=(1.0, 0.0, 0.0)),
+        "nominal_diameter_mm": FloatProperty(
+            name="Reference cylinder diameter (mm)",
+            description="For geometric comparison only: not measured automatically and not a structural pass/fail limit",
+            default=2.5, min=0.1, max=25.0, precision=3),
+    }
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self, width=430)
+
+    def draw(self, context):
+        col = self.layout.column(align=True)
+        col.label(text="Place the 3D cursor INSIDE the final guide", icon='INFO')
+        col.label(text="Not a retention / clinical acceptance test", icon='ERROR')
+        col.prop(self, "section_axis")
+        col.prop(self, "nominal_diameter_mm")
+        col.label(text="Reference is only a comparison, not a safety threshold", icon='INFO')
+
+    def execute(self, context):
+        try:
+            guide = guide_module.get_active_guide_obj(context.scene.dsg_props)
+            if not guide_module._valid_obj(guide) or not bool(guide.get("DSG_final_cut_completed", False)):
+                raise RuntimeError("Se necesita una guía con booleana final aplicada")
+            point = tuple(float(v) for v in context.scene.cursor.location)
+            report = inspect_final_boolean_guide_section(
+                context, point_mm=point, axis=tuple(float(v) for v in self.section_axis),
+                nominal_radius_mm=float(self.nominal_diameter_mm) * 0.5)
+        except Exception as exc:
+            guide_module._dsg_report(
+                self, {'ERROR'},
+                f"Final-guide section measurement failed: {exc}",
+                f"No se pudo medir la sección final: {exc}")
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"Actual guide section: {report['section_area_mm2']:.2f} mm², "
+            f"Imin={report['principal_inertia_min_mm4']:.3f} mm⁴, "
+            f"holes={report['hole_count']}, I/Icircle={report['geometry_reference_weak_inertia_ratio']:.2f}. Research only.",
+            f"Sección real: {report['section_area_mm2']:.2f} mm², "
+            f"Imin={report['principal_inertia_min_mm4']:.3f} mm⁴, "
+            f"huecos={report['hole_count']}, I/Icírculo={report['geometry_reference_weak_inertia_ratio']:.2f}. Solo investigación.")
+        return {'FINISHED'}
+
+
+class DSG_OT_AnalyzeGeodesicFrameFEM(Operator):
+    bl_idname = "dsg.analyze_geodesic_frame_fem"
+    bl_label = "Analyze Surface-Geodesic FEM (Experimental)"
+    bl_description = (
+        "Analyze FEM beam chains following the passive surface, without "
+        "changing or applying any guide geometry"
+    )
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        try:
+            if int(getattr(context.scene.dsg_props, 'current_step', -1)) != int(guide_module.STEP_REINFORCEMENT):
+                raise RuntimeError("El análisis geodésico requiere el paso de refuerzos")
+            summary = analyze_geodesic_frame_fem(context)
+        except Exception as exc:
+            guide_module._dsg_report(
+                self, {'ERROR'},
+                f"Experimental geodesic FEM failed: {exc}",
+                f"Análisis geodésico experimental fallido: {exc}",
+            )
+            return {'CANCELLED'}
+        guide_module._dsg_report(
+            self, {'INFO'},
+            f"Geodesic FEM (design aid): {len(summary['geodesic_routes'])} surface routes, "
+            f"{summary['active_reinforcements']} beam elements, "
+            f"U={summary['max_utilization']:.2f}; no geometry changed.",
+            f"FEM geodésico (experimental): {len(summary['geodesic_routes'])} rutas, "
+            f"{summary['active_reinforcements']} elementos, "
+            f"U={summary['max_utilization']:.2f}; geometría intacta.",
+        )
+        return {'FINISHED'}
+
+
+_CLASSES = (DSG_OT_OptimizeFrameFEM, DSG_OT_AnalyzeGeodesicFrameFEM, DSG_OT_PreviewGeodesicFrameFEM, DSG_OT_EstimateGeodesicContact, DSG_OT_AnalyzeGeodesicGroups, DSG_OT_InspectFinalBooleanSection, DSG_OT_InspectFinalBooleanPath)
 
 
 def register():

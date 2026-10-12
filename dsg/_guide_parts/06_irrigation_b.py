@@ -910,7 +910,9 @@ class DSG_OT_LinkIrrigation(Operator):
             'link': True,
             'source_index': source_index,
             'link_sleeve_point': [float(v) for v in Vector(sleeve_point)],
-            'link_channel_point': [float(v) for v in Vector(source_point)],
+            # Retain the exact user pick, even when the manifold repositions
+            # the channel shoulder to a safer geometric location.
+            'link_user_clicked_channel_point': [float(v) for v in Vector(source_point)],
             'link_manifold_center': [float(v) for v in y_geometry['manifold_center']],
             'link_elbow_center': [float(v) for v in y_geometry['split_center']],
             'link_split_center': [float(v) for v in y_geometry['split_center']],
@@ -946,14 +948,14 @@ class DSG_OT_LinkIrrigation(Operator):
             'DSG_irrigation_source_index': source_index,
             'DSG_irrigation_link_sleeve_point': json.dumps(
                 list(Vector(sleeve_point))),
-            'DSG_irrigation_link_channel_point': json.dumps(
+            'DSG_irrigation_link_user_clicked_channel_point': json.dumps(
                 list(Vector(source_point))),
             'DSG_irrigation_link_y': True,
             'DSG_irrigation_link_diameter': float(parameters.get('irr_inner_diameter', 1.0)),
             'DSG_irrigation_link_split_point': json.dumps(list(y_geometry['split_center'])),
-            'DSG_irrigation_link_trunk_point': json.dumps(list(y_geometry['approach_point'])),
-            'DSG_irrigation_link_source_shoulder': json.dumps(list(y_geometry['source_channel_point'])),
-            'DSG_irrigation_link_source_rejoin': json.dumps(list(y_geometry['source_channel_point'])),
+            'DSG_irrigation_link_trunk_point': json.dumps(list(y_geometry['common_anchor'])),
+            'DSG_irrigation_link_source_shoulder': json.dumps(list(y_geometry['main_shoulder'])),
+            'DSG_irrigation_link_source_rejoin': json.dumps(list(y_geometry['main_rejoin'])),
             'DSG_irrigation_link_manifold_center': json.dumps(list(y_geometry['manifold_center'])),
             'DSG_irrigation_link_elbow_center': json.dumps(list(y_geometry['split_center'])),
             'DSG_irrigation_link_split_center': json.dumps(list(y_geometry['split_center'])),

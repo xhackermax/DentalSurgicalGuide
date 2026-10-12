@@ -1946,7 +1946,8 @@ def build_mandibular_canal_surface(context, labels, *,
 
 def segment_tissue_semantically(context, structure: str | None = None) -> dict:
     np = load_numpy()
-    props = context.scene.dicom_wizard_pro
+    scene = context.scene
+    props = scene.dicom_wizard_pro
     if structure and structure in SEGMENTATION_STRUCTURES:
         props.segmentation_structure = structure
     structure = str(props.segmentation_structure).upper()
@@ -2001,7 +2002,8 @@ def segment_tissue_automatically(context, structure: str | None = None) -> dict:
     np = load_numpy()
     if np is None or not RUNTIME.is_loaded():
         raise RuntimeError("No hay un volumen DICOM cargado")
-    props = context.scene.dicom_wizard_pro
+    scene = context.scene
+    props = scene.dicom_wizard_pro
     if structure and structure in SEGMENTATION_STRUCTURES:
         props.segmentation_structure = structure
     structure = str(props.segmentation_structure).upper()

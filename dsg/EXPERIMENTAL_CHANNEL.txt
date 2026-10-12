@@ -1,0 +1,8 @@
+GF3 EXPERIMENTAL | Audit-fixes 2026-10-12
+Internal baseline: DSG 9.10.11
+GitHub pull request: xhackermax/DentalSurgicalGuide#1
+Validation status: RESEARCH ONLY / NO CLINICAL APPROVAL
+This package carries a separate EXPERIMENTAL_BUILD_MANIFEST.json with
+SHA-256 hashes of each bundled file; the older BUILD_MANIFEST.json belongs
+to the immutable 9.10.11 release baseline and is retained as provenance.
+Do not use for patient guide fabrication or surgery.

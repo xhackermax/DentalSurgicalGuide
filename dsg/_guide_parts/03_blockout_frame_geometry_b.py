@@ -808,7 +808,11 @@ def get_sleeve_matrix_world(props, implant_obj=None):
         if raw:
             values = json.loads(raw) if isinstance(raw, str) else raw
             if len(values) == 4 and all(len(row) == 4 for row in values):
-                return Matrix(values)
+                stored = Matrix(values)
+                loc, rot, _scale = stored.decompose()
+                # The physical sleeve dimensions come from clinical props.
+                # Preserve pose, never inherit arbitrary implant scaling.
+                return Matrix.LocRotScale(loc, rot, None)
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
 
@@ -819,7 +823,8 @@ def get_sleeve_matrix_world(props, implant_obj=None):
     gap = max(0.0, float(getattr(props, 'sleeve_implant_gap', 0.0)))
     shift = get_sleeve_occlusal_sign(props, implant) * (implant_len * 0.5 + gap + sleeve_h * 0.5)
     mx.translation = implant.matrix_world.to_translation() + axis * shift
-    return mx
+    loc, rot, _scale = mx.decompose()
+    return Matrix.LocRotScale(loc, rot, None)
 
 
 def get_sleeve_center_world(props, implant_obj=None):

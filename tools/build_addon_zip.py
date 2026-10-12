@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
+import json
 import sys
 import zipfile
 from pathlib import Path
@@ -65,12 +66,38 @@ def build(out_dir: Path, *, extension: bool, license_id: str | None) -> Path:
     version = ".".join(map(str, addon_version()))
     out_dir.mkdir(parents=True, exist_ok=True)
     kind = "extension" if extension else "addon"
-    target = out_dir / f"DSG_v{version.replace('.', '_')}_{kind}.zip"
+    experimental = (ADDON/"EXPERIMENTAL_CHANNEL.txt").is_file()
+    suffix = "_GF3_EXPERIMENTAL" if experimental else ""
+    target = out_dir / f"DSG_v{version.replace('.', '_')}{suffix}_{kind}.zip"
     with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+        actual_files = []
         for path, rel in iter_files():
             # Legacy add-ons need the top-level "dsg/" folder; extensions are flat.
             arc = rel.as_posix() if extension else f"dsg/{rel.as_posix()}"
-            zf.write(path, arc)
+            payload = path.read_bytes()
+            zf.writestr(arc, payload)
+            if experimental:
+                actual_files.append({
+                    "path": rel.as_posix(),
+                    "bytes":len(payload),
+                    "sha256":hashlib.sha256(payload).hexdigest(),
+                })
+        if experimental:
+            # The original BUILD_MANIFEST.json is the immutable published
+            # release snapshot; this is a *separate* current feature-build
+            # manifest checked against exact ZIP bytes at packaging time.
+            current_manifest = {
+                "schema":"dsg.experimental-build.v1",
+                "version":version,
+                "channel":"GF3 EXPERIMENTAL",
+                "clinical_approved":False,
+                "file_count":len(actual_files),
+                "files":actual_files,
+            }
+            manifest_name = ("EXPERIMENTAL_BUILD_MANIFEST.json" if extension
+                             else "dsg/EXPERIMENTAL_BUILD_MANIFEST.json")
+            zf.writestr(manifest_name,
+                        json.dumps(current_manifest,sort_keys=True,indent=2))
         if extension:
             if not license_id:
                 raise SystemExit("--extension requires --license (e.g. SPDX:GPL-3.0-or-later)")
@@ -79,6 +106,15 @@ def build(out_dir: Path, *, extension: bool, license_id: str | None) -> Path:
         bad = zf.testzip()
         if bad:
             raise SystemExit(f"ZIP integrity failure: {bad}")
+        if experimental:
+            data=json.loads(zf.read(manifest_name))
+            assert len(data["files"])==data["file_count"]
+            for entry in data["files"]:
+                name = (entry["path"] if extension else f"dsg/{entry['path']}")
+                blob=zf.read(name)
+                if (len(blob)!=entry["bytes"]
+                    or hashlib.sha256(blob).hexdigest()!=entry["sha256"]):
+                    raise SystemExit(f"EXPERIMENTAL_MANIFEST_MISMATCH: {name}")
     digest = hashlib.sha256(target.read_bytes()).hexdigest()
     target.with_suffix(".zip.sha256").write_text(f"{digest}  {target.name}\n", encoding="utf-8")
     print(f"built {target} ({target.stat().st_size / 1e6:.1f} MB) sha256={digest[:16]}…")

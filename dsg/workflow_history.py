@@ -291,6 +291,8 @@ def _before_undo(*_):
     # Archive recovery does not dispatch Blender's native handler list.
     # Freeze DICOM timers here as well, before replacing any Scene IDs.
     lifecycle.cancel_module_timers(dicom.__name__)
+    lifecycle.cancel_module_timers(core.__name__)
+    core._IMMEDIATE_ROUTE_EXECUTING = False
     dicom._clear_pending_refresh_state()
     dicom.RUNTIME.undo_in_progress=True;dicom.RUNTIME.update_lock=True
     lifecycle.cancel_module_timers(guide.__name__)
@@ -358,6 +360,14 @@ _EXTRA_UNDO={'dicom_wizard_pro.clear_drawings','dicom_wizard_pro.calculate_segme
 # sleeves/drill Booleans, route navigation and resets previously lacking UNDO.
 # Installation, bridge administration and file export are external side effects.
 _WORKFLOW_MODULES={'core','dicom_module','cbct_dental_module','alignment_module','guide_module','frame_structural'}
+# Read-only research dialogs must not write a full patient Scene checkpoint.
+_READ_ONLY_OPERATORS={
+    'dsg.analyze_geodesic_frame_fem',
+    'dsg.estimate_geodesic_contact',
+    'dsg.analyze_geodesic_groups',
+    'dsg.inspect_final_boolean_section',
+    'dsg.inspect_final_boolean_path',
+}
 _EXTERNAL_OPERATORS={'dsg_suite.install_engines_core','dsg.install_dicom_runtime',
  'dsg.copy_pipeline_diagnostic',
  'dsg.install_ai_runtime','dsg.ai_status_refresh','dicp.back_to_alignment',
@@ -442,11 +452,14 @@ def _wrap_modal(modal):
 
 def prepare_operators(modules):
     for module in modules:
-        for cls in getattr(module,'CLASSES',()):
+        classes=getattr(module,'CLASSES',None)
+        if classes is None:
+            classes=getattr(module,'_CLASSES',())
+        for cls in classes:
             if not isinstance(cls,type) or not issubclass(cls,bpy.types.Operator):continue
             options=set(getattr(cls,'bl_options',()))
             workflow=module.__name__.rsplit('.',1)[-1] in _WORKFLOW_MODULES
-            if cls.bl_idname in _EXTERNAL_OPERATORS:continue
+            if cls.bl_idname in _EXTERNAL_OPERATORS or cls.bl_idname in _READ_ONLY_OPERATORS:continue
             if workflow or cls.bl_idname in _EXTRA_UNDO:options.add('UNDO');cls.bl_options=options
             if 'UNDO' not in options or cls.__dict__.get('_dsg_history_wrapped',False):continue
             execute=cls.__dict__.get('execute');invoke=cls.__dict__.get('invoke');modal=cls.__dict__.get('modal')
