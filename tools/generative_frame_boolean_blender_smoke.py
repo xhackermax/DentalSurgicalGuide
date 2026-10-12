@@ -93,15 +93,25 @@ def sampled_bore_and_wall(guide,centers,expected_inner_radius):
     insertion constraints or wall minima outside sampled ray directions.
     """
     grid=[]
+    world=guide.matrix_world.copy()
+    to_local=world.inverted_safe()
     for cx in centers:
         for z in (-2.4,-1.2,0.,1.2,2.4):
             for k in range(24):
                 theta=2*math.pi*k/24
                 direct=Vector((math.cos(theta),math.sin(theta),0.))
                 axis_point=Vector((cx,0,z))
-                hit,position,_,_=guide.ray_cast(axis_point,direct,distance=12.)
+                # Object.ray_cast accepts OBJECT-LOCAL coordinates. The
+                # synthetic two-sleeve base is translated (-7 mm), so
+                # treating world points as local created a false clearance
+                # failure even though the actual Boolean was correct.
+                local_start=to_local @ axis_point
+                local_dir=(to_local.to_3x3() @ direct).normalized()
+                hit,local_position,_,_=guide.ray_cast(
+                    local_start,local_dir,distance=12.)
                 if not hit:
                     return False,{'reason':'NO_INNER_FACE','center':cx,'z':z,'angle':k}
+                position=world @ local_position
                 bore_radius=float((position-axis_point).length)
                 if not (expected_inner_radius-0.14 <= bore_radius
                         <= expected_inner_radius+0.14):
@@ -110,10 +120,11 @@ def sampled_bore_and_wall(guide,centers,expected_inner_radius):
                 # If an inside wall is found, follow the ray until we hit the
                 # outer surface. This is an independent sampled wall diagnostic.
                 next_origin=position+direct*0.025
-                found,out,_,_=guide.ray_cast(next_origin,direct,distance=7.)
+                found,local_out,_,_=guide.ray_cast(
+                    to_local @ next_origin,local_dir,distance=7.)
                 if not found:
                     return False,{'reason':'NO_OUTER_WALL','center':cx,'z':z,'angle':k}
-                wall_mm=float((out-next_origin).length)
+                wall_mm=float(((world @ local_out)-next_origin).length)
                 if wall_mm<0.65:
                     return False,{'reason':'SAMPLED_WALL_TOO_THIN',
                                   'wall_mm':wall_mm,'center':cx,'z':z,'angle':k}
