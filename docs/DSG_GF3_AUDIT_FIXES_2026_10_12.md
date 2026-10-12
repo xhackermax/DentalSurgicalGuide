@@ -44,11 +44,13 @@ rollback y seguridad de los corredores de fresado.
 
 ## Pendientes críticos: **NO APROBAR USO CLÍNICO**
 
-1. **P0:** `OPTIMIZAR FRAME` todavía utiliza comprobación de centrolinea
-   insuficiente en el modelo recto. Faltan volumen barrido completo, corredor
-   de fresado extendido, objetos reales de irrigación y microtornillos.
-   El preflight estricto de la red geodésica experimental no valida por sí
-   mismo los refuerzos definitivos ni la luz post-booleana.
+1. **P0 parcial:** `OPTIMIZAR FRAME` ahora realiza ANTES de crear curvas
+   un segundo preflight con el **volumen barrido completo**: luz de sleeves,
+   extensión conservadora (no calibrada) de 20 mm para la fresa, y BVH de
+   mallas de irrigación/microtornillos confirmadas. Cualquier fallo conserva
+   el diseño previo. Las soldaduras a pared exterior de su propio sleeve
+   son provisionales; faltan mediciones post-booleana, canales no registrados,
+   ventanas laterales, inserción y mínimos de pared para aprobación.
 2. **P0:** se necesitan pruebas Blender 5.2 end-to-end con casos anonimizados:
    pipeline CBCT→IOS→guía→refuerzos→canales→Boolean→Undo→STL,
    incluido fallo después de construir la primera arcada.
@@ -58,10 +60,11 @@ rollback y seguridad de los corredores de fresado.
 4. **P1:** invalidación de resultados FEM por cambios de sleeve/frame,
    limpieza de vistas previas antiguas, cache/memoria, comparación coherente
    entre FEM recto y geodésico, límites de historial cifrado/deletion.
-5. **P1:** `BUILD_MANIFEST.json` base 9.10.11 es evidencia histórica de la
-   versión publicada y no identifica esta rama; generar un manifiesto
-   experimental diferenciado y comprobar CODEMAP/ratchet, sin sustituir
-   hashes originales ni elevar artificialmente la línea base.
+5. **P1 parcial:** `BUILD_MANIFEST.json` conserva la procedencia de 9.10.11.
+   El empaquetador genera `EXPERIMENTAL_BUILD_MANIFEST.json` SHA-256 exacto
+   de la variante GF3 (incluye módulos añadidos), y aborta si un hash no
+   coincide con el ZIP. Aún faltan CODEMAP/ratchet de calidad en la rama,
+   sin reescribir la línea base original.
 6. **P2:** botón SUAVIZAR DIENTES condicionado a VTK existente, además de la
    documentación corregida; tests con instalación limpia sin motores.
 

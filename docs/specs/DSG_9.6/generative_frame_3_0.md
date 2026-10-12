@@ -85,6 +85,30 @@ Bench-test printed guides using the intended resin/printer/postcure; compare pre
 5. **PR-E · P1-8:** joint Pareto search of frame + reinforcement + contact + thickness. **Gate:** no worse than manually selected baseline across all hard constraints; measured volume/compliance objective improves if a feasible candidate exists, otherwise report no improvement.
 6. **PR-F · H6/H7:** apply/undo/export workflow, measured prototyping and manufacturing evidence. **Gate:** Blender 5.2 clinical workflow and independent physical design-validation checklist pass.
 
+## October 12 audit corrections
+
+- `OPTIMIZAR FRAME` uses a **mandatory pre-staging swept-volume gate** for
+  every rendered FEM candidate: mapped target-sleeve outer-wall provisional
+  weld, complete non-target sleeve lumens, +/-20 mm **uncalibrated** drill
+  approach corridors and all identifiable confirmed irrigation/microscrew
+  Blender mesh BVHs at no more than 0.5 mm sampling. A missing BVH fails closed.
+  The previous clinical scene remains unchanged on any preflight rejection.
+- This gate is strictly **preBoolean**. It never labels a final lumen or
+  physical fit clinically cleared. Missing other hard regions (lateral ports,
+  frangible walls) or an uncalibrated drill depth means H3/H6 remain PENDING.
+- Curved FEM members carry total route length for Euler buckling even when
+  discretized to 1.5 mm; dense FEM refuses oversized matrices without SciPy.
+  Contact boundary conditions at P1..P4 are still uncalibrated.
+- Edentulous SIMPLE mode requires jaws 53/54 but no teeth; the worker/manifest
+  separately preserve FULL dentition requirements. Immediate two-jaw composites
+  rollback partially staged geometry.
+- Build artifact now has an explicit GF3 experimental filename, a Blender
+  warning and generated SHA-256 manifest of exact packaged files, retaining
+  the original 9.10.11 provenance manifest independently.
+- Additional failure/rollback/contract TDD; Blender 5.2.2 smoke still limited
+  to registration, RNA, synthetic cube section and read-only profile operators.
+  No real full-arch generation/Boolean/Undo/clinical qualification.
+
 ## Next immediate development action
 
 **Next:** extend real Blender 5.2.2 CI from install/RNA/section smoke to a synthetic 1-sleeve and 2-sleeve guide end-to-end generation/Boolean/Undo test; verify the actual post-Boolean lumen and wall after the provisional target-sleeve weld, then replace P1–P4 hard clamps with justified contact boundary conditions. Do not claim mechanical improvement solely from adding frame volume.

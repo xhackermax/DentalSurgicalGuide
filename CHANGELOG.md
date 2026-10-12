@@ -1,5 +1,10 @@
 # Changelog
 
+## GF3 EXPERIMENTAL · correcciones de auditoría (12/10/2026)
+
+Rama aislada del release estable: flujo edéntulo SIMPLE_ARCHES, implantación inmediata, segmentación automática, worker y fallback, historial, FEM/pandeo, irrigación, matrices de sleeve y límites del solver. Se introduce preflight obligatorio de envolventes contra lúmenes, corredores de fresa y mallas de irrigación/microtornillos antes de crear refuerzos automáticos. El estado de la luz **después de la booleana** sigue pendiente de pruebas reales y validación clínica. ZIP experimental diferenciado, con manifiesto SHA-256 de los archivos de la compilación, preservando la procedencia de 9.10.11. Ver [auditoría](docs/DSG_GF3_AUDIT_FIXES_2026_10_12.md) y [roadmap](docs/specs/DSG_9.6/generative_frame_3_0.md).
+
+
 ## 9.10.11 — contratos y diagnóstico del pipeline
 
 Actualización desde el ZIP original del autor (8 de octubre de 2026).
