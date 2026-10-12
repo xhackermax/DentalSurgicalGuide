@@ -39,7 +39,7 @@ jobs:
         run: blender --background --factory-startup --python-exit-code 1 --python tools/blender_smoke.py
       - name: Exercise measured sections and new RNA operators in real Blender
         run: blender --background --factory-startup --python-exit-code 1 --python tools/generative_frame_blender_smoke.py
-      - name: Actual synthetic guide Boolean, lumen and wall regression (one/two sleeves)
-        run: blender --background --factory-startup --python-exit-code 1 --python tools/generative_frame_boolean_blender_smoke.py
       - name: Independent exact-Boolean sleeve junction and section topology gate
         run: blender --background --factory-startup --python-exit-code 1 --python tools/generative_frame_boolean_junction_smoke.py
+      - name: Actual synthetic guide Boolean, lumen and wall regression (one/two sleeves)
+        run: blender --background --factory-startup --python-exit-code 1 --python tools/generative_frame_boolean_blender_smoke.py
