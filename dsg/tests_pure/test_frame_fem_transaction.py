@@ -100,6 +100,10 @@ class Fixture:
             'FRAME_FEM_PROFILE': 'BALANCED',
             '_fem_build_model': lambda _context: dict(nodes=self.nodes, elements=self.beams,
                 load_cases=[], monitor_nodes=[1], config=None, keep_out=None),
+            # This transaction harness isolates the geometry lifecycle.
+            # Actual sleeve/corridor preflight has separate executable tests.
+            '_validate_fem_candidate_sweep': lambda context,model,result:
+                dict(candidate_tubes=2,post_boolean_lumen_validated=False),
             '_fem_summary': lambda model, result: dict(hard_safe=result.hard_safe,
                 recommended=result.recommended, max_utilization=0.4,
                 sleeve_displacement_mm=0.01, volume_mm3=10, history=[]),
