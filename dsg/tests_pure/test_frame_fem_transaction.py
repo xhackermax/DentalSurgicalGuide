@@ -37,7 +37,7 @@ class Fixture:
         self.guide = Obj('Guide', DSG_frame_fem_profile='OLD')
         self.objects = [self.old]
         self.props = SimpleNamespace(reinforcement_count=1, reinforcement_bevel_resolution=8,
-                                     reinforcement_preview_obj=None)
+                                     reinforcement_preview_obj=None, current_step=6)
         self.context = SimpleNamespace(scene=SimpleNamespace(dsg_props=self.props))
         self.failure = None
         self.creations = 0
@@ -49,6 +49,8 @@ class Fixture:
                                       active_elements=[0, 1], final_bundle=SimpleNamespace(worst_results=rows))
         self.guide_module = SimpleNamespace(
             REINFORCEMENT_PREFIX='DSG_Reinforcement_', ROLE_REINFORCEMENT='REINFORCEMENT',
+            STEP_REINFORCEMENT=6,
+            get_pending_reinforcement_preview=lambda props: getattr(props, "pending_preview", None),
             get_active_guide_obj=lambda props: self.guide,
             _valid_obj=lambda obj: obj is self.guide or obj in self.objects,
             get_confirmed_reinforcement_curves=lambda: [x for x in self.objects
@@ -108,6 +110,20 @@ class Fixture:
 
 
 class TransactionTests(unittest.TestCase):
+    def test_direct_service_rejects_wrong_step_before_solver_or_mutation(self):
+        f=Fixture()
+        f.props.current_step=5
+        with self.assertRaisesRegex(RuntimeError, "paso de refuerzos"):
+            f.run()
+        self.assertEqual(f.objects, [f.old])
+
+    def test_direct_service_rejects_pending_manual_preview(self):
+        f=Fixture()
+        f.props.pending_preview=Obj("DSG_PENDING")
+        with self.assertRaisesRegex(RuntimeError, "manual pendiente"):
+            f.run()
+        self.assertEqual(f.objects, [f.old])
+
     def test_solver_failure_does_not_erase_previous(self):
         f = Fixture()
         f.failure = 'solve'
