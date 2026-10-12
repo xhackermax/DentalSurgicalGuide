@@ -65,8 +65,13 @@ def build_synthetic_guide(number_of_sleeves, *, drill=True, add_connector=True):
         # fixture, install the shared perimeter member before the second
         # sleeve, creating a genuinely overlapping continuous union.
         if i==1 and add_connector:
+            # Place both beam end-caps INSIDE the solid sleeve wall.
+            # A near-tangential exterior weld at y=3.08 produced a missing
+            # inner bore face in Blender EXACT for the 2-sleeve regression.
+            # The final drill Boolean subsequently removes any tube overlap
+            # inside the bore, as independently verified by the section test.
             bridge=add_member('Synthetic_perimeter',
-                              (centers[0],3.08,0),(centers[1],3.08,0),0.9)
+                              (centers[0]+2.7,1.1,0),(centers[1]-2.7,1.1,0),0.85)
             guide=boolean_apply(guide,bridge,'UNION')
         tube=add_cylinder(f'Synthetic_sleeve_{i}',(x,0,0),outer_radius,7.)
         guide=tube if guide is None else boolean_apply(guide,tube,'UNION')
