@@ -169,6 +169,35 @@ class BlenderGlueRegressionTests(unittest.TestCase):
                     if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef))
                     and n.name==name)
 
+    def test_irrigation_serializers_preserve_user_click_and_use_one_geometry(self):
+        source=(ROOT/"_guide_parts/06_irrigation_b.py").read_text("utf8")
+        tree=ast.parse(source)
+        for node in ast.walk(tree):
+            if not isinstance(node,ast.Dict):
+                continue
+            labels=[key.value for key in node.keys if isinstance(key,ast.Constant)
+                    and isinstance(key.value,str)]
+            if "link_trunk_point" not in labels and "DSG_irrigation_link_trunk_point" not in labels:
+                continue
+            self.assertEqual(len(labels),len(set(labels)),"Repeated irrigation JSON keys")
+        self.assertIn("'link_user_clicked_channel_point'",source)
+        self.assertIn("'DSG_irrigation_link_user_clicked_channel_point'",source)
+        for key,field in [("DSG_irrigation_link_trunk_point","common_anchor"),
+                          ("DSG_irrigation_link_source_shoulder","main_shoulder"),
+                          ("DSG_irrigation_link_source_rejoin","main_rejoin")]:
+            self.assertIn("'"+key+"': json.dumps(list(y_geometry['"+field+"']))",source)
+
+    def test_saved_sleeve_matrices_ignore_implant_nonuniform_scale(self):
+        source=(ROOT/"_guide_parts/03_blockout_frame_geometry_b.py").read_text("utf8")
+        fn=self.function("_guide_parts/03_blockout_frame_geometry_b.py",
+                         "get_sleeve_matrix_world")
+        assignments=[n for n in ast.walk(fn) if isinstance(n,ast.Call)
+                     and isinstance(n.func,ast.Attribute)
+                     and n.func.attr=="LocRotScale"]
+        self.assertGreaterEqual(len(assignments),2)
+        self.assertTrue(all(isinstance(c.args[-1],ast.Constant) and c.args[-1].value is None
+                            for c in assignments))
+
     def test_immediate_join_imports_dicom_runtime_explicitly(self):
         fn=self.function("cbct_dental_module.py","_join_immediate_arch_sources")
         self.assertTrue(any(isinstance(x,ast.ImportFrom)

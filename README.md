@@ -1,4 +1,12 @@
-# Dental Surgical Guide — DSG 9.10.11
+# Dental Surgical Guide — DSG 9.10.11 (stable baseline)
+
+> **Rama experimental GenerativeFrame 3.0, 12/10/2026.**
+> Esta rama y su ZIP de GitHub Actions contienen correcciones clínicas bajo
+> prueba. Blender muestra el aviso de EXPERIMENTAL; no deben usarse en
+> guías destinadas a pacientes. La versión publicada `v9.10.11` y el
+> manifiesto de procedencia original se mantienen independientes.
+> Ver [auditoría y limitaciones](docs/DSG_GF3_AUDIT_FIXES_2026_10_12.md).
+
 
 Complemento de planificación dental y maxilofacial para **Blender 5.2**: importa CBCT/DICOM, prepara anatomía, alinea escaneados intraorales (IOS) y acompaña el diseño y la exportación de guías quirúrgicas.
 

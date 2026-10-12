@@ -12,7 +12,7 @@ bl_info = {
     "blender": (5, 2, 0),
     "location": "3D View > Sidebar > DSG (MCP: separate DSG MCP tab)",
     "description": "Dental surgical guide planning: DICOM/CBCT + IOS, implants, sleeves and guide export",
-    "warning": "",
+    "warning": "GF3 EXPERIMENTAL (2026-10-12): research only; not qualified for clinical surgical guides",
     "category": "3D View",
 }
 
