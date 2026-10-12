@@ -382,6 +382,16 @@ def _strict_multiframe_orientation(dataset: Any, frame_count: int):
         item = sequence[i] if sequence is not None and len(sequence) == frame_count else None
         plane = _first_item(item, "PlaneOrientationSequence") if item is not None else None
         raw = getattr(plane, "ImageOrientationPatient", None) if plane is not None else None
+        if raw is not None and global_orientation is not None:
+            try:
+                if not np.allclose(np.asarray(raw, dtype=float),
+                                   np.asarray(global_orientation, dtype=float), atol=1e-4):
+                    raise RuntimeError(
+                        "DICOM_MULTIFRAME_CONFLICTING_ORIENTATION: "
+                        "el eje global difiere del eje de un fotograma"
+                    )
+            except (ValueError, TypeError) as exc:
+                raise RuntimeError("DICOM_MULTIFRAME_INVALID_ORIENTATION") from exc
         raw = global_orientation if raw is None else raw
         if raw is None:
             raise RuntimeError("DICOM_MULTIFRAME_ORIENTATION_MISSING: sin ejes DICOM explícitos")
