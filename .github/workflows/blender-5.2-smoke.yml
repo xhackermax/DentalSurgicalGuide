@@ -5,6 +5,7 @@ on:
       - 'dsg/**'
       - 'tools/blender_smoke.py'
       - 'tools/generative_frame_blender_smoke.py'
+      - 'tools/generative_frame_boolean_blender_smoke.py'
       - '.github/workflows/blender-5.2-smoke.yml'
   workflow_dispatch:
 
@@ -37,3 +38,5 @@ jobs:
         run: blender --background --factory-startup --python-exit-code 1 --python tools/blender_smoke.py
       - name: Exercise measured sections and new RNA operators in real Blender
         run: blender --background --factory-startup --python-exit-code 1 --python tools/generative_frame_blender_smoke.py
+      - name: Actual synthetic guide Boolean, lumen and wall regression (one/two sleeves)
+        run: blender --background --factory-startup --python-exit-code 1 --python tools/generative_frame_boolean_blender_smoke.py
