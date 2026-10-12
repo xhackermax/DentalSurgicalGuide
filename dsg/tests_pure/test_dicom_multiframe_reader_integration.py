@@ -90,7 +90,7 @@ class DicomReaderIntegration(unittest.TestCase):
         h.ImageOrientationPatient=(1.,0.,0.,0.,1.,0.)
         h.PerFrameFunctionalGroupsSequence[1].PlaneOrientationSequence=[
             SimpleNamespace(ImageOrientationPatient=(0.,1.,0.,-1.,0.,0.))]
-        with self.assertRaisesRegex(RuntimeError,"VARIABLE_ORIENTATION"):
+        with self.assertRaisesRegex(RuntimeError,"CONFLICTING_ORIENTATION"):
             r["_strict_multiframe_orientation"](h,3)
 
     def payload_factory(self, kind, positions):
