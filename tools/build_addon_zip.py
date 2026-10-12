@@ -97,7 +97,7 @@ def build(out_dir: Path, *, extension: bool, license_id: str | None) -> Path:
             manifest_name = ("EXPERIMENTAL_BUILD_MANIFEST.json" if extension
                              else "dsg/EXPERIMENTAL_BUILD_MANIFEST.json")
             zf.writestr(manifest_name,
-                        json.dumps(current_manifest,sort_keys=True,indent=2)+"\\n")
+                        json.dumps(current_manifest,sort_keys=True,indent=2))
         if extension:
             if not license_id:
                 raise SystemExit("--extension requires --license (e.g. SPDX:GPL-3.0-or-later)")
