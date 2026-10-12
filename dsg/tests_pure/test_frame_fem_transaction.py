@@ -119,7 +119,7 @@ class TransactionTests(unittest.TestCase):
 
     def test_direct_service_rejects_pending_manual_preview(self):
         f=Fixture()
-        f.props.pending_preview=Obj("DSG_PENDING")
+        f.props.pending_preview=object()  # Blender Object is truthy; dict-like fixture is not.
         with self.assertRaisesRegex(RuntimeError, "manual pendiente"):
             f.run()
         self.assertEqual(f.objects, [f.old])
