@@ -1,5 +1,10 @@
 # Changelog
 
+## Sin publicar
+
+### Tests
+- `test_surface_smoothing` buscaba el antiguo botón `dsg.cbct_post_smooth_teeth` en la revisión FDI inmediata y en la alineación. Desde la serie 9.2x ese botón se sustituyó por **MEJORAR DIENTES** (`dsg.finish_segmented_teeth`), que solo aparece en la primera revisión (`dsg/docs/MEJORA_UNICA_DIENTES.md`). El test comprueba ahora ese contrato: el botón aparece una vez en la revisión FDI inmediata, no aparece en la alineación y el botón antiguo no vuelve. No cambia el código del addon.
+
 ## 9.24.17 — versión instalada en Blender 5.2
 
 El repositorio pasa de 9.10.11 a la copia de DSG instalada en Blender 5.2 del autor (`%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\dsg`, 20 de octubre de 2026). El historial 9.11–9.24 está en `dsg/docs/CHANGELOG.md` y en las notas de cada versión dentro de `dsg/docs/`.
@@ -17,7 +22,7 @@ El repositorio pasa de 9.10.11 a la copia de DSG instalada en Blender 5.2 del au
 - `tools/run_blender_release_checks.py` construye el ZIP desde el árbol y ejecuta los casos de Blender que no necesitan runtime IA. `tools/blender_smoke.py` ejecuta la inicialización diferida antes de buscar operadores sin registrar.
 
 ### Pendiente (no forma parte de este cambio)
-- En Blender 5.2.3 (bpy, Linux) fallan 24 de 89 tests de `dsg/tests_blender`. Unos dependen de Windows o de tener los motores instalados (`test_engine_models`, `test_immediate_gate`); otros son de geometría o interfaz (por ejemplo `test_surface_smoothing` no encuentra el botón de suavizado en la revisión FDI inmediata).
+- En Blender 5.2.3 (bpy, Linux) fallan 24 de 89 tests de `dsg/tests_blender`. Unos dependen de Windows o de tener los motores instalados (`test_engine_models`, `test_immediate_gate`); otros son de geometría o interfaz.
 - `tests/` (raíz) conserva tests de 9.7 que importan módulos ya retirados (`engine_install`, `irrigation_network`).
 
 ## 9.10.11 — contratos y diagnóstico del pipeline

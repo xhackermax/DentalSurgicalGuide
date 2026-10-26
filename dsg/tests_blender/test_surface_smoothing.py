@@ -48,6 +48,8 @@ class SurfaceSmoothingTests(unittest.TestCase):
             if mesh.users == 0:
                 bpy.data.meshes.remove(mesh)
         bpy.context.scene.pop('DSG_cbct_visual_smoothing_enabled', None)
+        bpy.context.scene.pop(dsg.core.ROUTE_STEP_KEY, None)
+        bpy.context.scene.pop(dsg.core.SUITE_STAGE_KEY, None)
 
     def test_button_toggles_all_teeth_without_editing_source(self):
         self.assertTrue(hasattr(dental, 'DSG_OT_CBCTToggleSurfaceSmoothing'), 'Missing user smoothing button')
@@ -102,13 +104,19 @@ class SurfaceSmoothingTests(unittest.TestCase):
         self.assertEqual(bpy.ops.dsg.cbct_toggle_surface_smoothing(), {'FINISHED'})
         self.assertFalse(composite.modifiers[dental.ALIGNMENT_VISUAL_SMOOTH_MODIFIER].show_viewport)
 
-    def test_main_workflow_exposes_button_in_immediate_review_and_alignment(self):
-        for stage, step in ((dsg.core.STAGE_DICOM, 'IMMEDIATE_FDI_REVIEW'), (dsg.core.STAGE_ALIGNMENT, 'ALIGNMENT')):
+    def test_main_workflow_exposes_improvement_only_in_immediate_review(self):
+        # MEJORAR DIENTES (dsg.finish_segmented_teeth) replaced the separate
+        # smoothing button; it belongs to the first review only
+        # (dsg/docs/MEJORA_UNICA_DIENTES.md).
+        action = 'dsg.finish_segmented_teeth'
+        for stage, step, expected in ((dsg.core.STAGE_DICOM, 'IMMEDIATE_FDI_REVIEW', 1), (dsg.core.STAGE_ALIGNMENT, 'ALIGNMENT', 0)):
             bpy.context.scene[dsg.core.ROUTE_STEP_KEY] = step
+            bpy.context.scene[dsg.core.SUITE_STAGE_KEY] = stage
             layout = LayoutRecorder()
             with patch.object(dsg.core, 'patient_folder', return_value='Test'), patch.object(dsg.core, 'infer_stage', return_value=stage), patch.object(dsg.core, 'clinical_route', return_value=dsg.core.ROUTE_IMMEDIATE), patch.object(dsg.dicom_module.RUNTIME, 'is_loaded', return_value=True):
                 dsg.core.DSG_SUITE_PT_Main.draw(SimpleNamespace(layout=layout), bpy.context)
-            self.assertIn('dsg.cbct_post_smooth_teeth', layout.operators, f'Missing visible main-workflow button in {step}')
+            self.assertEqual(layout.operators.count(action), expected, f'Improvement button count in {step}')
+            self.assertNotIn('dsg.cbct_post_smooth_teeth', layout.operators, f'Obsolete smoothing button visible in {step}')
 
 try:
     result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(SurfaceSmoothingTests))
