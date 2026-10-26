@@ -477,6 +477,20 @@ class DSG_OT_ConfirmIrrigationPreview(Operator):
         safe_model, model_message, model_data = irrigation_model_cut_preflight(
             context, preview_entry, props, get_passive_model_obj(),
             label=f'conducto {props.irr_chain_count + 1}')
+        reroute_report = json.loads(str(preview.get('DSG_irrigation_reroute', 'null')))
+        if not safe_model:
+            from .blender.irrigation_reroute import repair_entry
+            try:
+                repaired, reroute_report = repair_entry(context, preview_entry, props, get_passive_model_obj())
+            except (ValueError,RuntimeError) as exc:
+                repaired=None;reroute_report={'status':'NO_SAFE_ROUTE','reason':str(exc)}
+            if repaired is not None:
+                controls=[Vector(point) for point in repaired]
+                preview_entry['points']=controls
+                safe_model,model_message,model_data=irrigation_model_cut_preflight(
+                    context,preview_entry,props,get_passive_model_obj(),label=f'conducto {props.irr_chain_count + 1}')
+            if not safe_model and reroute_report:
+                model_message += ' · ' + str(reroute_report.get('reason','No se encontró un desvío seguro.'))
         if not safe_model:
             # Mostrar automáticamente la geometría exacta que ha usado el cálculo.
             # Si este objeto rojo toca el diente/modelo, el bloqueo es correcto;
@@ -514,6 +528,8 @@ class DSG_OT_ConfirmIrrigationPreview(Operator):
             'DSG_model_channel_preflight': model_message,
             'DSG_model_channel_preflight_data': json.dumps(model_data),
         })
+        if reroute_report:
+            wall['DSG_irrigation_reroute'] = json.dumps(reroute_report)
         wall.display_type = 'SOLID'
         wall.show_in_front = False
         store_irrigation_path(props, controls, implant, parameters=parameters)
@@ -542,7 +558,11 @@ class DSG_OT_UpdateConfirmIrrigation(Operator):
             _dsg_report(self, {'ERROR'}, 'Could not update the walls', 'No se pudieron actualizar las paredes')
             return {'CANCELLED'}
 
-        result = bpy.ops.dsg.confirm_irrigation_preview('EXEC_DEFAULT')
+        try:
+            result = bpy.ops.dsg.confirm_irrigation_preview('EXEC_DEFAULT')
+        except RuntimeError as exc:
+            _dsg_report(self, {'ERROR'}, str(exc), str(exc))
+            return {'CANCELLED'}
         if 'FINISHED' not in result:
             _dsg_report(self, {'ERROR'}, 'Walls were updated but could not be confirmed', 'Las paredes se actualizaron, pero no pudieron confirmarse')
             return {'CANCELLED'}
@@ -910,7 +930,9 @@ class DSG_OT_LinkIrrigation(Operator):
             'link': True,
             'source_index': source_index,
             'link_sleeve_point': [float(v) for v in Vector(sleeve_point)],
-            'link_channel_point': [float(v) for v in Vector(source_point)],
+            # Retain the exact user pick, even when the manifold repositions
+            # the channel shoulder to a safer geometric location.
+            'link_user_clicked_channel_point': [float(v) for v in Vector(source_point)],
             'link_manifold_center': [float(v) for v in y_geometry['manifold_center']],
             'link_elbow_center': [float(v) for v in y_geometry['split_center']],
             'link_split_center': [float(v) for v in y_geometry['split_center']],
@@ -946,14 +968,14 @@ class DSG_OT_LinkIrrigation(Operator):
             'DSG_irrigation_source_index': source_index,
             'DSG_irrigation_link_sleeve_point': json.dumps(
                 list(Vector(sleeve_point))),
-            'DSG_irrigation_link_channel_point': json.dumps(
+            'DSG_irrigation_link_user_clicked_channel_point': json.dumps(
                 list(Vector(source_point))),
             'DSG_irrigation_link_y': True,
             'DSG_irrigation_link_diameter': float(parameters.get('irr_inner_diameter', 1.0)),
             'DSG_irrigation_link_split_point': json.dumps(list(y_geometry['split_center'])),
-            'DSG_irrigation_link_trunk_point': json.dumps(list(y_geometry['approach_point'])),
-            'DSG_irrigation_link_source_shoulder': json.dumps(list(y_geometry['source_channel_point'])),
-            'DSG_irrigation_link_source_rejoin': json.dumps(list(y_geometry['source_channel_point'])),
+            'DSG_irrigation_link_trunk_point': json.dumps(list(y_geometry['common_anchor'])),
+            'DSG_irrigation_link_source_shoulder': json.dumps(list(y_geometry['main_shoulder'])),
+            'DSG_irrigation_link_source_rejoin': json.dumps(list(y_geometry['main_rejoin'])),
             'DSG_irrigation_link_manifold_center': json.dumps(list(y_geometry['manifold_center'])),
             'DSG_irrigation_link_elbow_center': json.dumps(list(y_geometry['split_center'])),
             'DSG_irrigation_link_split_center': json.dumps(list(y_geometry['split_center'])),
@@ -1699,7 +1721,7 @@ def _set_linear_animation_on_id(id_data):
     try:
         action = id_data.animation_data.action if getattr(id_data, 'animation_data', None) else None
         if action:
-            for fcurve in action.fcurves:
+            for fcurve in _action_fcurves(action):
                 for keyframe in fcurve.keyframe_points:
                     keyframe.interpolation = 'LINEAR'
     except Exception:
@@ -2803,6 +2825,7 @@ class DSG_OT_ConfirmIrrigation(Operator):
             except Exception:
                 _DSG_LOG.debug("suppressed exception", exc_info=True)
             props.guide_obj = register_dsg_object(final_temp, ROLE_GUIDE, GUIDE_NAME)
+            _set_obj_hidden(props.guide_obj, False, selectable_when_visible=True)
             sealed_names = sync_irrigation_gate_metadata(props.guide_obj, props)
             set_active(context, props.guide_obj)
             _dsg_report(self, {'INFO'}, f'Irrigation applied: {len(entries)} channel(s), '

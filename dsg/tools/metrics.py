@@ -1,5 +1,5 @@
 """AST ratchet for production Python; tests are reported separately."""
-import ast,json,sys
+import argparse,ast,json,sys
 from pathlib import Path
 
 EXCLUDE={'tests','tests_pure','tests_blender','__pycache__'}
@@ -28,11 +28,26 @@ def scan(root):
                 metrics['bpy_outside_blender']+=int(any(m.split('.')[0] in {'bpy','bmesh','mathutils'} for m in modules))
     return metrics
 def compare(current,baseline):return {k:[baseline[k],v] for k,v in current.items() if v>baseline[k]}
-if __name__=='__main__':
-    root=Path(sys.argv[1]);baseline=Path(sys.argv[2]) if len(sys.argv)>2 else root/'tools/metrics_baseline.json'
-    current=scan(root);print(json.dumps(current,indent=2))
-    if '--update' in sys.argv:baseline.write_text(json.dumps(current,indent=2),encoding='utf-8')
-    elif not baseline.is_file():raise SystemExit('Falta línea base; crea una explícitamente con --update')
-    else:
-        worse=compare(current,json.loads(baseline.read_text(encoding='utf-8')))
-        if worse:raise SystemExit('METRICS_REGRESSION '+json.dumps(worse))
+def main(argv=None):
+    parser=argparse.ArgumentParser(description="DSG AST metrics baseline ratchet")
+    parser.add_argument("root",type=Path)
+    parser.add_argument("baseline",nargs="?",type=Path)
+    parser.add_argument("--update",action="store_true",
+                        help="Explicitly approve current metrics as baseline")
+    args=parser.parse_args(argv)
+    baseline=args.baseline or args.root/"tools/metrics_baseline.json"
+    current=scan(args.root)
+    print(json.dumps(current,indent=2))
+    if args.update:
+        baseline.write_text(json.dumps(current,indent=2),encoding="utf-8")
+        return 0
+    if not baseline.is_file():
+        parser.error("Falta línea base; crea una explícitamente con --update")
+    worse=compare(current,json.loads(baseline.read_text(encoding="utf-8")))
+    if worse:
+        raise SystemExit("METRICS_REGRESSION "+json.dumps(worse))
+    return 0
+
+
+if __name__=="__main__":
+    raise SystemExit(main())

@@ -1,3 +1,28 @@
+# 9.15.3 — Mejora de dientes con un solo botón
+
+- MEJORAR DIENTES reúne preparación/refinado disponible, reparación necesaria y acabado automático.
+- Una sola aparición en la primera revisión después de segmentar; sin controles repetidos en DICOM o alineación.
+- Tras completarse sustituye el botón por estado; desaparece al avanzar y se restablece con una nueva segmentación.
+- La misma acción permite cancelar; conserva originales y evita aplicar resultados al cambiar de paso.
+- Mantiene edición del IOS, cierre cóncavo y booleana posterior para implante inmediato.
+
+# 9.15.2 — Booleana inmediatamente después del cierre cóncavo
+
+- En Implante inmediato, cerrar el hueco hacia dentro ejecuta la diferencia con los dientes CBCT seleccionados.
+- La alineación no ejecuta ni ofrece una booleana IOS prematura.
+- Booleana transaccional sobre copia temporal, resultado manifold y lista de FDI aplicados para evitar duplicados.
+- Un fallo conserva el cierre cóncavo y permite reintentar; preparación retentiva e implante quedan pendientes hasta completar la resta.
+- Pruebas Blender con diferencia real, orden, bloqueo prematuro, integridad, reintento y deshacer nativo.
+
+# 9.15.1 — Diente IOS y cierre cóncavo
+
+- Después de cerrar el modelo IOS: entrar en Edición, seleccionar el diente y borrarlo con X → Vértices.
+- Cierre del hueco mediante Grid Fill nativo con centro hundido y borde fijo; profundidad ajustable, 2 mm por defecto.
+- Cancelar restaura el diente. Rechaza varios huecos, bordes inválidos y una profundidad que atraviese el modelo.
+- Invalida retención/blockout para recalcular con la malla modificada.
+- Mantiene suavizado y remesh ocultos antes/durante la segmentación.
+- Pruebas Blender de geometría, controles de la etapa y deshacer nativo.
+
 # 9.10.11 — Contratos y diagnóstico
 
 DSG 9.10.11 — Primera fase de mejora gradual del pipeline

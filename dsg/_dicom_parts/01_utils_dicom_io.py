@@ -478,6 +478,7 @@ def _discover_series(selected_path: str, selected_header: Any) -> list[tuple[str
         return (2, safe_int(getattr(dataset, "InstanceNumber", 0), 0), path)
 
     candidates.sort(key=sort_key)
+    _warn_if_slices_without_position(candidates, normal)
     return candidates
 
 
@@ -502,6 +503,48 @@ def _infer_multiframe_z_spacing(dataset: Any, frame_count: int, normal) -> float
     if differences.size == 0:
         return None
     return float(np.median(differences))
+
+
+def _multiframe_slice_order(dataset: Any, frame_count: int, normal):
+    """Return (order, positions) so frames ascend along the slice normal.
+
+    ``order`` is None when per-frame positions are missing or incomplete; the
+    stored order is then kept and a warning is logged, because the slice
+    direction cannot be proven from the file.
+    """
+    np = load_numpy()
+    if np is None or frame_count < 2:
+        return None, None
+    positions = []
+    for index in range(frame_count):
+        position = image_position(dataset, index)
+        if position is None:
+            _DSG_LOG.warning(
+                "DICOM multi-frame sin ImagePositionPatient por frame: se conserva el orden del archivo; "
+                "revisa que el volumen no salga invertido"
+            )
+            return None, None
+        positions.append(position)
+    positions = np.asarray(positions, dtype=np.float64)
+    projections = positions @ np.asarray(normal, dtype=np.float64)
+    order = np.argsort(projections, kind="stable")
+    return order, positions
+
+
+def _warn_if_orientation_missing(dataset: Any) -> None:
+    has_orientation = getattr(dataset, "ImageOrientationPatient", None) is not None
+    if not has_orientation:
+        shared = _nested_first(dataset, "SharedFunctionalGroupsSequence", "PlaneOrientationSequence")
+        has_orientation = shared is not None and getattr(shared, "ImageOrientationPatient", None) is not None
+    if not has_orientation:
+        frame_group = _sequence_item(dataset, "PerFrameFunctionalGroupsSequence", 0)
+        plane = _first_item(frame_group, "PlaneOrientationSequence") if frame_group is not None else None
+        has_orientation = plane is not None and getattr(plane, "ImageOrientationPatient", None) is not None
+    if not has_orientation:
+        _DSG_LOG.warning(
+            "DICOM sin ImageOrientationPatient: se usa orientación axial por defecto; "
+            "la lateralidad no está garantizada"
+        )
 
 
 def _infer_classic_z_spacing(items: list[tuple[str, Any]], normal) -> float | None:
@@ -550,7 +593,18 @@ def _sort_recovered_series_items(items: list[tuple[str, Any]], reference_header:
             return (1, location, path)
         return (2, safe_int(getattr(dataset, "InstanceNumber", 0), 0), path)
 
-    return sorted(items, key=sort_key)
+    ordered = sorted(items, key=sort_key)
+    _warn_if_slices_without_position(ordered, normal)
+    return ordered
+
+
+def _warn_if_slices_without_position(items, normal) -> None:
+    missing = sum(1 for _path, dataset in items if _position_projection(dataset, normal) is None)
+    if missing:
+        _DSG_LOG.warning(
+            "DICOM: %d de %d cortes sin ImagePositionPatient; se ordenan por SliceLocation/InstanceNumber "
+            "y el volumen puede salir invertido", missing, len(items)
+        )
 
 
 def _bounded_recursive_files(root: Path, *, max_depth: int, remaining: int) -> list[Path]:
@@ -1226,8 +1280,23 @@ def _decode_volume_payload(probe: SourceProbe, callback: ProgressCallback | None
         intercepts = np.full(z_count, float(intercepts[0] if intercepts.size else 0.0), dtype=np.float32)
 
     geometry_header = datasets[0] if datasets else probe.header
+    _warn_if_orientation_missing(geometry_header)
     orientation = _orientation_matrix(geometry_header)
     origin = image_position(geometry_header, 0) or image_position(probe.header, 0) or (0.0, 0.0, 0.0)
+
+    if probe.source_kind == "MULTIFRAME":
+        # DSG v9 DICOM fix: frames are stored in vendor order. The volume's Z
+        # axis must follow the slice normal (X × Y) or the volume becomes a
+        # mirror image. Reorder the frames by their real patient position.
+        order, positions = _multiframe_slice_order(geometry_header, z_count, orientation[:, 2])
+        if order is not None:
+            if not np.array_equal(order, np.arange(z_count)):
+                volume = np.ascontiguousarray(volume[order])
+                slopes = np.ascontiguousarray(slopes[order])
+                intercepts = np.ascontiguousarray(intercepts[order])
+                _DSG_LOG.info("DICOM multi-frame: frames reordenados por posición (orden original invertido=%s)",
+                              bool(np.array_equal(order, np.arange(z_count)[::-1])))
+            origin = tuple(float(v) for v in positions[int(order[0])])
 
     spacing_zyx = tuple(float(v) for v in probe.spacing_zyx_mm)
     if probe.source_kind == "MULTIFRAME":
@@ -1266,6 +1335,23 @@ def _commit_volume_payload(probe: SourceProbe, payload: dict[str, Any]) -> None:
         cbct_dental_module.reset_scene_state()
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
+    _publish_volume_payload(probe, payload)
+
+
+def rehydrate_runtime(filepath: str) -> None:
+    """Put the CBCT voxels back in memory for a scene that already has them.
+
+    The voxels are not saved in the .blend: after reopening the file,
+    restarting Blender or reinstalling the add-on, ``volume_loaded`` is still
+    True but the runtime is empty and every MPR/DICOM review fails its poll.
+    Unlike a patient load, this never clears the segmented teeth or the
+    scene: it only re-reads the same series into the runtime.
+    """
+    probe = probe_source(filepath)
+    _publish_volume_payload(probe, _decode_volume_payload(probe, None))
+
+
+def _publish_volume_payload(probe: SourceProbe, payload: dict[str, Any]) -> None:
     RUNTIME.reset()
     RUNTIME.source_path = probe.filepath
     RUNTIME.source_kind = probe.source_kind

@@ -852,8 +852,99 @@ def _write_scores(mesh, scores):
         attribute = None
     if attribute is None:
         attribute = mesh.attributes.new(SCORE_ATTRIBUTE, "FLOAT", "FACE")
-    for polygon in mesh.polygons:
-        attribute.data[polygon.index].value = float(scores.get(int(polygon.index), 0.0))
+    values = np.zeros(len(mesh.polygons), dtype=np.float32)
+    for index, value in scores.items():
+        if 0 <= int(index) < len(values):
+            values[int(index)] = float(value)
+    attribute.data.foreach_set("value", values)
+
+
+def write_scores(mesh, scores):
+    _write_scores(mesh, scores)
+
+
+# --- DSG v9 · recorte local para acelerar BUSCAR SUPERFICIE --------------------
+LOCAL_PROXY_MARGIN_MM = 6.0
+
+
+def _world_coordinates(obj):
+    mesh = obj.data
+    coordinates = np.empty(len(mesh.vertices) * 3, dtype=np.float64)
+    mesh.vertices.foreach_get("co", coordinates)
+    coordinates = coordinates.reshape(-1, 3)
+    matrix = np.array(obj.matrix_world, dtype=np.float64)
+    return coordinates @ matrix[:3, :3].T + matrix[:3, 3]
+
+
+def build_local_proxy(obj, focus_objects, margin_mm=LOCAL_PROXY_MARGIN_MM, name="__DSG_local_proxy"):
+    """World-space copy of only the faces of ``obj`` near ``focus_objects``.
+
+    The common-surface search only scores faces inside the tooth bounds, but
+    it used to convert every IOS vertex, build a BVH of the full scan and walk
+    every face in Python, four times when the first attempts failed. The
+    proxy is built once with NumPy and reused by every attempt. Returns
+    ``(proxy_object, face_map)`` where ``face_map[proxy_face] = source_face``,
+    or ``(None, None)`` when nothing lies in the region. The proxy object is
+    not linked to any scene; remove it with ``remove_local_proxy``.
+    """
+    if not _valid_mesh(obj):
+        return None, None
+    focus = [item for item in focus_objects if _valid_mesh(item)]
+    if not focus:
+        return None, None
+    focus_points = np.vstack([_world_coordinates(item) for item in focus])
+    low = focus_points.min(axis=0) - float(margin_mm)
+    high = focus_points.max(axis=0) + float(margin_mm)
+    mesh = obj.data
+    world = _world_coordinates(obj)
+    inside = np.all((world >= low) & (world <= high), axis=1)
+    n_faces = len(mesh.polygons)
+    loop_total = np.empty(n_faces, dtype=np.int64)
+    loop_start = np.empty(n_faces, dtype=np.int64)
+    mesh.polygons.foreach_get("loop_total", loop_total)
+    mesh.polygons.foreach_get("loop_start", loop_start)
+    loop_vertex = np.empty(len(mesh.loops), dtype=np.int64)
+    mesh.loops.foreach_get("vertex_index", loop_vertex)
+    loop_face = np.repeat(np.arange(n_faces, dtype=np.int64), loop_total)
+    loop_order = (loop_start[loop_face] + (np.arange(len(loop_face)) - np.repeat(np.cumsum(loop_total) - loop_total, loop_total)))
+    loop_vertex_ordered = loop_vertex[loop_order]
+    face_inside = np.bincount(loop_face, weights=inside[loop_vertex_ordered], minlength=n_faces) > 0
+    face_map = np.flatnonzero(face_inside)
+    if face_map.size == 0:
+        return None, None
+    keep_loops = face_inside[loop_face]
+    kept_vertices = loop_vertex_ordered[keep_loops]
+    used, new_index = np.unique(kept_vertices, return_inverse=True)
+    totals = loop_total[face_map]
+    proxy_mesh = bpy.data.meshes.new(name + "_Mesh")
+    proxy_mesh.vertices.add(len(used))
+    proxy_mesh.vertices.foreach_set("co", world[used].astype(np.float32).ravel())
+    proxy_mesh.loops.add(len(new_index))
+    proxy_mesh.loops.foreach_set("vertex_index", new_index.astype(np.int32))
+    proxy_mesh.polygons.add(len(face_map))
+    proxy_mesh.polygons.foreach_set("loop_start", (np.cumsum(totals) - totals).astype(np.int32))
+    proxy_mesh.polygons.foreach_set("loop_total", totals.astype(np.int32))
+    proxy_mesh.update(calc_edges=True)
+    proxy = bpy.data.objects.new(name, proxy_mesh)
+    return proxy, face_map
+
+
+def remove_local_proxy(proxy):
+    if proxy is None:
+        return
+    mesh = proxy.data
+    bpy.data.objects.remove(proxy, do_unlink=True)
+    if mesh is not None and mesh.users == 0:
+        bpy.data.meshes.remove(mesh)
+
+
+def remap_result_to_source(result, face_map):
+    """Translate proxy face indices in a selection result back to the IOS."""
+    face_map = np.asarray(face_map)
+    result["selected_faces"] = {int(face_map[int(i)]) for i in result.get("selected_faces", ())}
+    result["scores"] = {int(face_map[int(i)]): float(v) for i, v in result.get("scores", {}).items()}
+    result["local_proxy_faces"] = int(face_map.size)
+    return result
 
 
 def _select_components(selected, anchors, adjacency, scores, max_components):

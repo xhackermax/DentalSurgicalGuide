@@ -115,7 +115,6 @@ class DICOMWIZARDPRO_PT_main(Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator('dsg.copy_pipeline_diagnostic',text='Copiar diagnóstico',icon='COPYDOWN')
         props = context.scene.dicom_wizard_pro
         layout.use_property_split = False
         layout.use_property_decorate = False

@@ -305,7 +305,7 @@ def _build_world_surface_bvh(context, obj):
         except TypeError:
             temp_mesh = evaluated.to_mesh()
         if temp_mesh is None or len(temp_mesh.vertices) == 0 or len(temp_mesh.polygons) == 0:
-            return None
+            raise ValueError('empty evaluated mesh')
         matrix = evaluated.matrix_world.copy()
         vertices = [matrix @ vertex.co for vertex in temp_mesh.vertices]
         polygons = [tuple(poly.vertices) for poly in temp_mesh.polygons if len(poly.vertices) >= 3]
@@ -313,6 +313,13 @@ def _build_world_surface_bvh(context, obj):
             return None
         return BVHTree.FromPolygons(vertices, polygons, all_triangles=False)
     except Exception as exc:
+        # 9.24.10: hidden models are not evaluated; use the mesh itself.
+        if getattr(obj, 'type', None) == 'MESH' and len(obj.data.polygons):
+            matrix = obj.matrix_world.copy()
+            return BVHTree.FromPolygons(
+                [matrix @ v.co for v in obj.data.vertices],
+                [tuple(p.vertices) for p in obj.data.polygons if len(p.vertices) >= 3],
+                all_triangles=False)
         print(f'[DSG] Coons support BVH unavailable ({_safe_object_name(obj)}): {exc}')
         return None
     finally:
@@ -928,7 +935,11 @@ def _build_reinforcement_coons_blend_object(context, name, contact_point,
                                               tube_u_override=None,
                                               tube_v_override=None,
                                               support_embed_depth_override=None,
-                                              cap_tube=True):
+                                              cap_tube=True,
+                                              footprint_radius_ratio=None,
+                                              fullness_scale=1.0,
+                                              tangent_handle_scale=1.0,
+                                              bound_tube_halfspace=False):
     """Collar Coons-Hermite extendido desde el apoyo hasta el tubo recortado.
 
     Mantiene la huella y la proyección sobre soporte de v6.12.21. La diferencia
@@ -993,6 +1004,10 @@ def _build_reinforcement_coons_blend_object(context, name, contact_point,
     foot_major = max(
         foot_minor * float(REINFORCEMENT_BLEND_UNION_MAJOR_RATIO),
         nominal_foot_major)
+    if footprint_radius_ratio is not None:
+        # Automatic lattice: a modest local fillet, never the large manual foot.
+        foot_minor=min(foot_minor,radius*max(1.,float(footprint_radius_ratio)))
+        foot_major=min(foot_major,foot_minor*1.20)
     if support_embed_depth_override is None:
         overlap = max(0.05, float(REINFORCEMENT_BLEND_OVERLAP_MM))
     else:
@@ -1108,11 +1123,11 @@ def _build_reinforcement_coons_blend_object(context, name, contact_point,
             max(radius * 0.72,
                 local_foot_radius * (0.48 + 0.18 * volcano_factor),
                 neck_length * (0.62 + 0.10 * volcano_factor)))
-        support_handle *= float(REINFORCEMENT_BLEND_SUPPORT_HANDLE_SCALE)
+        support_handle *= float(REINFORCEMENT_BLEND_SUPPORT_HANDLE_SCALE) * float(tangent_handle_scale)
         tube_handle = min(
             span * (0.86 - 0.08 * volcano_factor),
             max(radius * 0.72, neck_length * (0.72 - 0.08 * volcano_factor)))
-        tube_handle *= float(REINFORCEMENT_BLEND_TUBE_HANDLE_SCALE)
+        tube_handle *= float(REINFORCEMENT_BLEND_TUBE_HANDLE_SCALE) * float(tangent_handle_scale)
 
         rail_data.append((start, end, support_direction))
         support_handles.append(support_handle)
@@ -1130,6 +1145,10 @@ def _build_reinforcement_coons_blend_object(context, name, contact_point,
 
     rails = []
     for index, (start, end, support_direction) in enumerate(rail_data):
+        if bound_tube_halfspace:
+            from .organic_reinforcement import bounded_collar_handle
+            support_handles[index] = bounded_collar_handle(
+                start, tube_center, tangent, support_direction, support_handles[index])
         rails.append((
             start,
             start + support_direction * support_handles[index],
@@ -1147,7 +1166,7 @@ def _build_reinforcement_coons_blend_object(context, name, contact_point,
         # circunferencial y luego añadimos el volumen de forma homogénea. Los
         # extremos v=0 y v=1 permanecen exactos.
         if 0 < longitudinal_index < v_steps and ring:
-            bell = math.sin(math.pi * v) ** 2
+            bell = math.sin(math.pi * v) ** 2 * max(0.,min(1.,float(fullness_scale)))
             # En entradas casi perpendiculares evitamos el bulto central y
             # favorecemos un perfil de embudo: base amplia y cierre progresivo.
             bell *= max(0.0, 1.0 - volcano_factor)
@@ -1227,6 +1246,13 @@ def _build_reinforcement_coons_blend_object(context, name, contact_point,
         'DSG_reinforcement_round_fit_enabled': bool(REINFORCEMENT_BLEND_ROUND_FIT_ENABLED),
         'DSG_reinforcement_round_fit_safety_scale': float(REINFORCEMENT_BLEND_ROUND_FIT_SAFETY_SCALE),
     })
+    if footprint_radius_ratio is not None:
+        sections=[]
+        for row in range(v_steps+1):
+            ring=[Vector(p) for p in vertices[row*segments:(row+1)*segments]]
+            center=sum(ring,Vector())/len(ring)
+            sections.append([*list(center),max((p-center).length for p in ring)])
+        obj['DSG_organic_sections_json']=json.dumps(sections)
     clean_boolean_cutter_mesh(obj, merge_dist=0.0001, max_vertices=180000)
     return obj
 
@@ -1833,8 +1859,10 @@ def configure_sequential_insertion_frames(props, screw_count=0, drill_count=0, e
         guide_seat_start = sequence_start
     guide_seat_end = guide_seat_start + guide_seat_duration
 
-    # Do not start the microscrews until the guide is fully seated.
-    surgery_start = guide_seat_end + 1 + group_gap
+    # Do not start the microscrews until the guide is fully seated; hold the
+    # seated guide briefly so the viewer registers the fit.
+    seated_hold = int(ANIMATION_SEATED_HOLD_FRAMES_FIXED)
+    surgery_start = guide_seat_end + 1 + group_gap + seated_hold
     screw_start = surgery_start
     screw_stride = screw_duration + item_gap
     if screw_count:
@@ -1845,7 +1873,7 @@ def configure_sequential_insertion_frames(props, screw_count=0, drill_count=0, e
         screw_end = surgery_start
 
     drill_start = (screw_end + group_gap) if screw_count else surgery_start
-    pair_stride = drill_duration + 1 + implant_duration + item_gap
+    pair_stride = drill_duration + 1 + implant_duration + seated_hold + item_gap
     if drill_count:
         final_pair_start = drill_start + (drill_count - 1) * pair_stride
         drill_end = final_pair_start + drill_duration
@@ -1864,7 +1892,7 @@ def configure_sequential_insertion_frames(props, screw_count=0, drill_count=0, e
         + screw_count * screw_duration
         + drill_count * (drill_duration + implant_duration))
 
-    unscrew_start = active_end + group_gap if screw_count else active_end + group_gap
+    unscrew_start = active_end + seated_hold + group_gap
     unscrew_stride = screw_duration + item_gap
     if screw_count:
         unscrew_end = (
@@ -2053,6 +2081,7 @@ class DSG_OT_CreateSequentialInsertionAnimation(Operator):
                 timeline['guide_seat_start'], timeline['guide_seat_end'],
                 timeline['guide_return_start'], timeline['guide_return_end'],
                 timeline['guide_hide_frame'])
+            apply_presentation_animation(context, props, timeline)
 
             context.scene['DSG_sequence_start_frame'] = int(timeline['sequence_start'])
             context.scene['DSG_sequence_extraction_start_frame'] = int(timeline.get('extraction_start', 0) or 0)
@@ -2106,6 +2135,7 @@ class DSG_OT_CreateSequentialInsertionAnimation(Operator):
             _dsg_report(self, {'INFO'}, message, message)
             return {'FINISHED'}
         except Exception as exc:
+            clear_presentation_animation()
             clear_animated_extraction_teeth()
             remove_animated_microscrews(restore_static=True)
             remove_animated_drills()
@@ -2205,6 +2235,12 @@ class DSG_OT_PlaySequentialInsertionAnimation(Operator):
         context.scene.frame_end = end
         context.scene.frame_set(start)
         try:
+            enter_presentation_view(context, float(props.animation_speed))
+        except (RuntimeError, AttributeError, TypeError, ValueError) as exc:
+            print(f'[DSG] Presentation view warning: {exc}')
+        try:
+            if context.screen and context.screen.is_animation_playing:
+                bpy.ops.screen.animation_cancel(restore_frame=False)
             bpy.ops.screen.animation_play()
         except Exception as exc:
             _dsg_report(self, {'ERROR'}, f'Could not play the sequence: {exc}', f'No se pudo reproducir la secuencia: {exc}')
@@ -2226,6 +2262,7 @@ class DSG_OT_StopSequentialInsertionAnimation(Operator):
             or (_valid_obj(guide) and guide.get('DSG_final_sequence_visibility_animation')))
         if not has_animation:
             restore_guide_home_transform(guide, scene=context.scene, make_visible=True)
+            exit_presentation_view(context)
             _dsg_report(self, {'WARNING'}, 'Create the animated sequence first', 'Primero crea la secuencia animada')
             return {'CANCELLED'}
         try:
@@ -2240,6 +2277,10 @@ class DSG_OT_StopSequentialInsertionAnimation(Operator):
             'DSG_sequence_guide_seat_end_frame', context.scene.frame_current))
         context.scene.frame_set(seated_frame)
         restore_guide_home_transform(guide, scene=context.scene, make_visible=True)
+        try:
+            exit_presentation_view(context)
+        except (RuntimeError, AttributeError, TypeError, ValueError) as exc:
+            print(f'[DSG] Presentation view restore warning: {exc}')
         _dsg_report(
             self, {'INFO'},
             'Sequence stopped; the guide returned to its original seated position',

@@ -1,0 +1,1483 @@
+{
+  "schema_version": 1,
+  "units": "mm",
+  "source_file": "matrices_implantes_BTI_COREX_y_Straumann_Standard_Plus.xlsx",
+  "source_sha256": "9aaf6fb5f1ce96e1dcb0622ade2db41105468ee980fb878502500bc658b12857",
+  "catalogues": {
+    "BTI_COREX": {
+      "family": "BTI CORE-X",
+      "sheet": "BTI CORE-X",
+      "items": [
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 4.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B2",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 4.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C2",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 4.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D2",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 4.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E2",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 4.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F2",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 4.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G2",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 4.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H2",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 4.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I2",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 4.5,
+          "availability": "LISTED",
+          "source_cell": "B3",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 4.5,
+          "availability": "LISTED",
+          "source_cell": "C3",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 4.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "D3",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 4.5,
+          "availability": "LISTED",
+          "source_cell": "E3",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 4.5,
+          "availability": "LISTED",
+          "source_cell": "F3",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 4.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "G3",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 4.5,
+          "availability": "LISTED",
+          "source_cell": "H3",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 4.5,
+          "availability": "LISTED",
+          "source_cell": "I3",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 5.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B4",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 5.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C4",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 5.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D4",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 5.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E4",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 5.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F4",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 5.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G4",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 5.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H4",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 5.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I4",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 5.5,
+          "availability": "LISTED",
+          "source_cell": "B5",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 5.5,
+          "availability": "LISTED",
+          "source_cell": "C5",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 5.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "D5",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 5.5,
+          "availability": "LISTED",
+          "source_cell": "E5",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 5.5,
+          "availability": "LISTED",
+          "source_cell": "F5",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 5.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "G5",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 5.5,
+          "availability": "LISTED",
+          "source_cell": "H5",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 5.5,
+          "availability": "LISTED",
+          "source_cell": "I5",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 6.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B6",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 6.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C6",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 6.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D6",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 6.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E6",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 6.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F6",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 6.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G6",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 6.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H6",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 6.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I6",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 6.5,
+          "availability": "LISTED",
+          "source_cell": "B7",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 6.5,
+          "availability": "LISTED",
+          "source_cell": "C7",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 6.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "D7",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 6.5,
+          "availability": "LISTED",
+          "source_cell": "E7",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 6.5,
+          "availability": "LISTED",
+          "source_cell": "F7",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 6.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "G7",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 6.5,
+          "availability": "LISTED",
+          "source_cell": "H7",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 6.5,
+          "availability": "LISTED",
+          "source_cell": "I7",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 7.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B8",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 7.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C8",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 7.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D8",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 7.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E8",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 7.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F8",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 7.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G8",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 7.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H8",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 7.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I8",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 7.5,
+          "availability": "LISTED",
+          "source_cell": "B9",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 7.5,
+          "availability": "LISTED",
+          "source_cell": "C9",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 7.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "D9",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 7.5,
+          "availability": "LISTED",
+          "source_cell": "E9",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 7.5,
+          "availability": "LISTED",
+          "source_cell": "F9",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 7.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "G9",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 7.5,
+          "availability": "LISTED",
+          "source_cell": "H9",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 7.5,
+          "availability": "LISTED",
+          "source_cell": "I9",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 8.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B10",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 8.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C10",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 8.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D10",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 8.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E10",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 8.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F10",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 8.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G10",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 8.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H10",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 8.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I10",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 8.5,
+          "availability": "LISTED",
+          "source_cell": "B11",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 8.5,
+          "availability": "LISTED",
+          "source_cell": "C11",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 8.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "D11",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 8.5,
+          "availability": "LISTED",
+          "source_cell": "E11",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 8.5,
+          "availability": "LISTED",
+          "source_cell": "F11",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 8.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "G11",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 8.5,
+          "availability": "LISTED",
+          "source_cell": "H11",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 8.5,
+          "availability": "LISTED",
+          "source_cell": "I11",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 9.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B12",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 9.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C12",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 9.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D12",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 9.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E12",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 9.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F12",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 9.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G12",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 9.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H12",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 9.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I12",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 10.0,
+          "availability": "LISTED",
+          "source_cell": "B13",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 10.0,
+          "availability": "LISTED",
+          "source_cell": "C13",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 10.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D13",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 10.0,
+          "availability": "LISTED",
+          "source_cell": "E13",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 10.0,
+          "availability": "LISTED",
+          "source_cell": "F13",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 10.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G13",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 10.0,
+          "availability": "LISTED",
+          "source_cell": "H13",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 10.0,
+          "availability": "LISTED",
+          "source_cell": "I13",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 11.0,
+          "availability": "LISTED",
+          "source_cell": "B14",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 11.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C14",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 11.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D14",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 11.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E14",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 11.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F14",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 11.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G14",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 11.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H14",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 11.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I14",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 11.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "B15",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 11.5,
+          "availability": "LISTED",
+          "source_cell": "C15",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 11.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "D15",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 11.5,
+          "availability": "LISTED",
+          "source_cell": "E15",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 11.5,
+          "availability": "LISTED",
+          "source_cell": "F15",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 11.5,
+          "availability": "UNVERIFIED",
+          "source_cell": "G15",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 11.5,
+          "availability": "LISTED",
+          "source_cell": "H15",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 11.5,
+          "availability": "LISTED",
+          "source_cell": "I15",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 12.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B16",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 12.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C16",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 12.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D16",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 12.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E16",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 12.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F16",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 12.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G16",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 12.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H16",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 12.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I16",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 13.0,
+          "availability": "LISTED",
+          "source_cell": "B17",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 13.0,
+          "availability": "LISTED",
+          "source_cell": "C17",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 13.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D17",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 13.0,
+          "availability": "LISTED",
+          "source_cell": "E17",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 13.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F17",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 13.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G17",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 13.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H17",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 13.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I17",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 14.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B18",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 14.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C18",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 14.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D18",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 14.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E18",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 14.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F18",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 14.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G18",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 14.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H18",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 14.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I18",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 15.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B19",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 15.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C19",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 15.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D19",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 15.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E19",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 15.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "F19",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 15.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G19",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 15.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H19",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 15.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I19",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.5,
+          "length_mm": 16.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B20",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.75,
+          "length_mm": 16.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C20",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.0,
+          "length_mm": 16.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "D20",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.25,
+          "length_mm": 16.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "E20",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.5,
+          "length_mm": 16.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "F20",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 4.75,
+          "length_mm": 16.0,
+          "availability": "UNVERIFIED",
+          "source_cell": "G20",
+          "source_mark": "Por verificar"
+        },
+        {
+          "diameter_mm": 5.0,
+          "length_mm": 16.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "H20",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 5.5,
+          "length_mm": 16.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "I20",
+          "source_mark": "—"
+        }
+      ]
+    },
+    "STRAUMANN_SP": {
+      "family": "Straumann Standard Plus",
+      "sheet": "Straumann Standard Plus",
+      "items": [
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 4.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B2",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 4.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C2",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 4.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "D2",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 4.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "B3",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 4.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "C3",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 4.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "D3",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 5.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B4",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 5.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C4",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 5.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "D4",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 5.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "B5",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 5.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "C5",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 5.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "D5",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 6.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B6",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 6.0,
+          "availability": "CONDITIONAL",
+          "source_cell": "C6",
+          "source_mark": "✔*"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 6.0,
+          "availability": "CONDITIONAL",
+          "source_cell": "D6",
+          "source_mark": "✔*"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 6.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "B7",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 6.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "C7",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 6.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "D7",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 7.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B8",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 7.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C8",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 7.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "D8",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 7.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "B9",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 7.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "C9",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 7.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "D9",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 8.0,
+          "availability": "LISTED",
+          "source_cell": "B10",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 8.0,
+          "availability": "LISTED",
+          "source_cell": "C10",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 8.0,
+          "availability": "LISTED",
+          "source_cell": "D10",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 8.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "B11",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 8.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "C11",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 8.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "D11",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 9.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B12",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 9.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C12",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 9.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "D12",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 10.0,
+          "availability": "LISTED",
+          "source_cell": "B13",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 10.0,
+          "availability": "LISTED",
+          "source_cell": "C13",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 10.0,
+          "availability": "LISTED",
+          "source_cell": "D13",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 11.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B14",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 11.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C14",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 11.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "D14",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 11.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "B15",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 11.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "C15",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 11.5,
+          "availability": "NOT_LISTED",
+          "source_cell": "D15",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 12.0,
+          "availability": "LISTED",
+          "source_cell": "B16",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 12.0,
+          "availability": "LISTED",
+          "source_cell": "C16",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 12.0,
+          "availability": "LISTED",
+          "source_cell": "D16",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 13.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B17",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 13.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C17",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 13.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "D17",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 14.0,
+          "availability": "LISTED",
+          "source_cell": "B18",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 14.0,
+          "availability": "LISTED",
+          "source_cell": "C18",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 14.0,
+          "availability": "LISTED",
+          "source_cell": "D18",
+          "source_mark": "✔"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 15.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B19",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 15.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C19",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 15.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "D19",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 3.3,
+          "length_mm": 16.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "B20",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.1,
+          "length_mm": 16.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "C20",
+          "source_mark": "—"
+        },
+        {
+          "diameter_mm": 4.8,
+          "length_mm": 16.0,
+          "availability": "NOT_LISTED",
+          "source_cell": "D20",
+          "source_mark": "—"
+        }
+      ]
+    }
+  }
+}

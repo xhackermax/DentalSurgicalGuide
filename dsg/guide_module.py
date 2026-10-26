@@ -18,6 +18,7 @@ _PARTS = (
     '06_irrigation_a.py',
     '06_irrigation_b.py',
     '07_reinforcement_animation.py',
+    '07b_presentation_animation.py',
     '08_export_final_ui_registration.py',
 )
 _exec_source_parts(globals(), __file__, '_guide_parts', _PARTS)

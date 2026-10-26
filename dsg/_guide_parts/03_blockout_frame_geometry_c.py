@@ -556,6 +556,60 @@ def _frame_virtual_anchor_shortest_route(cache, start_anchor, end_anchor):
     return route, out
 
 
+def _frame_component_labels(cache):
+    """Connected-component label per surface vertex (cached), or None."""
+    labels = cache.get('component_labels')
+    if labels is not None:
+        return labels
+    try:
+        from scipy.sparse import csr_matrix
+        from scipy.sparse.csgraph import connected_components
+    except ImportError:
+        return None
+    count = int(cache['vertex_count'])
+    graph = csr_matrix((cache['csr_weights'], cache['csr_dst'], cache['csr_offsets']), shape=(count, count))
+    _count, labels = connected_components(graph, directed=False)
+    cache['component_labels'] = labels
+    return labels
+
+
+def _frame_preferred_component(cache, labels, insertion_axis):
+    """Component the frame must follow on a joined passive model.
+
+    DSG_PassiveCombined joins the IOS and the retentive (blockout) shell as
+    two overlapping, disconnected copies of the same topology.  The guide
+    rests on the retentive one, which is the copy displaced along the
+    insertion axis.  Otherwise the largest component is used.
+    """
+    sizes = np.bincount(labels)
+    order = np.argsort(-sizes)
+    if len(order) >= 2 and sizes[order[0]] == sizes[order[1]] and insertion_axis is not None:
+        first = np.flatnonzero(labels == order[0])
+        second = np.flatnonzero(labels == order[1])
+        axis = np.asarray(tuple(insertion_axis), dtype=np.float64)
+        if np.linalg.norm(axis) > 1.0e-9:
+            shift = float(((cache['coords'][second] - cache['coords'][first]) @ axis).sum())
+            if abs(shift) > 1.0e-6:
+                return int(order[1] if shift > 0.0 else order[0])
+    return int(order[0])
+
+
+def _frame_anchor_on_component(cache, labels, component, point_world):
+    """Nearest vertex of ``component`` as a routing anchor."""
+    members = np.flatnonzero(labels == component)
+    coords = cache['coords'][members]
+    target = np.asarray(tuple(point_world), dtype=np.float64)
+    nearest = int(np.argmin(np.einsum('ij,ij->i', coords - target, coords - target)))
+    vertex = int(members[nearest])
+    return {
+        'point': Vector(cache['coords'][vertex]),
+        'normal': _normalized_or_fallback(Vector(cache['normals'][vertex]), (0.0, 0.0, 1.0)),
+        'polygon_index': -1, 'triangle_index': -1,
+        'triangle_vertices': (vertex,), 'barycentric': [1.0],
+        'distance_mm': float(np.linalg.norm(cache['coords'][vertex] - target)),
+    }
+
+
 def build_surface_intrinsic_frame_path(context, surface_obj, anchors, insertion_axis,
                                        max_spacing=FRAME_SURFACE_TARGET_SPACING_MM,
                                        frame_radius_mm=FRAME_RADIUS_DEFAULT_MM):
@@ -597,6 +651,19 @@ def build_surface_intrinsic_frame_path(context, surface_obj, anchors, insertion_
             }
         resolved_anchors.append(projection)
         snap_distances.append(float(projection.get('distance_mm', 0.0)))
+
+    # DSG v9: on a joined passive model the anchors could snap to different
+    # (disconnected) shells -> "anchors lie on disconnected surface
+    # components".  Keep every anchor on the single shell the guide rests on.
+    labels = _frame_component_labels(cache)
+    if labels is not None and int(labels.max(initial=0)) > 0:
+        component = _frame_preferred_component(cache, labels, insertion_axis)
+        for anchor_index, (source, anchor) in enumerate(zip(source_anchors, resolved_anchors)):
+            vertices = [int(v) for v in anchor.get('triangle_vertices') or ()]
+            if vertices and all(int(labels[v]) == component for v in vertices):
+                continue
+            resolved_anchors[anchor_index] = _frame_anchor_on_component(cache, labels, component, source)
+            snap_distances[anchor_index] = float(resolved_anchors[anchor_index]['distance_mm'])
 
     combined_points = []
     catmull_controls = []
@@ -686,10 +753,9 @@ def build_surface_intrinsic_frame_path(context, surface_obj, anchors, insertion_
     # This removes the saw-tooth appearance caused by using every geodesic
     # sample as a visible bend.  Evaluated spline samples are projected back
     # onto the passive model and tethered to the original route.
-    clean_points, final_controls = _frame_clean_catmull_surface_loop(
-        cache, combined_points, catmull_controls)
-    if len(clean_points) >= 4:
-        combined_points = clean_points
+    # Keep the solved surface route and every resolved user anchor intact.
+    # The final sweep applies one constrained Catmull-Bezier interpolation.
+    final_controls = catmull_controls
 
     clean_length = 0.0
     if len(combined_points) > 1:
@@ -818,62 +884,9 @@ def _frame_organic_bezier_controls(points, radius, cyclic=True):
 
 
 def build_surface_poly_tube_mesh(context, points, radius, name=FRAME_NAME,
-                                 bevel_resolution=8, cyclic=True):
-    """Build the clinical surface frame with a continuous organic sweep.
-
-    Historical versions used a POLY curve for the final sweep.  The centreline
-    was correct, but every tiny geodesic direction change became a geometric
-    bend.  DSG 9.6.3 keeps the solved path, reduces only redundant display
-    controls and uses AUTO Bezier tangents.  This makes the frame read as one
-    anatomical ribbon/tube instead of a chain of short straight cylinders.
-    """
-    controls = _frame_organic_bezier_controls(points, radius, cyclic=cyclic)
-    if len(controls) < 2:
-        return None
-
-    curve_obj = create_bezier_curve_object(
-        context, name, controls,
-        bevel_radius=radius,
-        bevel_resolution=max(12, int(bevel_resolution)),
-        cyclic=cyclic)
-    if not _valid_obj(curve_obj):
-        return None
-    try:
-        for spline in curve_obj.data.splines:
-            if getattr(spline, 'type', '') != 'BEZIER':
-                continue
-            for bp in spline.bezier_points:
-                # AUTO_CLAMPED keeps tangent continuity while suppressing the
-                # hook/overshoot risk of unrestricted AUTO handles near sharp
-                # embrasure turns.
-                bp.handle_left_type = 'AUTO_CLAMPED'
-                bp.handle_right_type = 'AUTO_CLAMPED'
-    except Exception:
-        _DSG_LOG.debug("suppressed exception", exc_info=True)
-
-    # Bezier continuity gives the smoothness; we do not need the historical
-    # 24 evaluations per control segment. Eight keeps the mesh light enough for
-    # the later sleeve/guide Booleans while remaining visually continuous.
-    try:
-        curve_obj.data.resolution_u = 8
-        curve_obj.data.render_resolution_u = 10
-    except Exception:
-        _DSG_LOG.debug("suppressed exception", exc_info=True)
-
-    obj = convert_curve_to_mesh(context, curve_obj, name)
-    if _valid_obj(obj):
-        try:
-            for polygon in obj.data.polygons:
-                polygon.use_smooth = True
-        except Exception:
-            _DSG_LOG.debug("suppressed exception", exc_info=True)
-        try:
-            obj['DSG_frame_visible_sweep'] = 'ORGANIC_AUTO_BEZIER_V1'
-            obj['DSG_frame_visible_control_count'] = int(len(controls))
-            obj['DSG_frame_visible_source_point_count'] = int(len(points))
-        except Exception:
-            _DSG_LOG.debug("suppressed exception", exc_info=True)
-    return obj
+                                 bevel_resolution=8, cyclic=True, anchors=(), surface=None):
+    from .blender.organic_frame import build
+    return build(context, points, radius, name, bevel_resolution, cyclic, anchors, surface)
 
 
 def _clamp_vector_length(vec, max_length):

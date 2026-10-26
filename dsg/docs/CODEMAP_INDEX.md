@@ -1,8 +1,8 @@
-# DSG 9.10.11 · Índice del código
+# DSG 9.22.16 · Índice del código
 
 > Generado con AST; no ejecuta ni importa el addon. No editar a mano.
 
-Archivos Python productivos: **112**. SHA-256 del conjunto de fuentes: `c1405e44f4e9d253541d9b4c1475a5494c21c73d92cd108ebbc16b5a3b69b844`.
+Archivos Python productivos: **170**. SHA-256 del conjunto de fuentes: `d97b89f45db6273a21b415b489dad81cfd2de0eff1820d71550a2e0862c2289d`.
 
 Incluye clases, funciones, métodos y definiciones anidadas. Los enlaces abren el archivo; la columna Línea indica la ubicación exacta. Los números cambian al editar el código.
 
@@ -12,205 +12,152 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [__init__.py](../__init__.py)
 
-575 líneas · imports Blender: bpy
+584 líneas · imports Blender: bpy
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
 | 44 | `_blender_api` |  |
-| 88 | `__getattr__` |  |
-| 94 | `_loaded` | Return an already loaded child module or ``None`` (never imports). |
-| 105 | `_addon_dir` |  |
-| 109 | `_ensure_package_path` | Guarantee that Blender treats ``dsg`` as a real package. |
-| 130 | `_validate_installation` | Fail early with a precise message if Blender kept a partial install. |
-| 166 | `_import_submodule` | Load a DSG submodule from its exact file path. |
-| 223 | `_load_modules` | Load DSG modules once, in dependency order, after ``dsg`` is ready. |
-| 311 | `_quiesce_legacy_handlers` | Remove callbacks left by older DSG versions before RNA registration. |
-| 353 | `_configure_panels` |  |
-| 391 | `_normal_data_available` |  |
-| 401 | `_deferred_initialize` | Initialize scene/object handoff only after _RestrictData is gone. |
-| 459 | `_register_deferred_initializer` |  |
-| 466 | `_unregister_deferred_initializer` |  |
-| 471 | `register` |  |
-| 542 | `unregister` |  |
+| 97 | `__getattr__` |  |
+| 103 | `_loaded` | Return an already loaded child module or ``None`` (never imports). |
+| 114 | `_addon_dir` |  |
+| 118 | `_ensure_package_path` | Guarantee that Blender treats ``dsg`` as a real package. |
+| 139 | `_validate_installation` | Fail early with a precise message if Blender kept a partial install. |
+| 175 | `_import_submodule` | Load a DSG submodule from its exact file path. |
+| 232 | `_load_modules` | Load DSG modules once, in dependency order, after ``dsg`` is ready. |
+| 320 | `_quiesce_legacy_handlers` | Remove callbacks left by older DSG versions before RNA registration. |
+| 362 | `_configure_panels` |  |
+| 400 | `_normal_data_available` |  |
+| 410 | `_deferred_initialize` | Initialize scene/object handoff only after _RestrictData is gone. |
+| 468 | `_register_deferred_initializer` |  |
+| 475 | `_unregister_deferred_initializer` |  |
+| 480 | `register` |  |
+| 551 | `unregister` |  |
 
 ## [_alignment_parts/00_alignment_core.py](../_alignment_parts/00_alignment_core.py)
 
-2911 líneas · imports Blender: bpy, bpy_extras, mathutils · namespace de `alignment_module`
+1319 líneas · imports Blender: bpy, bpy_extras, mathutils · namespace de `alignment_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
-| 301 | `_is_spanish` |  |
-| 306 | `_t` |  |
-| 311 | `_zone_label` |  |
-| 317 | `_report` |  |
-| 321 | `_set_role` |  |
-| 328 | `_object_role` |  |
-| 332 | `_latest_role_object` |  |
-| 336 | `_is_dicom_or_alignment_helper` |  |
-| 354 | `_set_guide_entry_solid_view` |  |
-| 383 | `_set_principled_value` |  |
-| 396 | `_set_alignment_material_preview` | Use Material Preview while reviewing the IOS and FDI overlays. |
-| 421 | `ensure_ios_gray_material` | Give the IOS one stable neutral-gray Material Preview appearance. |
-| 457 | `_set_dicom_collections_hidden` |  |
-| 461 | `_hide_dicom_scene_objects_except` | Hide DICOM volume/MPR helpers while keeping only the generated STL review meshes. |
-| 494 | `_clinical_cbct_review_objects` | Legacy visual overlays only. |
-| 532 | `_disable_clinical_cbct_review_smoothing` |  |
-| 542 | `_prepare_alignment_review_view` | Review IOS against the high-resolution segmented CBCT teeth. |
-| 648 | `_isolate_aligned_ios_for_guide` |  |
-| 677 | `_is_alignment_candidate` | Any real mesh may be the moving object; roles never restrict alignment. |
-| 688 | `_is_valid_reference_mesh` |  |
-| 698 | `_latest_alignment_reference` | Find any usable fixed mesh, without forcing a dental-teeth role. |
-| 722 | `_auto_detect_models` |  |
-| 754 | `_set_active_only` | Make one object visible, selected and active without touching geometry. |
-| 776 | `_import_stl_file` | Import one STL with Blender 5.x and retain compatibility with older builds. |
-| 820 | `_matrix_to_text` |  |
-| 824 | `_matrix_from_text` |  |
-| 836 | `_ensure_object_mode` |  |
-| 842 | `_alignment_composite_dental_bvh` | Build an in-memory dental BVH without creating a third Blender object. |
-| 885 | `_validate_models` |  |
-| 897 | `_assign_from_selection` |  |
-| 908 | `_landmark_attr` |  |
-| 912 | `_get_local_landmarks` |  |
-| 917 | `_set_local_landmark` |  |
-| 921 | `_clear_landmark_values` |  |
-| 946 | `_world_landmarks` |  |
-| 950 | `_landmark_collection` |  |
-| 958 | `_clear_markers` |  |
-| 973 | `_set_markers_hidden` |  |
-| 981 | `_marker_size` |  |
-| 988 | `_create_marker` |  |
-| 1006 | `_rebuild_markers` |  |
-| 1021 | `_to_world` |  |
-| 1027 | `_to_world_normals` |  |
-| 1034 | class `_MeshGraph` | Evaluated mesh data read once and reused by all three automatic areas. |
-| 1039 | `_MeshGraph.__init__` |  |
-| 1046 | `_MeshGraph.nearest_vertex` |  |
-| 1053 | `_MeshGraph.vertices_inside_radius` |  |
-| 1069 | `_immediate_alignment_teeth` | Return the original segmented teeth represented by an immediate target. |
-| 1104 | `_registration_mesh_source` | A DSG display modifier must never change the clinical ICP reference. |
-| 1116 | `_mesh_graph_from_objects` | Concatenate several mesh objects into one in-memory world-space graph. |
-| 1156 | `_mesh_graph_from_registration_crowns` | Dental-only graph of connected coronal CBCT crown shells. |
-| 1183 | `_mesh_graph_from_occlusal_patches` | Compatibility wrapper retained for older scripts/tests. |
-| 1188 | `_alignment_target_tooth_objects` | Dental source objects for automatic registration/zone placement. |
-| 1209 | `_tooth_world_centroid` |  |
-| 1225 | `_tooth_crown_surface_seed` | Return an IOS-visible crown-biased surface point for one segmented tooth. |
-| 1264 | `_automatic_target_zone_seeds` | Create three well-distributed dental seeds without user clicks. |
-| 1339 | `_validate_point_spread` |  |
-| 1354 | `_extract_world_mesh_graph` | Read evaluated vertices, normals and edge topology with foreach_get. |
-| 1408 | `_fallback_local_patch` |  |
-| 1420 | `_extract_geodesic_patch` | Expand a landmark into a connected Select More-style dental patch. |
-| 1549 | `_voxel_downsample` |  |
-| 1569 | class `_NearestIndex` | Vectorized SciPy queries when available, compact Blender fallback otherwise. |
-| 1572 | `_NearestIndex.__init__` |  |
-| 1583 | `_NearestIndex.query` |  |
-| 1605 | `_best_fit` |  |
-| 1623 | `_limited_alignment_sample` | Return a deterministic point/normal subset for whole-mesh hypotheses. |
-| 1634 | `_principal_frame_diagnostics` | Return centroid, right-handed PCA basis, eigenvalues and ambiguity. |
-| 1657 | `_principal_frame` |  |
-| 1662 | `_proper_axis_hypotheses` | Generate the 24 proper signed PCA-axis mappings plus identity. |
-| 1690 | `_mesh_candidate_score` | Score partial dental surfaces bidirectionally and deterministically. |
-| 1774 | `_refine_mesh_hypothesis` | Run a bounded broad-to-fine ICP on one rigid whole-mesh hypothesis. |
-| 1831 | `_automatic_whole_mesh_refinement` | Find a safer initial pose when landmark placement is inaccurate. |
-| 1954 | `_target_zone_labels` | Assign each target sample to the nearest automatic dental validation zone. |
-| 1970 | `_target_driven_recenter` | Correct PCA centroid bias caused by gingiva and uneven IOS scan borders. |
-| 2014 | `_sector_fit_metrics` | Return worst-sector coverage/RMS for arch-balanced candidate scoring. |
-| 2045 | `_candidate_anatomy_diagnostics` |  |
-| 2082 | `_anatomically_valid_candidate_pool` | Filter near-best mesh candidates through distributed dental anatomy. |
-| 2102 | `_partial_overlap_candidate_score` | Score a dental target against a larger IOS surface. |
-| 2166 | `_refine_partial_overlap_hypothesis` |  |
-| 2249 | `_distributed_zone_pose_residual` | Measure whether one candidate explains three separated dental zones. |
-| 2271 | `_distributed_dental_landmark_residual` | Evaluate every available crown landmark and its arch distribution. |
-| 2329 | `_resolve_global_pose_ambiguity` | Resolve near-symmetric arch poses with distributed dental evidence. |
-| 2430 | `_automatic_global_registration` | Plan A: arbitrary-pose rigid dental registration with anatomy guards. |
-| 2592 | `_transform_mesh_graph_in_place` |  |
-| 2600 | `_reanchor_source_zones_to_target` | Project each fixed-reference zone onto the already coarsely aligned IOS. |
-| 2614 | `_weighted_best_fit` | Weighted Kabsch rigid transform with bounded, finite weights. |
-| 2652 | `_weighted_best_fit_huber` | Rigid weighted Kabsch solved with Huber IRLS. |
-| 2699 | `_surface_patch_quality` | Return a conservative confidence score for one clicked surface patch. |
-| 2753 | `_bounded_surface_sample` | Create a deterministic bounded sample without voxelising millions of points. |
-| 2781 | `_rotation_matrix_from_vector` | Rodrigues rotation from a small axis-angle vector in radians. |
-| 2793 | `_point_to_plane_huber_transform` | Return one small robust point-to-plane rigid increment. |
-| 2876 | `_reciprocal_correspondences` | Find epsilon-reciprocal common-surface correspondences. |
+| 175 | `_is_spanish` |  |
+| 180 | `_t` |  |
+| 185 | `_zone_label` |  |
+| 191 | `_report` |  |
+| 195 | `_set_role` |  |
+| 202 | `_object_role` |  |
+| 206 | `_latest_role_object` |  |
+| 210 | `_is_dicom_or_alignment_helper` |  |
+| 228 | `_set_guide_entry_solid_view` |  |
+| 257 | `_set_principled_value` |  |
+| 270 | `_set_alignment_material_preview` | Use Material Preview while reviewing the IOS and FDI overlays. |
+| 295 | `ensure_ios_gray_material` | Give the IOS one stable neutral-gray Material Preview appearance. |
+| 331 | `_set_dicom_collections_hidden` |  |
+| 335 | `_hide_dicom_scene_objects_except` | Hide DICOM volume/MPR helpers while keeping only the generated STL review meshes. |
+| 368 | `_clinical_cbct_review_objects` | Legacy visual overlays only. |
+| 406 | `_disable_clinical_cbct_review_smoothing` |  |
+| 416 | `_prepare_alignment_review_view` | Review IOS against the high-resolution segmented CBCT teeth. |
+| 522 | `_isolate_aligned_ios_for_guide` |  |
+| 551 | `_is_alignment_candidate` | Any real mesh may be the moving object; roles never restrict alignment. |
+| 562 | `_is_valid_reference_mesh` |  |
+| 572 | `_latest_alignment_reference` | Find any usable fixed mesh, without forcing a dental-teeth role. |
+| 596 | `_auto_detect_models` |  |
+| 628 | `_set_active_only` | Make one object visible, selected and active without touching geometry. |
+| 650 | `_import_stl_file` | Import one STL with Blender 5.x and retain compatibility with older builds. |
+| 694 | `_matrix_to_text` |  |
+| 698 | `_matrix_from_text` |  |
+| 710 | `_ensure_object_mode` |  |
+| 716 | `_alignment_composite_dental_bvh` | Build an in-memory dental BVH without creating a third Blender object. |
+| 759 | `_validate_models` |  |
+| 771 | `_assign_from_selection` |  |
+| 782 | `_landmark_attr` |  |
+| 786 | `_get_local_landmarks` |  |
+| 791 | `_set_local_landmark` |  |
+| 795 | `_clear_landmark_values` |  |
+| 820 | `_world_landmarks` |  |
+| 824 | `_landmark_collection` |  |
+| 832 | `_clear_markers` |  |
+| 847 | `_set_markers_hidden` |  |
+| 855 | `_marker_size` |  |
+| 862 | `_create_marker` |  |
+| 880 | `_rebuild_markers` |  |
+| 895 | `_to_world` |  |
+| 901 | `_to_world_normals` |  |
+| 908 | class `_MeshGraph` | Evaluated mesh data read once and reused by all three automatic areas. |
+| 913 | `_MeshGraph.__init__` |  |
+| 920 | `_MeshGraph.nearest_vertex` |  |
+| 927 | `_MeshGraph.vertices_inside_radius` |  |
+| 943 | `_immediate_alignment_teeth` | Return the original segmented teeth represented by an immediate target. |
+| 978 | `_registration_mesh_source` | A DSG display modifier must never change the clinical ICP reference. |
+| 990 | `_mesh_graph_from_objects` | Concatenate several mesh objects into one in-memory world-space graph. |
+| 1045 | `_extract_world_mesh_graph` | Read evaluated vertices, normals and edge topology with foreach_get. |
+| 1103 | `_voxel_downsample` |  |
+| 1123 | class `_NearestIndex` | Vectorized SciPy queries when available, compact Blender fallback otherwise. |
+| 1126 | `_NearestIndex.__init__` |  |
+| 1137 | `_NearestIndex.query` |  |
+| 1159 | `_best_fit` |  |
+| 1225 | `_rotation_matrix_from_vector` | Rodrigues rotation from a small axis-angle vector in radians. |
+| 1237 | `_point_to_plane_huber_transform` | Return one small robust point-to-plane rigid increment. |
 
 ## [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py)
 
-2567 líneas · imports Blender: ninguno directo · namespace de `alignment_module`
+1391 líneas · imports Blender: ninguno directo · namespace de `alignment_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
-| 1 | `_evaluate_common_patch_pairs_detailed` | Evaluate the three selected clinical zones independently and together. |
-| 100 | `_evaluate_common_patch_pairs` |  |
-| 115 | `_apply_points` |  |
-| 121 | `_apply_normals` |  |
-| 129 | `_rotation_degrees` |  |
-| 136 | `_trimmed_correspondences` |  |
-| 148 | `_evaluate_patch_pairs` | Legacy compatibility wrapper; new alignment uses reciprocal evaluation. |
-| 163 | `_triangle_metrics` |  |
-| 175 | `_validate_single_landmark_triangle` |  |
-| 192 | `_validate_landmark_geometry` |  |
-| 237 | class `DICP_Props` |  |
-| 297 | class `DICP_OT_ImportIOSSTL` | `dicp.import_ios_stl` · Import intraoral STL |
-| 306 | `DICP_OT_ImportIOSSTL.execute` |  |
-| 367 | class `DICP_OT_AutoDetect` | `dicp.auto_detect` · Detect models |
-| 373 | `DICP_OT_AutoDetect.execute` |  |
-| 394 | class `DICP_OT_UseSelection` | `dicp.use_selection` · Usar 2 seleccionados |
-| 400 | `DICP_OT_UseSelection.execute` |  |
-| 423 | class `DICP_OT_PickLandmarks` | `dicp.pick_landmarks` · Marcar zonas |
-| 443 | `DICP_OT_PickLandmarks._save_object_state` |  |
-| 450 | `DICP_OT_PickLandmarks._ensure_in_view_layer` | Make an ICP participant addressable by hide_set/select/raycast. |
-| 471 | `DICP_OT_PickLandmarks._restore_scene_state` |  |
-| 495 | `DICP_OT_PickLandmarks._focus` |  |
-| 523 | `DICP_OT_PickLandmarks._set_status` |  |
-| 542 | `DICP_OT_PickLandmarks._raycast` |  |
-| 574 | `DICP_OT_PickLandmarks._cancel` |  |
-| 582 | `DICP_OT_PickLandmarks.invoke` |  |
-| 666 | `DICP_OT_PickLandmarks.modal` |  |
-| 767 | class `DICP_OT_RunAlignment` | `dicp.run_alignment` · Alinear modelos |
-| 832 | `DICP_OT_RunAlignment._status` |  |
-| 843 | `DICP_OT_RunAlignment._remove_timer` |  |
-| 856 | `DICP_OT_RunAlignment._rollback` |  |
-| 878 | `DICP_OT_RunAlignment._preparation_tick` |  |
-| 1140 | `DICP_OT_RunAlignment._prepare_stage` |  |
-| 1189 | `DICP_OT_RunAlignment._match_patch_pair` |  |
-| 1221 | `DICP_OT_RunAlignment._one_iteration` |  |
-| 1307 | `DICP_OT_RunAlignment._commit_stage` |  |
-| 1321 | `DICP_OT_RunAlignment._prepare_robust_refinement` | Prepare a hidden, conservative refinement around the three areas. |
-| 1367 | `DICP_OT_RunAlignment._robust_one_iteration` |  |
-| 1456 | `DICP_OT_RunAlignment._commit_robust_refinement` |  |
-| 1472 | `DICP_OT_RunAlignment._global_balanced_selection` | Balance reciprocal matches around anterior/right/left sectors. |
-| 1497 | `DICP_OT_RunAlignment._global_correspondence_state` |  |
-| 1516 | `DICP_OT_RunAlignment._prepare_global_refinement` | Prepare the final full-surface reciprocal pass with local-zone guard. |
-| 1560 | `DICP_OT_RunAlignment._global_one_iteration` |  |
-| 1639 | `DICP_OT_RunAlignment._commit_global_refinement` |  |
-| 1646 | `DICP_OT_RunAlignment._finish_success` |  |
-| 1777 | `DICP_OT_RunAlignment._start` |  |
-| 1919 | `DICP_OT_RunAlignment.invoke` |  |
-| 1922 | `DICP_OT_RunAlignment.execute` |  |
-| 1925 | `DICP_OT_RunAlignment.modal` |  |
-| 2010 | `DICP_OT_RunAlignment.cancel` |  |
-| 2014 | class `DICP_OT_ReviewAlignment` | `dicp.review_alignment` · Revisar |
-| 2020 | `DICP_OT_ReviewAlignment.execute` |  |
-| 2033 | class `DICP_OT_SendToDSG` | `dicp.send_to_dsg` · Siguiente |
-| 2039 | `DICP_OT_SendToDSG.execute` |  |
-| 2105 | class `DICP_OT_RestoreSource` | `dicp.restore_source` · Restaurar posición |
-| 2111 | `DICP_OT_RestoreSource.execute` |  |
-| 2138 | class `DICP_OT_ClearLandmarks` | `dicp.clear_landmarks` · Redibujar puntos |
-| 2144 | `DICP_OT_ClearLandmarks.execute` |  |
-| 2159 | class `DICP_OT_BackToAlignment` | `dicp.back_to_alignment` · Deshacer última acción |
-| 2165 | `DICP_OT_BackToAlignment.execute` |  |
-| 2189 | class `DICP_OT_Reset` | `dicp.reset` · Back to Alignment Start |
-| 2195 | `DICP_OT_Reset.invoke` |  |
-| 2198 | `DICP_OT_Reset.execute` |  |
-| 2339 | `_draw_reset_flow_panel` | Navigation/restart controls live in the shared DSG control panel. |
-| 2344 | class `DICP_PT_Main` | `DICP_PT_main` · Alignment |
-| 2353 | `DICP_PT_Main.poll` |  |
-| 2359 | `DICP_PT_Main.draw` |  |
-| 2444 | `_draw_tooth_analyzer_section` | Show the CBCT dentition handoff; IOS is no longer re-segmented for FDI. |
-| 2479 | `_alignment_unregister_class_object` |  |
-| 2489 | `_alignment_unregister_stale_classes` | Remove RNA classes left by a previous DSG/alignment installation. |
-| 2510 | `_alignment_remove_stale_scene_pointer` |  |
-| 2523 | `register` |  |
-| 2550 | `unregister` |  |
+| 5 | `_apply_points` |  |
+| 11 | `_apply_normals` |  |
+| 19 | `_rotation_degrees` |  |
+| 26 | `_trimmed_correspondences` |  |
+| 45 | `_triangle_metrics` |  |
+| 57 | `_validate_single_landmark_triangle` |  |
+| 74 | `_validate_landmark_geometry` |  |
+| 119 | class `DICP_Props` |  |
+| 179 | class `DICP_OT_ImportIOSSTL` | `dicp.import_ios_stl` · Import intraoral STL |
+| 188 | `DICP_OT_ImportIOSSTL.execute` |  |
+| 249 | class `DICP_OT_AutoDetect` | `dicp.auto_detect` · Detect models |
+| 255 | `DICP_OT_AutoDetect.execute` |  |
+| 276 | class `DICP_OT_UseSelection` | `dicp.use_selection` · Usar 2 seleccionados |
+| 282 | `DICP_OT_UseSelection.execute` |  |
+| 305 | class `DICP_OT_PickLandmarks` | `dicp.pick_landmarks` · Marcar zonas |
+| 325 | `DICP_OT_PickLandmarks._save_object_state` |  |
+| 332 | `DICP_OT_PickLandmarks._ensure_in_view_layer` | Make an ICP participant addressable by hide_set/select/raycast. |
+| 353 | `DICP_OT_PickLandmarks._restore_scene_state` |  |
+| 377 | `DICP_OT_PickLandmarks._focus` |  |
+| 405 | `DICP_OT_PickLandmarks._set_status` |  |
+| 424 | `DICP_OT_PickLandmarks._raycast` |  |
+| 456 | `DICP_OT_PickLandmarks._cancel` |  |
+| 464 | `DICP_OT_PickLandmarks.invoke` |  |
+| 548 | `DICP_OT_PickLandmarks.modal` |  |
+| 673 | `_ensure_scipy_kdtree` | Load SciPy from DSG's private runtime if the module import missed it. |
+| 687 | `_crop_near_seeds` |  |
+| 701 | `_three_point_matches` |  |
+| 710 | `three_point_icp` | Return (transform 4x4, iterations) aligning source onto target. |
+| 737 | `three_point_metrics` | RMS, p95, overlap and per-zone details after alignment. |
+| 764 | class `DICP_OT_RunAlignment` | `dicp.run_alignment` · Alinear modelos |
+| 770 | `DICP_OT_RunAlignment.execute` |  |
+| 896 | class `DICP_OT_ReviewAlignment` | `dicp.review_alignment` · Revisar |
+| 902 | `DICP_OT_ReviewAlignment.execute` |  |
+| 915 | class `DICP_OT_SendToDSG` | `dicp.send_to_dsg` · Siguiente |
+| 921 | `DICP_OT_SendToDSG.execute` |  |
+| 966 | class `DICP_OT_RestoreSource` | `dicp.restore_source` · Restaurar posición |
+| 972 | `DICP_OT_RestoreSource.execute` |  |
+| 999 | class `DICP_OT_ClearLandmarks` | `dicp.clear_landmarks` · Redibujar puntos |
+| 1005 | `DICP_OT_ClearLandmarks.execute` |  |
+| 1020 | class `DICP_OT_BackToAlignment` | `dicp.back_to_alignment` · Deshacer última acción |
+| 1026 | `DICP_OT_BackToAlignment.execute` |  |
+| 1050 | class `DICP_OT_Reset` | `dicp.reset` · Back to Alignment Start |
+| 1056 | `DICP_OT_Reset.invoke` |  |
+| 1059 | `DICP_OT_Reset.execute` |  |
+| 1200 | `_draw_reset_flow_panel` | Navigation/restart controls live in the shared DSG control panel. |
+| 1205 | class `DICP_PT_Main` | `DICP_PT_main` · Alignment |
+| 1214 | `DICP_PT_Main.poll` |  |
+| 1220 | `DICP_PT_Main.draw` |  |
+| 1268 | `_draw_tooth_analyzer_section` | Show the CBCT dentition handoff; IOS is no longer re-segmented for FDI. |
+| 1303 | `_alignment_unregister_class_object` |  |
+| 1313 | `_alignment_unregister_stale_classes` | Remove RNA classes left by a previous DSG/alignment installation. |
+| 1334 | `_alignment_remove_stale_scene_pointer` |  |
+| 1347 | `register` |  |
+| 1374 | `unregister` |  |
 
 ## [_dicom_parts/00_constants_runtime_dependencies.py](../_dicom_parts/00_constants_runtime_dependencies.py)
 
@@ -261,7 +208,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [_dicom_parts/01_utils_dicom_io.py](../_dicom_parts/01_utils_dicom_io.py)
 
-1347 líneas · imports Blender: bpy · namespace de `dicom_module`
+1433 líneas · imports Blender: bpy · namespace de `dicom_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -293,30 +240,35 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 393 | `_discover_series` | Find files belonging to the same classic DICOM series. |
 | 409 | `_discover_series.consider` |  |
 | 470 | `_discover_series.sort_key` |  |
-| 484 | `_infer_multiframe_z_spacing` |  |
-| 507 | `_infer_classic_z_spacing` |  |
-| 523 | `_estimate_memory_mb` |  |
-| 528 | `_valid_image_dimensions` |  |
-| 536 | `_sort_recovered_series_items` | Sort recovered classic-series slices across arbitrary subdirectories. |
-| 543 | `_sort_recovered_series_items.sort_key` |  |
-| 556 | `_bounded_recursive_files` | Return files below *root* without trusting filename extensions. |
-| 588 | `_recovery_search_roots` | Choose bounded study-tree roots for recovery of a non-image DICOM. |
-| 623 | `_dicomdir_referenced_paths` | Resolve ReferencedFileID entries when the selected object is DICOMDIR. |
-| 664 | `_candidate_series_near_selection` | Discover image-bearing DICOM series around a non-image selection. |
-| 688 | `_candidate_series_near_selection.add_path` |  |
-| 787 | `_recover_image_source` |  |
-| 842 | `probe_source` | Inspect a selected DICOM file and determine whether it is multi-frame. |
-| 944 | `_decode_pixel_array` | Decode one DICOM image through quiet compatibility fallbacks. |
-| 1010 | `_grayscale_frame` |  |
-| 1028 | `_load_multiframe` |  |
-| 1081 | `_resolve_classic_series_in_worker` | Resolve all slices/geometry for a classic DICOM series off the UI thread. |
-| 1117 | `_load_classic_series` |  |
-| 1154 | `_sample_density_statistics` |  |
-| 1184 | `_prepare_external_pipeline_cache` | Write one mmap-friendly copy while DICOM is already decoding off UI. |
-| 1207 | `_decode_volume_payload` | Pure file/NumPy stage. Safe to run outside Blender's UI thread. |
-| 1261 | `_commit_volume_payload` | Main-thread stage: publish a decoded payload to DSG's shared runtime. |
-| 1295 | `load_volume` | Synchronous compatibility wrapper. Clinical UI uses the async modal path. |
-| 1301 | `write_header_text` | Write a bounded metadata summary without serializing huge frame sequences. |
+| 485 | `_infer_multiframe_z_spacing` |  |
+| 508 | `_multiframe_slice_order` | Return (order, positions) so frames ascend along the slice normal. |
+| 534 | `_warn_if_orientation_missing` |  |
+| 550 | `_infer_classic_z_spacing` |  |
+| 566 | `_estimate_memory_mb` |  |
+| 571 | `_valid_image_dimensions` |  |
+| 579 | `_sort_recovered_series_items` | Sort recovered classic-series slices across arbitrary subdirectories. |
+| 586 | `_sort_recovered_series_items.sort_key` |  |
+| 601 | `_warn_if_slices_without_position` |  |
+| 610 | `_bounded_recursive_files` | Return files below *root* without trusting filename extensions. |
+| 642 | `_recovery_search_roots` | Choose bounded study-tree roots for recovery of a non-image DICOM. |
+| 677 | `_dicomdir_referenced_paths` | Resolve ReferencedFileID entries when the selected object is DICOMDIR. |
+| 718 | `_candidate_series_near_selection` | Discover image-bearing DICOM series around a non-image selection. |
+| 742 | `_candidate_series_near_selection.add_path` |  |
+| 841 | `_recover_image_source` |  |
+| 896 | `probe_source` | Inspect a selected DICOM file and determine whether it is multi-frame. |
+| 998 | `_decode_pixel_array` | Decode one DICOM image through quiet compatibility fallbacks. |
+| 1064 | `_grayscale_frame` |  |
+| 1082 | `_load_multiframe` |  |
+| 1135 | `_resolve_classic_series_in_worker` | Resolve all slices/geometry for a classic DICOM series off the UI thread. |
+| 1171 | `_load_classic_series` |  |
+| 1208 | `_sample_density_statistics` |  |
+| 1238 | `_prepare_external_pipeline_cache` | Write one mmap-friendly copy while DICOM is already decoding off UI. |
+| 1261 | `_decode_volume_payload` | Pure file/NumPy stage. Safe to run outside Blender's UI thread. |
+| 1330 | `_commit_volume_payload` | Main-thread stage: publish a decoded payload to DSG's shared runtime. |
+| 1341 | `rehydrate_runtime` | Put the CBCT voxels back in memory for a scene that already has them. |
+| 1354 | `_publish_volume_payload` |  |
+| 1381 | `load_volume` | Synchronous compatibility wrapper. Clinical UI uses the async modal path. |
+| 1387 | `write_header_text` | Write a bounded metadata summary without serializing huge frame sequences. |
 
 ## [_dicom_parts/02_volume_mpr_scene.py](../_dicom_parts/02_volume_mpr_scene.py)
 
@@ -394,7 +346,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [_dicom_parts/03_updates_segmentation.py](../_dicom_parts/03_updates_segmentation.py)
 
-2572 líneas · imports Blender: bpy, bpy_extras, mathutils · namespace de `dicom_module`
+2675 líneas · imports Blender: bpy, bpy_extras, mathutils · namespace de `dicom_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -456,49 +408,53 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 1341 | `_automatic_teeth_mask` | Return a connectivity-constrained dental mask and backend diagnostics. |
 | 1419 | `_semantic_engine_root` |  |
 | 1423 | `_semantic_source_signature` |  |
-| 1436 | `_semantic_model_kind_for_structure` | Return the primary engine for a requested segmentation structure. |
-| 1457 | `_load_semantic_labels_cached` | Query the one active semantic labelmap without triggering inference. |
-| 1468 | `get_cached_semantic_cbct_labels` | Return cached labels only; never starts a neural inference (CQS query). |
-| 1478 | `_store_semantic_result` | Commit one validated full-size labelmap as the semantic SSOT. |
-| 1501 | `predict_semantic_cbct_labels_sync` | Compatibility cache query. DSG 9.10 never runs neural inference on Blender's UI thread. |
-| 1518 | `_semantic_classes_for_structure` |  |
-| 1534 | `_semantic_mask_for_structure` |  |
-| 1544 | `_semantic_compact_mask_for_structure` | Return only the occupied semantic ROI, avoiding a full-FOV boolean copy. |
-| 1582 | `_compact_mask_for_classes` | Return a compact native-resolution bool mask for explicit integer classes. |
-| 1613 | `_embed_compact_mask` |  |
-| 1626 | `_ellipsoid_structure` | Anisotropic structuring element expressed in physical millimetres. |
-| 1638 | `_fuse_mandibular_canal_masks` | Conservative canal cleanup for normalized DSG class 55. |
-| 1752 | `_mandibular_canal_material` | High-visibility clinical material for the learned IAN canal mask. |
-| 1777 | `_filter_mandibular_canal_components` | Remove only tiny isolated class-55 speckles; retain anatomical variants. |
-| 1826 | `build_mandibular_canal_surface` | Materialise the IAN canal at native mask resolution. |
-| 1947 | `segment_tissue_semantically` |  |
-| 1993 | `segment_tissue_automatically` | Create a full-resolution mask with tissue-specific 3D logic. |
-| 2102 | `_require_mask` |  |
-| 2110 | `_rle_component_analysis` | Label 3D binary components with run-length encoding and union-find. |
-| 2130 | `_rle_component_analysis.make_set` |  |
-| 2135 | `_rle_component_analysis.find` |  |
-| 2141 | `_rle_component_analysis.union` |  |
-| 2151 | `_rle_component_analysis.row_runs` |  |
-| 2166 | `_rle_component_analysis.union_rows` |  |
-| 2206 | `_mask_from_component_roots` |  |
-| 2210 | `_mask_from_component_roots.find` |  |
-| 2224 | `_component_statistics` | Return physical-shape statistics for run-length connected components. |
-| 2228 | `_component_statistics.find` |  |
-| 2256 | `_roots_overlapping_mask` | Return component roots whose runs overlap at least one True voxel. |
-| 2260 | `_roots_overlapping_mask.find` |  |
-| 2273 | `_root_overlap_voxel_counts` | Count overlap voxels for each connected-component root. |
-| 2277 | `_root_overlap_voxel_counts.find` |  |
-| 2292 | `remove_small_islands` | Remove small 3D components with SciPy when present, RLE otherwise. |
-| 2343 | `_window_morphology_axis` |  |
-| 2355 | `_binary_box_morphology` |  |
-| 2362 | `close_segmentation_gaps` |  |
-| 2379 | `fill_segmentation_holes` |  |
-| 2395 | `_surface_material` |  |
-| 2423 | `_dicom_surface_alpha_from_props` | Return the fixed radiographic alpha used by DSG for generated DICOM STL. |
-| 2429 | `_configure_transparent_material` | Make a material really transparent in Blender Solid/Material previews. |
-| 2474 | `_iter_dicom_surface_objects` | Yield generated DICOM STL surfaces that may hide the radiographic slice. |
-| 2503 | `_apply_dicom_surface_transparency` | Apply the ghost transparency slider to the generated DICOM STL. |
-| 2560 | `on_dicom_surface_transparency_change` |  |
+| 1436 | `_stable_source_key` | Like the source signature but identical across Blender sessions |
+| 1452 | `_semantic_model_kind_for_structure` | Return the primary engine for a requested segmentation structure. |
+| 1480 | `_semantic_labels_dir` | Stable per-CBCT folder (the pipeline input cache is renamed on every |
+| 1497 | `persist_semantic_labels` | Copy the active labelmap next to the per-source CBCT cache. |
+| 1526 | `restore_semantic_labels` | Reload the persisted labelmap for the current CBCT (never infers). |
+| 1552 | `_load_semantic_labels_cached` | Query the one active semantic labelmap without triggering inference. |
+| 1569 | `get_cached_semantic_cbct_labels` | Return cached labels only; never starts a neural inference (CQS query). |
+| 1579 | `_store_semantic_result` | Commit one validated full-size labelmap as the semantic SSOT. |
+| 1602 | `predict_semantic_cbct_labels_sync` | Compatibility cache query. DSG 9.10 never runs neural inference on Blender's UI thread. |
+| 1619 | `_semantic_classes_for_structure` |  |
+| 1635 | `_semantic_mask_for_structure` |  |
+| 1645 | `_semantic_compact_mask_for_structure` | Return only the occupied semantic ROI, avoiding a full-FOV boolean copy. |
+| 1683 | `_compact_mask_for_classes` | Return a compact native-resolution bool mask for explicit integer classes. |
+| 1714 | `_embed_compact_mask` |  |
+| 1727 | `_ellipsoid_structure` | Anisotropic structuring element expressed in physical millimetres. |
+| 1739 | `_fuse_mandibular_canal_masks` | Conservative canal cleanup for normalized DSG class 55. |
+| 1853 | `_mandibular_canal_material` | High-visibility clinical material for the learned IAN canal mask. |
+| 1878 | `_filter_mandibular_canal_components` | Remove only tiny isolated class-55 speckles; retain anatomical variants. |
+| 1927 | `build_mandibular_canal_surface` | Materialise the IAN canal at native mask resolution. |
+| 2048 | `segment_tissue_semantically` |  |
+| 2095 | `segment_tissue_automatically` | Create a full-resolution mask with tissue-specific 3D logic. |
+| 2205 | `_require_mask` |  |
+| 2213 | `_rle_component_analysis` | Label 3D binary components with run-length encoding and union-find. |
+| 2233 | `_rle_component_analysis.make_set` |  |
+| 2238 | `_rle_component_analysis.find` |  |
+| 2244 | `_rle_component_analysis.union` |  |
+| 2254 | `_rle_component_analysis.row_runs` |  |
+| 2269 | `_rle_component_analysis.union_rows` |  |
+| 2309 | `_mask_from_component_roots` |  |
+| 2313 | `_mask_from_component_roots.find` |  |
+| 2327 | `_component_statistics` | Return physical-shape statistics for run-length connected components. |
+| 2331 | `_component_statistics.find` |  |
+| 2359 | `_roots_overlapping_mask` | Return component roots whose runs overlap at least one True voxel. |
+| 2363 | `_roots_overlapping_mask.find` |  |
+| 2376 | `_root_overlap_voxel_counts` | Count overlap voxels for each connected-component root. |
+| 2380 | `_root_overlap_voxel_counts.find` |  |
+| 2395 | `remove_small_islands` | Remove small 3D components with SciPy when present, RLE otherwise. |
+| 2446 | `_window_morphology_axis` |  |
+| 2458 | `_binary_box_morphology` |  |
+| 2465 | `close_segmentation_gaps` |  |
+| 2482 | `fill_segmentation_holes` |  |
+| 2498 | `_surface_material` |  |
+| 2526 | `_dicom_surface_alpha_from_props` | Return the fixed radiographic alpha used by DSG for generated DICOM STL. |
+| 2532 | `_configure_transparent_material` | Make a material really transparent in Blender Solid/Material previews. |
+| 2577 | `_iter_dicom_surface_objects` | Yield generated DICOM STL surfaces that may hide the radiographic slice. |
+| 2606 | `_apply_dicom_surface_transparency` | Apply the ghost transparency slider to the generated DICOM STL. |
+| 2663 | `on_dicom_surface_transparency_change` |  |
 
 ## [_dicom_parts/04_hybrid_surface_preview.py](../_dicom_parts/04_hybrid_surface_preview.py)
 
@@ -719,7 +675,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py)
 
-2360 líneas · imports Blender: ninguno directo · namespace de `dicom_module`
+2392 líneas · imports Blender: ninguno directo · namespace de `dicom_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -780,38 +736,38 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 1014 | `_restore_ai_performance_session` |  |
 | 1045 | `ai_performance_session_state` |  |
 | 1049 | `_set_segmentation_progress` |  |
-| 1080 | `_begin_segmentation_progress` |  |
-| 1088 | `_end_segmentation_progress` |  |
-| 1109 | `segmentation_progress_snapshot` |  |
-| 1127 | `semantic_workflow_busy` | Return whether a clinical segmentation transaction is active. |
-| 1141 | `_finish_async_segmentation` |  |
-| 1196 | `_abort_async_segmentation` | Abort one transaction and remove only artifacts created by that phase. |
-| 1272 | `cancel_semantic_workflow` | Cancel the active asynchronous CBCT transaction and roll it back safely. |
-| 1284 | `_poll_async_segmentation` |  |
-| 1620 | `_start_async_full_segmentation` | Launch the selected DSG 9.10 segmentation engine in the external worker. |
-| 1713 | class `DICOMWIZARDPRO_OT_segment_semantic_structure` | `dicom_wizard_pro.segment_semantic_structure` · Segmentar estructura |
-| 1722 | `DICOMWIZARDPRO_OT_segment_semantic_structure.execute` |  |
-| 1745 | class `DICOMWIZARDPRO_OT_segment_all` | `dicom_wizard_pro.segment_all` · Segmentar todo |
-| 1754 | `DICOMWIZARDPRO_OT_segment_all.execute` |  |
-| 1772 | class `DICOMWIZARDPRO_OT_direct_dicom_to_surface` | `dicom_wizard_pro.direct_dicom_to_surface` · Segmentar DICOM |
-| 1779 | `DICOMWIZARDPRO_OT_direct_dicom_to_surface.execute` |  |
-| 1795 | `generate_native_alignment_reference` | Return the best available IOS↔CBCT dental reference. |
-| 1886 | `generate_unsegmented_dicom_stl` | Build a native DICOM threshold STL with no neural segmentation. |
-| 1983 | class `DICOMWIZARDPRO_OT_continue_with_dicom_stl` | `dicom_wizard_pro.continue_with_dicom_stl` · Continuar con STL DICOM |
-| 1989 | `DICOMWIZARDPRO_OT_continue_with_dicom_stl.execute` |  |
-| 2025 | class `DICOMWIZARDPRO_OT_prepare_ai_alignment` | `dicom_wizard_pro.prepare_ai_alignment` · Crear referencia dental CBCT y continuar |
-| 2031 | `DICOMWIZARDPRO_OT_prepare_ai_alignment.execute` |  |
-| 2073 | class `DICOMWIZARDPRO_OT_prepare_alignment` | `dicom_wizard_pro.prepare_alignment` · Continue to Alignment |
-| 2079 | `DICOMWIZARDPRO_OT_prepare_alignment.execute` |  |
-| 2184 | class `DICOMWIZARDPRO_OT_export_surface_stl` | `dicom_wizard_pro.export_surface_stl` · Exportar STL |
-| 2195 | `DICOMWIZARDPRO_OT_export_surface_stl.invoke` |  |
-| 2209 | `DICOMWIZARDPRO_OT_export_surface_stl.execute` |  |
-| 2251 | class `DICOMWIZARDPRO_OT_generate_surface` | `dicom_wizard_pro.generate_surface` · Generar superficie |
-| 2256 | `DICOMWIZARDPRO_OT_generate_surface.execute` |  |
-| 2278 | class `DICOMWIZARDPRO_OT_select_surface` | `dicom_wizard_pro.select_surface` · Seleccionar superficie |
-| 2282 | `DICOMWIZARDPRO_OT_select_surface.execute` |  |
-| 2295 | class `DICOMWIZARDPRO_OT_back_to_segmentation` | `dicom_wizard_pro.back_to_segmentation` · Volver a segmentación |
-| 2299 | `DICOMWIZARDPRO_OT_back_to_segmentation.execute` |  |
+| 1085 | `_begin_segmentation_progress` |  |
+| 1098 | `_end_segmentation_progress` |  |
+| 1124 | `segmentation_progress_snapshot` |  |
+| 1142 | `semantic_workflow_busy` | Return whether a clinical segmentation transaction is active. |
+| 1156 | `_finish_async_segmentation` |  |
+| 1215 | `_abort_async_segmentation` | Abort one transaction and remove only artifacts created by that phase. |
+| 1291 | `cancel_semantic_workflow` | Cancel the active asynchronous CBCT transaction and roll it back safely. |
+| 1303 | `_poll_async_segmentation` |  |
+| 1652 | `_start_async_full_segmentation` | Launch the selected DSG 9.10 segmentation engine in the external worker. |
+| 1745 | class `DICOMWIZARDPRO_OT_segment_semantic_structure` | `dicom_wizard_pro.segment_semantic_structure` · Segmentar estructura |
+| 1754 | `DICOMWIZARDPRO_OT_segment_semantic_structure.execute` |  |
+| 1777 | class `DICOMWIZARDPRO_OT_segment_all` | `dicom_wizard_pro.segment_all` · Segmentar todo |
+| 1786 | `DICOMWIZARDPRO_OT_segment_all.execute` |  |
+| 1804 | class `DICOMWIZARDPRO_OT_direct_dicom_to_surface` | `dicom_wizard_pro.direct_dicom_to_surface` · Segmentar DICOM |
+| 1811 | `DICOMWIZARDPRO_OT_direct_dicom_to_surface.execute` |  |
+| 1827 | `generate_native_alignment_reference` | Return the best available IOS↔CBCT dental reference. |
+| 1918 | `generate_unsegmented_dicom_stl` | Build a native DICOM threshold STL with no neural segmentation. |
+| 2015 | class `DICOMWIZARDPRO_OT_continue_with_dicom_stl` | `dicom_wizard_pro.continue_with_dicom_stl` · Continuar con STL DICOM |
+| 2021 | `DICOMWIZARDPRO_OT_continue_with_dicom_stl.execute` |  |
+| 2057 | class `DICOMWIZARDPRO_OT_prepare_ai_alignment` | `dicom_wizard_pro.prepare_ai_alignment` · Crear referencia dental CBCT y continuar |
+| 2063 | `DICOMWIZARDPRO_OT_prepare_ai_alignment.execute` |  |
+| 2105 | class `DICOMWIZARDPRO_OT_prepare_alignment` | `dicom_wizard_pro.prepare_alignment` · Continue to Alignment |
+| 2111 | `DICOMWIZARDPRO_OT_prepare_alignment.execute` |  |
+| 2216 | class `DICOMWIZARDPRO_OT_export_surface_stl` | `dicom_wizard_pro.export_surface_stl` · Exportar STL |
+| 2227 | `DICOMWIZARDPRO_OT_export_surface_stl.invoke` |  |
+| 2241 | `DICOMWIZARDPRO_OT_export_surface_stl.execute` |  |
+| 2283 | class `DICOMWIZARDPRO_OT_generate_surface` | `dicom_wizard_pro.generate_surface` · Generar superficie |
+| 2288 | `DICOMWIZARDPRO_OT_generate_surface.execute` |  |
+| 2310 | class `DICOMWIZARDPRO_OT_select_surface` | `dicom_wizard_pro.select_surface` · Seleccionar superficie |
+| 2314 | `DICOMWIZARDPRO_OT_select_surface.execute` |  |
+| 2327 | class `DICOMWIZARDPRO_OT_back_to_segmentation` | `dicom_wizard_pro.back_to_segmentation` · Volver a segmentación |
+| 2331 | `DICOMWIZARDPRO_OT_back_to_segmentation.execute` |  |
 
 ## [_dicom_parts/07_panels_registration.py](../_dicom_parts/07_panels_registration.py)
 
@@ -859,7 +815,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [_guide_parts/00_bootstrap_constants_assets_a.py](../_guide_parts/00_bootstrap_constants_assets_a.py)
 
-891 líneas · imports Blender: bmesh, bpy, bpy_extras, gpu, mathutils · namespace de `guide_module`
+899 líneas · imports Blender: bmesh, bpy, bpy_extras, gpu, mathutils · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -876,7 +832,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [_guide_parts/01_workflow_state_mpr_objects_a.py](../_guide_parts/01_workflow_state_mpr_objects_a.py)
 
-2758 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+2837 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -926,177 +882,182 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 1496 | `_ensure_clinical_model_material` | Neutral gray IOS/model material for Material Preview. |
 | 1522 | `_apply_clinical_model_material` | Assign the model display material without touching blockout materials. |
 | 1547 | `_restore_workflow_stage` | Reconstruct visibility, material preview and controllers for one stage. |
-| 1660 | `_schedule_workflow_stage_restore` |  |
-| 1668 | `_schedule_workflow_stage_restore._restore_timer` |  |
-| 1691 | `_set_workflow_gate` |  |
-| 1708 | `_require_workflow_stage` |  |
-| 1760 | `_reconcile_workflow_after_undo` |  |
-| 1784 | `_on_current_step_update` | Single gate for every forward/backward workflow transition. |
-| 1859 | `_on_precision_ortho_lock_update` |  |
-| 1871 | `_dsg_spanish` |  |
-| 1875 | `_ui_text` |  |
-| 1879 | `_step_text` |  |
-| 1886 | `_dsg_report` |  |
-| 1903 | `_suite_role` |  |
-| 1906 | `_set_suite_role` |  |
-| 1912 | `_find_suite_object` |  |
-| 1915 | `_is_generated_blockout_mesh` | Return True for any DSG mesh that must never be reused as source anatomy. |
-| 1933 | `_looks_like_dicom_mesh` | Fast name/role guard available before the full DICOM helper is defined. |
-| 1947 | `_is_strict_ios_blockout_source` | Accept only an IOS scan/aligned IOS as source anatomy for blockout. |
-| 1972 | `_find_aligned_ios` |  |
-| 1993 | `_resolve_blockout_source_model` | Resolve the IOS explicitly chosen in DSG, with a safe alignment fallback. |
-| 2017 | `_is_dicom_related_object` |  |
-| 2031 | `_set_solid_view_original_colors` | Return every visible 3D editor to normal Solid material colors. |
-| 2061 | `_set_dicom_collections_hidden` |  |
-| 2065 | `_show_dicom_objects` |  |
-| 2077 | `_hide_dicom_objects` |  |
-| 2090 | `_hide_ios_antagonists_for_insertion_axis` | Hide every registered antagonist while the insertion axis is chosen. |
-| 2121 | `_show_simple_active_cbct_jaw` | For SIMPLE cases show only the large CBCT jaw island matching the IOS. |
-| 2148 | `_isolate_ios_for_guide` |  |
-| 2172 | `_implant_geometry_center_world` | Return the vertex centroid of an implant in world coordinates. |
-| 2192 | `_is_valid_mpr_microscrew` | Return True for a DSG microscrew trajectory or visual object. |
-| 2225 | `_selected_mpr_microscrew` | Resolve the microscrew the user intends to review. |
-| 2263 | `_microscrew_axis_world` |  |
-| 2283 | `_microscrew_center_world` | Clinical centre of the screw trajectory, not of its frame supports. |
-| 2320 | `_microscrew_x_hint_world` |  |
-| 2337 | `_ensure_mpr_target_visible` | Keep an implant/microscrew visible over the MPR image planes. |
-| 2342 | `_ensure_mpr_target_visible._unhide_object` |  |
-| 2369 | `_ensure_mpr_target_visible._walk` |  |
-| 2392 | `_center_two_plane_mpr_on_microscrew` | Centre the two-plane DICOM review on a selected microscrew. |
-| 2453 | `_center_two_plane_mpr_on_microscrew.percent` |  |
-| 2493 | `_resolve_mpr_target_implant` |  |
-| 2510 | `_center_two_plane_mpr_on_implant` | Orient DSG's two-plane MPR toward the selected implant. |
-| 2553 | `_center_two_plane_mpr_on_implant.percent` |  |
-| 2611 | `_mpr_implant_items` |  |
-| 2624 | `_on_mpr_target_implant_change` |  |
-| 2636 | `_iter_view3d_areas` | Yield (window, screen, area, space) for every live 3D viewport. |
-| 2656 | `_set_material_preview_guide_view` | Restore the clean implant-planning viewport used on entering step 2. |
-| 2687 | `_capture_active_view3d_state` | Capture orientation/zoom without serialising Blender RNA objects. |
-| 2714 | `_restore_active_view3d_state` |  |
+| 1663 | `_schedule_workflow_stage_restore` |  |
+| 1671 | `_schedule_workflow_stage_restore._restore_timer` |  |
+| 1694 | `_set_workflow_gate` |  |
+| 1711 | `_require_workflow_stage` |  |
+| 1769 | `_reconcile_workflow_after_undo` |  |
+| 1793 | `_on_current_step_update` | Single gate for every forward/backward workflow transition. |
+| 1868 | `_on_precision_ortho_lock_update` |  |
+| 1880 | `_dsg_spanish` |  |
+| 1884 | `_ui_text` |  |
+| 1888 | `_step_text` |  |
+| 1895 | `_dsg_report` |  |
+| 1912 | `_suite_role` |  |
+| 1915 | `_set_suite_role` |  |
+| 1921 | `_find_suite_object` |  |
+| 1924 | `_is_generated_blockout_mesh` | Return True for any DSG mesh that must never be reused as source anatomy. |
+| 1942 | `_looks_like_dicom_mesh` | Fast name/role guard available before the full DICOM helper is defined. |
+| 1956 | `_is_strict_ios_blockout_source` | Accept only an IOS scan/aligned IOS as source anatomy for blockout. |
+| 1986 | `_is_closed_counterpart_of_aligned_ios` |  |
+| 2000 | `_closed_counterpart` | Accepted closed model generated from this (open) IOS, if any. |
+| 2010 | `_find_aligned_ios` |  |
+| 2032 | `_resolve_blockout_source_model` | Resolve the IOS explicitly chosen in DSG, with a safe alignment fallback. |
+| 2056 | `_is_dicom_related_object` |  |
+| 2070 | `_set_solid_view_original_colors` | Return every visible 3D editor to normal Solid material colors. |
+| 2100 | `_set_dicom_collections_hidden` |  |
+| 2104 | `_show_dicom_objects` |  |
+| 2119 | `_is_dicom_segmentation_mesh` | Segmented teeth/bone/canal meshes: heavy, never needed to read an MPR. |
+| 2129 | `_show_dicom_review_objects` | DICOM review: MPR planes and helpers only, plus chosen neighbours. |
+| 2155 | `_hide_dicom_objects` |  |
+| 2168 | `_hide_ios_antagonists_for_insertion_axis` | Hide every registered antagonist while the insertion axis is chosen. |
+| 2199 | `_show_simple_active_cbct_jaw` | For SIMPLE cases show only the large CBCT jaw island matching the IOS. |
+| 2226 | `_isolate_ios_for_guide` |  |
+| 2250 | `_implant_geometry_center_world` | Return the vertex centroid of an implant in world coordinates. |
+| 2270 | `_is_valid_mpr_microscrew` | Return True for a DSG microscrew trajectory or visual object. |
+| 2303 | `_selected_mpr_microscrew` | Resolve the microscrew the user intends to review. |
+| 2341 | `_microscrew_axis_world` |  |
+| 2361 | `_microscrew_center_world` | Clinical centre of the screw trajectory, not of its frame supports. |
+| 2398 | `_microscrew_x_hint_world` |  |
+| 2415 | `_ensure_mpr_target_visible` | Keep an implant/microscrew visible over the MPR image planes. |
+| 2420 | `_ensure_mpr_target_visible._unhide_object` |  |
+| 2447 | `_ensure_mpr_target_visible._walk` |  |
+| 2470 | `_center_two_plane_mpr_on_microscrew` | Centre the two-plane DICOM review on a selected microscrew. |
+| 2531 | `_center_two_plane_mpr_on_microscrew.percent` |  |
+| 2571 | `_resolve_mpr_target_implant` |  |
+| 2588 | `_center_two_plane_mpr_on_implant` | Orient DSG's two-plane MPR toward the selected implant. |
+| 2631 | `_center_two_plane_mpr_on_implant.percent` |  |
+| 2689 | `_mpr_implant_items` |  |
+| 2702 | `_on_mpr_target_implant_change` |  |
+| 2714 | `_iter_view3d_areas` | Yield (window, screen, area, space) for every live 3D viewport. |
+| 2734 | `_set_material_preview_guide_view` | Restore the clean implant-planning viewport used on entering step 2. |
+| 2765 | `_capture_active_view3d_state` | Capture orientation/zoom without serialising Blender RNA objects. |
+| 2792 | `_restore_active_view3d_state` |  |
 
 ## [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py)
 
-2738 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+2787 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
 | 1 | `_capture_implant_step_return_state` | Arm restoration before leaving implant planning for the contour step. |
 | 39 | `_restore_implant_planning_state` | Rebuild the visible step-2 state after Back/Ctrl+Z or DICOM exit. |
-| 108 | `_schedule_implant_planning_state_restore` |  |
-| 116 | `_schedule_implant_planning_state_restore._restore_timer` |  |
-| 146 | `_dsg_restore_implant_step_after_undo` | Undo-post bridge for the complete DSG state machine. |
-| 163 | `_remove_implant_navigation_restore_handler` |  |
-| 172 | `_register_implant_navigation_restore_handler` |  |
-| 179 | `_dicom_review_is_active` |  |
-| 184 | `_close_dicom_review_for_guide` |  |
-| 195 | class `DSG_OT_SelectMPRImplant` | `dsg.select_mpr_implant` · Select Implant for MPR |
-| 201 | `DSG_OT_SelectMPRImplant.execute` |  |
-| 230 | class `DSG_OT_OpenOrCenterImplantMPR` | `dsg.open_or_center_implant_mpr` · Implant MPR |
-| 236 | `DSG_OT_OpenOrCenterImplantMPR.execute` |  |
-| 257 | class `DSG_OT_CenterSelectedMicroscrewMPR` | `dsg.center_selected_microscrew_mpr` · Center Microscrew MPR |
-| 263 | `DSG_OT_CenterSelectedMicroscrewMPR.execute` |  |
-| 279 | class `DSG_OT_OpenOrCenterMicroscrewMPR` | `dsg.open_or_center_microscrew_mpr` · Microscrew MPR |
-| 285 | `DSG_OT_OpenOrCenterMicroscrewMPR.execute` |  |
-| 307 | class `DSG_OT_OpenDICOMReview` | `dsg.open_dicom_review` · Review DICOM |
-| 313 | `DSG_OT_OpenDICOMReview.execute` |  |
-| 372 | class `DSG_OT_CloseDICOMReview` | `dsg.close_dicom_review` · Close DICOM Review |
-| 377 | `DSG_OT_CloseDICOMReview.execute` |  |
-| 386 | `ensure_dsg_root_collection` | Crea/recupera la colección raíz DSG sin tocar colecciones del usuario. |
-| 398 | `ensure_dsg_collection` | Crea/recupera una subcolección DSG para ordenar la escena automáticamente. |
-| 417 | `unlink_object_from_dsg_collections` | Desenlaza un objeto conservado por el usuario de las colecciones internas DSG. |
-| 432 | `cleanup_empty_dsg_collections` | Elimina subcolecciones DSG vacías y, opcionalmente, la raíz si queda vacía. |
-| 473 | `get_dsg_collection_name_for_role` |  |
-| 477 | `link_object_to_dsg_collection` | Enlaza el objeto a su colección DSG sin deshacer colecciones del usuario. |
-| 507 | `register_dsg_object` | Registra un objeto sin depender de PointerProperty persistente ni roles. |
-| 605 | `_dsg_action_begin` | Reject re-entrant and accidental rapid repeats of a write action. |
-| 621 | `_dsg_action_end` |  |
-| 633 | `_make_dsg_guarded_execute` | Return a Blender-compatible execute callback with exactly two arguments. |
-| 641 | `_make_dsg_guarded_execute.guarded_execute` |  |
-| 670 | `_dsg_guard_operator_class` | Wrap one operator once, without changing its clinical implementation. |
-| 681 | `_install_dsg_action_guards` |  |
-| 690 | `_is_numeric_duplicate_name` |  |
-| 697 | `_cleanup_dsg_singleton_duplicates` | Remove only accidental .001 copies of objects that must be singletons. |
-| 728 | `_cleanup_dsg_owned_orphan_data` | Purge only zero-user datablocks explicitly marked as DSG-owned. |
-| 761 | `_dsg_owned_data_cleanup_timer` |  |
-| 774 | `_schedule_dsg_owned_data_cleanup` |  |
-| 786 | `_rounded_matrix_signature` |  |
-| 793 | `_current_sleeve_build_signature` |  |
-| 814 | `_sleeve_dimensions_from_props` | Return the three user-configurable sleeve dimensions in millimetres. |
-| 823 | `_sleeve_dimensions_from_guide` | Read dimensions stored on a generated guide, including migrated scenes. |
-| 852 | `_sleeve_dimensions_match_guide` |  |
-| 863 | `_safe_object_name` | Devuelve el nombre solo cuando el StructRNA sigue vivo. |
-| 878 | `_valid_obj` | Comprueba un Object de Blender sin tocar propiedades de un RNA eliminado. |
-| 895 | `_inherit_dsg_custom_properties` | Copy DSG custom properties when a guide object is rebuilt. |
-| 925 | `_guide_has_downstream_sleeve_evidence` | Return True when a guide can only have originated after sleeve creation. |
-| 961 | `_restore_sleeve_metadata_if_derivable` | Repair scenes whose rebuilt guide lost sleeve metadata. |
-| 1001 | `find_dsg_objects` | Busca por nombre, prefijo o colección; no usa propiedades DSG_role. |
-| 1005 | `find_dsg_objects.add` |  |
-| 1051 | `get_primary_dsg_object` | Resuelve primero el nombre fijo y después el puntero actual como fallback. |
-| 1069 | `repair_core_object_pointers` | Sincroniza solo los objetos únicos mediante sus nombres canónicos. |
-| 1090 | `_clear_scene_object_pointers` | Borra PointerProperty que apunten a ``obj`` antes de eliminarlo. |
-| 1120 | `_clear_id_animation_data` | Detach Actions, NLA tracks and drivers before a DSG ID is retired. |
-| 1149 | `_sanitize_dsg_object_for_id_change` | Prepare a generated object before delete, archive, rename or replacement. |
-| 1174 | `_prepare_outliner_for_dsg_id_changes` | Avoid Blender 5.2 expanding stale Object AnimData during DSG rebuilds. |
-| 1205 | `_archive_transient_dsg_object` | Hide a temporary object without invalidating its Blender ID. |
-| 1230 | `_sanitize_static_dsg_geometry_animdata` | Remove obsolete animation links before static clinical geometry stages. |
-| 1245 | `safe_remove_object` | Elimina un objeto vivo después de sanear referencias y AnimData. |
-| 1272 | `safe_remove_by_name` |  |
-| 1279 | `safe_remove_engrave_object` | Retira un helper de grabado junto con su datablock temporal. |
-| 1312 | `safe_remove_object_with_data` | Elimina un objeto temporal y su datablock huérfano cuando es seguro. |
-| 1343 | `safe_remove_temp_by_name` |  |
-| 1350 | `safe_remove_by_prefix` |  |
-| 1356 | `deselect_all_objects` |  |
-| 1361 | `set_active` |  |
-| 1369 | `link_object` |  |
-| 1379 | `ensure_object_mode` |  |
-| 1385 | `apply_modifier_direct` |  |
-| 1416 | `should_keep_sleeve_flat_faces` | Protege la geometría precisa del sleeve después de generarlo. |
-| 1430 | `mark_sleeve_flat_protected` |  |
-| 1441 | `continuous_fusion_remesh_enabled` | Devuelve True cuando se prioriza una guía soldada y manifold. |
-| 1454 | `get_continuous_fusion_voxel` |  |
-| 1463 | `add_and_apply_voxel_remesh_if_allowed` | Aplica voxel remesh solo cuando no puede alterar un sleeve protegido. |
-| 1481 | `join_objects` |  |
-| 1500 | `duplicate_object_with_data` |  |
-| 1509 | `duplicate_evaluated_object_with_data` | Duplica la geometría evaluada para que modificadores visibles y blockout coincidan. |
-| 1530 | `_world_vertex_normal` | Return a normalized world-space vertex normal without modifying the mesh. |
-| 1542 | `_ensure_temporary_blockout_proxy_manifold` | Verify and, only on the temporary proxy, repair topology without remesh. |
-| 1563 | `_build_blockout_addition_volume` | Create a disposable, closed proxy for surgical-guide blockout UNION. |
-| 1712 | `_passive_blockout_material` |  |
-| 1719 | `_assign_blockout_union_band_material` | Paint a narrow surgical-teal band where the blockout joins the source model. |
-| 1832 | `_quiesce_blockout_boolean_modifiers` | Disable and remove legacy blockout Boolean modifiers without evaluation. |
-| 1887 | `_blockout_class_values` | Read the point-domain retention classes written by build_blockout_bvh. |
-| 1919 | `_replace_vertex_group_indices` | Create one deterministic vertex group without per-vertex Python calls. |
-| 1938 | `_prepare_blockout_modifier_groups` | Create passive, retentive, blockout and transition groups. |
-| 1982 | `_add_apply_passive_shrinkwrap` | Project only passive support vertices to the IOS plus guide clearance. |
-| 2015 | `_add_apply_transition_relax` | Apply a real Blender Laplacian modifier only to the blockout frontier. |
-| 2051 | `_clamp_blockout_modifier_result` | Prevent modifiers from weakening retention or over-rounding the frontier. |
-| 2082 | `_boundary_edge_components_with_verts` |  |
-| 2104 | `_cleanup_blockout_protocol_mesh` | BMesh equivalent of the supplied cleanup protocol, applied safely. |
-| 2208 | `_apply_surgical_guide_blockout_modifier_protocol` | Apply the clinical passive-seat stack transactionally to one copy. |
-| 2279 | `_boolean_rescue_passive_model` | Last-resort Boolean with a 0.01-0.03 mm disposable local overlap. |
-| 2316 | `build_joined_passive_model` | Create the v7-compatible passive cutter from evaluated IOS + blockout. |
-| 2378 | `get_confirmed_passive_model_obj` | Return only the explicitly confirmed passive/retentive cutter. |
-| 2398 | `get_passive_model_obj` | Return the best passive-model reference for non-gating geometry tools. |
-| 2416 | `_set_obj_hidden` |  |
-| 2427 | `prepare_final_cut_references` | Prepara las referencias del corte final sin esconder objetos auxiliares. |
-| 2451 | `_object_is_hidden` |  |
-| 2460 | `_toggle_visibility_for_objects` |  |
-| 2475 | `get_blockout_visibility_objects` | Devuelve únicamente el modelo pasivo final para la revisión clínica. |
-| 2511 | `get_guide_visibility_objects` |  |
-| 2529 | `get_axis_empty` |  |
-| 2533 | `get_pending_implant_axis_empty` | One-shot implant axis proposed from FDI without altering guide insertion. |
-| 2546 | `consume_pending_implant_axis_empty` |  |
-| 2558 | `invalidate_pending_implant_axis_empty` | Invalidate an advisory FDI axis so stale geometry cannot be consumed. |
-| 2584 | `hide_axis_empty` | Oculta DSG_Axis sin eliminarlo para conservar su orientación interna. |
-| 2622 | `ensure_axis_empty` |  |
-| 2635 | `_view3d_window_region` | Return the actual viewport WINDOW region, even when invoked from the N-panel. |
-| 2645 | `_world_bbox_center` |  |
-| 2655 | `_view_reference_target` | Find the surface point at the centre of the user's current viewport. |
-| 2681 | `capture_insertion_view_reference` | Capture the complete user view used to define guide insertion. |
+| 110 | `_schedule_implant_planning_state_restore` |  |
+| 118 | `_schedule_implant_planning_state_restore._restore_timer` |  |
+| 148 | `_dsg_restore_implant_step_after_undo` | Undo-post bridge for the complete DSG state machine. |
+| 165 | `_remove_implant_navigation_restore_handler` |  |
+| 174 | `_register_implant_navigation_restore_handler` |  |
+| 181 | `_dicom_review_is_active` |  |
+| 186 | `_close_dicom_review_for_guide` |  |
+| 199 | class `DSG_OT_SelectMPRImplant` | `dsg.select_mpr_implant` · Select Implant for MPR |
+| 205 | `DSG_OT_SelectMPRImplant.execute` |  |
+| 234 | class `DSG_OT_OpenOrCenterImplantMPR` | `dsg.open_or_center_implant_mpr` · Implant MPR |
+| 240 | `DSG_OT_OpenOrCenterImplantMPR.execute` |  |
+| 261 | class `DSG_OT_CenterSelectedMicroscrewMPR` | `dsg.center_selected_microscrew_mpr` · Center Microscrew MPR |
+| 267 | `DSG_OT_CenterSelectedMicroscrewMPR.execute` |  |
+| 283 | class `DSG_OT_OpenOrCenterMicroscrewMPR` | `dsg.open_or_center_microscrew_mpr` · Microscrew MPR |
+| 289 | `DSG_OT_OpenOrCenterMicroscrewMPR.execute` |  |
+| 311 | `_ensure_dicom_voxels` | Reload the CBCT voxels when the file says loaded but memory is empty. |
+| 347 | class `DSG_OT_OpenDICOMReview` | `dsg.open_dicom_review` · Review DICOM |
+| 353 | `DSG_OT_OpenDICOMReview.execute` |  |
+| 421 | class `DSG_OT_CloseDICOMReview` | `dsg.close_dicom_review` · Close DICOM Review |
+| 426 | `DSG_OT_CloseDICOMReview.execute` |  |
+| 435 | `ensure_dsg_root_collection` | Crea/recupera la colección raíz DSG sin tocar colecciones del usuario. |
+| 447 | `ensure_dsg_collection` | Crea/recupera una subcolección DSG para ordenar la escena automáticamente. |
+| 466 | `unlink_object_from_dsg_collections` | Desenlaza un objeto conservado por el usuario de las colecciones internas DSG. |
+| 481 | `cleanup_empty_dsg_collections` | Elimina subcolecciones DSG vacías y, opcionalmente, la raíz si queda vacía. |
+| 522 | `get_dsg_collection_name_for_role` |  |
+| 526 | `link_object_to_dsg_collection` | Enlaza el objeto a su colección DSG sin deshacer colecciones del usuario. |
+| 556 | `register_dsg_object` | Registra un objeto sin depender de PointerProperty persistente ni roles. |
+| 654 | `_dsg_action_begin` | Reject re-entrant and accidental rapid repeats of a write action. |
+| 670 | `_dsg_action_end` |  |
+| 682 | `_make_dsg_guarded_execute` | Return a Blender-compatible execute callback with exactly two arguments. |
+| 690 | `_make_dsg_guarded_execute.guarded_execute` |  |
+| 719 | `_dsg_guard_operator_class` | Wrap one operator once, without changing its clinical implementation. |
+| 730 | `_install_dsg_action_guards` |  |
+| 739 | `_is_numeric_duplicate_name` |  |
+| 746 | `_cleanup_dsg_singleton_duplicates` | Remove only accidental .001 copies of objects that must be singletons. |
+| 777 | `_cleanup_dsg_owned_orphan_data` | Purge only zero-user datablocks explicitly marked as DSG-owned. |
+| 810 | `_dsg_owned_data_cleanup_timer` |  |
+| 823 | `_schedule_dsg_owned_data_cleanup` |  |
+| 835 | `_rounded_matrix_signature` |  |
+| 842 | `_current_sleeve_build_signature` |  |
+| 863 | `_sleeve_dimensions_from_props` | Return the three user-configurable sleeve dimensions in millimetres. |
+| 872 | `_sleeve_dimensions_from_guide` | Read dimensions stored on a generated guide, including migrated scenes. |
+| 901 | `_sleeve_dimensions_match_guide` |  |
+| 912 | `_safe_object_name` | Devuelve el nombre solo cuando el StructRNA sigue vivo. |
+| 927 | `_valid_obj` | Comprueba un Object de Blender sin tocar propiedades de un RNA eliminado. |
+| 944 | `_inherit_dsg_custom_properties` | Copy DSG custom properties when a guide object is rebuilt. |
+| 974 | `_guide_has_downstream_sleeve_evidence` | Return True when a guide can only have originated after sleeve creation. |
+| 1010 | `_restore_sleeve_metadata_if_derivable` | Repair scenes whose rebuilt guide lost sleeve metadata. |
+| 1050 | `find_dsg_objects` | Busca por nombre, prefijo o colección; no usa propiedades DSG_role. |
+| 1054 | `find_dsg_objects.add` |  |
+| 1100 | `get_primary_dsg_object` | Resuelve primero el nombre fijo y después el puntero actual como fallback. |
+| 1118 | `repair_core_object_pointers` | Sincroniza solo los objetos únicos mediante sus nombres canónicos. |
+| 1139 | `_clear_scene_object_pointers` | Borra PointerProperty que apunten a ``obj`` antes de eliminarlo. |
+| 1169 | `_clear_id_animation_data` | Detach Actions, NLA tracks and drivers before a DSG ID is retired. |
+| 1198 | `_sanitize_dsg_object_for_id_change` | Prepare a generated object before delete, archive, rename or replacement. |
+| 1223 | `_prepare_outliner_for_dsg_id_changes` | Avoid Blender 5.2 expanding stale Object AnimData during DSG rebuilds. |
+| 1254 | `_archive_transient_dsg_object` | Hide a temporary object without invalidating its Blender ID. |
+| 1279 | `_sanitize_static_dsg_geometry_animdata` | Remove obsolete animation links before static clinical geometry stages. |
+| 1294 | `safe_remove_object` | Elimina un objeto vivo después de sanear referencias y AnimData. |
+| 1321 | `safe_remove_by_name` |  |
+| 1328 | `safe_remove_engrave_object` | Retira un helper de grabado junto con su datablock temporal. |
+| 1361 | `safe_remove_object_with_data` | Elimina un objeto temporal y su datablock huérfano cuando es seguro. |
+| 1392 | `safe_remove_temp_by_name` |  |
+| 1399 | `safe_remove_by_prefix` |  |
+| 1405 | `deselect_all_objects` |  |
+| 1410 | `set_active` |  |
+| 1418 | `link_object` |  |
+| 1428 | `ensure_object_mode` |  |
+| 1434 | `apply_modifier_direct` |  |
+| 1465 | `should_keep_sleeve_flat_faces` | Protege la geometría precisa del sleeve después de generarlo. |
+| 1479 | `mark_sleeve_flat_protected` |  |
+| 1490 | `continuous_fusion_remesh_enabled` | Devuelve True cuando se prioriza una guía soldada y manifold. |
+| 1503 | `get_continuous_fusion_voxel` |  |
+| 1512 | `add_and_apply_voxel_remesh_if_allowed` | Aplica voxel remesh solo cuando no puede alterar un sleeve protegido. |
+| 1530 | `join_objects` |  |
+| 1549 | `duplicate_object_with_data` |  |
+| 1558 | `duplicate_evaluated_object_with_data` | Duplica la geometría evaluada para que modificadores visibles y blockout coincidan. |
+| 1579 | `_world_vertex_normal` | Return a normalized world-space vertex normal without modifying the mesh. |
+| 1591 | `_ensure_temporary_blockout_proxy_manifold` | Verify and, only on the temporary proxy, repair topology without remesh. |
+| 1612 | `_build_blockout_addition_volume` | Create a disposable, closed proxy for surgical-guide blockout UNION. |
+| 1761 | `_passive_blockout_material` |  |
+| 1768 | `_assign_blockout_union_band_material` | Paint a narrow surgical-teal band where the blockout joins the source model. |
+| 1881 | `_quiesce_blockout_boolean_modifiers` | Disable and remove legacy blockout Boolean modifiers without evaluation. |
+| 1936 | `_blockout_class_values` | Read the point-domain retention classes written by build_blockout_bvh. |
+| 1968 | `_replace_vertex_group_indices` | Create one deterministic vertex group without per-vertex Python calls. |
+| 1987 | `_prepare_blockout_modifier_groups` | Create passive, retentive, blockout and transition groups. |
+| 2031 | `_add_apply_passive_shrinkwrap` | Project only passive support vertices to the IOS plus guide clearance. |
+| 2064 | `_add_apply_transition_relax` | Apply a real Blender Laplacian modifier only to the blockout frontier. |
+| 2100 | `_clamp_blockout_modifier_result` | Prevent modifiers from weakening retention or over-rounding the frontier. |
+| 2131 | `_boundary_edge_components_with_verts` |  |
+| 2153 | `_cleanup_blockout_protocol_mesh` | BMesh equivalent of the supplied cleanup protocol, applied safely. |
+| 2257 | `_apply_surgical_guide_blockout_modifier_protocol` | Apply the clinical passive-seat stack transactionally to one copy. |
+| 2328 | `_boolean_rescue_passive_model` | Last-resort Boolean with a 0.01-0.03 mm disposable local overlap. |
+| 2365 | `build_joined_passive_model` | Create the v7-compatible passive cutter from evaluated IOS + blockout. |
+| 2427 | `get_confirmed_passive_model_obj` | Return only the explicitly confirmed passive/retentive cutter. |
+| 2447 | `get_passive_model_obj` | Return the best passive-model reference for non-gating geometry tools. |
+| 2465 | `_set_obj_hidden` |  |
+| 2476 | `prepare_final_cut_references` | Prepara las referencias del corte final sin esconder objetos auxiliares. |
+| 2500 | `_object_is_hidden` |  |
+| 2509 | `_toggle_visibility_for_objects` |  |
+| 2524 | `get_blockout_visibility_objects` | Devuelve únicamente el modelo pasivo final para la revisión clínica. |
+| 2560 | `get_guide_visibility_objects` |  |
+| 2578 | `get_axis_empty` |  |
+| 2582 | `get_pending_implant_axis_empty` | One-shot implant axis proposed from FDI without altering guide insertion. |
+| 2595 | `consume_pending_implant_axis_empty` |  |
+| 2607 | `invalidate_pending_implant_axis_empty` | Invalidate an advisory FDI axis so stale geometry cannot be consumed. |
+| 2633 | `hide_axis_empty` | Oculta DSG_Axis sin eliminarlo para conservar su orientación interna. |
+| 2671 | `ensure_axis_empty` |  |
+| 2684 | `_view3d_window_region` | Return the actual viewport WINDOW region, even when invoked from the N-panel. |
+| 2694 | `_world_bbox_center` |  |
+| 2704 | `_view_reference_target` | Find the surface point at the centre of the user's current viewport. |
+| 2730 | `capture_insertion_view_reference` | Capture the complete user view used to define guide insertion. |
 
 ## [_guide_parts/02_implant_animation_geometry_a.py](../_guide_parts/02_implant_animation_geometry_a.py)
 
-3019 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+3070 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -1125,87 +1086,91 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 530 | `_cap_ring_with_center` |  |
 | 545 | `_overlay_simple_symmetric_upper_body` | Superpone una anatomía superior simple, recta y totalmente simétrica. |
 | 637 | `make_embedded_drill_visual_mesh` | Crea una fresa visual paramétrica a partir del STL integrado. |
-| 714 | `_set_fcurve_interpolation_linear` |  |
-| 729 | `_insert_helical_segment` |  |
-| 763 | `apply_clockwise_helical_animation` | Avanza y gira sobre el eje longitudinal real de la inserción. |
-| 794 | `apply_clockwise_helical_roundtrip_animation` | La fresa entra al sleeve y luego regresa a su posición inicial. |
-| 837 | `ensure_animated_drill_material` |  |
-| 851 | `_set_constant_interpolation_for_data_paths` |  |
-| 867 | `clear_implant_drill_visibility_animation` |  |
-| 887 | `animate_implants_hidden_until` | Oculta todos los implantes durante la secuencia y los revela juntos al final. |
-| 919 | `_matrix_to_flat_list` |  |
-| 924 | `_matrix_from_flat_list` |  |
-| 937 | `_store_implant_final_transform` |  |
-| 951 | `clear_implant_insertion_animation` | Remove only animation curves created by the final insertion sequence. |
-| 1000 | `_find_tooth_object_for_fdi` |  |
-| 1017 | `_immediate_extraction_animation_sources` | Return hidden/registered teeth that should be animated out first. |
-| 1059 | `_copy_object_material_slots` |  |
-| 1071 | `_estimate_extraction_axis_and_travel` | Estimate a crown-ward extraction vector from the tooth geometry itself. |
-| 1126 | `_estimate_extraction_axis_and_travel._end_width` |  |
-| 1160 | `clear_animated_extraction_teeth` |  |
-| 1182 | `get_animated_extraction_tooth_objects` |  |
-| 1192 | `build_animated_extraction_tooth` | Create a visible duplicate of the virtually extracted tooth and animate it out. |
-| 1296 | `get_animated_implant_objects` |  |
-| 1305 | `_implant_start_location_above_sleeve` | Places the complete implant immediately above the occlusal sleeve face. |
-| 1342 | `animate_implant_screw_in_after_drill` | Reveal the implant above its sleeve and screw it into its planned pose. |
-| 1406 | `animate_implant_hidden_during_drill` |  |
-| 1411 | `get_animated_drill_objects` |  |
-| 1419 | `remove_animated_drills` |  |
-| 1436 | `_rotation_for_drill_on_sleeve` | Orienta +Z local de la fresa hacia la entrada oclusal del sleeve. |
-| 1460 | `build_animated_drill_for_implant` | Crea y anima una fresa coaxial calibrada contra el lumen del sleeve. |
-| 1584 | `_decode_microscrew_visual_template` | Decodifica la malla compacta integrada del microtornillo. |
-| 1621 | `_normalized_microscrew_dimensions` |  |
-| 1633 | `_microscrew_dimensions_from_props` |  |
-| 1639 | `_microscrew_dimensions_from_record` |  |
-| 1646 | `make_embedded_microscrew_visual_mesh` | Create the embedded screw STL at the selected clinical dimensions. |
-| 1674 | `ensure_animated_microscrew_material` | Distinct metallic violet for every visual microscrew. |
-| 1700 | `get_animated_microscrew_objects` | Returns every DSG animated microscrew, including renamed stale copies. |
-| 1720 | `get_static_microscrew_visual_objects` | Returns planning-only screws that must not coexist with animation copies. |
-| 1748 | `set_static_microscrew_visuals_hidden` | Hide planning screws while animated copies exist, preserving user state. |
-| 1804 | `remove_pending_microscrew_geometry_previews` | Remove stale pending sleeve/support previews, including ``.001`` copies. |
-| 1823 | `remove_pending_microscrew_visuals` | Remove every pending visual copy, not only the exact unsuffixed name. |
-| 1839 | `remove_animated_microscrews` |  |
-| 1849 | `invalidate_microscrew_animation` | Discard animation copies after a placement changes. |
-| 1864 | `_rotation_for_microscrew_axis` | Orienta +Z local hacia la entrada coronal del sleeve. |
-| 1884 | `build_static_microscrew_visual` | Crea el STL visual del microtornillo ya asentado sobre el sleeve. |
-| 1936 | `build_animated_microscrew` | Crea el tornillo STL y anima su inserción coaxial hasta el asiento. |
-| 2017 | `append_microscrew_unscrew_animation` | Appends a reverse helical motion that removes an inserted microscrew. |
-| 2070 | `_matrix_from_flat_16` |  |
-| 2082 | `_matrix_to_flat_16` |  |
-| 2087 | `store_guide_home_matrix` | Stores the seated world transform once and shares it with replacement guides. |
-| 2118 | `get_guide_home_matrix` |  |
-| 2130 | `restore_guide_home_transform` | Returns the guide to its immutable seated position regardless of timeline state. |
-| 2152 | `_keyframe_guide_world_matrix` | Assigns a world matrix, then keys the resulting local transform safely. |
-| 2161 | `clear_final_guide_visibility_animation` | Removes only final-sequence keys and restores the immutable seated guide. |
-| 2194 | `_guide_axis_animation_offset_mm` |  |
-| 2206 | `animate_guide_seating_and_return` | Animates around an immutable seated guide transform. |
-| 2276 | `make_frustum_mesh` | Crea un tronco de cono cerrado orientado sobre Z local. |
-| 2304 | `make_annular_cylinder_mesh` | Create a closed annular sleeve, optionally with a manifold lateral opening. |
-| 2374 | `_current_view_forward_world` | Return the current viewport forward vector, or the insertion axis. |
-| 2392 | `_sleeve_lateral_opening_angle` | Angle of the lateral access facing the clinician's chosen view. |
-| 2404 | `_normalize_angle_2pi` |  |
-| 2408 | `_irrigation_entry_implant_name` |  |
-| 2418 | `_sleeve_window_irrigation_signature` | Stable signature of the geometry that can constrain a lateral window. |
-| 2456 | `_window_mark_occupied_bins` |  |
-| 2467 | `_window_largest_free_run` | Return start index and length of the largest circular free interval. |
-| 2497 | `_window_point_angle_and_radius` |  |
-| 2506 | `_window_mark_world_point` |  |
-| 2516 | `_sleeve_window_entries_for_implant` |  |
-| 2524 | `_resolve_lateral_window_for_implant` | Resolve a safe window from actual irrigation geometry or the saved view. |
-| 2694 | `_sleeve_window_requires_irrigation_rebuild` |  |
-| 2707 | `build_combined_mesh_object_world` | Combina copias geométricas en una sola malla sin ``bpy.ops.object.join``. |
-| 2754 | `store_analytic_solid_preflight` | Marca una primitiva generada por DSG como solid sin recorrer sus edges. |
-| 2774 | `make_uv_sphere_mesh` |  |
-| 2787 | `choose_raycast_target` |  |
-| 2797 | `_transfer_bm` |  |
-| 2808 | `_mesh_nonmanifold_info_from_mesh` | Chequeo ligero de no-manifold sin entrar en Edit Mode. |
-| 2852 | `get_mesh_solid_report` | Verifica si una malla se comporta como sólido cerrado para booleanos. |
-| 2892 | `get_mesh_solid_report_scalable` | Verificación manifold para resultados grandes, ejecutada solo bajo demanda. |
-| 2993 | `_closed_manifold_geometry_signature` | CRC signature tying a successful audit to the complete mesh geometry. |
+| 714 | `max_visible_turns` | Turns that keep the spin readable (no wagon-wheel effect). |
+| 719 | `_action_fcurve_collections` | F-Curve collections of an Action in Blender 4.x (legacy) and 5.x (slotted). |
+| 741 | `_action_fcurves` |  |
+| 748 | `_remove_action_fcurve` |  |
+| 756 | `_set_fcurve_interpolation_linear` |  |
+| 771 | `_insert_helical_segment` |  |
+| 805 | `apply_clockwise_helical_animation` | Avanza y gira sobre el eje longitudinal real de la inserción. |
+| 836 | `apply_clockwise_helical_roundtrip_animation` | La fresa entra al sleeve y luego regresa a su posición inicial. |
+| 879 | `ensure_animated_drill_material` |  |
+| 893 | `_set_constant_interpolation_for_data_paths` |  |
+| 909 | `clear_implant_drill_visibility_animation` |  |
+| 929 | `animate_implants_hidden_until` | Oculta todos los implantes durante la secuencia y los revela juntos al final. |
+| 961 | `_matrix_to_flat_list` |  |
+| 966 | `_matrix_from_flat_list` |  |
+| 979 | `_store_implant_final_transform` |  |
+| 993 | `clear_implant_insertion_animation` | Remove only animation curves created by the final insertion sequence. |
+| 1042 | `_find_tooth_object_for_fdi` |  |
+| 1059 | `_immediate_extraction_animation_sources` | Return hidden/registered teeth that should be animated out first. |
+| 1101 | `_copy_object_material_slots` |  |
+| 1113 | `_estimate_extraction_axis_and_travel` | Estimate a crown-ward extraction vector from the tooth geometry itself. |
+| 1168 | `_estimate_extraction_axis_and_travel._end_width` |  |
+| 1202 | `clear_animated_extraction_teeth` |  |
+| 1224 | `get_animated_extraction_tooth_objects` |  |
+| 1234 | `build_animated_extraction_tooth` | Create a visible duplicate of the virtually extracted tooth and animate it out. |
+| 1338 | `get_animated_implant_objects` |  |
+| 1347 | `_implant_start_location_above_sleeve` | Places the complete implant immediately above the occlusal sleeve face. |
+| 1384 | `animate_implant_screw_in_after_drill` | Reveal the implant above its sleeve and screw it into its planned pose. |
+| 1448 | `animate_implant_hidden_during_drill` |  |
+| 1453 | `get_animated_drill_objects` |  |
+| 1461 | `remove_animated_drills` |  |
+| 1482 | `_rotation_for_drill_on_sleeve` | Orienta +Z local de la fresa hacia la entrada oclusal del sleeve. |
+| 1506 | `build_animated_drill_for_implant` | Crea y anima una fresa coaxial calibrada contra el lumen del sleeve. |
+| 1631 | `_decode_microscrew_visual_template` | Decodifica la malla compacta integrada del microtornillo. |
+| 1668 | `_normalized_microscrew_dimensions` |  |
+| 1680 | `_microscrew_dimensions_from_props` |  |
+| 1686 | `_microscrew_dimensions_from_record` |  |
+| 1693 | `make_embedded_microscrew_visual_mesh` | Create the embedded screw STL at the selected clinical dimensions. |
+| 1721 | `ensure_animated_microscrew_material` | Distinct metallic violet for every visual microscrew. |
+| 1747 | `get_animated_microscrew_objects` | Returns every DSG animated microscrew, including renamed stale copies. |
+| 1767 | `get_static_microscrew_visual_objects` | Returns planning-only screws that must not coexist with animation copies. |
+| 1795 | `set_static_microscrew_visuals_hidden` | Hide planning screws while animated copies exist, preserving user state. |
+| 1851 | `remove_pending_microscrew_geometry_previews` | Remove stale pending sleeve/support previews, including ``.001`` copies. |
+| 1870 | `remove_pending_microscrew_visuals` | Remove every pending visual copy, not only the exact unsuffixed name. |
+| 1886 | `remove_animated_microscrews` |  |
+| 1896 | `invalidate_microscrew_animation` | Discard animation copies after a placement changes. |
+| 1911 | `_rotation_for_microscrew_axis` | Orienta +Z local hacia la entrada coronal del sleeve. |
+| 1931 | `build_static_microscrew_visual` | Crea el STL visual del microtornillo ya asentado sobre el sleeve. |
+| 1986 | `build_animated_microscrew` | Crea el tornillo STL y anima su inserción coaxial hasta el asiento. |
+| 2068 | `append_microscrew_unscrew_animation` | Appends a reverse helical motion that removes an inserted microscrew. |
+| 2121 | `_matrix_from_flat_16` |  |
+| 2133 | `_matrix_to_flat_16` |  |
+| 2138 | `store_guide_home_matrix` | Stores the seated world transform once and shares it with replacement guides. |
+| 2169 | `get_guide_home_matrix` |  |
+| 2181 | `restore_guide_home_transform` | Returns the guide to its immutable seated position regardless of timeline state. |
+| 2203 | `_keyframe_guide_world_matrix` | Assigns a world matrix, then keys the resulting local transform safely. |
+| 2212 | `clear_final_guide_visibility_animation` | Removes only final-sequence keys and restores the immutable seated guide. |
+| 2245 | `_guide_axis_animation_offset_mm` |  |
+| 2257 | `animate_guide_seating_and_return` | Animates around an immutable seated guide transform. |
+| 2327 | `make_frustum_mesh` | Crea un tronco de cono cerrado orientado sobre Z local. |
+| 2355 | `make_annular_cylinder_mesh` | Create a closed annular sleeve, optionally with a manifold lateral opening. |
+| 2425 | `_current_view_forward_world` | Return the current viewport forward vector, or the insertion axis. |
+| 2443 | `_sleeve_lateral_opening_angle` | Angle of the lateral access facing the clinician's chosen view. |
+| 2455 | `_normalize_angle_2pi` |  |
+| 2459 | `_irrigation_entry_implant_name` |  |
+| 2469 | `_sleeve_window_irrigation_signature` | Stable signature of the geometry that can constrain a lateral window. |
+| 2507 | `_window_mark_occupied_bins` |  |
+| 2518 | `_window_largest_free_run` | Return start index and length of the largest circular free interval. |
+| 2548 | `_window_point_angle_and_radius` |  |
+| 2557 | `_window_mark_world_point` |  |
+| 2567 | `_sleeve_window_entries_for_implant` |  |
+| 2575 | `_resolve_lateral_window_for_implant` | Resolve a safe window from actual irrigation geometry or the saved view. |
+| 2745 | `_sleeve_window_requires_irrigation_rebuild` |  |
+| 2758 | `build_combined_mesh_object_world` | Combina copias geométricas en una sola malla sin ``bpy.ops.object.join``. |
+| 2805 | `store_analytic_solid_preflight` | Marca una primitiva generada por DSG como solid sin recorrer sus edges. |
+| 2825 | `make_uv_sphere_mesh` |  |
+| 2838 | `choose_raycast_target` |  |
+| 2848 | `_transfer_bm` |  |
+| 2859 | `_mesh_nonmanifold_info_from_mesh` | Chequeo ligero de no-manifold sin entrar en Edit Mode. |
+| 2903 | `get_mesh_solid_report` | Verifica si una malla se comporta como sólido cerrado para booleanos. |
+| 2943 | `get_mesh_solid_report_scalable` | Verificación manifold para resultados grandes, ejecutada solo bajo demanda. |
+| 3044 | `_closed_manifold_geometry_signature` | CRC signature tying a successful audit to the complete mesh geometry. |
 
 ## [_guide_parts/02_implant_animation_geometry_b.py](../_guide_parts/02_implant_animation_geometry_b.py)
 
-3006 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+3069 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -1246,130 +1211,130 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 968 | `_margin_proxy_roughness_2d` | Return a scale-independent local roughness estimate for one cyclic rim. |
 | 988 | `_regularized_margin_proxy_positions` | Create a smooth duplicated basal collar without moving the scan rim. |
 | 1065 | `_close_main_boundary_with_planar_base` | Create a deterministic manifold base without touching scan coordinates. |
-| 1144 | `_close_main_boundary_with_planar_base.bridge_equal_rings` | Bridge every corresponding edge or fail transactionally. |
-| 1340 | `_orthonormal_base_frame` | Return two stable in-plane axes perpendicular to ``direction``. |
-| 1358 | `_convex_hull_2d` | Monotonic-chain convex hull used as a robust basal silhouette. |
-| 1370 | `_convex_hull_2d.cross` |  |
-| 1387 | `_polygon_area_2d` |  |
-| 1396 | `_radial_envelope_polygon_2d` | Robust star-shaped footprint that rejects isolated scan spikes. |
-| 1449 | `_derive_dental_base_footprint` | Choose a robust dental footprint and fall back to convex hull safely. |
-| 1473 | `_simplify_closed_2d_polygon` | Remove near-collinear points while retaining a closed dental footprint. |
-| 1507 | `_base_perimeter_material` |  |
-| 1519 | `_base_perimeter_curve` |  |
-| 1524 | `_remove_base_perimeter_curve` |  |
-| 1530 | `_set_base_perimeter_curve_points` | Create/update the visible perimeter used by the base closure fallback. |
-| 1564 | `_base_perimeter_world_points` |  |
-| 1586 | `_base_perimeter_local_points` |  |
-| 1599 | `_smooth_closed_polygon_2d` |  |
-| 1619 | `_resample_closed_polygon_2d` |  |
-| 1649 | `_expand_polygon_radially` |  |
-| 1663 | `_drawn_base_footprint` |  |
-| 1687 | `_raycast_model_from_event` |  |
-| 1714 | `_automatic_base_outline_world` | Build the same automatic footprint used by the volumetric closure. |
-| 1774 | class `DSG_OT_PreviewAutomaticBasePerimeter` | `dsg.preview_automatic_base_perimeter` · Preview Automatic Base Perimeter |
-| 1780 | `DSG_OT_PreviewAutomaticBasePerimeter.execute` |  |
-| 1800 | class `DSG_OT_DrawBasePerimeter` | `dsg.draw_base_perimeter` · Draw Base Perimeter |
-| 1812 | `DSG_OT_DrawBasePerimeter._finish` |  |
-| 1825 | `DSG_OT_DrawBasePerimeter.modal` |  |
-| 1860 | `DSG_OT_DrawBasePerimeter.invoke` |  |
-| 1878 | class `DSG_OT_ClearBasePerimeter` | `dsg.clear_base_perimeter` · Clear Base Perimeter |
-| 1884 | `DSG_OT_ClearBasePerimeter.execute` |  |
-| 1889 | `_append_base_prism_to_bmesh` | Append a closed prism that overlaps the basal scan and guarantees volume. |
-| 1916 | `_run_voxel_remesh_operator` | Hard-disabled for dental-model base closure. |
-| 1928 | `_reproject_anatomical_surface_to_scan` | Recover scan detail after volumetric reconstruction without reopening it. |
-| 1978 | `_close_open_model_volumetric` | Robust dental-model closure using silhouette + overlapping solid + VDB. |
-| 2163 | `_remove_safe_duplicate_faces_and_wire_edges` | Remove only topology that has no anatomical surface value. |
-| 2201 | `_weld_exact_boundary_duplicates` | Weld only coincident vertices on open borders, without moving anatomy. |
-| 2232 | `_select_boundary_candidate` | Choose a clean existing rim without rebuilding the dental surface. |
-| 2276 | `_component_vertices` | Unique vertices belonging to one connected boundary component. |
-| 2289 | `_select_main_open_component` | Protect the basal opening while secondary scan holes are repaired. |
-| 2335 | `_fill_secondary_scan_holes_bmesh` | Fill every non-basal boundary cycle without altering scan coordinates. |
-| 2409 | `close_scanned_model_holes` | Create an anatomy-locked copy with secondary scan holes capped. |
-| 2486 | class `DSG_OT_CloseScanHoles` | `dsg.close_scan_holes` · Close Scan Holes |
-| 2494 | `DSG_OT_CloseScanHoles.execute` |  |
-| 2535 | `_verify_original_anatomy_vertices_unchanged` | Verify preservation of the *surface anatomy* without false failures. |
-| 2677 | `_split_non_manifold_edges_preserve_coordinates` | Split branching edges without moving the dental surface. |
-| 2700 | `_split_branched_boundary_junctions` | Separate boundary loops that touch at a vertex, without moving them. |
-| 2728 | `_fill_boundary_component_topology_only` | Triangulate one simple boundary cycle using only new faces. |
-| 2784 | `_fill_all_remaining_boundary_cycles` | Close every remaining simple cycle after the basal wall is generated. |
-| 2803 | `_repair_residual_topology_globally` | Repair every safely repairable residual topology component. |
-| 2842 | `_close_open_model_direct` | Close the model by adding only secondary-hole caps and basal geometry. |
+| 1145 | `_close_main_boundary_with_planar_base.bridge_equal_rings` | Bridge every corresponding edge or fail transactionally. |
+| 1359 | `_orthonormal_base_frame` | Return two stable in-plane axes perpendicular to ``direction``. |
+| 1377 | `_convex_hull_2d` | Monotonic-chain convex hull used as a robust basal silhouette. |
+| 1389 | `_convex_hull_2d.cross` |  |
+| 1406 | `_polygon_area_2d` |  |
+| 1415 | `_radial_envelope_polygon_2d` | Robust star-shaped footprint that rejects isolated scan spikes. |
+| 1468 | `_derive_dental_base_footprint` | Choose a robust dental footprint and fall back to convex hull safely. |
+| 1492 | `_simplify_closed_2d_polygon` | Remove near-collinear points while retaining a closed dental footprint. |
+| 1526 | `_base_perimeter_material` |  |
+| 1538 | `_base_perimeter_curve` |  |
+| 1543 | `_remove_base_perimeter_curve` |  |
+| 1549 | `_set_base_perimeter_curve_points` | Create/update the visible perimeter used by the base closure fallback. |
+| 1583 | `_base_perimeter_world_points` |  |
+| 1605 | `_base_perimeter_local_points` |  |
+| 1618 | `_smooth_closed_polygon_2d` |  |
+| 1638 | `_resample_closed_polygon_2d` |  |
+| 1668 | `_expand_polygon_radially` |  |
+| 1682 | `_drawn_base_footprint` |  |
+| 1706 | `_raycast_model_from_event` |  |
+| 1733 | `_automatic_base_outline_world` | Build the same automatic footprint used by the volumetric closure. |
+| 1793 | class `DSG_OT_PreviewAutomaticBasePerimeter` | `dsg.preview_automatic_base_perimeter` · Preview Automatic Base Perimeter |
+| 1799 | `DSG_OT_PreviewAutomaticBasePerimeter.execute` |  |
+| 1819 | class `DSG_OT_DrawBasePerimeter` | `dsg.draw_base_perimeter` · Draw Base Perimeter |
+| 1831 | `DSG_OT_DrawBasePerimeter._finish` |  |
+| 1844 | `DSG_OT_DrawBasePerimeter.modal` |  |
+| 1879 | `DSG_OT_DrawBasePerimeter.invoke` |  |
+| 1897 | class `DSG_OT_ClearBasePerimeter` | `dsg.clear_base_perimeter` · Clear Base Perimeter |
+| 1903 | `DSG_OT_ClearBasePerimeter.execute` |  |
+| 1908 | `_append_base_prism_to_bmesh` | Append a closed prism that overlaps the basal scan and guarantees volume. |
+| 1935 | `_run_voxel_remesh_operator` | Hard-disabled for dental-model base closure. |
+| 1947 | `_reproject_anatomical_surface_to_scan` | Recover scan detail after volumetric reconstruction without reopening it. |
+| 1997 | `_close_open_model_volumetric` | Robust dental-model closure using silhouette + overlapping solid + VDB. |
+| 2185 | `_remove_safe_duplicate_faces_and_wire_edges` | Remove only topology that has no anatomical surface value. |
+| 2223 | `_weld_exact_boundary_duplicates` | Weld only coincident vertices on open borders, without moving anatomy. |
+| 2254 | `_select_boundary_candidate` | Choose a clean existing rim without rebuilding the dental surface. |
+| 2298 | `_component_vertices` | Unique vertices belonging to one connected boundary component. |
+| 2311 | `_select_main_open_component` | Protect the basal opening while secondary scan holes are repaired. |
+| 2357 | `_fill_secondary_scan_holes_bmesh` | Fill every non-basal boundary cycle without altering scan coordinates. |
+| 2431 | `close_scanned_model_holes` | Create an anatomy-locked copy with secondary scan holes capped. |
+| 2510 | class `DSG_OT_CloseScanHoles` | `dsg.close_scan_holes` · Close Scan Holes |
+| 2518 | `DSG_OT_CloseScanHoles.execute` |  |
+| 2559 | `_verify_original_anatomy_vertices_unchanged` | Verify preservation of the *surface anatomy* without false failures. |
+| 2714 | `_split_non_manifold_edges_preserve_coordinates` | Split branching edges without moving the dental surface. |
+| 2737 | `_split_branched_boundary_junctions` | Separate boundary loops that touch at a vertex, without moving them. |
+| 2765 | `_fill_boundary_component_topology_only` | Triangulate one simple boundary cycle using only new faces. |
+| 2821 | `_fill_all_remaining_boundary_cycles` | Close every remaining simple cycle after the basal wall is generated. |
+| 2840 | `_repair_residual_topology_globally` | Repair every safely repairable residual topology component. |
+| 2879 | `_close_open_model_direct` | Close the model by adding only secondary-hole caps and basal geometry. |
 
 ## [_guide_parts/02_implant_animation_geometry_c.py](../_guide_parts/02_implant_animation_geometry_c.py)
 
-2315 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+2321 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
 | 1 | `_smooth_boundary_to_plane` |  |
 | 22 | `_close_open_model_flatten_remesh` | Last-resort Easy-Dental-style closure: flatten open vertices then remesh. |
 | 120 | `close_open_dental_model_base` | Close an open dental model without reconstructing its anatomy. |
-| 165 | class `DSG_OT_AcceptClosedIOSModel` | `dsg.accept_closed_ios_model` · Use Closed IOS Model and Continue |
-| 173 | `DSG_OT_AcceptClosedIOSModel.execute` |  |
-| 230 | class `DSG_OT_CloseModelBase` | `dsg.close_model_base` · Close Model Base Automatically |
-| 243 | `DSG_OT_CloseModelBase.execute` |  |
-| 291 | `run_3d_print_make_manifold` | Intenta ejecutar el Make Manifold real de Blender/3D Print Toolbox. |
-| 332 | `make_mesh_manifold_bmesh` | Fallback interno: limpia la malla y rellena bordes abiertos pequeños/medios. |
-| 402 | `verify_solid_and_make_manifold_before_drill` | Preflight del paso 9 antes de generar canales centrales. |
-| 447 | `_mesh_preflight_fingerprint` |  |
-| 459 | `_preflight_storage_key` |  |
-| 464 | `store_boolean_preflight` |  |
-| 480 | `load_boolean_preflight` |  |
-| 493 | `_preflight_from_report` |  |
-| 531 | `evaluate_boolean_preflight` | Chequeo no destructivo cacheado en memoria para el semáforo del panel. |
-| 546 | `run_boolean_preflight` | Comprueba una malla y, si hace falta, intenta una reparación limitada. |
-| 589 | `combine_boolean_preflights` |  |
-| 631 | `clean_boolean_cutter_mesh` | Limpieza ligera para cutters generados por el addon. |
-| 673 | `set_boolean_exact_options` | Activa opciones de tolerancia si existen en el build de Blender. |
-| 686 | `apply_boolean_modifier_smart` | Aplica una booleana EXACT una sola vez. |
-| 713 | `apply_boolean_difference_fast` | Alias histórico: actualmente siempre aplica DIFFERENCE con EXACT. |
-| 726 | `apply_boolean_union_exact` | Fusiona dos sólidos con un único Boolean UNION robusto. |
-| 752 | `_restore_object_mesh_copy` | Restaura una copia de malla y elimina la malla descartada si queda huérfana. |
-| 770 | `fuse_additions_into_base_exact` | Fusiona adiciones con UNION EXACT y valida el resultado BRUTO. |
-| 874 | `sleeve_sidewall_guard_enabled` | Compatibilidad de nombre: activa la validación analítica de caras planas. |
-| 883 | `_sleeve_inner_radius_from_props` | Single source of truth for the sleeve lumen, independent of implant size. |
-| 888 | `_sleeve_radii_from_props` |  |
-| 895 | `_sleeve_flat_face_guard_values` | Márgenes de validación analítica; ya no generan cutters anulares. |
-| 905 | `get_sleeve_sidewall_zone` | Devuelve la cara plana anular del sleeve más cercana a ``point``. |
-| 974 | `is_point_near_protected_sleeve_sidewall` | Compatibilidad: True si el punto está cerca de una cara plana protegida. |
-| 982 | `get_irrigation_base_outer_radius_at_sleeve` | Radio exterior normal del conducto en la salida estrecha del sleeve. |
-| 998 | `get_irrigation_outer_radius_at_sleeve` | Radio real de la base volcánica donde el tubo se funde con el sleeve. |
-| 1019 | `get_irrigation_coronal_port_offset_mm` | Exact centre offset needed to leave the outer wall flush to the face. |
-| 1038 | `get_irrigation_coronal_sleeve_z_local` | Places the port so its external wall is tangent to the coronal face. |
-| 1056 | `_irrigation_direct_sleeve_overlap_mm` | Depth of a DIRECT irrigation port inside the axial sleeve lumen. |
-| 1078 | `get_direct_irrigation_lumen_tip` | Return the clinical DIRECT-mode inner end point. |
-| 1097 | `_irrigation_is_direct_channel_mode` |  |
-| 1104 | `_normalize_direct_irrigation_controls` | Fix legacy DIRECT paths whose first point was saved at the sleeve axis. |
-| 1120 | `get_sleeve_lateral_port_geometry` | Puerto seguro sobre la superficie cilíndrica lateral del sleeve. |
-| 1172 | `get_sleeve_lateral_port_geometry.world_at` |  |
-| 1206 | `get_sleeve_apical_port_geometry` | Alias heredado de v24: ahora devuelve un puerto lateral seguro. |
-| 1214 | `append_cylinder_to_bmesh` | Añade un cilindro cutter directamente en coordenadas mundo. |
-| 1232 | `build_multi_cylinder_cutter` | Crea un único objeto cutter con todos los canales de implante. |
-| 1266 | `append_profiled_drill_cutter_to_bmesh` | Añade un cutter axial cerrado con radios variables. |
-| 1317 | `build_safe_drill_cutter` | Crea el cutter seguro del paso 9 sin superficies coplanares con el sleeve. |
-| 1400 | `get_drill_protection_radii` | Devuelve radio clínico, radio booleano y sobrecorte anti-coplanar. |
-| 1424 | `build_drill_insertion_protection_cutters` | Crea cilindros coaxiales para limpiar físicamente el eje de fresado. |
-| 1495 | `build_sleeve_face_clearance_cutters` | Create annular cutters only over each sleeve's flat occlusal face. |
-| 1563 | `_component_is_sleeve_shell_for_implant` | Recognize the exact loose sleeve shell so the flat face is never cut. |
-| 1619 | `find_sleeve_shell_implant` | Return the implant whose exact sleeve shell matches this loose component. |
-| 1636 | `component_is_any_sleeve_shell` | Return True when a loose guide component is the exact sleeve shell. |
-| 1641 | `_angle_degrees_from_xy` |  |
-| 1650 | `_cluster_circular_angles_degrees` | Cluster polar angles while handling the 0/360° seam. |
-| 1688 | `_cluster_span_degrees` |  |
-| 1694 | `cutter_has_c_sleeve_manifold` | True when the cutter is intended to create the open-C sleeve manifold. |
-| 1718 | `irrigation_sleeve_raycast_preflight` | Validate a C-irrigation cutter before it is allowed to touch a sleeve. |
-| 1893 | `_irrigation_entry_channel_mode` | Return the saved irrigation channel mode for an entry without touching UI state. |
-| 1909 | `_deduplicate_irrigation_lumen_samples` | Clean water-lumen samples without ever expanding to the tube wall. |
-| 1927 | `_irrigation_resolve_implant_for_entry` | Resolve the implant used by the irrigation entry without guessing from UI state. |
-| 1952 | `_irrigation_internal_sleeve_manifold_sample_groups` | Return sample groups for the final water lumen that lives inside the sleeve. |
-| 2031 | `_irrigation_model_preflight_sample_groups` | Build every final water-lumen segment checked by the preflight. |
-| 2077 | `_irrigation_model_preflight_samples` | Compatibility: flattened complete water-lumen sample list. |
-| 2085 | `_irrigation_sample_tangent` |  |
-| 2103 | `irrigation_model_cut_preflight` | Preflight the exact irrigation water lumen against the passive model. |
+| 167 | class `DSG_OT_AcceptClosedIOSModel` | `dsg.accept_closed_ios_model` · Use Closed IOS Model and Continue |
+| 175 | `DSG_OT_AcceptClosedIOSModel.execute` |  |
+| 232 | class `DSG_OT_CloseModelBase` | `dsg.close_model_base` · Close Model Base Automatically |
+| 245 | `DSG_OT_CloseModelBase.execute` |  |
+| 297 | `run_3d_print_make_manifold` | Intenta ejecutar el Make Manifold real de Blender/3D Print Toolbox. |
+| 338 | `make_mesh_manifold_bmesh` | Fallback interno: limpia la malla y rellena bordes abiertos pequeños/medios. |
+| 408 | `verify_solid_and_make_manifold_before_drill` | Preflight del paso 9 antes de generar canales centrales. |
+| 453 | `_mesh_preflight_fingerprint` |  |
+| 465 | `_preflight_storage_key` |  |
+| 470 | `store_boolean_preflight` |  |
+| 486 | `load_boolean_preflight` |  |
+| 499 | `_preflight_from_report` |  |
+| 537 | `evaluate_boolean_preflight` | Chequeo no destructivo cacheado en memoria para el semáforo del panel. |
+| 552 | `run_boolean_preflight` | Comprueba una malla y, si hace falta, intenta una reparación limitada. |
+| 595 | `combine_boolean_preflights` |  |
+| 637 | `clean_boolean_cutter_mesh` | Limpieza ligera para cutters generados por el addon. |
+| 679 | `set_boolean_exact_options` | Activa opciones de tolerancia si existen en el build de Blender. |
+| 692 | `apply_boolean_modifier_smart` | Aplica una booleana EXACT una sola vez. |
+| 719 | `apply_boolean_difference_fast` | Alias histórico: actualmente siempre aplica DIFFERENCE con EXACT. |
+| 732 | `apply_boolean_union_exact` | Fusiona dos sólidos con un único Boolean UNION robusto. |
+| 758 | `_restore_object_mesh_copy` | Restaura una copia de malla y elimina la malla descartada si queda huérfana. |
+| 776 | `fuse_additions_into_base_exact` | Fusiona adiciones con UNION EXACT y valida el resultado BRUTO. |
+| 880 | `sleeve_sidewall_guard_enabled` | Compatibilidad de nombre: activa la validación analítica de caras planas. |
+| 889 | `_sleeve_inner_radius_from_props` | Single source of truth for the sleeve lumen, independent of implant size. |
+| 894 | `_sleeve_radii_from_props` |  |
+| 901 | `_sleeve_flat_face_guard_values` | Márgenes de validación analítica; ya no generan cutters anulares. |
+| 911 | `get_sleeve_sidewall_zone` | Devuelve la cara plana anular del sleeve más cercana a ``point``. |
+| 980 | `is_point_near_protected_sleeve_sidewall` | Compatibilidad: True si el punto está cerca de una cara plana protegida. |
+| 988 | `get_irrigation_base_outer_radius_at_sleeve` | Radio exterior normal del conducto en la salida estrecha del sleeve. |
+| 1004 | `get_irrigation_outer_radius_at_sleeve` | Radio real de la base volcánica donde el tubo se funde con el sleeve. |
+| 1025 | `get_irrigation_coronal_port_offset_mm` | Exact centre offset needed to leave the outer wall flush to the face. |
+| 1044 | `get_irrigation_coronal_sleeve_z_local` | Places the port so its external wall is tangent to the coronal face. |
+| 1062 | `_irrigation_direct_sleeve_overlap_mm` | Depth of a DIRECT irrigation port inside the axial sleeve lumen. |
+| 1084 | `get_direct_irrigation_lumen_tip` | Return the clinical DIRECT-mode inner end point. |
+| 1103 | `_irrigation_is_direct_channel_mode` |  |
+| 1110 | `_normalize_direct_irrigation_controls` | Fix legacy DIRECT paths whose first point was saved at the sleeve axis. |
+| 1126 | `get_sleeve_lateral_port_geometry` | Puerto seguro sobre la superficie cilíndrica lateral del sleeve. |
+| 1178 | `get_sleeve_lateral_port_geometry.world_at` |  |
+| 1212 | `get_sleeve_apical_port_geometry` | Alias heredado de v24: ahora devuelve un puerto lateral seguro. |
+| 1220 | `append_cylinder_to_bmesh` | Añade un cilindro cutter directamente en coordenadas mundo. |
+| 1238 | `build_multi_cylinder_cutter` | Crea un único objeto cutter con todos los canales de implante. |
+| 1272 | `append_profiled_drill_cutter_to_bmesh` | Añade un cutter axial cerrado con radios variables. |
+| 1323 | `build_safe_drill_cutter` | Crea el cutter seguro del paso 9 sin superficies coplanares con el sleeve. |
+| 1406 | `get_drill_protection_radii` | Devuelve radio clínico, radio booleano y sobrecorte anti-coplanar. |
+| 1430 | `build_drill_insertion_protection_cutters` | Crea cilindros coaxiales para limpiar físicamente el eje de fresado. |
+| 1501 | `build_sleeve_face_clearance_cutters` | Create annular cutters only over each sleeve's flat occlusal face. |
+| 1569 | `_component_is_sleeve_shell_for_implant` | Recognize the exact loose sleeve shell so the flat face is never cut. |
+| 1625 | `find_sleeve_shell_implant` | Return the implant whose exact sleeve shell matches this loose component. |
+| 1642 | `component_is_any_sleeve_shell` | Return True when a loose guide component is the exact sleeve shell. |
+| 1647 | `_angle_degrees_from_xy` |  |
+| 1656 | `_cluster_circular_angles_degrees` | Cluster polar angles while handling the 0/360° seam. |
+| 1694 | `_cluster_span_degrees` |  |
+| 1700 | `cutter_has_c_sleeve_manifold` | True when the cutter is intended to create the open-C sleeve manifold. |
+| 1724 | `irrigation_sleeve_raycast_preflight` | Validate a C-irrigation cutter before it is allowed to touch a sleeve. |
+| 1899 | `_irrigation_entry_channel_mode` | Return the saved irrigation channel mode for an entry without touching UI state. |
+| 1915 | `_deduplicate_irrigation_lumen_samples` | Clean water-lumen samples without ever expanding to the tube wall. |
+| 1933 | `_irrigation_resolve_implant_for_entry` | Resolve the implant used by the irrigation entry without guessing from UI state. |
+| 1958 | `_irrigation_internal_sleeve_manifold_sample_groups` | Return sample groups for the final water lumen that lives inside the sleeve. |
+| 2037 | `_irrigation_model_preflight_sample_groups` | Build every final water-lumen segment checked by the preflight. |
+| 2083 | `_irrigation_model_preflight_samples` | Compatibility: flattened complete water-lumen sample list. |
+| 2091 | `_irrigation_sample_tangent` |  |
+| 2109 | `irrigation_model_cut_preflight` | Preflight the exact irrigation water lumen against the passive model. |
 
 ## [_guide_parts/03_blockout_frame_geometry_a.py](../_guide_parts/03_blockout_frame_geometry_a.py)
 
-3091 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+3190 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -1425,27 +1390,32 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 2383 | `_raise_neighbours_for_blockout_gradient` | Propagate required correction outward without reducing a validated point. |
 | 2419 | `_smooth_blockout_correction_upward` | Blend the automatic correction while never decreasing blockout. |
 | 2440 | `_auto_correct_blockout_insertion` | Automatically project the blockout into a valid axial insertion envelope. |
-| 2542 | `_evaluated_mesh_for_blockout` |  |
-| 2553 | `build_blockout_bvh` | Blockout v8: el raycast sencillo de v7, con evaluación, filtros y estadísticas. |
-| 2716 | `_set_principled_input` | Assign a Principled input across Blender 4/5 naming differences. |
-| 2732 | `_blockout_zone_visual_material` | Clinical teal material used only to review the added blockout surface. |
-| 2754 | `_ensure_blockout_zone_visual` | Create a non-exportable overlay containing only blockout-added faces. |
-| 2875 | `is_valid_implant_obj` |  |
-| 2884 | `get_all_implant_objects` | Devuelve todos los implantes DSG presentes en escena, sin duplicados. |
-| 2901 | `count_implants` |  |
-| 2905 | `irrigation_implant_is_sealed` | Return the persisted selective-irrigation state for one implant. |
-| 2920 | `set_irrigation_implant_sealed` |  |
-| 2932 | `auto_assign_irrigation_gate_defaults` | Keep the first irrigated implant open and seal every later outlet. |
-| 2972 | `irrigation_path_implant_names` | Names of implants that actually have a confirmed irrigation branch. |
-| 2985 | `get_sealed_irrigation_implants` |  |
-| 2997 | `sync_irrigation_gate_metadata` | Store a portable summary on the guide without creating geometry. |
-| 3021 | `get_implant_nominal_diameter_world` | Diámetro clínico del implante, incluyendo una posible escala XY del objeto. |
-| 3038 | `get_implant_platform_center_world` | Centro world-space de la plataforma coronal (extremo +Z local). |
-| 3049 | `measure_interimplant_platform_clearance` | Mide la distancia libre horizontal entre plataformas adyacentes. |
+| 2553 | `_mesh_world_coordinates` |  |
+| 2560 | `_mesh_world_vertex_normals` |  |
+| 2570 | `_blockout_base_face_mask` | Faces of the artificial closed base: long rim-to-cap walls and the cap. |
+| 2592 | `_anatomy_vertex_mask` | Vertices that belong to at least one anatomical (non-base) face. |
+| 2604 | `_anatomy_bvh` |  |
+| 2617 | `_evaluated_mesh_for_blockout` |  |
+| 2628 | `build_blockout_bvh` | Blockout v8: el raycast sencillo de v7, con evaluación, filtros y estadísticas. |
+| 2813 | `_set_principled_input` | Assign a Principled input across Blender 4/5 naming differences. |
+| 2829 | `_blockout_zone_visual_material` | Clinical teal material used only to review the added blockout surface. |
+| 2851 | `_ensure_blockout_zone_visual` | Create a non-exportable overlay containing only blockout-added faces. |
+| 2972 | `is_valid_implant_obj` |  |
+| 2981 | `get_all_implant_objects` | Devuelve todos los implantes DSG presentes en escena, sin duplicados. |
+| 2998 | `count_implants` |  |
+| 3002 | `irrigation_implant_is_sealed` | Return the persisted selective-irrigation state for one implant. |
+| 3017 | `set_irrigation_implant_sealed` |  |
+| 3029 | `auto_assign_irrigation_gate_defaults` | Keep the first irrigated implant open and seal every later outlet. |
+| 3069 | `irrigation_path_implant_names` | Names of implants that actually have a confirmed irrigation branch. |
+| 3082 | `get_sealed_irrigation_implants` |  |
+| 3094 | `sync_irrigation_gate_metadata` | Store a portable summary on the guide without creating geometry. |
+| 3118 | `get_implant_nominal_diameter_world` | Diámetro clínico del implante, incluyendo una posible escala XY del objeto. |
+| 3135 | `get_implant_platform_center_world` | Centro world-space de la plataforma coronal (extremo +Z local). |
+| 3148 | `measure_interimplant_platform_clearance` | Mide la distancia libre horizontal entre plataformas adyacentes. |
 
 ## [_guide_parts/03_blockout_frame_geometry_b.py](../_guide_parts/03_blockout_frame_geometry_b.py)
 
-2993 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+2910 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -1455,91 +1425,91 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 30 | `clear_implant_safety_halos` | Retires halos without deleting their Object IDs during the workflow. |
 | 47 | `_implant_safety_halo_name` |  |
 | 51 | `_replace_mesh_data_preserve_object` |  |
-| 64 | `create_implant_safety_halo` | Create/reuse a longitudinal implant safety envelope. |
-| 157 | `rebuild_implant_safety_halos` | Reuse one stable halo Object per implant instead of delete/recreate loops. |
-| 178 | `mark_implant_safety_halos` |  |
-| 201 | `get_implant_tooth_safety_results` | Return implant↔tooth clearance results for implants with a valid target FDI. |
-| 251 | `get_implant_tooth_safety_violations` |  |
-| 255 | class `DSG_OT_AnalyzeImplantSafety` | `dsg.analyze_implant_safety` · Analyze Implant Safety |
-| 260 | `DSG_OT_AnalyzeImplantSafety.execute` |  |
-| 289 | `_get_emergence_controller_for_implant` |  |
-| 297 | `select_interimplant_violation` | Selecciona los dos controles implicados para que el usuario pueda separarlos. |
-| 322 | `get_implant_emergence_tubes` |  |
-| 336 | `_detach_implant_from_emergence_tube` | Preserves the edited implant pose before removing its temporary controller. |
-| 367 | `clear_implant_emergence_tubes` | Detach and archive controllers; do not delete IDs during clinical flow. |
-| 382 | `remove_implant_emergence_tubes_for_implant` | Removes only the temporary emergence controller linked to one implant. |
-| 421 | `_emergence_coronal_direction_world` | Return the coronal/platform direction of the embedded implant. |
-| 440 | `_rebuild_emergence_controller_geometry` | Rebuild one controller as the clean v7.0.53 cylinder, preserving pose. |
-| 536 | `create_implant_emergence_tube` |  |
-| 572 | `get_nearest_implant_to_point` | Devuelve el implante DSG cuyo sleeve queda más cerca de un punto world. |
-| 610 | `ensure_implant_divergence_property` |  |
-| 627 | `copy_implant_world_rotation_keep_position` | Copia el eje del maestro y aplica una divergencia individual controlada. |
-| 661 | `is_implant_parallel_locked` | True when an implant must keep its current pose during parallelization. |
-| 676 | `set_implant_parallel_locked` |  |
-| 688 | `get_implant_for_parallel_lock` | Resolve the implant the lock button should affect. |
-| 701 | `get_parallel_master_implant` | Devuelve el implante maestro elegido en UI o el activo/seleccionado. |
-| 716 | `get_next_implant_name` |  |
-| 729 | `get_implant_center_world` |  |
-| 736 | `get_implant_axis_world` |  |
-| 743 | `get_implant_length_world` | Length real aproximada del implante en world-space. |
-| 763 | `get_sleeve_occlusal_sign` | Devuelve el lado del eje del implante donde debe ir el sleeve. |
-| 795 | `get_sleeve_matrix_world` | Matriz clínica real del sleeve asociado a un implante. |
-| 825 | `get_sleeve_center_world` |  |
-| 829 | `get_sleeve_axis_world` |  |
-| 837 | `_irrigation_entry_for_implant` |  |
-| 845 | `build_frangible_irrigation_seal_object` | Build a selective irrigation membrane with engraved target marks. |
-| 890 | `build_frangible_irrigation_seal_object._make_local_cylinder` |  |
-| 916 | `build_frangible_irrigation_seal_object._make_local_box` |  |
-| 1019 | `build_export_frangible_irrigation_seals` |  |
-| 1060 | class `_IrrigationPropsOverlay` | Vista de propiedades que conserva los valores propios de un conducto. |
-| 1062 | `_IrrigationPropsOverlay.__init__` |  |
-| 1066 | `_IrrigationPropsOverlay.__getattr__` |  |
-| 1072 | `capture_irrigation_parameters` |  |
-| 1093 | `irrigation_props_overlay` |  |
-| 1102 | `irrigation_parameters_from_object` |  |
-| 1115 | `store_irrigation_path` |  |
-| 1138 | `load_irrigation_path_entries` |  |
-| 1194 | `sort_irrigation_entries_for_boolean` | Links first, then regular channels, preserving relative order. |
-| 1208 | `extend_polyline_ends` | Extiende una polilínea por sus extremos siguiendo la dirección del |
-| 1231 | `smooth_polyline_chaikin` |  |
-| 1248 | `_remove_near_duplicate_points` | Elimina duplicados consecutivos sin cambiar la intención clínica del usuario. |
-| 1269 | `_angle_between_segments` | Ángulo en b entre a-b-c. Devuelve 0 si los segmentos son inválidos. |
-| 1281 | `_centripetal_t` | Parámetro t para Catmull-Rom centrípeto. |
-| 1290 | `_lerp_by_t` |  |
-| 1297 | `catmull_rom_centripetal_point` | Punto Catmull-Rom centrípeto entre p1 y p2. |
-| 1320 | `build_catmull_rom_frame_path` | Convierte los puntos manuales del contorno en una ruta densa y orgánica. |
-| 1398 | `_frame_sparse_catmull_controls` | Reduce a dense geodesic polyline to a clean Catmull control polygon. |
-| 1433 | `_frame_project_smoothed_catmull_to_surface` | Project Catmull samples back to the passive surface without large jumps. |
-| 1477 | `_frame_clean_catmull_surface_loop` | Create the final clean surface-following loop from sparse Catmull controls. |
-| 1501 | `_frame_surface_cache_key` |  |
-| 1511 | `_build_frame_surface_graph_cache` | Build a compact mesh-edge graph for true geodesic routing. |
-| 1660 | `_frame_nearest_vertex` |  |
-| 1668 | `_frame_vertices_within_surface_radius` | Return nearby graph vertices ordered by geodesic edge distance. |
-| 1707 | `_frame_anchor_width_profile` | Endpoint width test using the same 75/25 support policy. |
-| 1782 | `_frame_resolve_safe_anchor` | Resolve a semantic contour click to the closest width-valid surface vertex. |
-| 1873 | `_frame_np_distance` |  |
-| 1880 | `_frame_local_vertex_mask` | Bounding corridor used only to limit work, never as route cost. |
-| 1894 | `_frame_bidirectional_dijkstra` | Shortest path by accumulated physical mesh-edge length only. |
-| 1930 | `_frame_bidirectional_dijkstra.relax_one` |  |
-| 2003 | `_frame_scipy_dijkstra` | Exact shortest path on the mesh-edge CSR graph using SciPy C code. |
-| 2129 | `_frame_exact_dijkstra` | Use compiled CSR Dijkstra first; retain an exact Python fallback. |
-| 2155 | `_frame_geodesic_surface_route` | Adaptive exact Dijkstra constrained to the dental surface. |
-| 2226 | `_frame_width_surface_bvh` | Lazy BVH used only by the hard full-width gate. |
-| 2252 | `_frame_barycentric` |  |
-| 2274 | `_frame_surface_projection` | Project a point to the evaluated surface without snapping it to a vertex. |
-| 2347 | `_frame_ray_surface_height` | Height of the same surface sheet along the local normal line. |
-| 2397 | `_frame_point_support_profile` | Cross-section retention of the tube at one continuous surface point. |
-| 2467 | `_frame_resolve_continuous_anchor` | Resolve a semantic contour click to an exact face/barycentric anchor. |
-| 2548 | `_frame_semantic_segment_seeds` |  |
-| 2570 | `_frame_intrinsic_distance_field` |  |
-| 2589 | `_frame_corridor_clearance_field` |  |
-| 2626 | `_frame_continuous_project_and_smooth` |  |
-| 2690 | `_frame_continuous_sweep_profile` |  |
-| 2742 | `_frame_semantic_clearance_surface_route` | Plan one frame segment entirely on the IOS surface. |
+| 64 | `create_implant_safety_halo` |  |
+| 69 | `rebuild_implant_safety_halos` | Reuse one stable halo Object per implant instead of delete/recreate loops. |
+| 90 | `mark_implant_safety_halos` |  |
+| 113 | `get_implant_tooth_safety_results` | Return implant↔tooth clearance results for implants with a valid target FDI. |
+| 163 | `get_implant_tooth_safety_violations` |  |
+| 167 | class `DSG_OT_AnalyzeImplantSafety` | `dsg.analyze_implant_safety` · Analyze Implant Safety |
+| 172 | `DSG_OT_AnalyzeImplantSafety.execute` |  |
+| 201 | `_get_emergence_controller_for_implant` |  |
+| 209 | `select_interimplant_violation` | Selecciona los dos controles implicados para que el usuario pueda separarlos. |
+| 234 | `get_implant_emergence_tubes` |  |
+| 248 | `_detach_implant_from_emergence_tube` | Preserves the edited implant pose before removing its temporary controller. |
+| 279 | `clear_implant_emergence_tubes` | Detach and archive controllers; do not delete IDs during clinical flow. |
+| 294 | `remove_implant_emergence_tubes_for_implant` | Removes only the temporary emergence controller linked to one implant. |
+| 333 | `_emergence_coronal_direction_world` | Return the coronal/platform direction of the embedded implant. |
+| 352 | `_rebuild_emergence_controller_geometry` | Rebuild one controller as the clean v7.0.53 cylinder, preserving pose. |
+| 448 | `create_implant_emergence_tube` |  |
+| 484 | `get_nearest_implant_to_point` | Devuelve el implante DSG cuyo sleeve queda más cerca de un punto world. |
+| 522 | `ensure_implant_divergence_property` |  |
+| 539 | `copy_implant_world_rotation_keep_position` | Copia el eje del maestro y aplica una divergencia individual controlada. |
+| 573 | `is_implant_parallel_locked` | True when an implant must keep its current pose during parallelization. |
+| 588 | `set_implant_parallel_locked` |  |
+| 600 | `get_implant_for_parallel_lock` | Resolve the implant the lock button should affect. |
+| 613 | `get_parallel_master_implant` | Devuelve el implante maestro elegido en UI o el activo/seleccionado. |
+| 628 | `get_next_implant_name` |  |
+| 641 | `get_implant_center_world` |  |
+| 648 | `get_implant_axis_world` |  |
+| 655 | `get_implant_length_world` | Length real aproximada del implante en world-space. |
+| 675 | `get_sleeve_occlusal_sign` | Devuelve el lado del eje del implante donde debe ir el sleeve. |
+| 707 | `get_sleeve_matrix_world` | Matriz clínica real del sleeve asociado a un implante. |
+| 742 | `get_sleeve_center_world` |  |
+| 746 | `get_sleeve_axis_world` |  |
+| 754 | `_irrigation_entry_for_implant` |  |
+| 762 | `build_frangible_irrigation_seal_object` | Build a selective irrigation membrane with engraved target marks. |
+| 807 | `build_frangible_irrigation_seal_object._make_local_cylinder` |  |
+| 833 | `build_frangible_irrigation_seal_object._make_local_box` |  |
+| 936 | `build_export_frangible_irrigation_seals` |  |
+| 977 | class `_IrrigationPropsOverlay` | Vista de propiedades que conserva los valores propios de un conducto. |
+| 979 | `_IrrigationPropsOverlay.__init__` |  |
+| 983 | `_IrrigationPropsOverlay.__getattr__` |  |
+| 989 | `capture_irrigation_parameters` |  |
+| 1010 | `irrigation_props_overlay` |  |
+| 1019 | `irrigation_parameters_from_object` |  |
+| 1032 | `store_irrigation_path` |  |
+| 1055 | `load_irrigation_path_entries` |  |
+| 1111 | `sort_irrigation_entries_for_boolean` | Links first, then regular channels, preserving relative order. |
+| 1125 | `extend_polyline_ends` | Extiende una polilínea por sus extremos siguiendo la dirección del |
+| 1148 | `smooth_polyline_chaikin` |  |
+| 1165 | `_remove_near_duplicate_points` | Elimina duplicados consecutivos sin cambiar la intención clínica del usuario. |
+| 1186 | `_angle_between_segments` | Ángulo en b entre a-b-c. Devuelve 0 si los segmentos son inválidos. |
+| 1198 | `_centripetal_t` | Parámetro t para Catmull-Rom centrípeto. |
+| 1207 | `_lerp_by_t` |  |
+| 1214 | `catmull_rom_centripetal_point` | Punto Catmull-Rom centrípeto entre p1 y p2. |
+| 1237 | `build_catmull_rom_frame_path` | Convierte los puntos manuales del contorno en una ruta densa y orgánica. |
+| 1315 | `_frame_sparse_catmull_controls` | Reduce a dense geodesic polyline to a clean Catmull control polygon. |
+| 1350 | `_frame_project_smoothed_catmull_to_surface` | Project Catmull samples back to the passive surface without large jumps. |
+| 1394 | `_frame_clean_catmull_surface_loop` | Create the final clean surface-following loop from sparse Catmull controls. |
+| 1418 | `_frame_surface_cache_key` |  |
+| 1428 | `_build_frame_surface_graph_cache` | Build a compact mesh-edge graph for true geodesic routing. |
+| 1577 | `_frame_nearest_vertex` |  |
+| 1585 | `_frame_vertices_within_surface_radius` | Return nearby graph vertices ordered by geodesic edge distance. |
+| 1624 | `_frame_anchor_width_profile` | Endpoint width test using the same 75/25 support policy. |
+| 1699 | `_frame_resolve_safe_anchor` | Resolve a semantic contour click to the closest width-valid surface vertex. |
+| 1790 | `_frame_np_distance` |  |
+| 1797 | `_frame_local_vertex_mask` | Bounding corridor used only to limit work, never as route cost. |
+| 1811 | `_frame_bidirectional_dijkstra` | Shortest path by accumulated physical mesh-edge length only. |
+| 1847 | `_frame_bidirectional_dijkstra.relax_one` |  |
+| 1920 | `_frame_scipy_dijkstra` | Exact shortest path on the mesh-edge CSR graph using SciPy C code. |
+| 2046 | `_frame_exact_dijkstra` | Use compiled CSR Dijkstra first; retain an exact Python fallback. |
+| 2072 | `_frame_geodesic_surface_route` | Adaptive exact Dijkstra constrained to the dental surface. |
+| 2143 | `_frame_width_surface_bvh` | Lazy BVH used only by the hard full-width gate. |
+| 2169 | `_frame_barycentric` |  |
+| 2191 | `_frame_surface_projection` | Project a point to the evaluated surface without snapping it to a vertex. |
+| 2264 | `_frame_ray_surface_height` | Height of the same surface sheet along the local normal line. |
+| 2314 | `_frame_point_support_profile` | Cross-section retention of the tube at one continuous surface point. |
+| 2384 | `_frame_resolve_continuous_anchor` | Resolve a semantic contour click to an exact face/barycentric anchor. |
+| 2465 | `_frame_semantic_segment_seeds` |  |
+| 2487 | `_frame_intrinsic_distance_field` |  |
+| 2506 | `_frame_corridor_clearance_field` |  |
+| 2543 | `_frame_continuous_project_and_smooth` |  |
+| 2607 | `_frame_continuous_sweep_profile` |  |
+| 2659 | `_frame_semantic_clearance_surface_route` | Plan one frame segment entirely on the IOS surface. |
 
 ## [_guide_parts/03_blockout_frame_geometry_c.py](../_guide_parts/03_blockout_frame_geometry_c.py)
 
-2664 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+2677 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -1552,347 +1522,350 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 309 | `_frame_width_preserving_surface_route` | Shortest intrinsic route preserving the mandatory central 75% band. |
 | 429 | `_frame_intrinsic_resample` | Resample along the mesh-edge polyline; never project through free space. |
 | 463 | `_frame_virtual_anchor_shortest_route` | Shortest surface route between exact face/barycentric endpoints. |
-| 559 | `build_surface_intrinsic_frame_path` | Shortest on-surface closed frame through user anchors in click order. |
-| 750 | `create_poly_curve_object` | Lightweight POLY sweep: no Bézier handles and therefore no overshoot. |
-| 781 | `_frame_organic_bezier_controls` | Return a clean control polygon for the visible frame tube. |
-| 820 | `build_surface_poly_tube_mesh` | Build the clinical surface frame with a continuous organic sweep. |
-| 879 | `_clamp_vector_length` | Limita una tangente sin cambiar su dirección. |
-| 888 | `_tcb_value` | Lee TCB dentro de rangos estables para trayectorias clínicas. |
-| 910 | `_kochanek_bartels_tangent_pairs` | Tangentes entrantes/salientes TCB para una ruta abierta. |
-| 991 | `_hermite_tcb_point` | Evalúa un segmento Hermite equivalente a un segmento Bezier TCB. |
-| 1003 | `build_kochanek_bartels_path` | Ruta abierta densa que atraviesa todos los anchors usando TCB. |
-| 1044 | `_ordered_points_from_evaluated_curve` | Extrae la polilínea evaluada de un Curve Path abierto en orden topológico. |
-| 1093 | `build_hooked_tcb_path` | Construye un Bezier Path real, fija contactos con Hook y devuelve su eje. |
-| 1216 | `simplify_points_by_distance` |  |
-| 1228 | `project_point_to_line` |  |
-| 1236 | `get_sleeve_entry_data` |  |
-| 1262 | `get_irrigation_taper_length` | Length de la reducción progresiva del canal interno. |
-| 1278 | `get_sleeve_wall_geometry` | Geometría radial real de la pared del sleeve para irrigación. |
-| 1338 | `build_irrigation_outer_path` | Trayectoria exterior imperativa del tubo de irrigación. |
-| 1406 | `get_irrigation_funnel_geometry` | Geometría del lumen con penetración radial imperativa. |
-| 1476 | `_irrigation_outward_centerline` | Devuelve la línea central externa desde el sleeve hacia fuera. |
-| 1529 | `build_irrigation_lumen_path` | Trayectoria del canal interno centrada en el tubo exterior. |
-| 1537 | `_smootherstep01` | Interpolación aún más orgánica para cambios de diámetro. |
-| 1543 | `_append_sample` | Añade una muestra de barrido evitando duplicados exactos. |
-| 1557 | `_build_transport_frames` | Frames de rotación mínima para barridos tubulares. |
-| 1634 | `append_variable_radius_tube_to_bmesh` | Añade un tubo continuo de radio variable en coordenadas mundo. |
-| 1695 | `_resample_polyline_with_distances` | Remuestrea una polilínea manteniendo distancia acumulada. |
-| 1718 | `build_irrigation_funnel_samples` | Muestras del lumen de irrigación como UN SOLO tubo tapered. |
-| 1784 | `build_variable_radius_tube_object` | Crea un objeto mesh cerrado desde muestras de centro/radio. |
-| 1844 | `build_irrigation_complete_lumen_cutter` | Cutter único tapered: salida fina → reducción progresiva → canal. |
-| 1861 | `build_irrigation_constant_lumen_samples` | Muestras de lumen de radio constante para el modo sin embudo. |
-| 1887 | `create_bezier_curve_object` |  |
-| 1923 | `convert_curve_to_mesh` |  |
-| 1937 | `_distance_along_polyline_to_nearest_point` | Distancia acumulada aproximada hasta el punto de la ruta más cercano. |
-| 1956 | `build_organic_tube_mesh` |  |
-| 1977 | `get_irrigation_junction_outer_radius` | Radio del cuello que realmente atraviesa la pared lateral del sleeve. |
-| 2005 | `build_irrigation_radial_collar` | Crea un collar cónico radial robusto entre el sleeve y el tubo. |
-| 2115 | `apply_difference_exact_transactional` | Aplica DIFFERENCE EXACT con rollback local y diagnóstico manifold. |
-| 2153 | `force_voxel_union_imperative` | Fusión forzada: Join de shells + Voxel Remesh fino. |
-| 2205 | `build_pristine_sleeve_shell` | Reconstruye el cilindro hueco exacto del sleeve asociado. |
-| 2237 | `build_sleeve_plane_trim_cutter` | Cilindro tipo semiespacio que vuelve a cortar una cara plana del sleeve. |
-| 2263 | `build_sleeve_lumen_restore_cutter` | Reabre el lumen axial exacto después de la fusión imperativa. |
-| 2277 | `restore_sleeve_after_imperative_irrigation` | Restaura shell, planos superior/inferior y lumen sin cancelar el tubo. |
-| 2325 | `fuse_irrigation_staged_exact` | Fusión imperativa del tubo hasta el interior del lumen. |
-| 2408 | `get_contour_curve` |  |
-| 2413 | `ensure_contour_curve` |  |
-| 2431 | `set_contour_curve_points` |  |
-| 2448 | `get_contour_curve_points` |  |
-| 2456 | `clear_contour_curve` | Elimina el objeto temporal del contorno y, si queda huérfano, su datablock Curve. |
-| 2480 | `consume_contour_after_frame` | Limpia todo el estado de contorno solo tras crear el frame con éxito. |
-| 2495 | `sync_legacy_contour_points` | Mantiene compatibilidad al abrir el archivo con versiones anteriores. |
-| 2502 | `_mark_gpu_dirty` | Compatibilidad con operadores modales: el dibujo GPU ya no cachea batches. |
-| 2507 | `_as_gpu_coords` |  |
-| 2511 | `draw_polyline_gpu` | Dibuja puntos y polilínea 3D con una sola rutina GPU. |
-| 2536 | `_draw_callback_contour` |  |
-| 2557 | `register_contour_draw_handler` |  |
-| 2564 | `unregister_contour_draw_handler` |  |
-| 2578 | `_draw_callback_irrigation` |  |
-| 2597 | `register_irr_draw_handler` |  |
-| 2604 | `unregister_irr_draw_handler` |  |
-| 2622 | `_engrave_preview_refresh_timer` |  |
-| 2641 | `_on_engrave_setting_change` | Mark the engraving preview as stale without recomputing it live. |
+| 559 | `_frame_component_labels` | Connected-component label per surface vertex (cached), or None. |
+| 576 | `_frame_preferred_component` | Component the frame must follow on a joined passive model. |
+| 597 | `_frame_anchor_on_component` | Nearest vertex of ``component`` as a routing anchor. |
+| 613 | `build_surface_intrinsic_frame_path` | Shortest on-surface closed frame through user anchors in click order. |
+| 816 | `create_poly_curve_object` | Lightweight POLY sweep: no Bézier handles and therefore no overshoot. |
+| 847 | `_frame_organic_bezier_controls` | Return a clean control polygon for the visible frame tube. |
+| 886 | `build_surface_poly_tube_mesh` |  |
+| 892 | `_clamp_vector_length` | Limita una tangente sin cambiar su dirección. |
+| 901 | `_tcb_value` | Lee TCB dentro de rangos estables para trayectorias clínicas. |
+| 923 | `_kochanek_bartels_tangent_pairs` | Tangentes entrantes/salientes TCB para una ruta abierta. |
+| 1004 | `_hermite_tcb_point` | Evalúa un segmento Hermite equivalente a un segmento Bezier TCB. |
+| 1016 | `build_kochanek_bartels_path` | Ruta abierta densa que atraviesa todos los anchors usando TCB. |
+| 1057 | `_ordered_points_from_evaluated_curve` | Extrae la polilínea evaluada de un Curve Path abierto en orden topológico. |
+| 1106 | `build_hooked_tcb_path` | Construye un Bezier Path real, fija contactos con Hook y devuelve su eje. |
+| 1229 | `simplify_points_by_distance` |  |
+| 1241 | `project_point_to_line` |  |
+| 1249 | `get_sleeve_entry_data` |  |
+| 1275 | `get_irrigation_taper_length` | Length de la reducción progresiva del canal interno. |
+| 1291 | `get_sleeve_wall_geometry` | Geometría radial real de la pared del sleeve para irrigación. |
+| 1351 | `build_irrigation_outer_path` | Trayectoria exterior imperativa del tubo de irrigación. |
+| 1419 | `get_irrigation_funnel_geometry` | Geometría del lumen con penetración radial imperativa. |
+| 1489 | `_irrigation_outward_centerline` | Devuelve la línea central externa desde el sleeve hacia fuera. |
+| 1542 | `build_irrigation_lumen_path` | Trayectoria del canal interno centrada en el tubo exterior. |
+| 1550 | `_smootherstep01` | Interpolación aún más orgánica para cambios de diámetro. |
+| 1556 | `_append_sample` | Añade una muestra de barrido evitando duplicados exactos. |
+| 1570 | `_build_transport_frames` | Frames de rotación mínima para barridos tubulares. |
+| 1647 | `append_variable_radius_tube_to_bmesh` | Añade un tubo continuo de radio variable en coordenadas mundo. |
+| 1708 | `_resample_polyline_with_distances` | Remuestrea una polilínea manteniendo distancia acumulada. |
+| 1731 | `build_irrigation_funnel_samples` | Muestras del lumen de irrigación como UN SOLO tubo tapered. |
+| 1797 | `build_variable_radius_tube_object` | Crea un objeto mesh cerrado desde muestras de centro/radio. |
+| 1857 | `build_irrigation_complete_lumen_cutter` | Cutter único tapered: salida fina → reducción progresiva → canal. |
+| 1874 | `build_irrigation_constant_lumen_samples` | Muestras de lumen de radio constante para el modo sin embudo. |
+| 1900 | `create_bezier_curve_object` |  |
+| 1936 | `convert_curve_to_mesh` |  |
+| 1950 | `_distance_along_polyline_to_nearest_point` | Distancia acumulada aproximada hasta el punto de la ruta más cercano. |
+| 1969 | `build_organic_tube_mesh` |  |
+| 1990 | `get_irrigation_junction_outer_radius` | Radio del cuello que realmente atraviesa la pared lateral del sleeve. |
+| 2018 | `build_irrigation_radial_collar` | Crea un collar cónico radial robusto entre el sleeve y el tubo. |
+| 2128 | `apply_difference_exact_transactional` | Aplica DIFFERENCE EXACT con rollback local y diagnóstico manifold. |
+| 2166 | `force_voxel_union_imperative` | Fusión forzada: Join de shells + Voxel Remesh fino. |
+| 2218 | `build_pristine_sleeve_shell` | Reconstruye el cilindro hueco exacto del sleeve asociado. |
+| 2250 | `build_sleeve_plane_trim_cutter` | Cilindro tipo semiespacio que vuelve a cortar una cara plana del sleeve. |
+| 2276 | `build_sleeve_lumen_restore_cutter` | Reabre el lumen axial exacto después de la fusión imperativa. |
+| 2290 | `restore_sleeve_after_imperative_irrigation` | Restaura shell, planos superior/inferior y lumen sin cancelar el tubo. |
+| 2338 | `fuse_irrigation_staged_exact` | Fusión imperativa del tubo hasta el interior del lumen. |
+| 2421 | `get_contour_curve` |  |
+| 2426 | `ensure_contour_curve` |  |
+| 2444 | `set_contour_curve_points` |  |
+| 2461 | `get_contour_curve_points` |  |
+| 2469 | `clear_contour_curve` | Elimina el objeto temporal del contorno y, si queda huérfano, su datablock Curve. |
+| 2493 | `consume_contour_after_frame` | Limpia todo el estado de contorno solo tras crear el frame con éxito. |
+| 2508 | `sync_legacy_contour_points` | Mantiene compatibilidad al abrir el archivo con versiones anteriores. |
+| 2515 | `_mark_gpu_dirty` | Compatibilidad con operadores modales: el dibujo GPU ya no cachea batches. |
+| 2520 | `_as_gpu_coords` |  |
+| 2524 | `draw_polyline_gpu` | Dibuja puntos y polilínea 3D con una sola rutina GPU. |
+| 2549 | `_draw_callback_contour` |  |
+| 2570 | `register_contour_draw_handler` |  |
+| 2577 | `unregister_contour_draw_handler` |  |
+| 2591 | `_draw_callback_irrigation` |  |
+| 2610 | `register_irr_draw_handler` |  |
+| 2617 | `unregister_irr_draw_handler` |  |
+| 2635 | `_engrave_preview_refresh_timer` |  |
+| 2654 | `_on_engrave_setting_change` | Mark the engraving preview as stale without recomputing it live. |
 
 ## [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py)
 
-4487 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+4446 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
 | 1 | class `DSG_ContourPoint` |  |
-| 7 | `_irrigation_sleeve_channel_items` | Language-aware labels for the irrigation channel mode dropdown. |
-| 37 | `_retention_cache_key` |  |
-| 84 | `_clear_retention_geometry_cache` |  |
-| 88 | `_tag_dsg_view3d_redraw` |  |
-| 100 | `_on_retention_level_change` | Keep profile changes lightweight; the explicit preset buttons rebuild. |
-| 108 | `_on_retention_percent_change` |  |
-| 113 | class `DSG_Props` |  |
-| 600 | `get_view_ray` |  |
-| 611 | `intersect_ray_plane` |  |
-| 624 | `point_in_view_plane` |  |
-| 640 | `_raycast_local_safe` | Raycast tolerante a objetos sin malla evaluada. |
-| 739 | `do_raycast_detailed` |  |
-| 770 | `do_raycast` |  |
-| 779 | `_event_view_ray` | Return a world-space ray for the WINDOW region under the mouse. |
-| 821 | `_raycast_object_from_world_ray` |  |
-| 846 | `_nearest_visible_raycast` |  |
-| 868 | `_nearest_implant_vertex` | Snap a clicked implant surface point to the nearest real mesh vertex. |
-| 888 | `_dsg_data_access_ready` | Return True only when Blender has restored normal blend-data access. |
-| 904 | `_dicom_measurement_roots` |  |
-| 914 | `_dicom_measurement_roots.sort_key` |  |
-| 922 | `_next_dicom_measurement_index` |  |
-| 932 | `_ensure_dicom_measure_material` |  |
-| 944 | `_assign_single_material` |  |
-| 952 | `_create_dicom_measure_marker` |  |
-| 968 | `_create_dicom_measure_line` |  |
-| 991 | `_set_dicom_measurements_visibility` | Show or hide all DICOM two-point measurement visuals. |
-| 1029 | `_dicom_measurement_points` |  |
-| 1059 | `_update_one_dicom_measurement` |  |
-| 1094 | `_tag_dicom_measurement_redraw` |  |
-| 1107 | `_update_all_dicom_measurements` |  |
-| 1124 | `_dsg_dicom_measurement_update_timer` |  |
-| 1134 | `_dsg_update_dicom_measurements_handler` |  |
-| 1154 | `_remove_dicom_measure_handler` |  |
-| 1169 | `_register_dicom_measure_handler` |  |
-| 1178 | `_remove_dicom_measurement_root` |  |
-| 1196 | `_clear_all_dicom_measurements` |  |
-| 1217 | `_remove_dicom_measurements_for_implant` |  |
-| 1229 | `_create_dicom_measurement` |  |
-| 1259 | `_create_dicom_mpr_measurement` |  |
-| 1293 | class `DSG_OT_MeasureImplantToDICOM` | `dsg.measure_implant_to_dicom` · Measure Implant to DICOM |
-| 1306 | `DSG_OT_MeasureImplantToDICOM.poll` |  |
-| 1316 | `DSG_OT_MeasureImplantToDICOM.invoke` |  |
-| 1331 | `DSG_OT_MeasureImplantToDICOM.modal` |  |
-| 1422 | `DSG_OT_MeasureImplantToDICOM._finish_cursor` |  |
-| 1431 | class `DSG_OT_MeasureDICOMTwoPoints` | `dsg.measure_dicom_two_points` · Measure Two Points in DICOM MPR |
-| 1443 | `DSG_OT_MeasureDICOMTwoPoints.poll` |  |
-| 1452 | `DSG_OT_MeasureDICOMTwoPoints.invoke` |  |
-| 1466 | `DSG_OT_MeasureDICOMTwoPoints.modal` |  |
-| 1529 | `DSG_OT_MeasureDICOMTwoPoints._finish_cursor` |  |
-| 1536 | class `DSG_OT_RemoveLastDICOMMeasurement` | `dsg.remove_last_dicom_measurement` · Delete Last DICOM Measurement |
-| 1541 | `DSG_OT_RemoveLastDICOMMeasurement.execute` |  |
-| 1551 | class `DSG_OT_ClearDICOMMeasurements` | `dsg.clear_dicom_measurements` · Clear DICOM Measurements |
-| 1556 | `DSG_OT_ClearDICOMMeasurements.execute` |  |
-| 1570 | `get_active_guide_obj` | Recupera la guía de forma estrictamente read-only. |
-| 1587 | `_normalized_or_fallback` |  |
-| 1594 | `build_engrave_orientation_matrix` | Crea una matriz mundo para colocar texto tangente a la superficie. |
-| 1628 | `_get_view_right_axis` | Usa el eje horizontal de la vista como fallback de orientación. |
-| 1644 | `_get_view_up_axis` | Devuelve el eje vertical de la vista proyectado sobre la superficie. |
-| 1658 | `get_nearest_implant_to_world_point` | Implant cuyo sleeve clínico queda más cerca de un punto del grabado. |
-| 1680 | `get_engrave_x_axis_perpendicular_to_sleeve_base` | Orienta el texto con el eje de inserción capturado desde la vista. |
-| 1736 | `update_engrave_axis_from_sleeve_base` | Recalcula y guarda la orientación del grabado según el eje de inserción. |
-| 1745 | `create_or_update_engrave_anchor` |  |
-| 1760 | `get_engrave_basis` | Devuelve ejes ortonormales del grabado: X lectura, Y alto, Z exterior. |
-| 1782 | `raycast_object_along_world` | Raycast mundo→objeto usando el mismo fallback seguro del selector modal. |
-| 1815 | `project_flat_engrave_mesh_to_plane` | Remapea el texto a un cutter plano rápido, sin raycast por vértice. |
-| 1862 | `_engrave_raycast_bvh` | Raycast rápido con un BVHTree ya construido para no evaluar la guía por vértice. |
-| 1893 | `_engrave_projection_signature` | Stable key for reusing the preview's curved surface projection. |
-| 1918 | `_store_engrave_projection_cache` |  |
-| 1936 | `_load_engrave_projection_cache` |  |
-| 1946 | `project_engrave_mesh_to_guide_curvature` | Adapta una malla de texto a la curvatura local de DSG_Guide. |
-| 2070 | `create_engrave_text_mesh_object` | Crea el grabado con la biblioteca interna low-poly de DSG. |
-| 2099 | `create_or_update_engrave_preview` | Muestra una previsualización curva no destructiva del texto en la superficie. |
-| 2134 | `create_engrave_text_cutter` | Crea un texto sólido para recortar la guía con Boolean Difference. |
-| 2183 | `_remove_modifier_if_present` |  |
-| 2192 | `_engrave_boolean_result_plausible` | Cheap validation for a shallow local engraving cut. |
-| 2212 | `apply_patient_engrave_transactional` | FAST-first local engraving with exact transactional fallbacks. |
-| 2285 | `raycast_sleeve_lateral_on_guide` | Identifica el sleeve mediante raycast, pero no permite usar su caras planas. |
-| 2365 | class `DSG_OT_RunBooleanPreflight` | `dsg.run_boolean_preflight` · Check / Repair Meshes |
-| 2372 | `DSG_OT_RunBooleanPreflight.execute` |  |
-| 2449 | class `DSG_OT_ForceOrthographicView` | `dsg.force_orthographic_view` · Restore Orthographic Precision View |
-| 2455 | `DSG_OT_ForceOrthographicView.execute` |  |
-| 2466 | class `DSG_OT_Reset` | `dsg.reset` · Reset Workflow |
-| 2472 | `DSG_OT_Reset.invoke` |  |
-| 2475 | `DSG_OT_Reset.execute` |  |
-| 2510 | `DSG_OT_Reset.execute.collect_collection_objects` |  |
-| 2633 | class `DSG_OT_ResetCurrentStep` | `dsg.reset_current_step` · Back One Clinical Step |
-| 2640 | `DSG_OT_ResetCurrentStep.poll` |  |
-| 2644 | `DSG_OT_ResetCurrentStep._return_to_alignment` | Restore the alignment review without deleting DSG geometry. |
-| 2723 | `DSG_OT_ResetCurrentStep.execute` |  |
-| 2803 | class `DSG_OT_UseSelectedIOSModel` | `dsg.use_selected_ios_model` · Use Selected IOS Model |
-| 2810 | `DSG_OT_UseSelectedIOSModel.poll` |  |
-| 2819 | `DSG_OT_UseSelectedIOSModel.execute` |  |
-| 2851 | class `DSG_OT_PrepareAlignedModel` | `dsg.prepare_aligned_model` · Choose Insertion Axis from View |
-| 2857 | `DSG_OT_PrepareAlignedModel.execute` |  |
-| 2911 | class `DSG_OT_ConfirmModel` | `dsg.confirm_model` · Confirm Model |
-| 2916 | `DSG_OT_ConfirmModel.execute` |  |
-| 2935 | class `DSG_OT_CaptureAxis` | `dsg.capture_axis` · Capture Axis from View |
-| 2940 | `DSG_OT_CaptureAxis.execute` |  |
-| 2975 | class `DSG_OT_SelectAxis` | `dsg.select_axis` · Select Axis |
-| 2980 | `DSG_OT_SelectAxis.execute` |  |
-| 2986 | class `DSG_OT_ConfirmAxis` | `dsg.confirm_axis` · Confirm Axis |
-| 2991 | `DSG_OT_ConfirmAxis.execute` |  |
-| 3001 | class `DSG_OT_SelectRetentionPreset` | `dsg.select_retention_preset` · Select Retention Profile |
-| 3011 | `DSG_OT_SelectRetentionPreset.execute` |  |
-| 3042 | `_set_blockout_ui_busy` | Show immediate visual feedback while the synchronous geometry stage runs. |
-| 3060 | `_blockout_stats_summary` |  |
-| 3077 | `_blockout_percentile` | Small dependency-free percentile helper for blockout diagnostics. |
-| 3091 | `_validate_blockout_seating` | Audit a view-raycast blockout before it can become a cutter. |
-| 3213 | `_store_blockout_seating_report` | Persist a concise audit result on both the candidate and scene props. |
-| 3240 | `_generate_view_raycast_blockout_transaction` | Build a candidate first and replace the valid blockout only after success. |
-| 3327 | `build_blockout_simple_fast` | Compatibility entry point: the only active blockout is the view-parallel BVH raycast. |
-| 3338 | class `DSG_OT_GenerateBlockout` | `dsg.generate_blockout` · Generate Blockout |
-| 3343 | `DSG_OT_GenerateBlockout.execute` |  |
-| 3405 | class `DSG_OT_AnalyzeRetention` | `dsg.analyze_retention` · Analyze Coronary Perimeter |
-| 3411 | `DSG_OT_AnalyzeRetention.execute` |  |
-| 3415 | class `DSG_OT_ValidateBlockoutSeating` | `dsg.validate_blockout_seating` · Validate Guide Seating |
-| 3422 | `DSG_OT_ValidateBlockoutSeating.execute` |  |
-| 3455 | class `DSG_OT_ApplySelectedBlockoutRelief` | `dsg.apply_selected_blockout_relief` · Apply Selected Local Relief |
-| 3463 | `DSG_OT_ApplySelectedBlockoutRelief.poll` |  |
-| 3470 | `DSG_OT_ApplySelectedBlockoutRelief.execute` |  |
-| 3544 | class `DSG_OT_AutoPrepareRetention` | `dsg.auto_prepare_retention` · Prepare Model |
-| 3552 | `DSG_OT_AutoPrepareRetention.execute` |  |
-| 3556 | class `DSG_OT_ConfirmBlockout` | `dsg.confirm_blockout` · Confirm Blockout |
-| 3566 | `DSG_OT_ConfirmBlockout.execute` |  |
-| 3705 | class `DSG_OT_ForceConfirmBlockout` | `dsg.force_confirm_blockout` · Continue After Manual Seating Review |
-| 3712 | `DSG_OT_ForceConfirmBlockout.invoke` |  |
-| 3719 | `DSG_OT_ForceConfirmBlockout.execute` |  |
-| 3723 | class `DSG_OT_StartDrawing` | `dsg.start_drawing` · Draw / Continue Outline |
-| 3730 | `DSG_OT_StartDrawing._is_view_navigation_event` | Let Blender's native viewport navigation run during point placement. |
-| 3755 | `DSG_OT_StartDrawing.modal` |  |
-| 3806 | `DSG_OT_StartDrawing.invoke` |  |
-| 3841 | class `DSG_OT_ToggleContourPointEdit` | `dsg.toggle_contour_point_edit` · Edit Frame Points |
-| 3847 | `DSG_OT_ToggleContourPointEdit.execute` |  |
-| 3886 | class `DSG_OT_ClearContour` | `dsg.clear_contour` · Clear Outline |
-| 3891 | `DSG_OT_ClearContour.execute` |  |
-| 3900 | class `DSG_OT_ConfirmContour` | `dsg.confirm_contour` · Confirm Outline |
-| 3905 | `DSG_OT_ConfirmContour.execute` |  |
-| 3936 | class `DSG_OT_CreateImplant` | `dsg.create_implant` · Create Implant |
-| 3941 | `DSG_OT_CreateImplant.execute` |  |
-| 4095 | class `DSG_OT_RemoveLastImplant` | `dsg.remove_last_implant` · Delete Last Implant |
-| 4100 | `DSG_OT_RemoveLastImplant.execute` |  |
-| 4132 | class `DSG_OT_ToggleImplantParallelLock` | `dsg.toggle_implant_parallel_lock` · Lock Implant for Parallelization |
-| 4140 | `DSG_OT_ToggleImplantParallelLock.execute` |  |
-| 4168 | class `DSG_OT_SetParallelMaster` | `dsg.set_parallel_master` · Use Selected as Master |
-| 4173 | `DSG_OT_SetParallelMaster.execute` |  |
-| 4188 | class `DSG_OT_ParallelizeImplants` | `dsg.parallelize_implants` · Parallelize Implants to Master |
-| 4193 | `DSG_OT_ParallelizeImplants.execute` |  |
-| 4248 | class `DSG_OT_CreateImplantEmergenceTubes` | `dsg.create_implant_emergence_tubes` · Create Implant Emergence Tubes |
-| 4256 | `DSG_OT_CreateImplantEmergenceTubes.execute` |  |
-| 4323 | class `DSG_OT_ConfirmImplant` | `dsg.confirm_implant` · Confirm Implants |
-| 4328 | `DSG_OT_ConfirmImplant.execute` |  |
+| 4 | `_irrigation_sleeve_channel_items` | Language-aware labels for the irrigation channel mode dropdown. |
+| 34 | `_retention_cache_key` |  |
+| 81 | `_clear_retention_geometry_cache` |  |
+| 85 | `_tag_dsg_view3d_redraw` |  |
+| 97 | `_on_retention_level_change` | Keep profile changes lightweight; the explicit preset buttons rebuild. |
+| 105 | `_on_retention_percent_change` |  |
+| 116 | class `DSG_Props` |  |
+| 611 | `get_view_ray` |  |
+| 622 | `intersect_ray_plane` |  |
+| 635 | `point_in_view_plane` |  |
+| 651 | `_raycast_local_safe` | Raycast tolerante a objetos sin malla evaluada. |
+| 750 | `do_raycast_detailed` |  |
+| 781 | `do_raycast` |  |
+| 790 | `_event_view_ray` | Return a world-space ray for the WINDOW region under the mouse. |
+| 832 | `_raycast_object_from_world_ray` |  |
+| 857 | `_nearest_visible_raycast` |  |
+| 879 | `_nearest_implant_vertex` | Snap a clicked implant surface point to the nearest real mesh vertex. |
+| 899 | `_dsg_data_access_ready` | Return True only when Blender has restored normal blend-data access. |
+| 915 | `_dicom_measurement_roots` |  |
+| 925 | `_dicom_measurement_roots.sort_key` |  |
+| 933 | `_next_dicom_measurement_index` |  |
+| 943 | `_ensure_dicom_measure_material` |  |
+| 955 | `_assign_single_material` |  |
+| 963 | `_create_dicom_measure_marker` |  |
+| 979 | `_create_dicom_measure_line` |  |
+| 1002 | `_set_dicom_measurements_visibility` | Show or hide all DICOM two-point measurement visuals. |
+| 1040 | `_dicom_measurement_points` |  |
+| 1070 | `_update_one_dicom_measurement` |  |
+| 1105 | `_tag_dicom_measurement_redraw` |  |
+| 1118 | `_update_all_dicom_measurements` |  |
+| 1135 | `_dsg_dicom_measurement_update_timer` |  |
+| 1145 | `_dsg_update_dicom_measurements_handler` |  |
+| 1165 | `_remove_dicom_measure_handler` |  |
+| 1180 | `_register_dicom_measure_handler` |  |
+| 1189 | `_remove_dicom_measurement_root` |  |
+| 1207 | `_clear_all_dicom_measurements` |  |
+| 1228 | `_remove_dicom_measurements_for_implant` |  |
+| 1240 | `_create_dicom_measurement` |  |
+| 1270 | `_create_dicom_mpr_measurement` |  |
+| 1304 | class `DSG_OT_MeasureImplantToDICOM` | `dsg.measure_implant_to_dicom` · Measure Implant to DICOM |
+| 1317 | `DSG_OT_MeasureImplantToDICOM.poll` |  |
+| 1327 | `DSG_OT_MeasureImplantToDICOM.invoke` |  |
+| 1342 | `DSG_OT_MeasureImplantToDICOM.modal` |  |
+| 1433 | `DSG_OT_MeasureImplantToDICOM._finish_cursor` |  |
+| 1442 | class `DSG_OT_MeasureDICOMTwoPoints` | `dsg.measure_dicom_two_points` · Measure Two Points in DICOM MPR |
+| 1454 | `DSG_OT_MeasureDICOMTwoPoints.poll` |  |
+| 1463 | `DSG_OT_MeasureDICOMTwoPoints.invoke` |  |
+| 1477 | `DSG_OT_MeasureDICOMTwoPoints.modal` |  |
+| 1540 | `DSG_OT_MeasureDICOMTwoPoints._finish_cursor` |  |
+| 1547 | class `DSG_OT_RemoveLastDICOMMeasurement` | `dsg.remove_last_dicom_measurement` · Delete Last DICOM Measurement |
+| 1552 | `DSG_OT_RemoveLastDICOMMeasurement.execute` |  |
+| 1562 | class `DSG_OT_ClearDICOMMeasurements` | `dsg.clear_dicom_measurements` · Clear DICOM Measurements |
+| 1567 | `DSG_OT_ClearDICOMMeasurements.execute` |  |
+| 1581 | `get_active_guide_obj` | Recupera la guía de forma estrictamente read-only. |
+| 1598 | `_normalized_or_fallback` |  |
+| 1605 | `build_engrave_orientation_matrix` | Crea una matriz mundo para colocar texto tangente a la superficie. |
+| 1639 | `_get_view_right_axis` | Usa el eje horizontal de la vista como fallback de orientación. |
+| 1655 | `_get_view_up_axis` | Devuelve el eje vertical de la vista proyectado sobre la superficie. |
+| 1669 | `get_nearest_implant_to_world_point` | Implant cuyo sleeve clínico queda más cerca de un punto del grabado. |
+| 1691 | `get_engrave_x_axis_perpendicular_to_sleeve_base` | Orienta el texto con el eje de inserción capturado desde la vista. |
+| 1747 | `update_engrave_axis_from_sleeve_base` | Recalcula y guarda la orientación del grabado según el eje de inserción. |
+| 1756 | `create_or_update_engrave_anchor` |  |
+| 1771 | `get_engrave_basis` | Devuelve ejes ortonormales del grabado: X lectura, Y alto, Z exterior. |
+| 1793 | `raycast_object_along_world` | Raycast mundo→objeto usando el mismo fallback seguro del selector modal. |
+| 1826 | `project_flat_engrave_mesh_to_plane` | Remapea el texto a un cutter plano rápido, sin raycast por vértice. |
+| 1873 | `_engrave_raycast_bvh` | Raycast rápido con un BVHTree ya construido para no evaluar la guía por vértice. |
+| 1904 | `_engrave_projection_signature` | Stable key for reusing the preview's curved surface projection. |
+| 1929 | `_store_engrave_projection_cache` |  |
+| 1947 | `_load_engrave_projection_cache` |  |
+| 1957 | `project_engrave_mesh_to_guide_curvature` | Adapta una malla de texto a la curvatura local de DSG_Guide. |
+| 2081 | `create_engrave_text_mesh_object` | Crea el grabado con la biblioteca interna low-poly de DSG. |
+| 2110 | `create_or_update_engrave_preview` | Muestra una previsualización curva no destructiva del texto en la superficie. |
+| 2145 | `create_engrave_text_cutter` | Crea un texto sólido para recortar la guía con Boolean Difference. |
+| 2194 | `_remove_modifier_if_present` |  |
+| 2203 | `_engrave_boolean_result_plausible` | Cheap validation for a shallow local engraving cut. |
+| 2223 | `apply_patient_engrave_transactional` | FAST-first local engraving with exact transactional fallbacks. |
+| 2296 | `raycast_sleeve_lateral_on_guide` | Identifica el sleeve mediante raycast, pero no permite usar su caras planas. |
+| 2376 | class `DSG_OT_RunBooleanPreflight` | `dsg.run_boolean_preflight` · Check / Repair Meshes |
+| 2383 | `DSG_OT_RunBooleanPreflight.execute` |  |
+| 2460 | class `DSG_OT_ForceOrthographicView` | `dsg.force_orthographic_view` · Restore Orthographic Precision View |
+| 2466 | `DSG_OT_ForceOrthographicView.execute` |  |
+| 2477 | class `DSG_OT_Reset` | `dsg.reset` · Reset Workflow |
+| 2483 | `DSG_OT_Reset.invoke` |  |
+| 2486 | `DSG_OT_Reset.execute` |  |
+| 2521 | `DSG_OT_Reset.execute.collect_collection_objects` |  |
+| 2644 | class `DSG_OT_ResetCurrentStep` | `dsg.reset_current_step` · Back One Clinical Step |
+| 2651 | `DSG_OT_ResetCurrentStep.poll` |  |
+| 2655 | `DSG_OT_ResetCurrentStep._return_to_alignment` | Restore the alignment review without deleting DSG geometry. |
+| 2734 | `DSG_OT_ResetCurrentStep.execute` |  |
+| 2814 | class `DSG_OT_UseSelectedIOSModel` | `dsg.use_selected_ios_model` · Use Selected IOS Model |
+| 2821 | `DSG_OT_UseSelectedIOSModel.poll` |  |
+| 2830 | `DSG_OT_UseSelectedIOSModel.execute` |  |
+| 2862 | class `DSG_OT_PrepareAlignedModel` | `dsg.prepare_aligned_model` · Choose Insertion Axis from View |
+| 2868 | `DSG_OT_PrepareAlignedModel.execute` |  |
+| 2922 | class `DSG_OT_ConfirmModel` | `dsg.confirm_model` · Confirm Model |
+| 2927 | `DSG_OT_ConfirmModel.execute` |  |
+| 2946 | class `DSG_OT_CaptureAxis` | `dsg.capture_axis` · Capture Axis from View |
+| 2951 | `DSG_OT_CaptureAxis.execute` |  |
+| 2986 | class `DSG_OT_SelectAxis` | `dsg.select_axis` · Select Axis |
+| 2991 | `DSG_OT_SelectAxis.execute` |  |
+| 2997 | class `DSG_OT_ConfirmAxis` | `dsg.confirm_axis` · Confirm Axis |
+| 3002 | `DSG_OT_ConfirmAxis.execute` |  |
+| 3012 | class `DSG_OT_SelectRetentionPreset` | `dsg.select_retention_preset` · Select Retention Profile |
+| 3022 | `DSG_OT_SelectRetentionPreset.execute` |  |
+| 3053 | `_set_blockout_ui_busy` | Show immediate visual feedback while the synchronous geometry stage runs. |
+| 3071 | `_blockout_stats_summary` |  |
+| 3088 | `_blockout_percentile` | Small dependency-free percentile helper for blockout diagnostics. |
+| 3102 | `_validate_blockout_seating` | Audit a view-raycast blockout before it can become a cutter. |
+| 3221 | `_store_blockout_seating_report` | Persist a concise audit result on both the candidate and scene props. |
+| 3248 | `_generate_view_raycast_blockout_transaction` | Build a candidate first and replace the valid blockout only after success. |
+| 3335 | `build_blockout_simple_fast` | Compatibility entry point: the only active blockout is the view-parallel BVH raycast. |
+| 3346 | class `DSG_OT_GenerateBlockout` | `dsg.generate_blockout` · Generate Blockout |
+| 3351 | `DSG_OT_GenerateBlockout.execute` |  |
+| 3413 | class `DSG_OT_AnalyzeRetention` | `dsg.analyze_retention` · Analyze Coronary Perimeter |
+| 3419 | `DSG_OT_AnalyzeRetention.execute` |  |
+| 3423 | class `DSG_OT_ValidateBlockoutSeating` | `dsg.validate_blockout_seating` · Validate Guide Seating |
+| 3430 | `DSG_OT_ValidateBlockoutSeating.execute` |  |
+| 3463 | class `DSG_OT_ApplySelectedBlockoutRelief` | `dsg.apply_selected_blockout_relief` · Apply Selected Local Relief |
+| 3471 | `DSG_OT_ApplySelectedBlockoutRelief.poll` |  |
+| 3478 | `DSG_OT_ApplySelectedBlockoutRelief.execute` |  |
+| 3506 | class `DSG_OT_AutoPrepareRetention` | `dsg.auto_prepare_retention` · Prepare Model |
+| 3514 | `DSG_OT_AutoPrepareRetention.execute` |  |
+| 3518 | class `DSG_OT_ConfirmBlockout` | `dsg.confirm_blockout` · Confirm Blockout |
+| 3528 | `DSG_OT_ConfirmBlockout.execute` |  |
+| 3665 | class `DSG_OT_ForceConfirmBlockout` | `dsg.force_confirm_blockout` · Continue After Manual Seating Review |
+| 3672 | `DSG_OT_ForceConfirmBlockout.invoke` |  |
+| 3675 | `DSG_OT_ForceConfirmBlockout.execute` |  |
+| 3679 | class `DSG_OT_StartDrawing` | `dsg.start_drawing` · Draw / Continue Outline |
+| 3686 | `DSG_OT_StartDrawing._is_view_navigation_event` | Let Blender's native viewport navigation run during point placement. |
+| 3711 | `DSG_OT_StartDrawing.modal` |  |
+| 3762 | `DSG_OT_StartDrawing.invoke` |  |
+| 3797 | class `DSG_OT_ToggleContourPointEdit` | `dsg.toggle_contour_point_edit` · Edit Frame Points |
+| 3803 | `DSG_OT_ToggleContourPointEdit.execute` |  |
+| 3842 | class `DSG_OT_ClearContour` | `dsg.clear_contour` · Clear Outline |
+| 3847 | `DSG_OT_ClearContour.execute` |  |
+| 3856 | class `DSG_OT_ConfirmContour` | `dsg.confirm_contour` · Confirm Outline |
+| 3861 | `DSG_OT_ConfirmContour.execute` |  |
+| 3892 | class `DSG_OT_CreateImplant` | `dsg.create_implant` · Create Implant |
+| 3897 | `DSG_OT_CreateImplant.execute` |  |
+| 4053 | class `DSG_OT_RemoveLastImplant` | `dsg.remove_last_implant` · Delete Last Implant |
+| 4058 | `DSG_OT_RemoveLastImplant.execute` |  |
+| 4090 | class `DSG_OT_ToggleImplantParallelLock` | `dsg.toggle_implant_parallel_lock` · Lock Implant for Parallelization |
+| 4098 | `DSG_OT_ToggleImplantParallelLock.execute` |  |
+| 4126 | class `DSG_OT_SetParallelMaster` | `dsg.set_parallel_master` · Use Selected as Master |
+| 4131 | `DSG_OT_SetParallelMaster.execute` |  |
+| 4146 | class `DSG_OT_ParallelizeImplants` | `dsg.parallelize_implants` · Parallelize Implants to Master |
+| 4151 | `DSG_OT_ParallelizeImplants.execute` |  |
+| 4206 | class `DSG_OT_CreateImplantEmergenceTubes` | `dsg.create_implant_emergence_tubes` · Create Implant Emergence Tubes |
+| 4214 | `DSG_OT_CreateImplantEmergenceTubes.execute` |  |
+| 4281 | class `DSG_OT_ConfirmImplant` | `dsg.confirm_implant` · Confirm Implants |
+| 4286 | `DSG_OT_ConfirmImplant.execute` |  |
 
 ## [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py)
 
-3675 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+3691 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
 | 1 | class `DSG_OT_BuildTubeFrame` | `dsg.build_tube_frame` · Generate Tubular Frame |
 | 6 | `DSG_OT_BuildTubeFrame.execute` |  |
-| 185 | `get_pending_microscrew_preview` |  |
-| 206 | `get_confirmed_microscrew_objects` |  |
-| 222 | `get_microscrew_records` |  |
-| 232 | `set_microscrew_records` |  |
-| 236 | `_record_from_microscrew_object` |  |
-| 265 | `_matrix_along_local_z` |  |
-| 274 | `_create_cylinder_between` |  |
-| 291 | `make_microscrew_anatomic_sleeve_mesh` | Closed sleeve whose lumen and anatomical seat follow screw diameter. |
-| 368 | `_smart_anchor_tangent_basis` |  |
-| 385 | `_smart_anchor_project_candidate` |  |
-| 428 | `_smart_anchor_neighbor_direction` |  |
-| 445 | `_smart_anchor_local_roughness` |  |
-| 473 | `_smart_anchor_fit_metrics` |  |
-| 499 | `_smart_anchor_probe_solid_interior` | Detecta qué lado de la superficie entra realmente en el sólido actual. |
-| 557 | `_smart_anchor_single_wall_thickness` | Mide el grosor del sólido prebooleana y orienta su lado interior real. |
-| 567 | `_smart_anchor_structural_metrics` | Devuelve grosor débil robusto y profundidad segura de enterramiento. |
-| 638 | `_smart_anchor_candidate_score` |  |
-| 689 | `_smart_anchor_generate_candidates` |  |
-| 796 | `_smart_anchor_pair_score` |  |
-| 825 | `_smart_anchor_optimize_pair` |  |
-| 887 | `_optimize_reinforcement_chain_anchors` |  |
-| 945 | `_fixed_reinforcement_anchor_burials` | Mantiene exactamente los puntos elegidos y calcula solo su solape interno. |
-| 985 | `_smooth_circular_scalars` |  |
-| 1002 | `_support_surface_under_candidate` | Comprueba si el candidato está situado sobre alguna cara del soporte. |
-| 1029 | `_maximum_supported_offset_scale` | Mayor fracción del offset cuya proyección sigue dentro del frame. |
-| 1063 | `_all_footprint_points_supported` | Comprueba el aro completo conservando exactamente su forma nominal. |
-| 1079 | `_maximum_round_footprint_scale` | Mayor escala uniforme que mantiene toda la huella dentro del soporte. |
-| 1116 | `_adaptive_volcano_footprint_offsets` | Huella volcánica grande, redonda y contenida mediante escala uniforme. |
-| 1148 | `_cubic_bezier_tangent` |  |
-| 1156 | `_microscrew_support_radius_at` | Conector grueso con apoyo amplio en frame y cuello seguro en el sleeve. |
-| 1182 | `make_microscrew_smooth_support_mesh` | Connector Bézier curvo, cerrado y con tapas enterradas en los solapes. |
-| 1284 | `_microscrew_target_candidates` |  |
-| 1300 | `raycast_microscrew_target` | Busca el segundo punto en modelo/blockout; usa el frame como fallback. |
-| 1306 | `raycast_microscrew_target.best_hit` |  |
-| 1329 | `build_microscrew_preview` |  |
-| 1487 | class `DSG_OT_StartMicroscrew` | `dsg.start_microscrew` · Select 3 Microscrew Points |
-| 1492 | `DSG_OT_StartMicroscrew._marker_name` |  |
-| 1495 | `DSG_OT_StartMicroscrew._add_marker` |  |
-| 1504 | `DSG_OT_StartMicroscrew._remove_marker` |  |
-| 1509 | `DSG_OT_StartMicroscrew._finish` |  |
-| 1514 | `DSG_OT_StartMicroscrew.modal` |  |
-| 1583 | `DSG_OT_StartMicroscrew.invoke` |  |
-| 1609 | `_microscrew_preview_visual_object` | Devuelve el STL visual editable del microtornillo pendiente. |
-| 1640 | `_microscrew_axis_from_visual_or_preview` | Extrae el eje actual del microtornillo. |
-| 1662 | `update_pending_microscrew_from_visual` | Recrea el preview usando el microtornillo visual como nuevo punto 2. |
-| 1722 | class `DSG_OT_UpdateMicroscrewFromVisual` | `dsg.update_microscrew_from_visual` · Update Microscrew From Visual |
-| 1727 | `DSG_OT_UpdateMicroscrewFromVisual.execute` |  |
-| 1742 | `confirm_pending_microscrew_object` | Convierte el preview pendiente en microtornillo confirmado. |
-| 1800 | class `DSG_OT_ConfirmMicroscrewPreview` | `dsg.confirm_microscrew_preview` · Confirm Microscrew |
-| 1805 | `DSG_OT_ConfirmMicroscrewPreview.execute` |  |
-| 1817 | class `DSG_OT_CancelMicroscrewPreview` | `dsg.cancel_microscrew_preview` · Discard Pending Microscrew |
-| 1822 | `DSG_OT_CancelMicroscrewPreview.execute` |  |
-| 1836 | class `DSG_OT_RemoveLastMicroscrew` | `dsg.remove_last_microscrew` · Delete Last Microscrew |
-| 1841 | `DSG_OT_RemoveLastMicroscrew.execute` |  |
-| 1876 | class `DSG_OT_ApplyMicroscrewsToFrame` | `dsg.apply_microscrews_to_frame` · Add Microscrews to Frame |
-| 1881 | `DSG_OT_ApplyMicroscrewsToFrame.execute` |  |
-| 1955 | class `DSG_OT_CreateAnimatedMicroscrews` | `dsg.create_animated_microscrews` · Create Animated Screws |
-| 1960 | `DSG_OT_CreateAnimatedMicroscrews.execute` |  |
-| 2016 | class `DSG_OT_PlayAnimatedMicroscrews` | `dsg.play_animated_microscrews` · Play Microscrew Insertion |
-| 2020 | `DSG_OT_PlayAnimatedMicroscrews.execute` |  |
-| 2052 | class `DSG_OT_StopAnimatedMicroscrews` | `dsg.stop_animated_microscrews` · Stop Microscrew Animation |
-| 2056 | `DSG_OT_StopAnimatedMicroscrews.execute` |  |
-| 2079 | class `DSG_OT_ToggleAnimatedMicroscrewsVisibility` | `dsg.toggle_animated_microscrews_visibility` · Show or Hide Animated Microscrews |
-| 2083 | `DSG_OT_ToggleAnimatedMicroscrewsVisibility.execute` |  |
-| 2106 | class `DSG_OT_ShowAnimatedMicroscrewStart` | `dsg.show_animated_microscrew_start` · Show Microscrew Start Position |
-| 2110 | `DSG_OT_ShowAnimatedMicroscrewStart.execute` |  |
-| 2124 | class `DSG_OT_ShowAnimatedMicroscrewStop` | `dsg.show_animated_microscrew_stop` · Show Microscrew Final Seat |
-| 2128 | `DSG_OT_ShowAnimatedMicroscrewStop.execute` |  |
-| 2144 | class `DSG_OT_ConfirmTubeFrame` | `dsg.confirm_tube_frame` · Confirm Frame |
-| 2149 | `DSG_OT_ConfirmTubeFrame.execute` |  |
-| 2190 | `get_sleeve_preview_objects` |  |
-| 2202 | `_archive_current_guide_for_sleeve_rebuild` | Aparta la guía actual sin destruir IDs durante una regeneración. |
-| 2235 | `_recover_frame_source_for_sleeve_rebuild` | Devuelve el frame clínico aunque ya se hubiera aplicado una guía. |
-| 2258 | class `DSG_OT_ToggleLateralOpening` | `dsg.toggle_lateral_opening` · Lateral Opening (moved) |
-| 2264 | `DSG_OT_ToggleLateralOpening.execute` |  |
-| 2285 | class `DSG_OT_CaptureLateralOpeningView` | `dsg.capture_lateral_opening_view` · Use Current View for Post-Irrigation Opening |
-| 2291 | `DSG_OT_CaptureLateralOpeningView.execute` |  |
-| 2313 | `_lateral_window_manual_angle_map` | Return the per-implant manual window angles saved in Scene properties. |
-| 2330 | `_store_lateral_window_manual_angle_map` |  |
-| 2341 | `_remove_lateral_window_pick_markers` |  |
-| 2354 | `_clear_lateral_window_manual_picks` |  |
-| 2365 | `_lateral_window_manual_selection_status` |  |
-| 2373 | `_create_lateral_window_pick_marker` | Create a tiny non-destructive arrow showing the user's chosen drill-entry side. |
-| 2406 | `_signed_angle_delta` |  |
-| 2410 | `_resolve_user_lateral_window_for_implant` | Validate the exact user-picked side, keeping irrigation geometry protected. |
-| 2494 | class `DSG_OT_PickLateralOpeningSide` | `dsg.pick_lateral_opening_side` · Pick Lateral Opening Side |
-| 2500 | `DSG_OT_PickLateralOpeningSide._restore_cursor` |  |
-| 2506 | `DSG_OT_PickLateralOpeningSide.invoke` |  |
-| 2532 | `DSG_OT_PickLateralOpeningSide.modal` |  |
-| 2587 | class `DSG_OT_AddSleeve` | `dsg.add_sleeve` · Sleeve Preview |
-| 2592 | `DSG_OT_AddSleeve.execute` |  |
-| 2739 | class `DSG_OT_CreateApplySleeves` | `dsg.create_apply_sleeves` · Create and Apply Sleeves |
-| 2744 | `DSG_OT_CreateApplySleeves.execute` |  |
-| 2783 | class `DSG_OT_RebuildLateralWindowFromIrrigation` | `dsg.rebuild_lateral_window_from_irrigation` · Legacy Lateral Window Rebuild (disabled) |
-| 2789 | `DSG_OT_RebuildLateralWindowFromIrrigation.execute` |  |
-| 2797 | `_build_post_irrigation_lateral_opening_cutter` | One batch cutter for sleeve + frame, sized to the INNER sleeve diameter. |
-| 2903 | class `DSG_OT_ApplyPostIrrigationLateralOpening` | `dsg.apply_post_irrigation_lateral_opening` · Apply Post-Irrigation Lateral Opening |
-| 2908 | `DSG_OT_ApplyPostIrrigationLateralOpening.execute` |  |
-| 3006 | class `DSG_OT_ContinueAfterIrrigation` | `dsg.continue_after_irrigation` · Continue After Irrigation |
-| 3011 | `DSG_OT_ContinueAfterIrrigation.execute` |  |
-| 3036 | class `DSG_OT_ApplySleeves` | `dsg.apply_sleeves` · Apply Sleeves |
-| 3041 | `DSG_OT_ApplySleeves.execute` | Crea DSG_Guide sin borrar objetos durante la evaluación del depsgraph. |
-| 3223 | class `DSG_OT_ConfirmSleeve` | `dsg.confirm_sleeve` · Continue to Irrigation |
-| 3234 | `DSG_OT_ConfirmSleeve.execute` |  |
-| 3268 | class `DSG_OT_ProtectDrillInsertion` | `dsg.protect_drill_insertion` · Clear Drill Insertion Path |
-| 3273 | `DSG_OT_ProtectDrillInsertion.execute` |  |
-| 3289 | class `DSG_OT_AddDrillChannel` | `dsg.add_drill_channel` · Create Drill Channels |
-| 3294 | `DSG_OT_AddDrillChannel.execute` | Perfora cada shell cerrado por separado y solo después reúne la guía. |
-| 3375 | `DSG_OT_AddDrillChannel.execute.store_diagnostic` |  |
-| 3577 | class `DSG_OT_PrepareAndCreateDrillChannels` | `dsg.prepare_and_create_drill_channels` · Prepare and Create Drill Channels |
-| 3585 | `DSG_OT_PrepareAndCreateDrillChannels.execute` |  |
-| 3632 | class `DSG_OT_ConfirmDrill` | `dsg.confirm_drill` · Confirm Channels → Final Boolean |
-| 3637 | `DSG_OT_ConfirmDrill.execute` |  |
+| 186 | `get_pending_microscrew_preview` |  |
+| 207 | `get_confirmed_microscrew_objects` |  |
+| 223 | `get_microscrew_records` |  |
+| 233 | `set_microscrew_records` |  |
+| 237 | `_record_from_microscrew_object` |  |
+| 266 | `_matrix_along_local_z` |  |
+| 275 | `_create_cylinder_between` |  |
+| 292 | `make_microscrew_anatomic_sleeve_mesh` | Closed sleeve whose lumen and anatomical seat follow screw diameter. |
+| 369 | `_smart_anchor_tangent_basis` |  |
+| 386 | `_smart_anchor_project_candidate` |  |
+| 429 | `_smart_anchor_neighbor_direction` |  |
+| 446 | `_smart_anchor_local_roughness` |  |
+| 474 | `_smart_anchor_fit_metrics` |  |
+| 500 | `_smart_anchor_probe_solid_interior` | Detecta qué lado de la superficie entra realmente en el sólido actual. |
+| 558 | `_smart_anchor_single_wall_thickness` | Mide el grosor del sólido prebooleana y orienta su lado interior real. |
+| 568 | `_smart_anchor_structural_metrics` | Devuelve grosor débil robusto y profundidad segura de enterramiento. |
+| 639 | `_smart_anchor_candidate_score` |  |
+| 690 | `_smart_anchor_generate_candidates` |  |
+| 797 | `_smart_anchor_pair_score` |  |
+| 826 | `_smart_anchor_optimize_pair` |  |
+| 888 | `_optimize_reinforcement_chain_anchors` |  |
+| 946 | `_fixed_reinforcement_anchor_burials` | Mantiene exactamente los puntos elegidos y calcula solo su solape interno. |
+| 986 | `_smooth_circular_scalars` |  |
+| 1003 | `_support_surface_under_candidate` | Comprueba si el candidato está situado sobre alguna cara del soporte. |
+| 1030 | `_maximum_supported_offset_scale` | Mayor fracción del offset cuya proyección sigue dentro del frame. |
+| 1064 | `_all_footprint_points_supported` | Comprueba el aro completo conservando exactamente su forma nominal. |
+| 1080 | `_maximum_round_footprint_scale` | Mayor escala uniforme que mantiene toda la huella dentro del soporte. |
+| 1117 | `_adaptive_volcano_footprint_offsets` | Huella volcánica grande, redonda y contenida mediante escala uniforme. |
+| 1149 | `_cubic_bezier_tangent` |  |
+| 1157 | `_microscrew_support_radius_at` | Conector grueso con apoyo amplio en frame y cuello seguro en el sleeve. |
+| 1183 | `make_microscrew_smooth_support_mesh` | Connector Bézier curvo, cerrado y con tapas enterradas en los solapes. |
+| 1285 | `_microscrew_target_candidates` |  |
+| 1301 | `raycast_microscrew_target` | Busca el segundo punto en modelo/blockout; usa el frame como fallback. |
+| 1307 | `raycast_microscrew_target.best_hit` |  |
+| 1330 | `build_microscrew_preview` |  |
+| 1488 | class `DSG_OT_StartMicroscrew` | `dsg.start_microscrew` · Select 3 Microscrew Points |
+| 1493 | `DSG_OT_StartMicroscrew._marker_name` |  |
+| 1496 | `DSG_OT_StartMicroscrew._add_marker` |  |
+| 1505 | `DSG_OT_StartMicroscrew._remove_marker` |  |
+| 1510 | `DSG_OT_StartMicroscrew._finish` |  |
+| 1515 | `DSG_OT_StartMicroscrew.modal` |  |
+| 1584 | `DSG_OT_StartMicroscrew.invoke` |  |
+| 1610 | `_microscrew_preview_visual_object` | Devuelve el STL visual editable del microtornillo pendiente. |
+| 1641 | `_microscrew_axis_from_visual_or_preview` | Extrae el eje actual del microtornillo. |
+| 1663 | `update_pending_microscrew_from_visual` | Recrea el preview usando el microtornillo visual como nuevo punto 2. |
+| 1723 | class `DSG_OT_UpdateMicroscrewFromVisual` | `dsg.update_microscrew_from_visual` · Update Microscrew From Visual |
+| 1728 | `DSG_OT_UpdateMicroscrewFromVisual.execute` |  |
+| 1743 | `confirm_pending_microscrew_object` | Convierte el preview pendiente en microtornillo confirmado. |
+| 1810 | class `DSG_OT_ConfirmMicroscrewPreview` | `dsg.confirm_microscrew_preview` · Confirm Microscrew |
+| 1815 | `DSG_OT_ConfirmMicroscrewPreview.execute` |  |
+| 1827 | class `DSG_OT_CancelMicroscrewPreview` | `dsg.cancel_microscrew_preview` · Discard Pending Microscrew |
+| 1832 | `DSG_OT_CancelMicroscrewPreview.execute` |  |
+| 1846 | class `DSG_OT_RemoveLastMicroscrew` | `dsg.remove_last_microscrew` · Delete Last Microscrew |
+| 1851 | `DSG_OT_RemoveLastMicroscrew.execute` |  |
+| 1886 | class `DSG_OT_ApplyMicroscrewsToFrame` | `dsg.apply_microscrews_to_frame` · Add Microscrews to Frame |
+| 1891 | `DSG_OT_ApplyMicroscrewsToFrame.execute` |  |
+| 1968 | class `DSG_OT_CreateAnimatedMicroscrews` | `dsg.create_animated_microscrews` · Create Animated Screws |
+| 1973 | `DSG_OT_CreateAnimatedMicroscrews.execute` |  |
+| 2029 | class `DSG_OT_PlayAnimatedMicroscrews` | `dsg.play_animated_microscrews` · Play Microscrew Insertion |
+| 2033 | `DSG_OT_PlayAnimatedMicroscrews.execute` |  |
+| 2065 | class `DSG_OT_StopAnimatedMicroscrews` | `dsg.stop_animated_microscrews` · Stop Microscrew Animation |
+| 2069 | `DSG_OT_StopAnimatedMicroscrews.execute` |  |
+| 2092 | class `DSG_OT_ToggleAnimatedMicroscrewsVisibility` | `dsg.toggle_animated_microscrews_visibility` · Show or Hide Animated Microscrews |
+| 2096 | `DSG_OT_ToggleAnimatedMicroscrewsVisibility.execute` |  |
+| 2119 | class `DSG_OT_ShowAnimatedMicroscrewStart` | `dsg.show_animated_microscrew_start` · Show Microscrew Start Position |
+| 2123 | `DSG_OT_ShowAnimatedMicroscrewStart.execute` |  |
+| 2137 | class `DSG_OT_ShowAnimatedMicroscrewStop` | `dsg.show_animated_microscrew_stop` · Show Microscrew Final Seat |
+| 2141 | `DSG_OT_ShowAnimatedMicroscrewStop.execute` |  |
+| 2157 | class `DSG_OT_ConfirmTubeFrame` | `dsg.confirm_tube_frame` · Confirm Frame |
+| 2162 | `DSG_OT_ConfirmTubeFrame.execute` |  |
+| 2206 | `get_sleeve_preview_objects` |  |
+| 2218 | `_archive_current_guide_for_sleeve_rebuild` | Aparta la guía actual sin destruir IDs durante una regeneración. |
+| 2251 | `_recover_frame_source_for_sleeve_rebuild` | Devuelve el frame clínico aunque ya se hubiera aplicado una guía. |
+| 2274 | class `DSG_OT_ToggleLateralOpening` | `dsg.toggle_lateral_opening` · Lateral Opening (moved) |
+| 2280 | `DSG_OT_ToggleLateralOpening.execute` |  |
+| 2301 | class `DSG_OT_CaptureLateralOpeningView` | `dsg.capture_lateral_opening_view` · Use Current View for Post-Irrigation Opening |
+| 2307 | `DSG_OT_CaptureLateralOpeningView.execute` |  |
+| 2329 | `_lateral_window_manual_angle_map` | Return the per-implant manual window angles saved in Scene properties. |
+| 2346 | `_store_lateral_window_manual_angle_map` |  |
+| 2357 | `_remove_lateral_window_pick_markers` |  |
+| 2370 | `_clear_lateral_window_manual_picks` |  |
+| 2381 | `_lateral_window_manual_selection_status` |  |
+| 2389 | `_create_lateral_window_pick_marker` | Create a tiny non-destructive arrow showing the user's chosen drill-entry side. |
+| 2422 | `_signed_angle_delta` |  |
+| 2426 | `_resolve_user_lateral_window_for_implant` | Validate the exact user-picked side, keeping irrigation geometry protected. |
+| 2510 | class `DSG_OT_PickLateralOpeningSide` | `dsg.pick_lateral_opening_side` · Pick Lateral Opening Side |
+| 2516 | `DSG_OT_PickLateralOpeningSide._restore_cursor` |  |
+| 2522 | `DSG_OT_PickLateralOpeningSide.invoke` |  |
+| 2548 | `DSG_OT_PickLateralOpeningSide.modal` |  |
+| 2603 | class `DSG_OT_AddSleeve` | `dsg.add_sleeve` · Sleeve Preview |
+| 2608 | `DSG_OT_AddSleeve.execute` |  |
+| 2755 | class `DSG_OT_CreateApplySleeves` | `dsg.create_apply_sleeves` · Create and Apply Sleeves |
+| 2760 | `DSG_OT_CreateApplySleeves.execute` |  |
+| 2799 | class `DSG_OT_RebuildLateralWindowFromIrrigation` | `dsg.rebuild_lateral_window_from_irrigation` · Legacy Lateral Window Rebuild (disabled) |
+| 2805 | `DSG_OT_RebuildLateralWindowFromIrrigation.execute` |  |
+| 2813 | `_build_post_irrigation_lateral_opening_cutter` | One batch cutter for sleeve + frame, sized to the INNER sleeve diameter. |
+| 2919 | class `DSG_OT_ApplyPostIrrigationLateralOpening` | `dsg.apply_post_irrigation_lateral_opening` · Apply Post-Irrigation Lateral Opening |
+| 2924 | `DSG_OT_ApplyPostIrrigationLateralOpening.execute` |  |
+| 3022 | class `DSG_OT_ContinueAfterIrrigation` | `dsg.continue_after_irrigation` · Continue After Irrigation |
+| 3027 | `DSG_OT_ContinueAfterIrrigation.execute` |  |
+| 3052 | class `DSG_OT_ApplySleeves` | `dsg.apply_sleeves` · Apply Sleeves |
+| 3057 | `DSG_OT_ApplySleeves.execute` | Crea DSG_Guide sin borrar objetos durante la evaluación del depsgraph. |
+| 3239 | class `DSG_OT_ConfirmSleeve` | `dsg.confirm_sleeve` · Continue to Irrigation |
+| 3250 | `DSG_OT_ConfirmSleeve.execute` |  |
+| 3284 | class `DSG_OT_ProtectDrillInsertion` | `dsg.protect_drill_insertion` · Clear Drill Insertion Path |
+| 3289 | `DSG_OT_ProtectDrillInsertion.execute` |  |
+| 3305 | class `DSG_OT_AddDrillChannel` | `dsg.add_drill_channel` · Create Drill Channels |
+| 3310 | `DSG_OT_AddDrillChannel.execute` | Perfora cada shell cerrado por separado y solo después reúne la guía. |
+| 3391 | `DSG_OT_AddDrillChannel.execute.store_diagnostic` |  |
+| 3593 | class `DSG_OT_PrepareAndCreateDrillChannels` | `dsg.prepare_and_create_drill_channels` · Prepare and Create Drill Channels |
+| 3601 | `DSG_OT_PrepareAndCreateDrillChannels.execute` |  |
+| 3648 | class `DSG_OT_ConfirmDrill` | `dsg.confirm_drill` · Confirm Channels → Final Boolean |
+| 3653 | `DSG_OT_ConfirmDrill.execute` |  |
 
 ## [_guide_parts/06_irrigation_a.py](../_guide_parts/06_irrigation_a.py)
 
@@ -1979,7 +1952,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py)
 
-2858 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+2860 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -2020,52 +1993,52 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 843 | `DSG_OT_LinkIrrigation._finish` |  |
 | 851 | `DSG_OT_LinkIrrigation._cancel` |  |
 | 857 | `DSG_OT_LinkIrrigation._commit_link` |  |
-| 988 | `DSG_OT_LinkIrrigation.modal` |  |
-| 1097 | `DSG_OT_LinkIrrigation.invoke` |  |
-| 1127 | class `DSG_OT_RemoveLastIrrigation` | `dsg.remove_last_irrigation` · Delete |
-| 1132 | `DSG_OT_RemoveLastIrrigation.execute` |  |
-| 1182 | class `DSG_OT_CancelIrrigationPreview` | `dsg.cancel_irrigation_preview` · Discard Preview |
-| 1187 | `DSG_OT_CancelIrrigationPreview.execute` |  |
-| 1199 | class `DSG_OT_SkipIrrigation` | `dsg.skip_irrigation` · Skip Irrigation |
-| 1204 | `DSG_OT_SkipIrrigation.execute` |  |
-| 1250 | `repair_irrigation_open_component` | Cierra únicamente bucles abiertos simples antes del Boolean de irrigación. |
-| 1344 | `_irrigation_flow_simulation_objects` |  |
-| 1352 | `clear_irrigation_flow_simulation` |  |
-| 1380 | `_ensure_irrigation_flow_material` |  |
-| 1433 | `_polyline_length` |  |
-| 1439 | `_remove_near_duplicate_samples` |  |
-| 1455 | `_flow_samples_from_samples` |  |
-| 1462 | `_build_c_outlet_samples_for_simulation` |  |
-| 1495 | `_append_terminal_c_paths` |  |
-| 1521 | `build_irrigation_flow_simulation_routes` | Builds inlet-to-outlet sample paths for the final water-volume preview. |
-| 1612 | `_route_length_from_samples` |  |
-| 1617 | `_normalize_dsg_object_name` | Normalizes Blender duplicate suffixes and harmless name variations. |
-| 1625 | `_animation_windows_for_drills` | Returns rich drill windows instead of relying only on an exact name key. |
-| 1660 | `_resolve_drill_window_for_route` | Matches one irrigation route to its drill with several safe fallbacks. |
-| 1698 | `_set_linear_animation_on_id` |  |
-| 1710 | `_create_irrigation_flow_curve_object` | Creates the animated internal water volume along one irrigation route. |
-| 1772 | `_animate_flow_curve_object` |  |
-| 1802 | `_ensure_viewport_particle_material` | Blue viewport-only material, slightly darker than the internal water. |
-| 1820 | `_ensure_solid_material_coloring` | Make the active Solid view use material colors so blue particles are visible. |
-| 1837 | `_create_shared_viewport_particle_mesh` |  |
-| 1847 | `_particle_outlet_basis` |  |
-| 1866 | `_animate_viewport_particle` | Keyframes one ballistic flight; no particle system or emitter is used. |
-| 1913 | `_create_viewport_water_particles` | Creates blue animated viewport particles directly, with no emitter objects. |
-| 2047 | `_set_rna_if_present` |  |
-| 2058 | `_make_world_box_mesh` | Creates an axis-aligned closed box using actual world coordinates. |
-| 2081 | `_ensure_fluid_effector` |  |
-| 2103 | `_resolve_irrigation_entry_implant` |  |
-| 2116 | `_cascade_vectors_for_event` |  |
-| 2149 | class `DSG_OT_SimulateIrrigationFlow` | `dsg.simulate_irrigation_flow` · Update Solid Water Flow |
-| 2157 | `DSG_OT_SimulateIrrigationFlow.execute` |  |
-| 2290 | class `DSG_OT_ClearIrrigationFlowSimulation` | `dsg.clear_irrigation_flow_simulation` · Clear Irrigation Simulation |
-| 2296 | `DSG_OT_ClearIrrigationFlowSimulation.execute` |  |
-| 2306 | class `DSG_OT_ConfirmIrrigation` | `dsg.confirm_irrigation` · Apply Irrigation and Continue |
-| 2311 | `DSG_OT_ConfirmIrrigation.execute` |  |
+| 990 | `DSG_OT_LinkIrrigation.modal` |  |
+| 1099 | `DSG_OT_LinkIrrigation.invoke` |  |
+| 1129 | class `DSG_OT_RemoveLastIrrigation` | `dsg.remove_last_irrigation` · Delete |
+| 1134 | `DSG_OT_RemoveLastIrrigation.execute` |  |
+| 1184 | class `DSG_OT_CancelIrrigationPreview` | `dsg.cancel_irrigation_preview` · Discard Preview |
+| 1189 | `DSG_OT_CancelIrrigationPreview.execute` |  |
+| 1201 | class `DSG_OT_SkipIrrigation` | `dsg.skip_irrigation` · Skip Irrigation |
+| 1206 | `DSG_OT_SkipIrrigation.execute` |  |
+| 1252 | `repair_irrigation_open_component` | Cierra únicamente bucles abiertos simples antes del Boolean de irrigación. |
+| 1346 | `_irrigation_flow_simulation_objects` |  |
+| 1354 | `clear_irrigation_flow_simulation` |  |
+| 1382 | `_ensure_irrigation_flow_material` |  |
+| 1435 | `_polyline_length` |  |
+| 1441 | `_remove_near_duplicate_samples` |  |
+| 1457 | `_flow_samples_from_samples` |  |
+| 1464 | `_build_c_outlet_samples_for_simulation` |  |
+| 1497 | `_append_terminal_c_paths` |  |
+| 1523 | `build_irrigation_flow_simulation_routes` | Builds inlet-to-outlet sample paths for the final water-volume preview. |
+| 1614 | `_route_length_from_samples` |  |
+| 1619 | `_normalize_dsg_object_name` | Normalizes Blender duplicate suffixes and harmless name variations. |
+| 1627 | `_animation_windows_for_drills` | Returns rich drill windows instead of relying only on an exact name key. |
+| 1662 | `_resolve_drill_window_for_route` | Matches one irrigation route to its drill with several safe fallbacks. |
+| 1700 | `_set_linear_animation_on_id` |  |
+| 1712 | `_create_irrigation_flow_curve_object` | Creates the animated internal water volume along one irrigation route. |
+| 1774 | `_animate_flow_curve_object` |  |
+| 1804 | `_ensure_viewport_particle_material` | Blue viewport-only material, slightly darker than the internal water. |
+| 1822 | `_ensure_solid_material_coloring` | Make the active Solid view use material colors so blue particles are visible. |
+| 1839 | `_create_shared_viewport_particle_mesh` |  |
+| 1849 | `_particle_outlet_basis` |  |
+| 1868 | `_animate_viewport_particle` | Keyframes one ballistic flight; no particle system or emitter is used. |
+| 1915 | `_create_viewport_water_particles` | Creates blue animated viewport particles directly, with no emitter objects. |
+| 2049 | `_set_rna_if_present` |  |
+| 2060 | `_make_world_box_mesh` | Creates an axis-aligned closed box using actual world coordinates. |
+| 2083 | `_ensure_fluid_effector` |  |
+| 2105 | `_resolve_irrigation_entry_implant` |  |
+| 2118 | `_cascade_vectors_for_event` |  |
+| 2151 | class `DSG_OT_SimulateIrrigationFlow` | `dsg.simulate_irrigation_flow` · Update Solid Water Flow |
+| 2159 | `DSG_OT_SimulateIrrigationFlow.execute` |  |
+| 2292 | class `DSG_OT_ClearIrrigationFlowSimulation` | `dsg.clear_irrigation_flow_simulation` · Clear Irrigation Simulation |
+| 2298 | `DSG_OT_ClearIrrigationFlowSimulation.execute` |  |
+| 2308 | class `DSG_OT_ConfirmIrrigation` | `dsg.confirm_irrigation` · Apply Irrigation and Continue |
+| 2313 | `DSG_OT_ConfirmIrrigation.execute` |  |
 
 ## [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py)
 
-2698 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+2713 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -2124,40 +2097,61 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 1769 | `DSG_OT_ShowAnimatedDrillStop.execute` |  |
 | 1785 | `_microscrew_records_for_animation` | Use live confirmed geometry when available; JSON is the post-fusion fallback. |
 | 1800 | `configure_sequential_insertion_frames` | Orders extraction first (immediate route), then guide seating, screws, |
-| 1931 | `get_sequential_insertion_bounds` |  |
-| 1955 | class `DSG_OT_CreateSequentialInsertionAnimation` | `dsg.create_sequential_insertion_animation` · Create Screw, Drill and Implant Sequence |
-| 1960 | `DSG_OT_CreateSequentialInsertionAnimation.execute` |  |
-| 2119 | class `DSG_OT_UpdateFinalAnimation` | `dsg.update_final_animation` · Update Final Animation |
-| 2127 | `DSG_OT_UpdateFinalAnimation.execute` |  |
-| 2180 | class `DSG_OT_PlaySequentialInsertionAnimation` | `dsg.play_sequential_insertion_animation` · Play Screw, Drill and Implant Sequence |
-| 2184 | `DSG_OT_PlaySequentialInsertionAnimation.execute` |  |
-| 2215 | class `DSG_OT_StopSequentialInsertionAnimation` | `dsg.stop_sequential_insertion_animation` · Stop Insertion Sequence |
-| 2219 | `DSG_OT_StopSequentialInsertionAnimation.execute` |  |
-| 2250 | class `DSG_OT_ToggleSequentialInsertionVisibility` | `dsg.toggle_sequential_insertion_visibility` · Show or Hide Screws, Drills and Implants |
-| 2254 | `DSG_OT_ToggleSequentialInsertionVisibility.execute` |  |
-| 2280 | class `DSG_OT_StartReinforcement` | `dsg.start_reinforcement` · Draw Reinforcement Chain |
-| 2285 | `DSG_OT_StartReinforcement._remove_markers` |  |
-| 2288 | `DSG_OT_StartReinforcement._remove_working_preview` |  |
-| 2294 | `DSG_OT_StartReinforcement._refresh_markers` |  |
-| 2298 | `DSG_OT_StartReinforcement._rebuild_preview` |  |
-| 2316 | `DSG_OT_StartReinforcement._finish_modal` |  |
-| 2321 | `DSG_OT_StartReinforcement._cancel_modal` |  |
-| 2325 | `DSG_OT_StartReinforcement.modal` |  |
-| 2446 | `DSG_OT_StartReinforcement.invoke` |  |
-| 2477 | class `DSG_OT_ConfirmReinforcementPreview` | `dsg.confirm_reinforcement_preview` · Confirm Reinforcement Connector |
-| 2482 | `DSG_OT_ConfirmReinforcementPreview.execute` |  |
-| 2514 | class `DSG_OT_CancelReinforcementPreview` | `dsg.cancel_reinforcement_preview` · Discard Pending Connector |
-| 2519 | `DSG_OT_CancelReinforcementPreview.execute` |  |
-| 2532 | class `DSG_OT_RemoveLastReinforcement` | `dsg.remove_last_reinforcement` · Delete Last Connector |
-| 2537 | `DSG_OT_RemoveLastReinforcement.execute` |  |
-| 2551 | class `DSG_OT_SkipReinforcement` | `dsg.skip_reinforcement` · Skip Reinforcement Connectors |
-| 2556 | `DSG_OT_SkipReinforcement.execute` |  |
-| 2585 | class `DSG_OT_ApplyReinforcements` | `dsg.apply_reinforcements` · Add Connectors and Continue |
-| 2590 | `DSG_OT_ApplyReinforcements.execute` |  |
+| 1933 | `get_sequential_insertion_bounds` |  |
+| 1957 | class `DSG_OT_CreateSequentialInsertionAnimation` | `dsg.create_sequential_insertion_animation` · Create Screw, Drill and Implant Sequence |
+| 1962 | `DSG_OT_CreateSequentialInsertionAnimation.execute` |  |
+| 2123 | class `DSG_OT_UpdateFinalAnimation` | `dsg.update_final_animation` · Update Final Animation |
+| 2131 | `DSG_OT_UpdateFinalAnimation.execute` |  |
+| 2184 | class `DSG_OT_PlaySequentialInsertionAnimation` | `dsg.play_sequential_insertion_animation` · Play Screw, Drill and Implant Sequence |
+| 2188 | `DSG_OT_PlaySequentialInsertionAnimation.execute` |  |
+| 2225 | class `DSG_OT_StopSequentialInsertionAnimation` | `dsg.stop_sequential_insertion_animation` · Stop Insertion Sequence |
+| 2229 | `DSG_OT_StopSequentialInsertionAnimation.execute` |  |
+| 2265 | class `DSG_OT_ToggleSequentialInsertionVisibility` | `dsg.toggle_sequential_insertion_visibility` · Show or Hide Screws, Drills and Implants |
+| 2269 | `DSG_OT_ToggleSequentialInsertionVisibility.execute` |  |
+| 2295 | class `DSG_OT_StartReinforcement` | `dsg.start_reinforcement` · Draw Reinforcement Chain |
+| 2300 | `DSG_OT_StartReinforcement._remove_markers` |  |
+| 2303 | `DSG_OT_StartReinforcement._remove_working_preview` |  |
+| 2309 | `DSG_OT_StartReinforcement._refresh_markers` |  |
+| 2313 | `DSG_OT_StartReinforcement._rebuild_preview` |  |
+| 2331 | `DSG_OT_StartReinforcement._finish_modal` |  |
+| 2336 | `DSG_OT_StartReinforcement._cancel_modal` |  |
+| 2340 | `DSG_OT_StartReinforcement.modal` |  |
+| 2461 | `DSG_OT_StartReinforcement.invoke` |  |
+| 2492 | class `DSG_OT_ConfirmReinforcementPreview` | `dsg.confirm_reinforcement_preview` · Confirm Reinforcement Connector |
+| 2497 | `DSG_OT_ConfirmReinforcementPreview.execute` |  |
+| 2529 | class `DSG_OT_CancelReinforcementPreview` | `dsg.cancel_reinforcement_preview` · Discard Pending Connector |
+| 2534 | `DSG_OT_CancelReinforcementPreview.execute` |  |
+| 2547 | class `DSG_OT_RemoveLastReinforcement` | `dsg.remove_last_reinforcement` · Delete Last Connector |
+| 2552 | `DSG_OT_RemoveLastReinforcement.execute` |  |
+| 2566 | class `DSG_OT_SkipReinforcement` | `dsg.skip_reinforcement` · Skip Reinforcement Connectors |
+| 2571 | `DSG_OT_SkipReinforcement.execute` |  |
+| 2600 | class `DSG_OT_ApplyReinforcements` | `dsg.apply_reinforcements` · Add Connectors and Continue |
+| 2605 | `DSG_OT_ApplyReinforcements.execute` |  |
+
+## [_guide_parts/07b_presentation_animation.py](../_guide_parts/07b_presentation_animation.py)
+
+311 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 33 | `_clear_color_keys` |  |
+| 40 | `_key_color` |  |
+| 45 | `_constant_color_keys` |  |
+| 53 | `_with_alpha` |  |
+| 57 | `_tag_presentation` |  |
+| 65 | `clear_presentation_animation` | Remove rings and colour keys; restore each object's previous colour. |
+| 85 | `_is_cbct_object` |  |
+| 92 | `_torus_mesh` |  |
+| 117 | `_build_site_ring` |  |
+| 145 | `_flash` |  |
+| 152 | `apply_presentation_animation` | Colour keys and work rings driven by the sequence timeline. |
+| 243 | `_iter_view3d_spaces` |  |
+| 256 | `enter_presentation_view` |  |
+| 287 | `exit_presentation_view` |  |
 
 ## [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py)
 
-3557 líneas · imports Blender: ninguno directo · namespace de `guide_module`
+3783 líneas · imports Blender: ninguno directo · namespace de `guide_module`
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -2177,104 +2171,109 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 201 | class `DSG_OT_ExportGuideSTL` | `dsg.export_guide_stl` · Export Guide STL |
 | 229 | `DSG_OT_ExportGuideSTL.invoke` |  |
 | 240 | `DSG_OT_ExportGuideSTL.execute` |  |
-| 441 | class `DSG_OT_ToggleBlockoutVisibility` | `dsg.toggle_blockout_visibility` · Show/Hide Model |
-| 446 | `DSG_OT_ToggleBlockoutVisibility.execute` |  |
-| 462 | class `DSG_OT_ToggleGuideVisibility` | `dsg.toggle_guide_visibility` · Show/Hide Guide |
-| 467 | `DSG_OT_ToggleGuideVisibility.execute` |  |
-| 481 | `_final_cbct_stl_objects` | Return only the 3D STL meshes generated from the CBCT segmentation. |
-| 505 | `_prepare_final_overlay_view` | Prepare the final review without hiding the surgical guide. |
-| 525 | `_toggle_final_reference_layer` | Toggle one final reference layer without changing other visible layers. |
-| 543 | class `DSG_OT_FinalViewModel` | `dsg.final_view_model` · Toggle Model Layer |
-| 548 | `DSG_OT_FinalViewModel.execute` |  |
-| 565 | class `DSG_OT_FinalViewCBCTSTL` | `dsg.final_view_cbct_stl` · Toggle CBCT STL Layer |
-| 570 | `DSG_OT_FinalViewCBCTSTL.execute` |  |
-| 600 | `apply_object_scale_for_final` | Aplica únicamente la escala para que el voxel esté expresado en milímetros reales. |
-| 621 | `apply_final_voxel_remesh` | Convierte una malla o conjunto de shells en una única superficie voxelizada. |
-| 656 | `decimate_final_mesh` | Reduce polígonos con Collapse únicamente cuando supera el objetivo. |
-| 689 | `build_final_solid_cutter` | Prepara modelo + blockout como cutter sólido y ligero. |
-| 811 | `_object_local_bounds` |  |
-| 833 | `_object_world_bounds_center` |  |
-| 846 | `_trim_unprojected_proxy_vertices` | Elimina celdas del grid que Shrinkwrap no logró proyectar. |
-| 879 | `build_final_shrinkwrap_proxy_cutter` | Construye un cutter sólido de tipo height-field para STL intraoral abierto. |
-| 1106 | `build_final_cutter_auto` | Selecciona automáticamente cutter voxel normal o proxy Shrinkwrap. |
-| 1138 | `get_supported_boolean_solvers` |  |
-| 1146 | `apply_final_boolean_prepared` | Applies the final DIFFERENCE transactionally and validates each solver. |
-| 1240 | `repair_small_final_nonmanifold` | Cierra únicamente aberturas finales pequeñas sin remallar toda la guía. |
-| 1319 | `validate_final_result_light` | Validación corta: nunca ejecuta la auditoría BMesh de millones de edges. |
-| 1336 | class `DCT_OT_VoxelRemesh` | `dct.voxel_remesh` · Apply Voxel Remesh |
-| 1342 | `DCT_OT_VoxelRemesh.execute` |  |
-| 1358 | class `DCT_OT_SelectBeingCut` | `dct.select_being_cut` · Select Object Being Cut |
-| 1363 | `DCT_OT_SelectBeingCut.execute` |  |
-| 1373 | class `DCT_OT_SelectMakingCut` | `dct.select_making_cut` · Select Object Making Cut |
-| 1378 | `DCT_OT_SelectMakingCut.execute` |  |
-| 1397 | class `DCT_OT_ApplyCut` | `dct.apply_cut` · Apply Final Boolean |
-| 1402 | `DCT_OT_ApplyCut.execute` |  |
-| 1447 | `DCT_OT_ApplyCut.execute.cancel` |  |
-| 1664 | class `DSG_OT_ContinueToNameExport` | `dsg.continue_to_name_export` · Continue to Name and Export |
-| 1669 | `DSG_OT_ContinueToNameExport.execute` |  |
-| 1690 | class `DCT_OT_ClearCutSelection` | `dct.clear_cut_selection` · Clear Selection |
-| 1695 | `DCT_OT_ClearCutSelection.execute` |  |
-| 1707 | `draw_preflight_semaphore` |  |
-| 1740 | `get_sleeve_preflight_summary` | Resumen ligero para UI; nunca recorre una malla dentro de ``Panel.draw``. |
-| 1782 | `get_step10_diagnostic` |  |
-| 1797 | `_draw_reset_flow_panel` | Navigation is centralized in DSG > Control del flujo (v9.2.5). |
-| 1802 | `_draw_collapsible_sequence_panel` | Optional final animation controls, closed by default. |
-| 1820 | `_primary_action` | Direct/mandatory route using the shared DSG hierarchy. |
-| 1825 | `_secondary_action` | Optional efficacy route using the shared DSG hierarchy. |
-| 1830 | `_secondary_box` |  |
-| 1836 | `_tertiary_header` |  |
-| 1847 | `_compact_tools` | Tertiary/accessory tools, compact and visually discreet. |
-| 1852 | `_step_progress_text` | Ten visual dots for DSG only: filled through the current stage. |
-| 1861 | `_draw_step_model_axis` | Clinical first step: orient, choose retention, calculate and confirm. |
-| 2039 | `_draw_step_blockout` |  |
-| 2043 | `_draw_step_contour` |  |
-| 2145 | `_draw_dicom_review_box_for_guide_step` | Contextual DICOM review, visually secondary unless already active. |
-| 2187 | `_draw_implant_passive_blockout_box` | Compact recovery card for an unconfirmed retentive model. |
-| 2224 | `_draw_implant_dicom_review` |  |
-| 2265 | `_immediate_target_tooth` | Return the TotalSegmentator tooth object selected as the extraction target. |
-| 2286 | `_immediate_extraction_ready` |  |
-| 2306 | `restore_immediate_extraction` | Restore a virtually extracted tooth and clear route-specific state. |
-| 2338 | class `DSG_OT_PrepareImmediateExtraction` | `dsg.prepare_immediate_extraction` · Prepare Immediate Extraction |
-| 2344 | `DSG_OT_PrepareImmediateExtraction.execute` |  |
-| 2379 | class `DSG_OT_RestoreImmediateTooth` | `dsg.restore_immediate_tooth` · Restore Immediate Tooth |
-| 2385 | `DSG_OT_RestoreImmediateTooth.execute` |  |
-| 2392 | `_draw_immediate_implant_gate` |  |
-| 2461 | `_draw_step_implant` |  |
-| 2550 | `_draw_sequential_insertion_animation` |  |
-| 2583 | `_draw_step_frame` |  |
-| 2632 | `_draw_step_sleeve` |  |
-| 2682 | `_draw_irrigation_implant_gates` |  |
-| 2703 | `_draw_irrigation_mode_selector` |  |
-| 2724 | `_draw_step_irrigation` |  |
-| 2881 | `_draw_step_reinforcement` |  |
-| 2948 | `_draw_step_drill` |  |
-| 2957 | `_draw_step_final_cut` |  |
-| 2972 | `_draw_step_name_export` |  |
-| 3036 | class `_DSGMinimalUILayout` | Proxy that removes passive panel copy while preserving interactive UI. |
-| 3045 | `_DSGMinimalUILayout.__init__` |  |
-| 3050 | `_DSGMinimalUILayout.__getattr__` |  |
-| 3053 | `_DSGMinimalUILayout.__setattr__` |  |
-| 3061 | `_DSGMinimalUILayout._wrap` |  |
-| 3064 | `_DSGMinimalUILayout.row` |  |
-| 3067 | `_DSGMinimalUILayout.column` |  |
-| 3070 | `_DSGMinimalUILayout.box` |  |
-| 3073 | `_DSGMinimalUILayout.split` |  |
-| 3076 | `_DSGMinimalUILayout.grid_flow` |  |
-| 3079 | `_DSGMinimalUILayout.label` |  |
-| 3089 | class `DSG_PT_Main` | `DSG_PT_main` · DSG |
-| 3098 | `DSG_PT_Main.poll` |  |
-| 3104 | `DSG_PT_Main.draw` |  |
-| 3282 | `_dsg_migrate_irrigation_outlet_to_1mm` | Actualiza una sola vez el antiguo valor predeterminado de 0,80 a 1,00 mm. |
-| 3354 | `_dsg_remove_load_handler` |  |
-| 3362 | `pre_register_quiesce` | Remove callbacks from older DSG builds without reading bpy.data. |
-| 3374 | `_dsg_remove_scene_pointer` |  |
-| 3386 | `_dsg_unregister_class_object` |  |
-| 3396 | `_dsg_unregister_stale_classes` | Removes classes left registered by an older addon file. |
-| 3418 | `_dsg_rollback_registration` |  |
-| 3424 | `_dsg_is_class_registered` | Checks class registration without relying on bpy.types.<class name>. |
-| 3438 | `register` |  |
-| 3496 | `deferred_post_register` | Recover existing DSG state after Blender restores normal data access. |
-| 3531 | `unregister` |  |
+| 447 | class `DSG_OT_ToggleBlockoutVisibility` | `dsg.toggle_blockout_visibility` · Show/Hide Model |
+| 452 | `DSG_OT_ToggleBlockoutVisibility.execute` |  |
+| 468 | class `DSG_OT_ToggleGuideVisibility` | `dsg.toggle_guide_visibility` · Show/Hide Guide |
+| 473 | `DSG_OT_ToggleGuideVisibility.execute` |  |
+| 487 | `_final_cbct_stl_objects` | Return only the 3D STL meshes generated from the CBCT segmentation. |
+| 511 | `_prepare_final_overlay_view` | Prepare the final review without hiding the surgical guide. |
+| 531 | `_toggle_final_reference_layer` | Toggle one final reference layer without changing other visible layers. |
+| 549 | class `DSG_OT_FinalViewModel` | `dsg.final_view_model` · Toggle Model Layer |
+| 554 | `DSG_OT_FinalViewModel.execute` |  |
+| 571 | class `DSG_OT_FinalViewCBCTSTL` | `dsg.final_view_cbct_stl` · Toggle CBCT STL Layer |
+| 576 | `DSG_OT_FinalViewCBCTSTL.execute` |  |
+| 606 | `apply_object_scale_for_final` | Aplica únicamente la escala para que el voxel esté expresado en milímetros reales. |
+| 627 | `apply_final_voxel_remesh` | Convierte una malla o conjunto de shells en una única superficie voxelizada. |
+| 662 | `decimate_final_mesh` | Reduce polígonos con Collapse únicamente cuando supera el objetivo. |
+| 695 | `build_final_solid_cutter` | Prepara modelo + blockout como cutter sólido y ligero. |
+| 817 | `_object_local_bounds` |  |
+| 839 | `_object_world_bounds_center` |  |
+| 852 | `_trim_unprojected_proxy_vertices` | Elimina celdas del grid que Shrinkwrap no logró proyectar. |
+| 885 | `build_final_shrinkwrap_proxy_cutter` | Construye un cutter sólido de tipo height-field para STL intraoral abierto. |
+| 1112 | `build_final_cutter_auto` | Selecciona automáticamente cutter voxel normal o proxy Shrinkwrap. |
+| 1144 | `get_supported_boolean_solvers` |  |
+| 1152 | `apply_final_boolean_prepared` | Applies the final DIFFERENCE transactionally and validates each solver. |
+| 1246 | `repair_small_final_nonmanifold` | Cierra únicamente aberturas finales pequeñas sin remallar toda la guía. |
+| 1325 | `validate_final_result_light` | Validación corta: nunca ejecuta la auditoría BMesh de millones de edges. |
+| 1342 | class `DCT_OT_VoxelRemesh` | `dct.voxel_remesh` · Apply Voxel Remesh |
+| 1348 | `DCT_OT_VoxelRemesh.execute` |  |
+| 1364 | class `DCT_OT_SelectBeingCut` | `dct.select_being_cut` · Select Object Being Cut |
+| 1369 | `DCT_OT_SelectBeingCut.execute` |  |
+| 1379 | class `DCT_OT_SelectMakingCut` | `dct.select_making_cut` · Select Object Making Cut |
+| 1384 | `DCT_OT_SelectMakingCut.execute` |  |
+| 1403 | class `DCT_OT_ApplyCut` | `dct.apply_cut` · Apply Final Boolean |
+| 1408 | `DCT_OT_ApplyCut.execute` |  |
+| 1453 | `DCT_OT_ApplyCut.execute.cancel` |  |
+| 1670 | class `DSG_OT_ContinueToNameExport` | `dsg.continue_to_name_export` · Continue to Name and Export |
+| 1675 | `DSG_OT_ContinueToNameExport.execute` |  |
+| 1696 | class `DCT_OT_ClearCutSelection` | `dct.clear_cut_selection` · Clear Selection |
+| 1701 | `DCT_OT_ClearCutSelection.execute` |  |
+| 1713 | `draw_preflight_semaphore` |  |
+| 1746 | `get_sleeve_preflight_summary` | Resumen ligero para UI; nunca recorre una malla dentro de ``Panel.draw``. |
+| 1788 | `get_step10_diagnostic` |  |
+| 1803 | `_draw_reset_flow_panel` | Navigation is centralized in DSG > Control del flujo (v9.2.5). |
+| 1808 | `_draw_collapsible_sequence_panel` | Optional final animation controls, closed by default. |
+| 1826 | `_primary_action` | Direct/mandatory route using the shared DSG hierarchy. |
+| 1831 | `_secondary_action` | Optional efficacy route using the shared DSG hierarchy. |
+| 1836 | `_secondary_box` |  |
+| 1842 | `_tertiary_header` |  |
+| 1853 | `_compact_tools` | Tertiary/accessory tools, compact and visually discreet. |
+| 1858 | `_step_progress_text` | Ten visual dots for DSG only: filled through the current stage. |
+| 1867 | `_draw_step_model_axis` | Clinical first step: orient, choose retention, calculate and confirm. |
+| 2070 | `_draw_step_blockout` |  |
+| 2074 | `_draw_step_contour` |  |
+| 2176 | `_draw_dicom_review_box_for_guide_step` | Contextual DICOM review, visually secondary unless already active. |
+| 2218 | `_draw_implant_passive_blockout_box` | Compact recovery card for an unconfirmed retentive model. |
+| 2255 | `_draw_implant_dicom_review` |  |
+| 2296 | `_immediate_target_tooth` | Return the TotalSegmentator tooth object selected as the extraction target. |
+| 2317 | `_immediate_extraction_ready` |  |
+| 2343 | `restore_immediate_extraction` | Restore a virtually extracted tooth and clear route-specific state. |
+| 2375 | class `DSG_OT_PrepareImmediateExtraction` | `dsg.prepare_immediate_extraction` · Prepare Immediate Extraction |
+| 2381 | `DSG_OT_PrepareImmediateExtraction.execute` |  |
+| 2416 | class `DSG_OT_RestoreImmediateTooth` | `dsg.restore_immediate_tooth` · Restore Immediate Tooth |
+| 2422 | `DSG_OT_RestoreImmediateTooth.execute` |  |
+| 2429 | `_draw_immediate_implant_gate` |  |
+| 2503 | `_draw_step_implant` |  |
+| 2598 | `_raw` | Underlying Blender layout (section titles bypass the minimal-UI proxy). |
+| 2603 | `_section` |  |
+| 2609 | `_draw_implant_mpr_list` | 2 · Radiographic review: target implant, open/exit, and the MPR planes |
+| 2654 | `_draw_sequential_insertion_animation` |  |
+| 2689 | `_draw_frame_boolean_prediction` | Predicted state of the frame after the final Boolean (geodesic sections). |
+| 2708 | `_draw_step_frame` |  |
+| 2764 | `_draw_step_sleeve` |  |
+| 2814 | `_draw_irrigation_implant_gates` |  |
+| 2835 | `_draw_irrigation_mode_selector` |  |
+| 2856 | `_draw_step_irrigation` |  |
+| 3017 | `_draw_geodesic_research_tools` | Show all diagnostic-only FEM tools also after routes are confirmed. |
+| 3045 | `_draw_step_reinforcement` |  |
+| 3117 | `_draw_step_drill` |  |
+| 3126 | `_draw_step_final_cut` |  |
+| 3141 | `_draw_step_name_export` |  |
+| 3223 | class `_DSGMinimalUILayout` | Proxy that removes passive panel copy while preserving interactive UI. |
+| 3232 | `_DSGMinimalUILayout.__init__` |  |
+| 3237 | `_DSGMinimalUILayout.__getattr__` |  |
+| 3240 | `_DSGMinimalUILayout.__setattr__` |  |
+| 3248 | `_DSGMinimalUILayout._wrap` |  |
+| 3251 | `_DSGMinimalUILayout.row` |  |
+| 3254 | `_DSGMinimalUILayout.column` |  |
+| 3257 | `_DSGMinimalUILayout.box` |  |
+| 3260 | `_DSGMinimalUILayout.split` |  |
+| 3263 | `_DSGMinimalUILayout.grid_flow` |  |
+| 3266 | `_DSGMinimalUILayout.label` |  |
+| 3276 | class `DSG_PT_Main` | `DSG_PT_main` · DSG |
+| 3285 | `DSG_PT_Main.poll` |  |
+| 3291 | `DSG_PT_Main.draw` |  |
+| 3486 | `_dsg_migrate_irrigation_outlet_to_1mm` | Actualiza una sola vez el antiguo valor predeterminado de 0,80 a 1,00 mm. |
+| 3558 | `_dsg_remove_load_handler` |  |
+| 3566 | `pre_register_quiesce` | Remove callbacks from older DSG builds without reading bpy.data. |
+| 3578 | `_dsg_remove_scene_pointer` |  |
+| 3590 | `_dsg_unregister_class_object` |  |
+| 3600 | `_dsg_unregister_stale_classes` | Removes classes left registered by an older addon file. |
+| 3622 | `_dsg_rollback_registration` |  |
+| 3628 | `_dsg_is_class_registered` | Checks class registration without relying on bpy.types.<class name>. |
+| 3642 | `register` |  |
+| 3700 | `deferred_post_register` | Recover existing DSG state after Blender restores normal data access. |
+| 3745 | `unregister` |  |
 
 ## [agent_core.py](../agent_core.py)
 
@@ -2365,6 +2364,695 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 415 | `_volume_guard` |  |
 | 443 | `refine_segmented_surface` | Responsive CBCT-constrained refinement without volumetric EDT bottlenecks. |
 
+## [blender/__init__.py](../blender/__init__.py)
+
+1 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+
+## [blender/arch_base.py](../blender/arch_base.py)
+
+197 líneas · imports Blender: mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 23 | `arc_gaussian` | Gaussian low-pass of a closed 2-D polyline over its arc length. |
+| 38 | `signed_area` |  |
+| 43 | `inward_normals` | Unit inward normals, averaged over ``sigma`` of arc length. |
+| 61 | `_smooth_field` |  |
+| 77 | `_orient` |  |
+| 81 | `is_simple` | True when no two non-adjacent edges of the closed polygon cross. |
+| 110 | `plan` | Ring positions from the collar to the lid outline, or (None, reason). |
+| 163 | `build` | Create collar, wall, rounded edge and U lid in ``bm``; None if not valid. |
+
+## [blender/blockout_field.py](../blender/blockout_field.py)
+
+63 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 12 | `blockout_shift` | Axial fill per vertex for a retention value, without pits or holes. |
+| 44 | `blockout_shift.neighbour_mean` |  |
+
+## [blender/cylinder_contact.py](../blender/cylinder_contact.py)
+
+61 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 5 | `clip_z` |  |
+| 17 | `intersects` |  |
+
+## [blender/deferred.py](../blender/deferred.py)
+
+52 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 13 | `run_later` |  |
+| 18 | `run_later._tick` |  |
+| 29 | `assign` | Set an RNA attribute only when it changes (avoids redraw loops). |
+| 37 | `assign_key` |  |
+| 44 | `set_hidden` |  |
+
+## [blender/evaluated_visible.py](../blender/evaluated_visible.py)
+
+31 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 12 | `visible` |  |
+
+## [blender/extraction_extension.py](../blender/extraction_extension.py)
+
+145 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 10 | `update` |  |
+| 25 | `property_definition` |  |
+| 30 | `preview` |  |
+| 99 | class `DSG_OT_ExtensionPreview` | `dsg.extraction_extension_preview` · VER EXTENSIÓN OCLUSAL |
+| 103 | `DSG_OT_ExtensionPreview.execute` |  |
+| 110 | class `DSG_OT_ToggleExtractionSmoothing` | `dsg.toggle_extraction_tooth_smoothing` · Suavizado del diente a extraer |
+| 116 | `DSG_OT_ToggleExtractionSmoothing.execute` |  |
+| 130 | `draw` |  |
+
+## [blender/frame_embed.py](../blender/frame_embed.py)
+
+232 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 31 | `_circular` |  |
+| 36 | `_gaussian` |  |
+| 41 | `_envelope` | Smooth requirement that never falls below (or above) the original. |
+| 48 | `_geodesic_band` | Surface vertices within ~1.3 radius of the route, measured on the shell. |
+| 75 | `_frames` |  |
+| 93 | `predict` | Retained thickness, embed depth and support for every station. |
+| 125 | `_corridor` | Allowed shift along the normal for every station (outward positive). |
+| 150 | `_minimum_bending` | Least-bending profile inside the corridor (projected bi-Laplacian). |
+| 166 | `solve` | Smoothest centreline inside the clinical corridor (thicken if needed). |
+| 224 | `optimise` |  |
+
+## [blender/implant_optimizer.py](../blender/implant_optimizer.py)
+
+669 líneas · imports Blender: bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 15 | `target` |  |
+| 19 | `settings` |  |
+| 25 | `geometry_objects` |  |
+| 36 | `fingerprint` | Everything a proposal depends on.  The .blend path is not part of it, so |
+| 51 | `catalogue_signature` |  |
+| 64 | `readiness` |  |
+| 84 | `_catalogue` |  |
+| 104 | `current_size` | Identity of the implant being compared: catalogue id and nominal size. |
+| 111 | `snapshot` |  |
+| 118 | `snapshot.export` |  |
+| 131 | `snapshot.add` |  |
+| 167 | `remove_preview` |  |
+| 176 | `stop` |  |
+| 185 | `clean_jobs` |  |
+| 197 | `discard` |  |
+| 201 | `on_load` |  |
+| 204 | `start` |  |
+| 233 | `_preview` |  |
+| 283 | `_matches` |  |
+| 286 | `_commit_nominal` | Apply a nominal catalogue size with DSG's own implant mesh. |
+| 336 | `_commit` |  |
+| 386 | `poll` |  |
+| 432 | class `DSG_OT_OptimizePosition` | `dsg.optimize_implant_position` · BUSCAR POSICIÓN |
+| 434 | `DSG_OT_OptimizePosition.execute` |  |
+| 438 | class `DSG_OT_OptimizeSize` | `dsg.optimize_implant_size` · COMPARAR TAMAÑOS |
+| 440 | `DSG_OT_OptimizeSize.execute` |  |
+| 444 | class `DSG_OT_ApplyOptimization` | `dsg.apply_implant_optimization` · ACEPTAR CAMBIOS |
+| 449 | `DSG_OT_ApplyOptimization.execute` |  |
+| 453 | class `DSG_OT_DiscardOptimization` | `dsg.discard_implant_optimization` · DESCARTAR CAMBIOS / CANCELAR |
+| 455 | `DSG_OT_DiscardOptimization.execute` |  |
+| 458 | `library_changed` |  |
+| 464 | `register` |  |
+| 502 | `unregister` |  |
+| 513 | `draw` |  |
+| 621 | `draw_surround` |  |
+| 631 | `restore_visibility` |  |
+| 642 | `recover_saved_previews` |  |
+| 653 | `restore_followers` |  |
+| 660 | `watch_preview` |  |
+
+## [blender/implant_optimizer_geometry.py](../blender/implant_optimizer_geometry.py)
+
+308 líneas · imports Blender: mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 9 | class `Solid` |  |
+| 10 | `Solid.__init__` | ``topology`` = (witness vertex indices) from a verified identical mesh. |
+| 34 | `Solid.tree` |  |
+| 37 | `Solid._ray_contains` |  |
+| 48 | `Solid.contains` |  |
+| 59 | `Solid.signed_distances` |  |
+| 67 | `transformed` |  |
+| 71 | `clearance` |  |
+| 81 | `clearance.distance` |  |
+| 87 | `surface_samples` |  |
+| 96 | `measure_surrounding_bone` | Sample radial gaps and first native-bone wall, in mm; never fills a socket. |
+| 135 | `invasion_depth` | Deepest implant point inside a tolerated zone (mm); None if it does not cross it. |
+| 146 | `invasion_depth.deepest` |  |
+| 159 | `bone_reserve` | Conservative lateral/apical wall reserve below a free cervical band. |
+| 193 | class `Evaluator` | Same hard constraints for both searches: exclusions, wall reserve, coverage. |
+| 195 | `Evaluator.__init__` |  |
+| 200 | `Evaluator._prepare` |  |
+| 222 | `Evaluator.__call__` |  |
+| 230 | `Evaluator.check_structures` |  |
+| 254 | `Evaluator._strict` |  |
+| 288 | `Evaluator.socket_split` | (mask of points in native bone region, apical engagement beyond the socket in mm). |
+| 299 | `Evaluator.measure_bone` |  |
+
+## [blender/implant_plane.py](../blender/implant_plane.py)
+
+472 líneas · imports Blender: bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 44 | `selected_implant` |  |
+| 58 | `plane_for` |  |
+| 64 | `planes` |  |
+| 68 | `visible` |  |
+| 72 | `_remove` |  |
+| 79 | `cleanup` | Remove planes whose implant no longer exists, and the old flat ones. |
+| 92 | `_mesh` | Image quad (material 0) inside a coloured frame (material 1), XY plane. |
+| 112 | `_frame_material` |  |
+| 131 | `_arch_centre` |  |
+| 139 | `_angle_about_axis` | Rotation about the implant's local Z that makes the plane mesio-distal |
+| 157 | `_default_color` |  |
+| 165 | `create` |  |
+| 204 | `_angle_changed` | Rotate only this section around the implant axis and queue its reslice. |
+| 218 | `register_angle` |  |
+| 229 | `set_color` |  |
+| 236 | `_ensure_voxels` |  |
+| 250 | `refresh` | Reslice the CBCT on the plane (same sampling as the DICOM MPR planes). |
+| 284 | `_pose_key` |  |
+| 288 | `_refresh_pending` |  |
+| 302 | `_follow` | Reslice when an implant moves (debounced). |
+| 317 | `set_visible` | Show/hide the planes.  While a plane (or the DICOM review) is shown the |
+| 340 | class `DSG_OT_CreateInclinationPlane` | `dsg.create_implant_inclination_plane` · Plano radiográfico del implante |
+| 347 | `DSG_OT_CreateInclinationPlane.execute` |  |
+| 360 | class `DSG_OT_RotateInclinationPlane` | `dsg.rotate_implant_inclination_plane` · Orientación del plano |
+| 366 | `DSG_OT_RotateInclinationPlane.execute` |  |
+| 377 | class `DSG_OT_ColorInclinationPlane` | `dsg.color_implant_inclination_plane` · Color del marco |
+| 383 | `DSG_OT_ColorInclinationPlane.execute` |  |
+| 393 | class `DSG_OT_ToggleInclinationPlanes` | `dsg.toggle_implant_inclination_planes` · Mostrar/ocultar planos del implante |
+| 398 | `DSG_OT_ToggleInclinationPlanes.execute` |  |
+| 407 | `draw` |  |
+| 432 | `register` |  |
+| 438 | `unregister` |  |
+| 447 | `draw_rows` | Implant plane entry for the MPR list (eye + create + options). |
+
+## [blender/implant_resize.py](../blender/implant_resize.py)
+
+93 líneas · imports Blender: bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 13 | `target_implant` |  |
+| 29 | `resize` | Rebuild the implant mesh at the new size; returns True if it changed. |
+| 63 | `on_diameter_changed` |  |
+| 67 | `on_length_changed` |  |
+| 71 | `on_size_changed` | FloatProperty update callback; each field changes only its own size. |
+
+## [blender/ios_guided_selection.py](../blender/ios_guided_selection.py)
+
+335 líneas · imports Blender: bmesh, bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 11 | `activate_circle` |  |
+| 22 | `set_circle_mode` | ADD keeps every brush stroke (several passes); SUB erases mistakes. |
+| 29 | `circle_mode` |  |
+| 33 | `_components` |  |
+| 50 | `_ring` |  |
+| 54 | `_fill_holes` | Add unselected pockets fully enclosed by the region (bounded flood). |
+| 81 | `_bowties` | Rim vertices touched by the region more than once (rim would cross). |
+| 93 | `clean_region` | Turn the brushed selection into one clean disc of faces. |
+| 121 | `_saved_faces` |  |
+| 131 | `store_region` | Mark the region in a face layer; returns the region re-fetched. |
+| 150 | `selected_copy` |  |
+| 160 | `remove_saved` |  |
+| 171 | `show_region` |  |
+| 179 | `smooth_rim` | Tangential rim smoothing that never flips a face. |
+| 198 | `smooth_rim.acceptable` |  |
+| 227 | class `DSG_OT_IOSSaveToothSelection` | `dsg.ios_save_tooth_selection` · GUARDAR SELECCIÓN (P) |
+| 234 | `DSG_OT_IOSSaveToothSelection.poll` |  |
+| 238 | `DSG_OT_IOSSaveToothSelection.execute` |  |
+| 249 | `save_current_selection` | Clean the current brush selection, check its rim and store it. |
+| 271 | class `DSG_OT_IOSSelectionMode` | `dsg.ios_selection_mode` · Modo de selección |
+| 277 | `DSG_OT_IOSSelectionMode.execute` |  |
+| 286 | class `DSG_OT_IOSClearSelection` | `dsg.ios_clear_selection` · Empezar selección de nuevo |
+| 292 | `DSG_OT_IOSClearSelection.poll` |  |
+| 295 | `DSG_OT_IOSClearSelection.execute` |  |
+| 302 | class `DSG_OT_IOSCircleSelection` | `dsg.ios_circle_selection` · Seleccionar con círculo (C) |
+| 307 | `DSG_OT_IOSCircleSelection.poll` |  |
+| 311 | `DSG_OT_IOSCircleSelection.execute` |  |
+| 319 | `register` |  |
+| 329 | `unregister` |  |
+
+## [blender/ios_skip_removal.py](../blender/ios_skip_removal.py)
+
+47 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 7 | class `DSG_OT_IOSSkipToothRemoval` | `dsg.ios_skip_tooth_removal` · SIGUIENTE |
+| 14 | `DSG_OT_IOSSkipToothRemoval.poll` |  |
+| 18 | `DSG_OT_IOSSkipToothRemoval.execute` |  |
+
+## [blender/ios_socket_boolean.py](../blender/ios_socket_boolean.py)
+
+156 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 15 | `prepared` |  |
+| 20 | `targets` |  |
+| 25 | `applied` |  |
+| 36 | `ready` |  |
+| 46 | `apply` |  |
+| 129 | `draw_closure` | Model step: the IOS only needs the hole closed; the Boolean comes later. |
+| 141 | `draw_status` |  |
+
+## [blender/ios_tooth_edit.py](../blender/ios_tooth_edit.py)
+
+395 líneas · imports Blender: bmesh, bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 14 | `socket_depth_property` |  |
+| 20 | `model` |  |
+| 28 | `editing` |  |
+| 33 | `immediate_ready` | IOS ready for the retentive model: tooth removed and hole closed inward. |
+| 47 | `rim_loop` |  |
+| 78 | `close_socket` | Native Grid Fill on the edit mesh; caller restores it if validation fails. |
+| 175 | class `DSG_OT_IOSBeginToothRemoval` | `dsg.ios_begin_tooth_removal` · Seleccionar diente del IOS |
+| 182 | `DSG_OT_IOSBeginToothRemoval.poll` |  |
+| 185 | `DSG_OT_IOSBeginToothRemoval.execute` |  |
+| 228 | class `DSG_OT_IOSCloseToothSocket` | `dsg.ios_close_tooth_socket` · Cerrar hueco hacia dentro |
+| 235 | `DSG_OT_IOSCloseToothSocket.poll` |  |
+| 241 | `DSG_OT_IOSCloseToothSocket.execute` |  |
+| 292 | class `DSG_OT_IOSCancelToothRemoval` | `dsg.ios_cancel_tooth_removal` · Cancelar edición del diente |
+| 298 | `DSG_OT_IOSCancelToothRemoval.poll` |  |
+| 301 | `DSG_OT_IOSCancelToothRemoval.execute` |  |
+| 324 | class `DSG_OT_IOSRetrySocketBoolean` | `dsg.ios_retry_socket_boolean` · Reintentar booleana después del cierre |
+| 330 | `DSG_OT_IOSRetrySocketBoolean.poll` |  |
+| 336 | `DSG_OT_IOSRetrySocketBoolean.execute` |  |
+| 352 | `draw` |  |
+
+## [blender/live_relief.py](../blender/live_relief.py)
+
+275 líneas · imports Blender: bmesh, bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 45 | `_guide` |  |
+| 50 | `blockout` |  |
+| 55 | `axis_local` |  |
+| 67 | `editing` |  |
+| 73 | `supports_live_retention` |  |
+| 77 | `apply_retention` | Re-evaluate the blockout for a new retention value; False if not possible. |
+| 111 | `on_retention_changed` |  |
+| 116 | `_restore` | Put back the committed coordinates of the previous preview. |
+| 131 | `preview` | Show the selected relief live; returns the number of vertices moved. |
+| 172 | `commit` | Keep the previewed relief as part of the blockout; returns vertices fixed. |
+| 188 | `on_local_relief_changed` |  |
+| 193 | `run_audit` |  |
+| 220 | `_audit_timer` |  |
+| 226 | `schedule_audit` | (Re)start the countdown: the audit runs once the user stops changing. |
+| 234 | `_poll` |  |
+| 242 | `_step` |  |
+| 262 | `status_text` |  |
+| 267 | `register` |  |
+| 272 | `unregister` |  |
+
+## [blender/microscrew_safety.py](../blender/microscrew_safety.py)
+
+118 líneas · imports Blender: bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 9 | `screws` |  |
+| 14 | `sync` |  |
+| 55 | `contacts` |  |
+| 67 | `validate` |  |
+| 81 | `gate` |  |
+| 93 | `needs_refresh` |  |
+| 105 | `request_refresh` | Safe from Panel.draw: rebuilds missing/orphan safety cylinders later. |
+| 112 | `refresh` |  |
+
+## [blender/mpr_view.py](../blender/mpr_view.py)
+
+225 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 22 | `active` |  |
+| 26 | `wanted` |  |
+| 34 | `_keep` | Objects that stay as they are in MPR view. |
+| 50 | `_ghost_material` |  |
+| 71 | `_bones` |  |
+| 77 | `_show_ghost` |  |
+| 104 | `_hide_ghost` |  |
+| 110 | `_show_neighbours` |  |
+| 124 | `enter` |  |
+| 140 | `leave` |  |
+| 154 | `sync` | Enter or leave the MPR view to match the review / implant planes. |
+| 172 | `plane_object` |  |
+| 176 | `plane_shown` |  |
+| 181 | `any_shown` |  |
+| 188 | `_set_plane` |  |
+| 199 | class `DSG_OT_ToggleMPRPlane` | `dsg.toggle_mpr_plane` · Mostrar/ocultar MPR |
+| 208 | `DSG_OT_ToggleMPRPlane.execute` |  |
+
+## [blender/nerve_safety.py](../blender/nerve_safety.py)
+
+186 líneas · imports Blender: bmesh, bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 15 | `capture_arch` |  |
+| 23 | `required` |  |
+| 30 | `margin` |  |
+| 37 | `changed` |  |
+| 43 | `register` |  |
+| 49 | `unregister` |  |
+| 54 | `clear` |  |
+| 59 | `_convex_proxy` | Closed conservative outer envelope, without modifying the source mesh. |
+| 74 | `_geometry` |  |
+| 104 | `measure` |  |
+| 116 | `measure.nearest` |  |
+| 123 | `failures` |  |
+| 144 | `description` |  |
+| 158 | `draw` |  |
+
+## [blender/optimizer_diagnostics.py](../blender/optimizer_diagnostics.py)
+
+80 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 5 | `diagnose` |  |
+| 7 | `diagnose.add` |  |
+
+## [blender/optional_next.py](../blender/optional_next.py)
+
+67 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 5 | `call` |  |
+| 10 | `advance` |  |
+| 53 | class `DSG_OT_OptionalNext` | `dsg.optional_next` · SIGUIENTE |
+| 59 | `DSG_OT_OptionalNext.execute` |  |
+
+## [blender/organic_curve.py](../blender/organic_curve.py)
+
+163 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 5 | `handles` |  |
+| 19 | `evaluate` |  |
+| 25 | `route_distance` |  |
+| 35 | `adaptive_controls` |  |
+| 92 | `circular_gaussian` | Low-pass filter on a closed loop (wraps around the seam). |
+| 106 | `least_bending_in_tube` | Smoothest closed curve within ``limit`` mm of ``route``. |
+| 124 | `_resample_closed` |  |
+| 135 | `smooth_route` | Smooth, even centreline from the dense geodesic route. |
+
+## [blender/organic_frame.py](../blender/organic_frame.py)
+
+56 líneas · imports Blender: mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 8 | `build` |  |
+
+## [blender/progress_overlay.py](../blender/progress_overlay.py)
+
+272 líneas · imports Blender: blf, bpy, gpu
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 23 | `active` |  |
+| 27 | `visible` |  |
+| 31 | `begin` |  |
+| 48 | `step` | Start a new stage at ``pct`` percent. |
+| 58 | `update` | Progress report: a new phase opens a step, the same phase only |
+| 74 | `_after_change` |  |
+| 86 | `end` |  |
+| 112 | `_clear` |  |
+| 121 | `draw_bar` | Percentage bar for the panel; returns True when something was drawn. |
+| 135 | `_status` |  |
+| 144 | `_tag_redraw` |  |
+| 153 | `_redraw` |  |
+| 167 | `_install` |  |
+| 172 | `_remove` |  |
+| 182 | `_elapsed` |  |
+| 187 | `_lines` |  |
+| 214 | `_draw` |  |
+| 265 | `unregister` |  |
+
+## [blender/protected_neighbors.py](../blender/protected_neighbors.py)
+
+322 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 11 | `extraction` |  |
+| 16 | `teeth` |  |
+| 21 | `kept` | Neighbours the clinician chose to SEE.  None by default: showing every |
+| 31 | `canals` |  |
+| 40 | `lower` |  |
+| 57 | `_desired` | Visibility plan for the guide steps, or None when it does not apply. |
+| 90 | `_models` | (object, shown) pairs for the socket view and the extension preview. |
+| 111 | `_apply` |  |
+| 135 | `sync` | Apply neighbour/nerve visibility. Never call it from Panel.draw. |
+| 142 | `needs_sync` |  |
+| 157 | `request_sync` | Safe from Panel.draw: schedules sync only when something differs. |
+| 164 | class `DSG_OT_ToggleProtectedNeighbor` | `dsg.toggle_protected_neighbor` · Conservar diente vecino |
+| 171 | `DSG_OT_ToggleProtectedNeighbor.execute` |  |
+| 186 | class `DSG_OT_EditProtectedNeighbors` | `dsg.edit_protected_neighbors` · ELEGIR DIENTES VECINOS |
+| 190 | `DSG_OT_EditProtectedNeighbors.execute` |  |
+| 195 | class `DSG_OT_ResetProtectedNeighbors` | `dsg.all_protected_neighbors` · MOSTRAR TODOS LOS VECINOS |
+| 200 | `DSG_OT_ResetProtectedNeighbors.execute` |  |
+| 208 | class `DSG_OT_ClearProtectedNeighbors` | `dsg.clear_protected_neighbors` · QUITAR DIENTES VECINOS |
+| 214 | `DSG_OT_ClearProtectedNeighbors.execute` |  |
+| 220 | class `DSG_OT_ConfirmProtectedNeighbors` | `dsg.confirm_protected_neighbors` · CONFIRMAR SELECCIÓN |
+| 226 | `DSG_OT_ConfirmProtectedNeighbors.execute` |  |
+| 233 | class `DSG_OT_ReopenProtectedNeighbors` | `dsg.reopen_protected_neighbors` · Cambiar dientes vecinos |
+| 238 | `DSG_OT_ReopenProtectedNeighbors.execute` |  |
+| 243 | `confirmed` |  |
+| 249 | `_toggles` |  |
+| 265 | `_nerve` |  |
+| 272 | `draw_step` | Neighbour step before implant placement; True once the selection is confirmed. |
+| 295 | `draw` |  |
+
+## [blender/relationship_lines.py](../blender/relationship_lines.py)
+
+43 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 12 | `hide_all` | Turn the relationship-line overlay off in every 3D view of every screen. |
+| 23 | `_deferred` |  |
+| 29 | `on_load` |  |
+| 33 | `register` |  |
+| 39 | `unregister` |  |
+
+## [blender/retention_finish.py](../blender/retention_finish.py)
+
+45 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 5 | `run` |  |
+| 28 | class `DSG_OT_PrepareRetentionUnified` | `dsg.prepare_retention_unified` · PREPARAR MODELO RETENTIVO |
+| 34 | `DSG_OT_PrepareRetentionUnified.execute` |  |
+
+## [blender/rim_smooth.py](../blender/rim_smooth.py)
+
+122 líneas · imports Blender: mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 24 | `coordinate_key` |  |
+| 28 | `_face_normals` |  |
+| 32 | `_band_by_distance` | Vertices reachable from the border within ``limit`` (Euclidean). |
+| 59 | `smooth` | Smooth the border band in place; returns (released_keys, diagnostics). |
+
+## [blender/safety_alerts.py](../blender/safety_alerts.py)
+
+134 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 8 | `contact_label` |  |
+| 25 | `active` |  |
+| 29 | `observe` |  |
+| 54 | `_display_ready` |  |
+| 58 | `_show_popup` |  |
+| 61 | `_show_popup.draw` |  |
+| 70 | `_dispatch` |  |
+| 92 | `_timer` |  |
+| 96 | class `DSG_OT_ShowSafetyContacts` | `dsg.show_safety_contacts` · ALERTA DE SEGURIDAD |
+| 101 | `DSG_OT_ShowSafetyContacts.execute` |  |
+| 110 | `draw_warning` |  |
+| 119 | `clear` |  |
+| 124 | `register` |  |
+| 130 | `unregister` |  |
+
+## [blender/safety_volume.py](../blender/safety_volume.py)
+
+311 líneas · imports Blender: bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 19 | `visible` |  |
+| 53 | `sync` |  |
+| 79 | `obstacles` |  |
+| 89 | `contacts` |  |
+| 102 | `_mesh_arrays` |  |
+| 114 | `_local_geometry` | Obstacle geometry in its own local space, cached while the mesh is unchanged. |
+| 137 | `_inside` | Ray parity: is ``origin`` inside the closed surface held by ``tree``? |
+| 149 | `mesh_contacts` |  |
+| 177 | `gate` |  |
+| 197 | `remember` |  |
+| 203 | `update` |  |
+| 228 | `_audit_timer` | Warn on a settled editing pose; never overwrite Blender's native R/G. |
+| 270 | `load` |  |
+| 283 | `register` |  |
+| 296 | `unregister` |  |
+
+## [blender/segmentation_finish.py](../blender/segmentation_finish.py)
+
+193 líneas · imports Blender: bmesh, bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 13 | `targets` |  |
+| 24 | `in_scope` |  |
+| 31 | `reset` |  |
+| 36 | `closed` |  |
+| 45 | `rollback` |  |
+| 79 | `complete` |  |
+| 97 | `start` |  |
+| 152 | `cancel_before_alignment` |  |
+| 158 | class `DSG_OT_FinishSegmentedTeeth` | `dsg.finish_segmented_teeth` · Mejorar dientes |
+| 165 | `DSG_OT_FinishSegmentedTeeth.poll` |  |
+| 170 | `DSG_OT_FinishSegmentedTeeth.execute` |  |
+| 183 | `draw` |  |
+
+## [blender/socket_reach.py](../blender/socket_reach.py)
+
+186 líneas · imports Blender: bmesh, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 18 | `_world` |  |
+| 26 | `occlusal_direction` |  |
+| 37 | `plan_extension` | Axial shift per cutter vertex (pure NumPy); zeros when already open. |
+| 59 | `requirement` | Extension needed for the root section to come out of the IOS. |
+| 96 | `extend` | Extrude the coronal cross-section by the chosen physical length. |
+| 145 | `cutter_tree` | World-space BVH of a cutter, kept to verify the socket after cleanup. |
+| 157 | `verify_opening` | Socket open to the outside and as deep as the tooth, without rays. |
+
+## [blender/surface_clearance_bounds.py](../blender/surface_clearance_bounds.py)
+
+43 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 7 | `classify` | Bounds the distance over whole faces, including edge/face interiors. |
+| 20 | `classify.add` |  |
+
+## [blender/upper_cavity_job.py](../blender/upper_cavity_job.py)
+
+74 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 9 | `on_load` |  |
+| 11 | `source_signature` |  |
+| 15 | `input_path` |  |
+| 23 | `stop` |  |
+| 32 | `start` |  |
+| 51 | `poll` |  |
+
+## [blender/upper_cavity_safety.py](../blender/upper_cavity_safety.py)
+
+409 líneas · imports Blender: bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 25 | `objects` |  |
+| 32 | `signature` |  |
+| 41 | `reviewed` |  |
+| 52 | `confirm` |  |
+| 72 | `_orientation` | +1 when the zone's triangles wind outward (positive volume), else -1. |
+| 81 | `_points` |  |
+| 88 | `penetration` | (depth inside the zone, clearance outside it) in mm, implant surface vs zone surface. |
+| 129 | `_limits` |  |
+| 136 | `failures` | Blocking zones only (nasal invasion, sinus > limit, unmeasurable). |
+| 167 | `report` |  |
+| 172 | `alerts` |  |
+| 177 | `description` |  |
+| 185 | `import_surfaces` |  |
+| 216 | class `DSG_OT_PrepareUpperCavities` | `dsg.prepare_upper_cavities` · IDENTIFICAR SENOS Y CAVIDAD NASAL |
+| 219 | `DSG_OT_PrepareUpperCavities.execute` |  |
+| 226 | class `DSG_OT_ReviewUpperCavities` | `dsg.review_upper_cavities` · REVISAR SENOS Y CAVIDAD NASAL |
+| 229 | `DSG_OT_ReviewUpperCavities.execute` |  |
+| 235 | class `DSG_OT_ConfirmUpperCavities` | `dsg.confirm_upper_cavities` · CONFIRMAR CAVIDADES SUPERIORES |
+| 240 | `DSG_OT_ConfirmUpperCavities.invoke` |  |
+| 241 | `DSG_OT_ConfirmUpperCavities.execute` |  |
+| 249 | class `DSG_OT_AssignUpperCavity` | `dsg.assign_upper_cavity` · ASIGNAR MALLA DE CAVIDAD |
+| 253 | `DSG_OT_AssignUpperCavity.invoke` |  |
+| 254 | `DSG_OT_AssignUpperCavity.execute` |  |
+| 268 | `changed` |  |
+| 278 | `_stage_watch` | Hide the zones while aligning (3 points), restore them afterwards. |
+| 297 | `register` |  |
+| 314 | `unregister` |  |
+| 329 | `_material` |  |
+| 349 | `_show_zones` |  |
+| 358 | `style` |  |
+| 367 | `draw_toggle` | Compact visibility row for the segmented danger zones (any step). |
+| 376 | `draw` | Danger zones of the upper arch: one line per zone, live while placing. |
+
+## [blender/virtual_extraction.py](../blender/virtual_extraction.py)
+
+305 líneas · imports Blender: bpy
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 22 | `required` |  |
+| 27 | `targets` |  |
+| 32 | `done` |  |
+| 39 | `performed` |  |
+| 43 | `confirmed` |  |
+| 47 | `teeth` |  |
+| 52 | `bones_for` | Bone meshes that should receive the socket (plain bone and composite). |
+| 70 | `_closed` | Every edge shared by exactly two faces (vectorised; bone meshes are big). |
+| 80 | `_carve_bone` | MANIFOLD-only difference: fast, and skipped when the bone is not solid. |
+| 112 | `_hide_tooth` |  |
+| 129 | `_show_tooth` |  |
+| 141 | class `DSG_OT_PerformVirtualExtraction` | `dsg.perform_virtual_extraction` · REALIZAR OPERACIÓN BOOLEANA |
+| 148 | `DSG_OT_PerformVirtualExtraction.execute` |  |
+| 222 | class `DSG_OT_ConfirmVirtualExtraction` | `dsg.confirm_virtual_extraction` · SIGUIENTE |
+| 228 | `DSG_OT_ConfirmVirtualExtraction.execute` |  |
+| 241 | class `DSG_OT_UndoVirtualExtraction` | `dsg.undo_virtual_extraction` · Restaurar diente |
+| 247 | `DSG_OT_UndoVirtualExtraction.execute` |  |
+| 271 | `draw` | Draw the sub-step; returns True once SIGUIENTE was pressed. |
+
 ## [blender_compat.py](../blender_compat.py)
 
 46 líneas · imports Blender: bpy
@@ -2374,9 +3062,18 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 17 | `runtime_report` |  |
 | 35 | `assert_supported_runtime` |  |
 
+## [bone_interpretation.py](../bone_interpretation.py)
+
+21 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 8 | `requires_bone_review` |  |
+| 15 | `interpret_search_result` |  |
+
 ## [cbct_dental_module.py](../cbct_dental_module.py)
 
-2654 líneas · imports Blender: bpy, mathutils
+2857 líneas · imports Blender: bpy, mathutils
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -2410,71 +3107,83 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 812 | `_fdi_label_anchor_world.score` |  |
 | 823 | `_fdi_label_world_matrix` | Build a text frame: glyph Y=patient superior, glyph Z=vestibular. |
 | 864 | `_create_fdi_label` | Create one compact FDI label on the facial crown surface. |
-| 918 | `rebuild_fdi_labels` | Rebuild the FDI display overlay without owning clinical segmentation. |
-| 978 | `set_alignment_visual_smoothing` | Toggle measured, volume-preserving surface offsets without remeshing. |
-| 1002 | `set_dentition_alignment_visual_smoothing` |  |
-| 1018 | `visual_smoothing_objects` | Include disposable CBCT references visible during IOS alignment. |
-| 1032 | `visual_smoothing_enabled` |  |
-| 1040 | class `DSG_OT_CBCTToggleSurfaceSmoothing` | `dsg.cbct_toggle_surface_smoothing` · Suavizar superficie CBCT |
-| 1050 | `DSG_OT_CBCTToggleSurfaceSmoothing.poll` |  |
-| 1053 | `DSG_OT_CBCTToggleSurfaceSmoothing.execute` |  |
-| 1071 | `draw_surface_smoothing` |  |
-| 1076 | `reset_scene_state` |  |
-| 1092 | `dentition_objects` | Return tooth objects belonging to the current scene, not stale datablocks. |
-| 1117 | `labels_visible` |  |
-| 1123 | `labels_visible_for_arch` | Show FDI labels only for the CBCT arch used as alignment reference. |
-| 1152 | `dental_runtime_contract_preflight` | Validate literals used by runtime-created dental assets. |
-| 1168 | `native_alignment_code_preflight` | Cheap readiness test with no scene mutation. |
-| 1177 | `_alignment_source_kind` |  |
-| 1190 | `segmented_alignment_source_objects` | Return every current clinical CBCT segmentation mesh, never helpers. |
-| 1249 | `_alignment_work_collection` |  |
-| 1261 | `_delete_alignment_duplicate` |  |
-| 1276 | `_duplicate_segmented_sources` | Create real Blender copies before composing the disposable target. |
-| 1298 | `_segmentation_signature` |  |
-| 1311 | `set_segmented_sources_alignment_visibility` | Show originals in DICOM; hide them while the two-object alignment is active. |
-| 1328 | `clear_alignment_working_composite` |  |
-| 1358 | `build_segmented_alignment_composite` | Duplicate every segmented CBCT mesh and merge the copies into one object. |
-| 1538 | `_immediate_source_hidden` |  |
-| 1547 | `_delete_named_mesh` |  |
-| 1563 | `_join_immediate_arch_sources` | Duplicate and Ctrl+J one jaw with its visible teeth. |
-| 1653 | `build_immediate_arch_composites` | Build the two socket-review models after the clinician hides teeth with H. |
-| 1734 | `ensure_segmented_alignment_composite` |  |
-| 1757 | `build_native_tooth_alignment_reference` |  |
-| 1762 | `ensure_native_tooth_alignment_reference` |  |
-| 1766 | `iter_build_universal_dentition` | Yield after each tooth so Blender can redraw between mesh creations. |
-| 1929 | `build_universal_dentition` | Synchronous compatibility wrapper around the single dentition builder. |
-| 1941 | `current_payload` |  |
-| 1974 | class `DSGCBCTDentalProperties` |  |
-| 1990 | class `DSG_OT_CBCTAcceptFDI` | `dsg.cbct_accept_fdi` · Confirmar FDI |
-| 1995 | `DSG_OT_CBCTAcceptFDI.execute` |  |
-| 2100 | class `DSG_OT_CBCTImproveGeometry` | `dsg.cbct_improve_geometry` · Mejorar geometría |
-| 2107 | `DSG_OT_CBCTImproveGeometry.poll` |  |
-| 2115 | `DSG_OT_CBCTImproveGeometry.execute` |  |
-| 2197 | class `DSG_OT_CBCTToggleFDI` | `dsg.cbct_toggle_fdi` · Mostrar/Ocultar FDI |
-| 2202 | `DSG_OT_CBCTToggleFDI.execute` |  |
-| 2209 | class `DSG_OT_CBCTEditFDI` | `dsg.cbct_edit_fdi` · Corregir FDI seleccionado |
-| 2217 | `DSG_OT_CBCTEditFDI.poll` |  |
-| 2221 | `DSG_OT_CBCTEditFDI.invoke` |  |
-| 2226 | `DSG_OT_CBCTEditFDI.execute` |  |
-| 2273 | class `DSG_OT_CBCTSwapArches` | `dsg.cbct_swap_arches` · Intercambiar maxilar / mandíbula |
-| 2283 | `DSG_OT_CBCTSwapArches.poll` |  |
-| 2286 | `DSG_OT_CBCTSwapArches.execute` |  |
-| 2350 | class `DSG_OT_CBCTDeleteTooth` | `dsg.cbct_delete_tooth` · Marcar diente como ausente |
-| 2356 | `DSG_OT_CBCTDeleteTooth.poll` |  |
-| 2360 | `DSG_OT_CBCTDeleteTooth.execute` |  |
-| 2376 | `draw_review` |  |
-| 2447 | `draw_alignment_handoff` |  |
-| 2459 | class `DSG_OT_InstallAIRuntime` | `dsg.install_ai_runtime` · Instalar motores de segmentación |
-| 2466 | `DSG_OT_InstallAIRuntime.execute` |  |
-| 2478 | class `DSG_OT_AIStatusRefresh` | `dsg.ai_status_refresh` · Revisar motores de segmentación |
-| 2483 | `DSG_OT_AIStatusRefresh.execute` |  |
-| 2499 | class `DSG_OT_CopyPipelineDiagnostic` | `dsg.copy_pipeline_diagnostic` · Copiar diagnóstico |
-| 2503 | `DSG_OT_CopyPipelineDiagnostic.execute` |  |
-| 2541 | `_cleanup_stale_registration` | Remove only this module's known RNA footprint before a fresh register. |
-| 2560 | `migrate_existing_asset_metadata` | One-time compatible stamping for teeth saved by pre-v9 DSG scenes. |
-| 2591 | `register` |  |
-| 2623 | `deferred_post_register` | Run data-sensitive CBCT metadata migration after _RestrictData is gone. |
-| 2640 | `unregister` |  |
+| 919 | `rebuild_fdi_labels` | Rebuild the FDI display overlay without owning clinical segmentation. |
+| 981 | `set_alignment_visual_smoothing` | Toggle measured, volume-preserving surface offsets without remeshing. |
+| 1005 | `set_dentition_alignment_visual_smoothing` |  |
+| 1021 | `visual_smoothing_objects` | Include disposable CBCT references visible during IOS alignment. |
+| 1035 | `visual_smoothing_enabled` |  |
+| 1043 | class `DSG_OT_CBCTToggleSurfaceSmoothing` | `dsg.cbct_toggle_surface_smoothing` · Suavizar superficie CBCT |
+| 1053 | `DSG_OT_CBCTToggleSurfaceSmoothing.poll` |  |
+| 1056 | `DSG_OT_CBCTToggleSurfaceSmoothing.execute` |  |
+| 1074 | `draw_surface_smoothing` |  |
+| 1079 | `reset_scene_state` |  |
+| 1095 | `dentition_objects` | Return tooth objects belonging to the current scene, not stale datablocks. |
+| 1120 | `_labels_hidden_for_implant_review` |  |
+| 1127 | `labels_visible` |  |
+| 1134 | `labels_visible_for_arch` | Show FDI labels only for the CBCT arch used as alignment reference. |
+| 1166 | `dental_runtime_contract_preflight` | Validate literals used by runtime-created dental assets. |
+| 1182 | `native_alignment_code_preflight` | Cheap readiness test with no scene mutation. |
+| 1191 | `_alignment_source_kind` |  |
+| 1204 | `segmented_alignment_source_objects` | Return every current clinical CBCT segmentation mesh, never helpers. |
+| 1263 | `_alignment_work_collection` |  |
+| 1275 | `_delete_alignment_duplicate` |  |
+| 1290 | `_duplicate_segmented_sources` | Create real Blender copies before composing the disposable target. |
+| 1312 | `_segmentation_signature` |  |
+| 1325 | `set_segmented_sources_alignment_visibility` | Show originals in DICOM; hide them while the two-object alignment is active. |
+| 1342 | `clear_alignment_working_composite` |  |
+| 1372 | `build_segmented_alignment_composite` | Duplicate every segmented CBCT mesh and merge the copies into one object. |
+| 1552 | `_immediate_source_hidden` |  |
+| 1561 | `_delete_named_mesh` |  |
+| 1577 | `_join_immediate_arch_sources` | Duplicate and Ctrl+J one jaw with its visible teeth. |
+| 1668 | `build_immediate_arch_composites` | Build the two socket-review models after the clinician hides teeth with H. |
+| 1756 | `ensure_segmented_alignment_composite` |  |
+| 1781 | `build_native_tooth_alignment_reference` |  |
+| 1786 | `ensure_native_tooth_alignment_reference` |  |
+| 1790 | `iter_build_universal_dentition` | Yield after each tooth so Blender can redraw between mesh creations. |
+| 1953 | `build_universal_dentition` | Synchronous compatibility wrapper around the single dentition builder. |
+| 1965 | `current_payload` |  |
+| 1998 | class `DSGCBCTDentalProperties` |  |
+| 2026 | `segmented_objects` | Every mesh produced by CBCT segmentation: teeth, jaws, canal, arches. |
+| 2053 | `_remesh_source_mesh` | Original geometry: before any previous remesh and before smoothing. |
+| 2065 | `_forget_smoothing_cache` |  |
+| 2072 | `voxel_remesh_object` | Replace obj.data with a voxel remesh of its original mesh. |
+| 2106 | `restore_voxel_remesh` |  |
+| 2121 | class `DSG_OT_VoxelRemeshSegmented` | `dsg.voxel_remesh_segmented` · Remesh vóxel |
+| 2128 | `DSG_OT_VoxelRemeshSegmented.poll` |  |
+| 2132 | `DSG_OT_VoxelRemeshSegmented.execute` |  |
+| 2163 | class `DSG_OT_VoxelRemeshRestore` | `dsg.voxel_remesh_restore` · Mallas originales |
+| 2169 | `DSG_OT_VoxelRemeshRestore.execute` |  |
+| 2178 | `draw_voxel_remesh` |  |
+| 2194 | class `DSG_OT_CBCTAcceptFDI` | `dsg.cbct_accept_fdi` · Confirmar FDI |
+| 2199 | `DSG_OT_CBCTAcceptFDI.execute` |  |
+| 2306 | class `DSG_OT_CBCTImproveGeometry` | `dsg.cbct_improve_geometry` · Mejorar geometría |
+| 2313 | `DSG_OT_CBCTImproveGeometry.poll` |  |
+| 2321 | `DSG_OT_CBCTImproveGeometry.execute` |  |
+| 2403 | class `DSG_OT_CBCTToggleFDI` | `dsg.cbct_toggle_fdi` · Mostrar/Ocultar FDI |
+| 2408 | `DSG_OT_CBCTToggleFDI.execute` |  |
+| 2415 | class `DSG_OT_CBCTEditFDI` | `dsg.cbct_edit_fdi` · Corregir FDI seleccionado |
+| 2423 | `DSG_OT_CBCTEditFDI.poll` |  |
+| 2427 | `DSG_OT_CBCTEditFDI.invoke` |  |
+| 2432 | `DSG_OT_CBCTEditFDI.execute` |  |
+| 2479 | class `DSG_OT_CBCTSwapArches` | `dsg.cbct_swap_arches` · Intercambiar maxilar / mandíbula |
+| 2489 | `DSG_OT_CBCTSwapArches.poll` |  |
+| 2492 | `DSG_OT_CBCTSwapArches.execute` |  |
+| 2556 | class `DSG_OT_CBCTDeleteTooth` | `dsg.cbct_delete_tooth` · Marcar diente como ausente |
+| 2562 | `DSG_OT_CBCTDeleteTooth.poll` |  |
+| 2566 | `DSG_OT_CBCTDeleteTooth.execute` |  |
+| 2582 | `draw_review` |  |
+| 2643 | `draw_alignment_handoff` |  |
+| 2654 | class `DSG_OT_InstallAIRuntime` | `dsg.install_ai_runtime` · Instalar motores de segmentación |
+| 2661 | `DSG_OT_InstallAIRuntime.execute` |  |
+| 2673 | class `DSG_OT_AIStatusRefresh` | `dsg.ai_status_refresh` · Revisar motores de segmentación |
+| 2678 | `DSG_OT_AIStatusRefresh.execute` |  |
+| 2694 | class `DSG_OT_CopyPipelineDiagnostic` | `dsg.copy_pipeline_diagnostic` · Copiar diagnóstico |
+| 2698 | `DSG_OT_CopyPipelineDiagnostic.execute` |  |
+| 2740 | `_cleanup_stale_registration` | Remove only this module's known RNA footprint before a fresh register. |
+| 2759 | `migrate_existing_asset_metadata` | One-time compatible stamping for teeth saved by pre-v9 DSG scenes. |
+| 2790 | `register` |  |
+| 2824 | `deferred_post_register` | Run data-sensitive CBCT metadata migration after _RestrictData is gone. |
+| 2841 | `unregister` |  |
 
 ## [cbct_native_threshold.py](../cbct_native_threshold.py)
 
@@ -2504,7 +3213,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [cbct_pipeline_client.py](../cbct_pipeline_client.py)
 
-253 líneas · imports Blender: bpy
+271 líneas · imports Blender: bpy
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -2516,17 +3225,17 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 60 | `_launch_blender_fallback` |  |
 | 69 | `start_full_pipeline` |  |
 | 104 | `state` |  |
-| 154 | `snapshot_failure_diagnostics` | Persist redacted worker evidence before transactional cleanup. |
-| 204 | `consume_manifest` |  |
-| 209 | `diagnostic_text` | Copy only the structured run record, never private request/log contents. |
-| 221 | `artifact_dir` |  |
-| 224 | `release_process_keep_artifacts` |  |
-| 235 | `cancel` |  |
-| 248 | `cleanup_artifacts` |  |
+| 167 | `snapshot_failure_diagnostics` | Persist redacted worker evidence before transactional cleanup. |
+| 217 | `consume_manifest` |  |
+| 227 | `diagnostic_text` | Copy only the structured run record, never private request/log contents. |
+| 239 | `artifact_dir` |  |
+| 242 | `release_process_keep_artifacts` |  |
+| 253 | `cancel` |  |
+| 266 | `cleanup_artifacts` |  |
 
 ## [cbct_pipeline_tasks.py](../cbct_pipeline_tasks.py)
 
-333 líneas · imports Blender: ninguno directo
+338 líneas · imports Blender: ninguno directo
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -2545,13 +3254,13 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 220 | `simple_arch_masks` | Return exactly two binary crops for the SIMPLE implant route. |
 | 233 | `prepare_simple_arches_route_map` | Create SIMPLE surfaces from a minimal 1=upper / 2=lower route map. |
 | 260 | `prepare_simple_arches` | Create only two native-resolution surfaces; no FDI meshes and no canal. |
-| 285 | `run_teeth_task` | Prepare meshes from the normalized DSG compatibility labelmap. |
-| 308 | `run_surfaces_task` |  |
-| 329 | `run_task` |  |
+| 288 | `run_teeth_task` | Prepare meshes from the normalized DSG compatibility labelmap. |
+| 311 | `run_surfaces_task` |  |
+| 334 | `run_task` |  |
 
 ## [cbct_pipeline_worker.py](../cbct_pipeline_worker.py)
 
-716 líneas · imports Blender: ninguno directo
+732 líneas · imports Blender: ninguno directo
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -2564,22 +3273,22 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 131 | `_direct113_supported` |  |
 | 138 | `_predict_totalseg_direct` |  |
 | 160 | `_translate_totalseg` |  |
-| 189 | `infer_totalseg` |  |
-| 249 | `_find_model_folder` |  |
-| 265 | `_predict_nnunet_folder` |  |
-| 288 | `_resample_nifti_to_spacing` |  |
-| 306 | `infer_toothseg` |  |
-| 397 | `_load_module_from_file` |  |
-| 407 | `_find_umamba_model` |  |
-| 422 | `infer_umamba2` |  |
-| 489 | `main` |  |
-| 501 | `main.status` |  |
-| 518 | `main.heartbeat` |  |
-| 679 | `run_request` |  |
+| 193 | `infer_totalseg` |  |
+| 265 | `_find_model_folder` |  |
+| 281 | `_predict_nnunet_folder` |  |
+| 304 | `_resample_nifti_to_spacing` |  |
+| 322 | `infer_toothseg` |  |
+| 413 | `_load_module_from_file` |  |
+| 423 | `_find_umamba_model` |  |
+| 438 | `infer_umamba2` |  |
+| 505 | `main` |  |
+| 517 | `main.status` |  |
+| 534 | `main.heartbeat` |  |
+| 695 | `run_request` |  |
 
 ## [cbct_post_smoothing.py](../cbct_post_smoothing.py)
 
-285 líneas · imports Blender: bpy
+293 líneas · imports Blender: bpy
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -2596,30 +3305,31 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 79 | `apply_result` |  |
 | 130 | `_cleanup` |  |
 | 135 | `cancel` |  |
-| 150 | `cancel_on_load` |  |
-| 152 | `_poll` |  |
-| 185 | `start` |  |
-| 234 | class `DSG_OT_PostSmoothTeeth` | `dsg.cbct_post_smooth_teeth` · Suavizar dientes |
-| 239 | `DSG_OT_PostSmoothTeeth.poll` |  |
-| 240 | `DSG_OT_PostSmoothTeeth.execute` |  |
-| 248 | class `DSG_OT_CancelPostSmooth` | `dsg.cbct_cancel_post_smooth` · Cancelar suavizado |
-| 251 | `DSG_OT_CancelPostSmooth.execute` |  |
-| 253 | class `DSG_OT_PostSmoothReport` | `dsg.cbct_post_smooth_report` · Resultado del suavizado |
-| 256 | `DSG_OT_PostSmoothReport.execute` |  |
-| 258 | `DSG_OT_PostSmoothReport.execute.draw` |  |
-| 266 | `draw` |  |
-| 279 | `register_hooks` |  |
-| 282 | `unregister_hooks` |  |
+| 151 | `cancel_on_load` |  |
+| 153 | `_poll` |  |
+| 189 | `start` |  |
+| 239 | class `DSG_OT_PostSmoothTeeth` | `dsg.cbct_post_smooth_teeth` · Suavizar dientes |
+| 244 | `DSG_OT_PostSmoothTeeth.poll` |  |
+| 245 | `DSG_OT_PostSmoothTeeth.execute` |  |
+| 253 | class `DSG_OT_CancelPostSmooth` | `dsg.cbct_cancel_post_smooth` · Cancelar suavizado |
+| 256 | `DSG_OT_CancelPostSmooth.execute` |  |
+| 258 | class `DSG_OT_PostSmoothReport` | `dsg.cbct_post_smooth_report` · Resultado del suavizado |
+| 261 | `DSG_OT_PostSmoothReport.execute` |  |
+| 263 | `DSG_OT_PostSmoothReport.execute.draw` |  |
+| 271 | `draw` |  |
+| 287 | `register_hooks` |  |
+| 290 | `unregister_hooks` |  |
 
 ## [cbct_post_smoothing_worker.py](../cbct_post_smoothing_worker.py)
 
-142 líneas · imports Blender: ninguno directo
+165 líneas · imports Blender: ninguno directo
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
 | 5 | `atomic_json` |  |
 | 14 | `run` |  |
 | 24 | `run.status` |  |
+| 33 | `run.to_display` |  |
 
 ## [cbct_surface_meshing.py](../cbct_surface_meshing.py)
 
@@ -2661,6 +3371,26 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 |---:|---|---|
 | 20 | `sidecar_requested` |  |
 | 24 | `extract_multilabel_sidecar` |  |
+
+## [cbct_upper_cavities.py](../cbct_upper_cavities.py)
+
+59 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 7 | `merge_nasal` |  |
+| 17 | `_infer_task` |  |
+| 39 | `infer_nasal` |  |
+| 43 | `infer_sinuses` |  |
+| 48 | `prepare` |  |
+
+## [cbct_upper_worker.py](../cbct_upper_worker.py)
+
+36 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 6 | `main` |  |
 
 ## [clinical_context.py](../clinical_context.py)
 
@@ -2733,7 +3463,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [common_surface_match.py](../common_surface_match.py)
 
-1412 líneas · imports Blender: bpy, mathutils
+1503 líneas · imports Blender: bpy, mathutils
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -2764,13 +3494,18 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 780 | `_face_samples` |  |
 | 798 | `_score_face` | Score one IOS face using reciprocal surface correspondence + context. |
 | 848 | `_write_scores` |  |
-| 859 | `_select_components` |  |
-| 883 | `_grow_coherent_surface` |  |
-| 907 | `_build_object_bvh` |  |
-| 920 | `_bone_guard_face_set` | Reject IOS faces whose geometry is better explained by alveolar bone. |
-| 962 | `select_anatomy_locked_ios_seed` | Recover a difficult match without turning proximity into tooth identity. |
-| 1211 | `select_common_ios_surface` | Precision-first common-surface matcher for immediate extraction review. |
-| 1388 | `apply_common_surface_selection` | Persist a generated selection as both edit-state and vertex group. |
+| 862 | `write_scores` |  |
+| 870 | `_world_coordinates` |  |
+| 879 | `build_local_proxy` | World-space copy of only the faces of ``obj`` near ``focus_objects``. |
+| 932 | `remove_local_proxy` |  |
+| 941 | `remap_result_to_source` | Translate proxy face indices in a selection result back to the IOS. |
+| 950 | `_select_components` |  |
+| 974 | `_grow_coherent_surface` |  |
+| 998 | `_build_object_bvh` |  |
+| 1011 | `_bone_guard_face_set` | Reject IOS faces whose geometry is better explained by alveolar bone. |
+| 1053 | `select_anatomy_locked_ios_seed` | Recover a difficult match without turning proximity into tooth identity. |
+| 1302 | `select_common_ios_surface` | Precision-first common-surface matcher for immediate extraction review. |
+| 1479 | `apply_common_surface_selection` | Persist a generated selection as both edit-state and vertex group. |
 
 ## [compute_probe.py](../compute_probe.py)
 
@@ -2783,153 +3518,173 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [core.py](../core.py)
 
-4063 líneas · imports Blender: bmesh, bpy, mathutils
+4314 líneas · imports Blender: bmesh, bpy, mathutils
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
-| 68 | `_is_dicom_collection` |  |
-| 73 | `_walk_layer_collections` |  |
-| 79 | `set_dicom_collections_hidden` | Hide/reveal complete DICOM collections and their view-layer nodes. |
-| 156 | `language_code` |  |
-| 162 | `is_spanish` |  |
-| 166 | `tr` |  |
-| 173 | `translate_ui` | Translate shared UI labels; Spanish remains the complete source locale. |
-| 196 | `role_of` |  |
-| 202 | `set_role` |  |
-| 212 | `find_role` |  |
-| 221 | `antagonist_objects` | Return persistent opposing-arch meshes, never inferred from visibility. |
-| 231 | `bind_antagonists_to_source` | Parent the antagonist to the moving IOS while preserving world pose. |
-| 249 | `find_alignment_reference` |  |
-| 264 | `infer_stage` |  |
-| 275 | `_workflow_mesh` | Return a live mesh referenced by a workflow Scene key, if any. |
-| 285 | `reconcile_workflow_after_undo` | Repair only stale route pointers after Blender restores an undo snapshot. |
-| 347 | `_run_workflow_undo_repair` |  |
-| 358 | `dsg_workflow_undo_post` | Defer route reconciliation until Blender has finished swapping undo data. |
-| 373 | `_register_workflow_undo_handler` |  |
-| 379 | `_unregister_workflow_undo_handler` |  |
-| 389 | `_is_dicom_related_object` |  |
-| 409 | `prepare_guide_entry_view` |  |
-| 460 | `set_stage` |  |
-| 479 | `stage_is` |  |
-| 484 | `language_get` |  |
-| 490 | `language_set` |  |
-| 500 | `clinical_route` |  |
-| 509 | `target_fdi` |  |
-| 524 | `route_requires_individual_teeth` |  |
-| 528 | `_restore_virtual_extraction_if_needed` |  |
-| 561 | `_workflow_route_update` |  |
-| 579 | `_target_fdi_update` |  |
-| 598 | class `DSGSuiteSettings` |  |
-| 639 | `patient_folder` |  |
-| 648 | `_set_patient_folder` |  |
-| 665 | `_iter_dicom_candidate_paths` | Yield likely DICOM files without building/sorting a huge recursive list. |
-| 702 | `_discover_patient_dicom` |  |
-| 724 | `_start_patient_cbct_from_probe` |  |
-| 754 | `_load_patient_cbct` |  |
-| 762 | `_ios_arch_hint` |  |
-| 773 | `_patient_ios_candidates` |  |
-| 800 | `_patient_ios_candidates.score` |  |
-| 811 | `_auto_import_patient_ios` |  |
-| 887 | `_export_object_to_patient` |  |
-| 924 | `_hidden_immediate_teeth` |  |
-| 939 | class `DSG_SUITE_OT_ChoosePatientFolder` | `dsg_suite.choose_patient_folder` · Elegir paciente |
-| 953 | `DSG_SUITE_OT_ChoosePatientFolder.invoke` |  |
-| 960 | `DSG_SUITE_OT_ChoosePatientFolder.execute` |  |
-| 973 | `DSG_SUITE_OT_ChoosePatientFolder.execute.discover` |  |
-| 997 | `DSG_SUITE_OT_ChoosePatientFolder._finish` |  |
-| 1005 | `DSG_SUITE_OT_ChoosePatientFolder.modal` |  |
-| 1027 | `DSG_SUITE_OT_ChoosePatientFolder.cancel` |  |
-| 1031 | class `DSG_SUITE_OT_LoadPatientCBCT` | `dsg_suite.load_patient_cbct` · Cargar CBCT del paciente |
-| 1035 | `DSG_SUITE_OT_LoadPatientCBCT.execute` |  |
-| 1045 | class `DSG_SUITE_OT_ChangeRoute` | `dsg_suite.change_route` · Cambiar ruta |
-| 1051 | `DSG_SUITE_OT_ChangeRoute.execute` |  |
-| 1106 | `_clear_dicom_route_checkpoint` |  |
-| 1121 | `capture_dicom_route_checkpoint` | Snapshot generated DICOM geometry + UI state before a route starts. |
-| 1162 | `restore_dicom_route_checkpoint` | Restore the exact generated-DICOM state captured before segmentation. |
-| 1209 | class `DSG_SUITE_OT_StartSimpleRoute` | `dsg_suite.start_simple_route` · Implante simple |
-| 1216 | `DSG_SUITE_OT_StartSimpleRoute.poll` |  |
-| 1223 | `DSG_SUITE_OT_StartSimpleRoute.execute` |  |
-| 1250 | class `DSG_SUITE_OT_ConfirmSimpleSTL` | `dsg_suite.confirm_simple_stl` · Confirmar arcadas y alinear |
-| 1256 | `DSG_SUITE_OT_ConfirmSimpleSTL.execute` |  |
-| 1276 | `_immediate_route_readiness` | Cheap route gate. Never imports Torch/nnU-Net in foreground Blender. |
-| 1340 | class `DSG_SUITE_OT_StartImmediateRoute` | `dsg_suite.start_immediate_route` · Implante inmediato |
-| 1347 | `DSG_SUITE_OT_StartImmediateRoute.poll` |  |
-| 1363 | `DSG_SUITE_OT_StartImmediateRoute.execute` |  |
-| 1400 | `DSG_SUITE_OT_StartImmediateRoute.execute._deferred_launch` |  |
-| 1453 | class `DSG_SUITE_OT_AcceptFDIAndSelectTeeth` | `dsg_suite.accept_fdi_select_teeth` · FDI correcto · elegir dientes |
-| 1458 | `DSG_SUITE_OT_AcceptFDIAndSelectTeeth.execute` |  |
-| 1519 | class `DSG_SUITE_OT_FixImmediateExtractionSelection` | `dsg_suite.fix_immediate_extraction_selection` · Fijar dientes de extracción |
-| 1527 | `DSG_SUITE_OT_FixImmediateExtractionSelection.execute` |  |
-| 1554 | class `DSG_SUITE_OT_BuildImmediateArchModels` | `dsg_suite.build_immediate_arch_models` · Siguiente · crear modelos alveolares |
-| 1560 | `DSG_SUITE_OT_BuildImmediateArchModels.execute` |  |
-| 1619 | class `DSG_SUITE_OT_ConfirmImmediateModels` | `dsg_suite.confirm_immediate_models` · Confirmar y alinear |
-| 1624 | `DSG_SUITE_OT_ConfirmImmediateModels.execute` |  |
-| 1661 | `_immediate_extraction_fdis` | Return the clinician-selected immediate-extraction FDI values. |
-| 1670 | `_immediate_cbct_teeth` |  |
-| 1679 | `_immediate_neighbour_teeth` | Return only the external FDI neighbours of each extraction block. |
-| 1706 | `_immediate_neighbour_teeth.add` |  |
-| 1763 | `_immediate_active_jaw_bone` | Return the separate CBCT jaw surface used as buccal/lingual negative evidence. |
-| 1780 | `_simple_split_two_large_jaw_islands` | Create maxilla/mandible display copies from the two largest loose islands. |
-| 1827 | `_simple_split_two_large_jaw_islands.rank` |  |
-| 1853 | `_simple_split_two_large_jaw_islands.mean_world_z` |  |
-| 1882 | class `DSG_SUITE_OT_PrepareIOSPostExtraction` | `dsg_suite.prepare_ios_postextraction` · Preparar selección IOS postextracción |
-| 1890 | `DSG_SUITE_OT_PrepareIOSPostExtraction.execute` |  |
-| 2035 | `_clean_postextraction_boolean_debris` | Remove disconnected Boolean debris before the anatomy-safe base closure. |
-| 2116 | `_edge_components_for_local_closure` | Return connected boundary-edge components without touching coordinates. |
-| 2137 | `_bmesh_face_neighbours` |  |
-| 2146 | `_solidify_local_extraction_selection_bmesh` | Fill internal selection voids before deleting the IOS crown. |
-| 2275 | `_ordered_cycle_vertices_for_local_closure` | Return an ordered simple cycle for a degree-2 boundary component. |
-| 2320 | `_exact_close_simple_edge_loop` | Close a simple boundary cycle deterministically, preserving every edge. |
-| 2399 | `_local_open_components_from_seeds` | Find actual residual local hole loops, including fill-created edges. |
-| 2414 | `_regularize_local_extraction_faces` | Trim only unsafe boundary faces until the extraction perimeter is cyclic. |
-| 2491 | `_delete_selected_ios_region_and_close_local_openings` | Delete reviewed IOS crown faces and close only the newly created opening. |
-| 2581 | `_delete_selected_ios_region_and_close_local_openings.open_tracked_edges` |  |
-| 2729 | class `DSG_SUITE_OT_ConfirmIOSPostExtraction` | `dsg_suite.confirm_ios_postextraction` · Confirmar IOS postextracción |
-| 2737 | `DSG_SUITE_OT_ConfirmIOSPostExtraction.execute` |  |
-| 2874 | class `DSG_SUITE_OT_RestoreIOSPreExtraction` | `dsg_suite.restore_ios_preextraction` · Restaurar IOS preextracción |
-| 2880 | `DSG_SUITE_OT_RestoreIOSPreExtraction.execute` |  |
-| 2906 | `_remove_object_and_data` | Remove one generated Blender object and orphaned local datablock safely. |
-| 2926 | `_clear_immediate_review_geometry` | Clear only immediate-route review composites, never the raw CBCT volume. |
-| 2953 | class `DSG_SUITE_OT_RecoverImmediateInputs` | `dsg_suite.recover_immediate_inputs` · Recover Immediate Inputs |
-| 2961 | `DSG_SUITE_OT_RecoverImmediateInputs.execute` |  |
-| 2982 | `_reset_guide_stage_internal` | Reset only DSG guide outputs while preserving the aligned IOS input. |
-| 2997 | `_reset_alignment_stage_internal` | Reset alignment-generated state, preserving CBCT reference and IOS input. |
-| 3024 | `_clear_dicom_route_outputs` | Return DICOM to a clean route-choice state while preserving loaded volume. |
-| 3089 | `_back_from_dicom` | Deterministic clinical Back for the DICOM branch, never Blender Undo. |
-| 3149 | class `DSG_SUITE_OT_BackWorkflow` | `dsg_suite.back_workflow` · Atrás |
-| 3155 | `DSG_SUITE_OT_BackWorkflow.execute` |  |
-| 3210 | class `DSG_SUITE_OT_RestartDICOM` | `dsg_suite.restart_dicom` · Reiniciar DICOM |
-| 3216 | `DSG_SUITE_OT_RestartDICOM.invoke` |  |
-| 3219 | `DSG_SUITE_OT_RestartDICOM.execute` |  |
-| 3241 | class `DSG_SUITE_OT_RestartAlignment` | `dsg_suite.restart_alignment` · Reiniciar alineamiento |
-| 3247 | `DSG_SUITE_OT_RestartAlignment.invoke` |  |
-| 3250 | `DSG_SUITE_OT_RestartAlignment.execute` |  |
-| 3266 | class `DSG_SUITE_OT_RestartDSG` | `dsg_suite.restart_dsg` · Reiniciar DSG |
-| 3272 | `DSG_SUITE_OT_RestartDSG.invoke` |  |
-| 3275 | `DSG_SUITE_OT_RestartDSG.execute` |  |
-| 3289 | `set_status_bar` | Send contextual guidance/data to Blender's bottom status bar. |
-| 3310 | `_stage_available` |  |
-| 3330 | `_draw_vertical_stage_rail` | Three permanent stage buttons, stacked vertically on the left. |
-| 3352 | class `DSG_SUITE_PT_WorkflowControls` | `DSG_SUITE_PT_workflow_controls` · Control del flujo |
-| 3362 | `DSG_SUITE_PT_WorkflowControls.poll` |  |
-| 3365 | `DSG_SUITE_PT_WorkflowControls.draw` |  |
-| 3401 | class `DSG_SUITE_OT_SetStage` | `dsg_suite.set_stage` · Open module |
-| 3408 | `DSG_SUITE_OT_SetStage.execute` |  |
-| 3440 | class `DSG_SUITE_OT_UseSelectedIOS` | `dsg_suite.use_selected_ios` · Use selected IOS |
-| 3445 | `DSG_SUITE_OT_UseSelectedIOS.execute` |  |
-| 3472 | class `DSG_SUITE_OT_ToggleAntagonist` | `dsg_suite.toggle_antagonist` · Toggle Antagonist |
-| 3478 | `DSG_SUITE_OT_ToggleAntagonist.execute` |  |
-| 3496 | class `DSG_SUITE_PT_Main` | `DSG_SUITE_PT_main` · DSG |
-| 3504 | `DSG_SUITE_PT_Main.draw` |  |
-| 3858 | class `DSG_SUITE_OT_InstallEnginesCore` | `dsg_suite.install_engines_core` ·  |
-| 3871 | `DSG_SUITE_OT_InstallEnginesCore.execute` |  |
-| 3937 | `_core_unregister_class_object` |  |
-| 3947 | `_core_unregister_stale_classes` | Release RNA classes left by an older DSG core before an in-place update. |
-| 3962 | `_core_remove_stale_scene_pointer` |  |
-| 3975 | `external_agent_execution_context` | Return the active Mixar agent context, if this call is running inside it. |
-| 3997 | `reject_external_agent_for_user_gate` | Fail closed when a protected DSG operation is invoked by Mixar's agent. |
-| 4019 | `register` |  |
-| 4052 | `unregister` |  |
+| 69 | `_is_dicom_collection` |  |
+| 74 | `_walk_layer_collections` |  |
+| 80 | `set_dicom_collections_hidden` | Hide/reveal complete DICOM collections and their view-layer nodes. |
+| 157 | `language_code` |  |
+| 163 | `is_spanish` |  |
+| 167 | `tr` |  |
+| 174 | `translate_ui` | Translate shared UI labels; Spanish remains the complete source locale. |
+| 197 | `role_of` |  |
+| 203 | `set_role` |  |
+| 213 | `find_role` |  |
+| 222 | `antagonist_objects` | Return persistent opposing-arch meshes, never inferred from visibility. |
+| 232 | `bind_antagonists_to_source` | Parent the antagonist to the moving IOS while preserving world pose. |
+| 250 | `find_alignment_reference` |  |
+| 265 | `infer_stage` |  |
+| 276 | `_workflow_mesh` | Return a live mesh referenced by a workflow Scene key, if any. |
+| 286 | `reconcile_workflow_after_undo` | Repair only stale route pointers after Blender restores an undo snapshot. |
+| 348 | `_run_workflow_undo_repair` |  |
+| 359 | `dsg_workflow_undo_post` | Defer route reconciliation until Blender has finished swapping undo data. |
+| 374 | `_register_workflow_undo_handler` |  |
+| 380 | `_unregister_workflow_undo_handler` |  |
+| 390 | `_is_dicom_related_object` |  |
+| 411 | `prepare_guide_entry_view` |  |
+| 465 | `_sync_danger_zones_for_stage` | Sinus and nasal zones are hidden while aligning (they cover the teeth |
+| 488 | `set_stage` |  |
+| 508 | `stage_is` |  |
+| 513 | `language_get` |  |
+| 519 | `language_set` |  |
+| 529 | `clinical_route` |  |
+| 538 | `target_fdi` |  |
+| 553 | `route_requires_individual_teeth` |  |
+| 557 | `_restore_virtual_extraction_if_needed` |  |
+| 590 | `_workflow_route_update` |  |
+| 608 | `_target_fdi_update` |  |
+| 627 | class `DSGSuiteSettings` |  |
+| 668 | `patient_folder` |  |
+| 677 | `_set_patient_folder` |  |
+| 694 | `_iter_dicom_candidate_paths` | Yield likely DICOM files without building/sorting a huge recursive list. |
+| 731 | `_discover_patient_dicom` |  |
+| 753 | `_start_patient_cbct_from_probe` |  |
+| 783 | `_load_patient_cbct` |  |
+| 791 | `_ios_arch_hint` |  |
+| 802 | `_patient_ios_candidates` |  |
+| 829 | `_patient_ios_candidates.score` |  |
+| 840 | `_auto_import_patient_ios` |  |
+| 916 | `_export_object_to_patient` |  |
+| 953 | `_hidden_immediate_teeth` |  |
+| 968 | class `DSG_SUITE_OT_ChoosePatientFolder` | `dsg_suite.choose_patient_folder` · Elegir paciente |
+| 982 | `DSG_SUITE_OT_ChoosePatientFolder.invoke` |  |
+| 989 | `DSG_SUITE_OT_ChoosePatientFolder.execute` |  |
+| 1002 | `DSG_SUITE_OT_ChoosePatientFolder.execute.discover` |  |
+| 1026 | `DSG_SUITE_OT_ChoosePatientFolder._finish` |  |
+| 1034 | `DSG_SUITE_OT_ChoosePatientFolder.modal` |  |
+| 1056 | `DSG_SUITE_OT_ChoosePatientFolder.cancel` |  |
+| 1060 | class `DSG_SUITE_OT_LoadPatientCBCT` | `dsg_suite.load_patient_cbct` · Cargar CBCT del paciente |
+| 1064 | `DSG_SUITE_OT_LoadPatientCBCT.execute` |  |
+| 1074 | class `DSG_SUITE_OT_ChangeRoute` | `dsg_suite.change_route` · Cambiar ruta |
+| 1080 | `DSG_SUITE_OT_ChangeRoute.execute` |  |
+| 1135 | `_clear_dicom_route_checkpoint` |  |
+| 1150 | `capture_dicom_route_checkpoint` | Snapshot generated DICOM geometry + UI state before a route starts. |
+| 1191 | `restore_dicom_route_checkpoint` | Restore the exact generated-DICOM state captured before segmentation. |
+| 1238 | class `DSG_SUITE_OT_StartSimpleRoute` | `dsg_suite.start_simple_route` · Implante simple |
+| 1245 | `DSG_SUITE_OT_StartSimpleRoute.poll` |  |
+| 1252 | `DSG_SUITE_OT_StartSimpleRoute.execute` |  |
+| 1279 | class `DSG_SUITE_OT_ConfirmSimpleSTL` | `dsg_suite.confirm_simple_stl` · Confirmar arcadas y alinear |
+| 1285 | `DSG_SUITE_OT_ConfirmSimpleSTL.execute` |  |
+| 1307 | `_immediate_route_readiness` | Cheap route gate. Never imports Torch/nnU-Net in foreground Blender. |
+| 1371 | class `DSG_SUITE_OT_StartImmediateRoute` | `dsg_suite.start_immediate_route` · Implante inmediato |
+| 1378 | `DSG_SUITE_OT_StartImmediateRoute.poll` |  |
+| 1394 | `DSG_SUITE_OT_StartImmediateRoute.execute` |  |
+| 1435 | `DSG_SUITE_OT_StartImmediateRoute.execute._deferred_launch` |  |
+| 1501 | class `DSG_SUITE_OT_AcceptFDIAndSelectTeeth` | `dsg_suite.accept_fdi_select_teeth` · FDI correcto · elegir dientes |
+| 1506 | `DSG_SUITE_OT_AcceptFDIAndSelectTeeth.execute` |  |
+| 1567 | class `DSG_SUITE_OT_FixImmediateExtractionSelection` | `dsg_suite.fix_immediate_extraction_selection` · Fijar dientes de extracción |
+| 1575 | `DSG_SUITE_OT_FixImmediateExtractionSelection.execute` |  |
+| 1603 | class `DSG_SUITE_OT_BuildImmediateArchModels` | `dsg_suite.build_immediate_arch_models` · Siguiente · crear modelos alveolares |
+| 1609 | `DSG_SUITE_OT_BuildImmediateArchModels.execute` |  |
+| 1668 | class `DSG_SUITE_OT_ConfirmImmediateModels` | `dsg_suite.confirm_immediate_models` · Confirmar |
+| 1673 | `DSG_SUITE_OT_ConfirmImmediateModels.execute` |  |
+| 1720 | `_immediate_extraction_fdis` | Return the clinician-selected immediate-extraction FDI values. |
+| 1729 | `_immediate_cbct_teeth` |  |
+| 1738 | `_immediate_neighbour_teeth` | Return only the external FDI neighbours of each extraction block. |
+| 1765 | `_immediate_neighbour_teeth.add` |  |
+| 1822 | `_immediate_active_jaw_bone` | Return the separate CBCT jaw surface used as buccal/lingual negative evidence. |
+| 1839 | `_simple_split_two_large_jaw_islands` | Create maxilla/mandible display copies from the two largest loose islands. |
+| 1886 | `_simple_split_two_large_jaw_islands.rank` |  |
+| 1912 | `_simple_split_two_large_jaw_islands.mean_world_z` |  |
+| 1941 | class `DSG_SUITE_OT_PrepareIOSPostExtraction` | `dsg_suite.prepare_ios_postextraction` · Preparar selección IOS postextracción |
+| 1949 | `DSG_SUITE_OT_PrepareIOSPostExtraction.execute` |  |
+| 2131 | `_clean_postextraction_boolean_debris` | Remove disconnected Boolean debris before the anatomy-safe base closure. |
+| 2212 | `_edge_components_for_local_closure` | Return connected boundary-edge components without touching coordinates. |
+| 2233 | `_bmesh_face_neighbours` |  |
+| 2242 | `_solidify_local_extraction_selection_bmesh` | Fill internal selection voids before deleting the IOS crown. |
+| 2371 | `_ordered_cycle_vertices_for_local_closure` | Return an ordered simple cycle for a degree-2 boundary component. |
+| 2416 | `_exact_close_simple_edge_loop` | Close a simple boundary cycle deterministically, preserving every edge. |
+| 2495 | `_local_open_components_from_seeds` | Find actual residual local hole loops, including fill-created edges. |
+| 2510 | `_regularize_local_extraction_faces` | Trim only unsafe boundary faces until the extraction perimeter is cyclic. |
+| 2587 | `_delete_selected_ios_region_and_close_local_openings` | Delete reviewed IOS crown faces and close only the newly created opening. |
+| 2677 | `_delete_selected_ios_region_and_close_local_openings.open_tracked_edges` |  |
+| 2831 | `_mesh_topology_counts` |  |
+| 2845 | `extraction_smoothing_wanted` | Smoothing of the tooth to extract (on unless the clinician turns it off). |
+| 2850 | `tooth_smoothing_state` | True when the measured surface smoothing is shown on this tooth. |
+| 2862 | `ensure_extraction_smoothing` | Apply (or remove) the smoothing on the tooth to extract so that the |
+| 2879 | `_tooth_cutter_source` | Mesh the extraction cutter is built from: the smoothed shape if the |
+| 2907 | `_prepare_alveolar_cutter` | Watertight, pulp-free, slightly dilated copy of a CBCT tooth. |
+| 2971 | `_remove_cutter` |  |
+| 2980 | `_apply_alveolar_boolean` | Difference on two closed solids; MANIFOLD first, EXACT as fallback. |
+| 3015 | `_track_postextraction_intermediate` |  |
+| 3027 | class `DSG_SUITE_OT_ConfirmIOSPostExtraction` | `dsg_suite.confirm_ios_postextraction` · Confirmar IOS postextracción |
+| 3035 | `DSG_SUITE_OT_ConfirmIOSPostExtraction.execute` |  |
+| 3174 | class `DSG_SUITE_OT_RestoreIOSPreExtraction` | `dsg_suite.restore_ios_preextraction` · Restaurar IOS preextracción |
+| 3180 | `DSG_SUITE_OT_RestoreIOSPreExtraction.execute` |  |
+| 3215 | `_remove_object_and_data` | Remove one generated Blender object and orphaned local datablock safely. |
+| 3235 | `_clear_immediate_review_geometry` | Clear only immediate-route review composites, never the raw CBCT volume. |
+| 3262 | class `DSG_SUITE_OT_RecoverImmediateInputs` | `dsg_suite.recover_immediate_inputs` · Recover Immediate Inputs |
+| 3270 | `DSG_SUITE_OT_RecoverImmediateInputs.execute` |  |
+| 3291 | `_reset_guide_stage_internal` | Reset only DSG guide outputs while preserving the aligned IOS input. |
+| 3306 | `_reset_alignment_stage_internal` | Reset alignment-generated state, preserving CBCT reference and IOS input. |
+| 3333 | `_clear_dicom_route_outputs` | Return DICOM to a clean route-choice state while preserving loaded volume. |
+| 3398 | `_back_from_dicom` | Deterministic clinical Back for the DICOM branch, never Blender Undo. |
+| 3458 | class `DSG_SUITE_OT_BackWorkflow` | `dsg_suite.back_workflow` · Atrás |
+| 3464 | `DSG_SUITE_OT_BackWorkflow.execute` |  |
+| 3519 | class `DSG_SUITE_OT_RestartDICOM` | `dsg_suite.restart_dicom` · Reiniciar DICOM |
+| 3525 | `DSG_SUITE_OT_RestartDICOM.invoke` |  |
+| 3528 | `DSG_SUITE_OT_RestartDICOM.execute` |  |
+| 3550 | class `DSG_SUITE_OT_RestartAlignment` | `dsg_suite.restart_alignment` · Reiniciar alineamiento |
+| 3556 | `DSG_SUITE_OT_RestartAlignment.invoke` |  |
+| 3559 | `DSG_SUITE_OT_RestartAlignment.execute` |  |
+| 3575 | class `DSG_SUITE_OT_RestartDSG` | `dsg_suite.restart_dsg` · Reiniciar DSG |
+| 3581 | `DSG_SUITE_OT_RestartDSG.invoke` |  |
+| 3584 | `DSG_SUITE_OT_RestartDSG.execute` |  |
+| 3598 | `set_status_bar` | Send contextual guidance/data to Blender's bottom status bar. |
+| 3619 | `_stage_available` |  |
+| 3639 | `_draw_vertical_stage_rail` | Three permanent stage buttons, stacked vertically on the left. |
+| 3661 | class `DSG_SUITE_PT_WorkflowControls` | `DSG_SUITE_PT_workflow_controls` · Control del flujo |
+| 3671 | `DSG_SUITE_PT_WorkflowControls.poll` |  |
+| 3674 | `DSG_SUITE_PT_WorkflowControls.draw` |  |
+| 3710 | class `DSG_SUITE_OT_SetStage` | `dsg_suite.set_stage` · Open module |
+| 3717 | `DSG_SUITE_OT_SetStage.execute` |  |
+| 3749 | class `DSG_SUITE_OT_UseSelectedIOS` | `dsg_suite.use_selected_ios` · Use selected IOS |
+| 3754 | `DSG_SUITE_OT_UseSelectedIOS.execute` |  |
+| 3781 | class `DSG_SUITE_OT_ToggleAntagonist` | `dsg_suite.toggle_antagonist` · Toggle Antagonist |
+| 3787 | `DSG_SUITE_OT_ToggleAntagonist.execute` |  |
+| 3805 | class `DSG_SUITE_PT_Main` | `DSG_SUITE_PT_main` · DSG |
+| 3813 | `DSG_SUITE_PT_Main.draw` |  |
+| 4109 | class `DSG_SUITE_OT_InstallEnginesCore` | `dsg_suite.install_engines_core` ·  |
+| 4122 | `DSG_SUITE_OT_InstallEnginesCore.execute` |  |
+| 4188 | `_core_unregister_class_object` |  |
+| 4198 | `_core_unregister_stale_classes` | Release RNA classes left by an older DSG core before an in-place update. |
+| 4213 | `_core_remove_stale_scene_pointer` |  |
+| 4226 | `external_agent_execution_context` | Return the active Mixar agent context, if this call is running inside it. |
+| 4248 | `reject_external_agent_for_user_gate` | Fail closed when a protected DSG operation is invoked by Mixar's agent. |
+| 4270 | `register` |  |
+| 4303 | `unregister` |  |
+
+## [danger_zones.py](../danger_zones.py)
+
+52 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 25 | `is_sinus` |  |
+| 29 | `classify` | Status and message for one zone. |
+| 51 | `_free` |  |
 
 ## [dental_asset_blender.py](../dental_asset_blender.py)
 
@@ -3447,9 +4202,56 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 19 | `_ok` |  |
 | 23 | `run_all` |  |
 
+## [frame_boolean_path_core.py](../frame_boolean_path_core.py)
+
+158 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 22 | class `BooleanPathStation` |  |
+| 38 | class `BooleanPathProfile` |  |
+| 53 | `_validate_centerline` |  |
+| 64 | `_at_distance` |  |
+| 72 | `profile_boolean_path` | Profile a retained-material centerline against a Boolean-cut mesh. |
+
+## [frame_boolean_section_core.py](../frame_boolean_section_core.py)
+
+296 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 17 | class `InvalidBooleanSection` | Slice cannot be proven to be a closed section of the requested solid. |
+| 22 | class `BooleanSection` |  |
+| 40 | `_point_in_polygon` |  |
+| 57 | `_moments_uv` | Positive signed area, first and second area moments around UV origin. |
+| 77 | `_closed_manifold` |  |
+| 89 | `measure_boolean_section` | Compute the local actual mesh section containing an interior probe point. |
+| 159 | `measure_boolean_section.identify` |  |
+| 207 | `measure_boolean_section.root_of` |  |
+| 230 | `measure_boolean_section.relative_depth` |  |
+| 266 | class `SectionReferenceComparison` | Geometry ratio only. This cannot validate stiffness or device strength. |
+| 277 | `compare_section_to_nominal_circle` | Compare real section area/weak-axis bending to an *ideal* circular bar. |
+
+## [frame_contact_core.py](../frame_contact_core.py)
+
+200 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 16 | class `NoFeasibleContact` | No depth satisfies the supplied contact and remaining-section limits. |
+| 21 | class `ContactPolicy` |  |
+| 30 | class `ContactSection` |  |
+| 45 | class `ContactRouteEstimate` |  |
+| 56 | `_finite_positive` |  |
+| 63 | `_valid_policy` |  |
+| 90 | `circular_section_after_planar_cut` | Closed-form cross-section for 0 <= penetration <= radius. |
+| 133 | `select_contact_section` | Choose shallowest depth meeting *explicit*, caller-supplied geometry limits. |
+| 158 | `estimate_contact_route` | Return estimated shifted centreline and section/contact integrals. |
+| 189 | `estimate_contact_route.integrate` |  |
+
 ## [frame_fem_core.py](../frame_fem_core.py)
 
-831 líneas · imports Blender: ninguno directo
+848 líneas · imports Blender: ninguno directo
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -3457,75 +4259,159 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 47 | class `Node` |  |
 | 52 | `Node.__post_init__` |  |
 | 58 | class `BeamElement` |  |
-| 79 | `BeamElement.area` |  |
-| 83 | `BeamElement.I` |  |
-| 87 | `BeamElement.J` |  |
-| 91 | `BeamElement.working_stress_mpa` |  |
-| 99 | class `LoadCase` |  |
-| 104 | `LoadCase.__post_init__` |  |
-| 110 | class `OptimizationConfig` |  |
-| 143 | class `SolveBundle` |  |
-| 153 | class `OptimizationResult` |  |
-| 162 | `_local_stiffness` |  |
-| 197 | `_transformation` |  |
-| 232 | `_dof` |  |
-| 236 | `_active_element_indices` |  |
-| 240 | `assemble_stiffness` | Assemble K; SciPy sparse when available, NumPy dense otherwise. |
-| 266 | `_build_load_vector` |  |
-| 279 | `_element_result` |  |
-| 343 | `solve_load_cases` |  |
-| 432 | `assemble_and_solve` |  |
-| 437 | `build_ground_structure` |  |
-| 461 | `_system_metrics` |  |
-| 505 | `_resize_elements` |  |
-| 527 | `_candidate_prune_indices` |  |
-| 539 | `_try_prune_candidates` |  |
-| 560 | `_fallback_perpendicular` |  |
-| 571 | `_reinforcement_direction` |  |
-| 587 | `_node_too_close` |  |
-| 595 | `_clone_beam_for_growth` |  |
-| 600 | `add_local_triangle_reinforcements` |  |
-| 654 | `optimize_reinforcement` |  |
-| 737 | `make_sleeve_load_cases` |  |
-| 748 | `make_sleeve_load_cases.unit` |  |
+| 82 | `BeamElement.area` |  |
+| 86 | `BeamElement.I` |  |
+| 90 | `BeamElement.J` |  |
+| 94 | `BeamElement.working_stress_mpa` |  |
+| 102 | class `LoadCase` |  |
+| 107 | `LoadCase.__post_init__` |  |
+| 113 | class `OptimizationConfig` |  |
+| 146 | class `SolveBundle` |  |
+| 156 | class `OptimizationResult` |  |
+| 165 | `_local_stiffness` |  |
+| 200 | `_transformation` |  |
+| 235 | `_dof` |  |
+| 239 | `_active_element_indices` |  |
+| 243 | `assemble_stiffness` | Assemble K; SciPy sparse when available, NumPy dense otherwise. |
+| 276 | `_build_load_vector` |  |
+| 289 | `_element_result` |  |
+| 356 | `solve_load_cases` |  |
+| 449 | `assemble_and_solve` |  |
+| 454 | `build_ground_structure` |  |
+| 478 | `_system_metrics` |  |
+| 522 | `_resize_elements` |  |
+| 544 | `_candidate_prune_indices` |  |
+| 556 | `_try_prune_candidates` |  |
+| 577 | `_fallback_perpendicular` |  |
+| 588 | `_reinforcement_direction` |  |
+| 604 | `_node_too_close` |  |
+| 612 | `_clone_beam_for_growth` |  |
+| 617 | `add_local_triangle_reinforcements` |  |
+| 671 | `optimize_reinforcement` |  |
+| 754 | `make_sleeve_load_cases` |  |
+| 765 | `make_sleeve_load_cases.unit` |  |
 
-## [frame_structural.py](../frame_structural.py)
+## [frame_geodesic_fem.py](../frame_geodesic_fem.py)
 
-867 líneas · imports Blender: bpy, mathutils
+74 líneas · imports Blender: ninguno directo
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
-| 32 | `_json_points` |  |
-| 51 | `_frame_obj` |  |
-| 60 | `_passive_obj` |  |
-| 67 | `_support_nodes` |  |
-| 82 | `persist_support_nodes` | Persist explicit P1..P4 semantics without changing frame geometry. |
-| 98 | `_sleeve_context` |  |
-| 123 | `_nearest_sleeve_attachment` |  |
-| 150 | `_segment_intersects_sleeve_lumen` | Conservative sampled test against the finite cylindrical lumen keep-out. |
-| 168 | `_polyline_midpoint` |  |
-| 173 | `_sample_local_thickness` | Reuse DSG's own BVH/raycast wall-thickness probe on the current frame mesh. |
-| 203 | `_route_between` |  |
-| 219 | `get_frame_context` |  |
-| 244 | `analyze_frame_structure` |  |
-| 318 | `propose_frame_reinforcements` | Propose topology only; does not modify geometry or apply booleans. |
-| 387 | `get_contract` |  |
-| 406 | `_fem_vec` |  |
-| 410 | `_fem_safe_unit` |  |
-| 420 | `_fem_profile_config` |  |
-| 450 | `_fem_material_element` |  |
-| 463 | `_fem_sleeve_cardinal_points` |  |
-| 479 | `_fem_build_keep_out` |  |
-| 488 | `_fem_build_keep_out.check` |  |
-| 523 | `_fem_build_model` |  |
-| 638 | `_fem_summary` |  |
-| 682 | `analyze_frame_fem` | Run FEM without touching Blender geometry. |
-| 695 | `_remove_existing_fem_reinforcements` |  |
-| 707 | `create_fem_reinforcements` | Run FEM and create confirmed reinforcement CURVE objects for review. |
-| 816 | class `DSG_OT_OptimizeFrameFEM` | `dsg.optimize_frame_fem` · Optimize Frame |
-| 822 | `DSG_OT_OptimizeFrameFEM.execute` |  |
-| 850 | `register` |  |
-| 862 | `unregister` |  |
+| 16 | class `InvalidBeamPath` |  |
+| 20 | `append_geodesic_beams` | Represent every bend in a curved reinforcement with beam segments. |
+
+## [frame_geodesic_groups.py](../frame_geodesic_groups.py)
+
+219 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 19 | class `GroupPruningResult` |  |
+| 31 | class `InvalidGeodesicGroups` |  |
+| 35 | `_compact` |  |
+| 77 | `_evaluate` |  |
+| 119 | `prune_geodesic_groups` | Greedily minimize balanced volume + compliance, subject to hard limits. |
+| 155 | `prune_geodesic_groups.fixed_frame_member` |  |
+| 167 | `prune_geodesic_groups.evaluate` |  |
+| 178 | `prune_geodesic_groups.objective` |  |
+
+## [frame_geodesic_paths.py](../frame_geodesic_paths.py)
+
+207 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 19 | class `NoValidSurfaceRoute` | No permitted intrinsic route connects the requested endpoints. |
+| 24 | class `GeodesicSurfacePath` |  |
+| 32 | `route_surface_vertices` | Find an intrinsic mesh-edge route under hard restrictions. |
+| 102 | `_validate_face_anchor` | Validate an exact projected face anchor; never snap across a nearby sheet. |
+| 132 | `route_surface_face_anchors` | Route exact triangle anchors without leaving the surface or using 3D shortcuts. |
+
+## [frame_perimeter_fem.py](../frame_perimeter_fem.py)
+
+92 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 18 | class `InvalidPerimeterLoop` |  |
+| 23 | class `PerimeterLoop` |  |
+| 32 | `append_perimeter_loop` | Append four surface-routed members as one atomic perimeter addition. |
+
+## [frame_sleeve_junction_core.py](../frame_sleeve_junction_core.py)
+
+154 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 21 | class `InvalidSleeveJunction` |  |
+| 26 | class `SleeveJunctionPreflight` |  |
+| 39 | `_finite_vector` |  |
+| 46 | `_line_prefix` | Return exact arclength-truncated prefix, interpolating the tube radius. |
+| 71 | `preflight_sleeve_junction` | Allow only the target sleeve's *outer wall junction* as provisional. |
+
+## [frame_structural.py](../frame_structural.py)
+
+1916 líneas · imports Blender: bpy, mathutils
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 42 | `_json_points` |  |
+| 61 | `_frame_obj` |  |
+| 70 | `_passive_obj` |  |
+| 77 | `_support_nodes` |  |
+| 92 | `persist_support_nodes` | Persist explicit P1..P4 semantics without changing frame geometry. |
+| 108 | `_sleeve_context` |  |
+| 133 | `_nearest_sleeve_attachment` |  |
+| 160 | `_segment_intersects_sleeve_lumen` | Conservative sampled test against the finite cylindrical lumen keep-out. |
+| 178 | `_polyline_midpoint` |  |
+| 183 | `_sample_local_thickness` | Reuse DSG's own BVH/raycast wall-thickness probe on the current frame mesh. |
+| 213 | `_route_between` |  |
+| 229 | `get_frame_context` |  |
+| 254 | `analyze_frame_structure` |  |
+| 328 | `propose_frame_reinforcements` | Propose topology only; does not modify geometry or apply booleans. |
+| 403 | `get_contract` |  |
+| 422 | `_fem_vec` |  |
+| 426 | `_fem_safe_unit` |  |
+| 436 | `_fem_profile_config` |  |
+| 466 | `_fem_material_element` |  |
+| 479 | `_fem_sleeve_cardinal_points` |  |
+| 495 | `_fem_build_keep_out` |  |
+| 504 | `_fem_build_keep_out.check` |  |
+| 539 | `_fem_build_model` |  |
+| 657 | `_fem_build_geodesic_model` | Read-only experimental FEM model with true surface-following beam chains. |
+| 859 | `analyze_geodesic_frame_fem` | Compare stiffness/volume of curved routes without replacing clinical guides. |
+| 885 | `estimate_geodesic_frame_contact` | Read-only local planar contact estimate using the actual optimized FEM radii. |
+| 975 | `analyze_geodesic_group_topology` | Balanced, read-only group pruning after the nominal curved-beam FEM run. |
+| 1021 | `_fem_summary` |  |
+| 1065 | `analyze_frame_fem` | Run FEM without touching Blender geometry. |
+| 1078 | `_remove_existing_fem_reinforcements` |  |
+| 1090 | `_validate_fem_candidate_sweep` | Hard preBoolean sweep before replacing any previously confirmed curves. |
+| 1204 | `create_fem_reinforcements` | Stage a complete FEM candidate before replacing previously confirmed geometry. |
+| 1380 | class `DSG_OT_OptimizeFrameFEM` | `dsg.optimize_frame_fem` · Optimize Frame |
+| 1386 | `DSG_OT_OptimizeFrameFEM.execute` |  |
+| 1412 | `preview_geodesic_fem_paths` | Create nonexported Blender previews from exactly the curved FEM chains. |
+| 1504 | class `DSG_OT_PreviewGeodesicFrameFEM` | `dsg.preview_geodesic_frame_fem` · Preview Surface-Geodesic Reinforcements (Experimental) |
+| 1510 | `DSG_OT_PreviewGeodesicFrameFEM.execute` |  |
+| 1531 | class `DSG_OT_EstimateGeodesicContact` | `dsg.estimate_geodesic_contact` · Evaluate Contact Profile (Experimental) |
+| 1557 | `DSG_OT_EstimateGeodesicContact.invoke` |  |
+| 1560 | `DSG_OT_EstimateGeodesicContact.draw` |  |
+| 1567 | `DSG_OT_EstimateGeodesicContact.execute` |  |
+| 1591 | class `DSG_OT_AnalyzeGeodesicGroups` | `dsg.analyze_geodesic_groups` · Optimize Geodesic Groups (Experimental, Read-only) |
+| 1600 | `DSG_OT_AnalyzeGeodesicGroups.execute` |  |
+| 1620 | `inspect_final_boolean_guide_section` | Measure one requested section of the *actual* final Boolean guide. |
+| 1677 | `inspect_final_boolean_guide_path` | Sample true mesh sections along an explicitly INSIDE-the-solid path. |
+| 1729 | class `DSG_OT_InspectFinalBooleanPath` | `dsg.inspect_final_boolean_path` · Profile Sections Along Final Guide (Experimental) |
+| 1747 | `DSG_OT_InspectFinalBooleanPath.invoke` |  |
+| 1750 | `DSG_OT_InspectFinalBooleanPath.draw` |  |
+| 1759 | `DSG_OT_InspectFinalBooleanPath.execute` |  |
+| 1805 | class `DSG_OT_InspectFinalBooleanSection` | `dsg.inspect_final_boolean_section` · Inspect Final Guide Section (Experimental) |
+| 1826 | `DSG_OT_InspectFinalBooleanSection.invoke` |  |
+| 1829 | `DSG_OT_InspectFinalBooleanSection.draw` |  |
+| 1837 | `DSG_OT_InspectFinalBooleanSection.execute` |  |
+| 1863 | class `DSG_OT_AnalyzeGeodesicFrameFEM` | `dsg.analyze_geodesic_frame_fem` · Analyze Surface-Geodesic FEM (Experimental) |
+| 1872 | `DSG_OT_AnalyzeGeodesicFrameFEM.execute` |  |
+| 1899 | `register` |  |
+| 1911 | `unregister` |  |
 
 ## [frame_structural_core.py](../frame_structural_core.py)
 
@@ -3556,6 +4442,20 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 277 | `resample_polyline` |  |
 | 304 | `try_potpourri_heat_distance` | Optional robust intrinsic heat distance. Returns (dist, solver, backend, error). |
 | 328 | `try_potpourri_edgeflip` | Optional continuous path straightening via geometry-central edge flips. |
+
+## [frame_swept_clearance_core.py](../frame_swept_clearance_core.py)
+
+162 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 17 | class `InvalidClearanceGeometry` |  |
+| 22 | class `SphereKeepOut` |  |
+| 29 | class `CylinderKeepOut` |  |
+| 38 | class `SweptClearanceReport` |  |
+| 49 | `_validated_zone` |  |
+| 71 | `_signed_distance` |  |
+| 84 | `check_swept_tube_clearance` | Certify clearance ONLY for the supplied explicit zones. |
 
 ## [glyph_library.py](../glyph_library.py)
 
@@ -3678,7 +4578,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [guide_module.py](../guide_module.py)
 
-24 líneas · imports Blender: ninguno directo
+25 líneas · imports Blender: ninguno directo
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -3694,6 +4594,57 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 45 | `register` |  |
 | 70 | `unregister` |  |
 | 81 | `icon_id` |  |
+
+## [implant_catalogues.py](../implant_catalogues.py)
+
+99 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 29 | `_load` |  |
+| 32 | `_nominal` | key -> (file data, catalogue entry) for every reference-based library. |
+| 42 | `_libraries` |  |
+| 56 | `signature_paths` |  |
+| 59 | `rows` |  |
+| 82 | `nominal_body_mesh` | Circumscribed nominal body cylinder, without an invented thread or collar. |
+| 95 | `inside_envelope` | True when a local mesh (platform at +length/2, axis +Z) fits the nominal envelope. |
+
+## [implant_optimization.py](../implant_optimization.py)
+
+204 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 12 | `_matrix` |  |
+| 18 | `_frame` |  |
+| 21 | `pose_matrix` | Rotate about ``pivot`` in the implant frame, then translate in that frame. |
+| 33 | `movement` | Size of a proposal: lateral + axial in mm, tilt weighted 1 mm per 10°. |
+| 38 | `_evaluate` |  |
+| 46 | `rejection_rank` | Display ordering only; never changes admissibility or clinical limits. |
+| 55 | `rejected_options` |  |
+| 61 | `search_position` | Bounded local search. |
+| 74 | `search_position.run` |  |
+| 81 | `search_position.best_score` |  |
+| 109 | `_asset_matches` |  |
+| 115 | `search_size` | Compare catalogue sizes with the platform and axis fixed. |
+| 152 | `search_size.rank` |  |
+| 154 | `search_size.rank` |  |
+| 165 | `_over_cap` |  |
+| 169 | `search_joint_sizes` | Finite size/translation stencil. Axis fixed; coronal depth never increased. |
+| 174 | `search_joint_sizes.collect` |  |
+| 193 | `search_joint_sizes.rank` |  |
+
+## [implant_optimizer_worker.py](../implant_optimizer_worker.py)
+
+97 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 4 | `run` |  |
+| 9 | `run.progress` |  |
+| 16 | `run.mesh` |  |
+| 35 | `run.measured` |  |
+| 88 | `main` |  |
 
 ## [installation_lock.py](../installation_lock.py)
 
@@ -3743,6 +4694,37 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 307 | class `_Pixels` |  |
 | 309 | `_Pixels.pixel_array` |  |
 
+## [optimizer_profile.py](../optimizer_profile.py)
+
+19 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 6 | `settings` |  |
+| 14 | `margins` |  |
+
+## [organic_teeth.py](../organic_teeth.py)
+
+277 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 33 | `model_grid` | Model grid size and native->model index ratio per axis (corner aligned). |
+| 42 | `block_agreement` | Fraction of native neighbours inside one model cell that share a label. |
+| 62 | `_bbox` |  |
+| 68 | `_antialias` |  |
+| 74 | `_components` |  |
+| 82 | `_compact` |  |
+| 87 | `_signed_volume` |  |
+| 93 | `_closed` |  |
+| 99 | `_model_region` | Model-grid labels for cells [start, stop); cells outside the grid are background. |
+| 113 | class `NeighbourCache` | Anti-aliased level set of each tooth, computed once per batch. |
+| 120 | `NeighbourCache.__init__` |  |
+| 124 | `NeighbourCache._field` |  |
+| 135 | `NeighbourCache.sample` |  |
+| 145 | `organic_tooth` | Return (xyz vertices, faces, stats) for one tooth label. |
+| 223 | `organic_tooth.field` |  |
+
 ## [pipeline_core/__init__.py](../pipeline_core/__init__.py)
 
 3 líneas · imports Blender: ninguno directo
@@ -3752,7 +4734,7 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [pipeline_core/contracts.py](../pipeline_core/contracts.py)
 
-94 líneas · imports Blender: ninguno directo
+101 líneas · imports Blender: ninguno directo
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
@@ -3768,9 +4750,9 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 45 | `compat_to_fdi` |  |
 | 53 | class `Labelmap` |  |
 | 61 | `Labelmap.parse` |  |
-| 71 | `Labelmap.summary` |  |
-| 77 | class `ResultManifest` |  |
-| 80 | `ResultManifest.parse` |  |
+| 73 | `Labelmap.summary` |  |
+| 79 | class `ResultManifest` |  |
+| 82 | `ResultManifest.parse` |  |
 
 ## [pipeline_core/trace.py](../pipeline_core/trace.py)
 
@@ -3877,6 +4859,32 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | 199 | `DSG_OT_RunSafetyFailtests.execute` |  |
 | 217 | `register` |  |
 | 222 | `unregister` |  |
+
+## [section_geometry.py](../section_geometry.py)
+
+39 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 8 | `raster_sections` |  |
+
+## [section_optimizer.py](../section_optimizer.py)
+
+218 líneas · imports Blender: ninguno directo
+
+| Línea | Símbolo | Descripción / bl_idname |
+|---:|---|---|
+| 12 | class `SectionField` |  |
+| 13 | `SectionField.__init__` |  |
+| 33 | `SectionField.__init__.raster` |  |
+| 73 | `SectionField.maps` |  |
+| 82 | `SectionField.maps.fraction` |  |
+| 89 | `SectionField.assess` |  |
+| 132 | `SectionField.export` |  |
+| 136 | `SectionField.assess_matrix` |  |
+| 143 | `exact_section_evaluation` |  |
+| 171 | `search_sections` |  |
+| 195 | `search_sections.rank` |  |
 
 ## [segmentation_engines.py](../segmentation_engines.py)
 
@@ -4011,13 +5019,14 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [tools/metrics.py](../tools/metrics.py)
 
-38 líneas · imports Blender: ninguno directo
+53 líneas · imports Blender: ninguno directo
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
 | 6 | `silent` |  |
 | 14 | `scan` |  |
 | 30 | `compare` |  |
+| 31 | `main` |  |
 
 ## [tooth_analysis.py](../tooth_analysis.py)
 
@@ -4095,51 +5104,31 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 
 ## [workflow_history.py](../workflow_history.py)
 
-477 líneas · imports Blender: bpy
+258 líneas · imports Blender: bpy
 
 | Línea | Símbolo | Descripción / bl_idname |
 |---:|---|---|
-| 29 | `_json` |  |
-| 33 | `_root` |  |
-| 40 | `_array` |  |
-| 57 | `_encode` |  |
-| 68 | `_decode` |  |
-| 77 | `_external_file` |  |
-| 92 | `_runtime` |  |
-| 103 | `_plain` |  |
-| 111 | `_props` |  |
-| 118 | `_fingerprint` |  |
-| 133 | `_read` |  |
-| 135 | `_images` | Memfile undo does not restore generated MPR pixel buffers. |
-| 139 | `_images.visit` |  |
-| 153 | `_restore_images` |  |
-| 160 | `_capture` |  |
-| 190 | `begin` |  |
-| 200 | `commit` |  |
-| 214 | `has_checkpoint` |  |
-| 217 | `automation_suspended` |  |
-| 219 | `restore_runtime` |  |
-| 239 | `restore_checkpoint` |  |
-| 282 | `_before_undo` |  |
-| 314 | `_after_undo` |  |
-| 324 | `_after_load` |  |
-| 328 | `undo_previous` |  |
-| 337 | class `DSG_OT_WorkflowUndo` | `dsg.workflow_undo` · Deshacer último cambio DSG |
-| 340 | `DSG_OT_WorkflowUndo.poll` |  |
-| 341 | `DSG_OT_WorkflowUndo.execute` |  |
-| 366 | `_cancel_modal` |  |
-| 380 | `self_module` |  |
-| 382 | `_track_modal` |  |
-| 389 | `_busy` |  |
-| 393 | `_wrap_execute` |  |
-| 395 | `_wrap_execute.wrapped` |  |
-| 408 | `_wrap_invoke` |  |
-| 410 | `_wrap_invoke.wrapped` |  |
-| 423 | `_wrap_modal` |  |
-| 425 | `_wrap_modal.wrapped` |  |
-| 443 | `prepare_operators` |  |
-| 458 | `register` |  |
-| 469 | `unregister` |  |
+| 32 | `begin` | No checkpoint: native undo records the step when the operator ends. |
+| 37 | `commit` | Finish delayed guide presentation so the undo step is complete. |
+| 51 | `has_checkpoint` | There are no archived checkpoints; the legacy undo repairs always run. |
+| 56 | `automation_suspended` |  |
+| 60 | `restore_runtime` |  |
+| 64 | `undo_previous` |  |
+| 72 | `_before_undo` |  |
+| 109 | `_after_undo` |  |
+| 116 | `_after_load` |  |
+| 121 | `_cancel_modal` |  |
+| 142 | `self_module` |  |
+| 147 | `_track_modal` |  |
+| 156 | `_wrap_execute` |  |
+| 158 | `_wrap_execute.wrapped` |  |
+| 166 | `_wrap_invoke` |  |
+| 168 | `_wrap_invoke.wrapped` |  |
+| 176 | `_wrap_modal` |  |
+| 178 | `_wrap_modal.wrapped` |  |
+| 213 | `prepare_operators` |  |
+| 246 | `register` |  |
+| 253 | `unregister` |  |
 
 ## Operadores, paneles y menús por bl_idname
 
@@ -4153,42 +5142,42 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | `DICOMWIZARDPRO_PT_segment_advanced` | Advanced / Avanzado | `DICOMWIZARDPRO_PT_segment_advanced` | [_dicom_parts/07_panels_registration.py](../_dicom_parts/07_panels_registration.py) | 429 |
 | `DICOMWIZARDPRO_PT_view` | DICOM | `DICOMWIZARDPRO_PT_view` | [_dicom_parts/07_panels_registration.py](../_dicom_parts/07_panels_registration.py) | 218 |
 | `DICOMWIZARDPRO_PT_view_advanced` | Advanced / Avanzado | `DICOMWIZARDPRO_PT_view_advanced` | [_dicom_parts/07_panels_registration.py](../_dicom_parts/07_panels_registration.py) | 238 |
-| `DICP_PT_main` | Alignment | `DICP_PT_Main` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 2344 |
+| `DICP_PT_main` | Alignment | `DICP_PT_Main` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 1205 |
 | `DSG_PT_MCPRoadmap` | MCP · Roadmap clínico | `DSG_PT_MCPRoadmap` | [roadmap_module.py](../roadmap_module.py) | 1572 |
 | `DSG_PT_clinical_context` | Paciente · Contexto clínico MCP | `DSG_PT_ClinicalContext` | [clinical_context.py](../clinical_context.py) | 434 |
 | `DSG_PT_evidence_repository` | Evidencia científica · Offline | `DSG_PT_EvidenceRepository` | [evidence_context.py](../evidence_context.py) | 161 |
-| `DSG_PT_main` | DSG | `DSG_PT_Main` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 3089 |
-| `DSG_SUITE_PT_main` | DSG | `DSG_SUITE_PT_Main` | [core.py](../core.py) | 3496 |
-| `DSG_SUITE_PT_workflow_controls` | Control del flujo | `DSG_SUITE_PT_WorkflowControls` | [core.py](../core.py) | 3352 |
-| `dct.apply_cut` | Apply Final Boolean | `DCT_OT_ApplyCut` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1397 |
-| `dct.clear_cut_selection` | Clear Selection | `DCT_OT_ClearCutSelection` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1690 |
-| `dct.select_being_cut` | Select Object Being Cut | `DCT_OT_SelectBeingCut` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1358 |
-| `dct.select_making_cut` | Select Object Making Cut | `DCT_OT_SelectMakingCut` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1373 |
-| `dct.voxel_remesh` | Apply Voxel Remesh | `DCT_OT_VoxelRemesh` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1336 |
+| `DSG_PT_main` | DSG | `DSG_PT_Main` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 3276 |
+| `DSG_SUITE_PT_main` | DSG | `DSG_SUITE_PT_Main` | [core.py](../core.py) | 3805 |
+| `DSG_SUITE_PT_workflow_controls` | Control del flujo | `DSG_SUITE_PT_WorkflowControls` | [core.py](../core.py) | 3661 |
+| `dct.apply_cut` | Apply Final Boolean | `DCT_OT_ApplyCut` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1403 |
+| `dct.clear_cut_selection` | Clear Selection | `DCT_OT_ClearCutSelection` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1696 |
+| `dct.select_being_cut` | Select Object Being Cut | `DCT_OT_SelectBeingCut` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1364 |
+| `dct.select_making_cut` | Select Object Making Cut | `DCT_OT_SelectMakingCut` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1379 |
+| `dct.voxel_remesh` | Apply Voxel Remesh | `DCT_OT_VoxelRemesh` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1342 |
 | `dicom_wizard_pro.adjust_tissue_sensitivity` | Ajustar segmentación | `DICOMWIZARDPRO_OT_adjust_tissue_sensitivity` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 746 |
 | `dicom_wizard_pro.align_mpr_from_active_plane` | Alinear los 3 cortes desde este plano | `DICOMWIZARDPRO_OT_align_mpr_from_active_plane` | [_dicom_parts/06_operators_a.py](../_dicom_parts/06_operators_a.py) | 569 |
 | `dicom_wizard_pro.analyze_tissues` | Analizar densidades | `DICOMWIZARDPRO_OT_analyze_tissues` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 728 |
 | `dicom_wizard_pro.auto_threshold` | Automático | `DICOMWIZARDPRO_OT_auto_threshold` | [_dicom_parts/06_operators_a.py](../_dicom_parts/06_operators_a.py) | 506 |
-| `dicom_wizard_pro.back_to_segmentation` | Volver a segmentación | `DICOMWIZARDPRO_OT_back_to_segmentation` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2295 |
+| `dicom_wizard_pro.back_to_segmentation` | Volver a segmentación | `DICOMWIZARDPRO_OT_back_to_segmentation` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2327 |
 | `dicom_wizard_pro.back_to_viewer` | Volver a visualización | `DICOMWIZARDPRO_OT_back_to_viewer` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 685 |
 | `dicom_wizard_pro.calculate_segmentation` | Segmentar automáticamente | `DICOMWIZARDPRO_OT_calculate_segmentation` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 814 |
 | `dicom_wizard_pro.center_plane` | Centrar plano | `DICOMWIZARDPRO_OT_center_plane` | [_dicom_parts/06_operators_a.py](../_dicom_parts/06_operators_a.py) | 676 |
 | `dicom_wizard_pro.clear_drawings` | Borrar máscara | `DICOMWIZARDPRO_OT_clear_drawings` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 714 |
 | `dicom_wizard_pro.close_gaps` | Cerrar discontinuidades | `DICOMWIZARDPRO_OT_close_gaps` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 883 |
 | `dicom_wizard_pro.close_safe_mpr` | Salir de revisión | `DICOMWIZARDPRO_OT_close_safe_mpr` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 515 |
-| `dicom_wizard_pro.continue_with_dicom_stl` | Continuar con STL DICOM | `DICOMWIZARDPRO_OT_continue_with_dicom_stl` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 1983 |
-| `dicom_wizard_pro.direct_dicom_to_surface` | Segmentar DICOM | `DICOMWIZARDPRO_OT_direct_dicom_to_surface` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 1772 |
-| `dicom_wizard_pro.export_surface_stl` | Exportar STL | `DICOMWIZARDPRO_OT_export_surface_stl` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2184 |
+| `dicom_wizard_pro.continue_with_dicom_stl` | Continuar con STL DICOM | `DICOMWIZARDPRO_OT_continue_with_dicom_stl` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2015 |
+| `dicom_wizard_pro.direct_dicom_to_surface` | Segmentar DICOM | `DICOMWIZARDPRO_OT_direct_dicom_to_surface` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 1804 |
+| `dicom_wizard_pro.export_surface_stl` | Exportar STL | `DICOMWIZARDPRO_OT_export_surface_stl` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2216 |
 | `dicom_wizard_pro.fill_holes` | Rellenar huecos internos | `DICOMWIZARDPRO_OT_fill_holes` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 897 |
 | `dicom_wizard_pro.fit_clinical_preview` | Centrar CBCT | `DICOMWIZARDPRO_OT_fit_clinical_preview` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 565 |
 | `dicom_wizard_pro.fit_view` | Centrar vista | `DICOMWIZARDPRO_OT_fit_view` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 554 |
-| `dicom_wizard_pro.generate_surface` | Generar superficie | `DICOMWIZARDPRO_OT_generate_surface` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2251 |
+| `dicom_wizard_pro.generate_surface` | Generar superficie | `DICOMWIZARDPRO_OT_generate_surface` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2283 |
 | `dicom_wizard_pro.keep_largest_island` | Conservar isla mayor | `DICOMWIZARDPRO_OT_keep_largest_island` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 869 |
 | `dicom_wizard_pro.move_review_plane` | Mover plano | `DICOMWIZARDPRO_OT_move_review_plane` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 177 |
 | `dicom_wizard_pro.new_file` | Back to DICOM Start | `DICOMWIZARDPRO_OT_new_file` | [_dicom_parts/06_operators_a.py](../_dicom_parts/06_operators_a.py) | 463 |
 | `dicom_wizard_pro.next` | Siguiente | `DICOMWIZARDPRO_OT_next` | [_dicom_parts/06_operators_a.py](../_dicom_parts/06_operators_a.py) | 265 |
-| `dicom_wizard_pro.prepare_ai_alignment` | Crear referencia dental CBCT y continuar | `DICOMWIZARDPRO_OT_prepare_ai_alignment` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2025 |
-| `dicom_wizard_pro.prepare_alignment` | Continue to Alignment | `DICOMWIZARDPRO_OT_prepare_alignment` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2073 |
+| `dicom_wizard_pro.prepare_ai_alignment` | Crear referencia dental CBCT y continuar | `DICOMWIZARDPRO_OT_prepare_ai_alignment` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2057 |
+| `dicom_wizard_pro.prepare_alignment` | Continue to Alignment | `DICOMWIZARDPRO_OT_prepare_alignment` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2105 |
 | `dicom_wizard_pro.radiographic_quad_view` | Revisión 3D con planos | `DICOMWIZARDPRO_OT_radiographic_quad_view` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 143 |
 | `dicom_wizard_pro.refresh` | Actualizar | `DICOMWIZARDPRO_OT_refresh` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 576 |
 | `dicom_wizard_pro.remove_small_islands` | Eliminar islas pequeñas | `DICOMWIZARDPRO_OT_remove_small_islands` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 855 |
@@ -4196,60 +5185,66 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | `dicom_wizard_pro.reset_plane` | Enderezar | `DICOMWIZARDPRO_OT_reset_plane` | [_dicom_parts/06_operators_a.py](../_dicom_parts/06_operators_a.py) | 538 |
 | `dicom_wizard_pro.reset_tissue_range` | Restaurar umbrales automáticos | `DICOMWIZARDPRO_OT_reset_tissue_range` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 795 |
 | `dicom_wizard_pro.rotate_review_plane` | Rotar plano | `DICOMWIZARDPRO_OT_rotate_review_plane` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 318 |
-| `dicom_wizard_pro.segment_all` | Segmentar todo | `DICOMWIZARDPRO_OT_segment_all` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 1745 |
-| `dicom_wizard_pro.segment_semantic_structure` | Segmentar estructura | `DICOMWIZARDPRO_OT_segment_semantic_structure` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 1713 |
+| `dicom_wizard_pro.segment_all` | Segmentar todo | `DICOMWIZARDPRO_OT_segment_all` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 1777 |
+| `dicom_wizard_pro.segment_semantic_structure` | Segmentar estructura | `DICOMWIZARDPRO_OT_segment_semantic_structure` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 1745 |
 | `dicom_wizard_pro.select_file` | Elegir DICOM / DCM | `DICOMWIZARDPRO_OT_select_file` | [_dicom_parts/06_operators_a.py](../_dicom_parts/06_operators_a.py) | 198 |
-| `dicom_wizard_pro.select_surface` | Seleccionar superficie | `DICOMWIZARDPRO_OT_select_surface` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2278 |
+| `dicom_wizard_pro.select_surface` | Seleccionar superficie | `DICOMWIZARDPRO_OT_select_surface` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 2310 |
 | `dicom_wizard_pro.select_target` | Seleccionar control | `DICOMWIZARDPRO_OT_select_target` | [_dicom_parts/06_operators_a.py](../_dicom_parts/06_operators_a.py) | 705 |
 | `dicom_wizard_pro.to_segmentation` | Siguiente: segmentar | `DICOMWIZARDPRO_OT_to_segmentation` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 595 |
 | `dicom_wizard_pro.undo_last` | Deshacer última acción | `DICOMWIZARDPRO_OT_undo_last` | [_dicom_parts/06_operators_b.py](../_dicom_parts/06_operators_b.py) | 661 |
-| `dicp.auto_detect` | Detect models | `DICP_OT_AutoDetect` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 367 |
-| `dicp.back_to_alignment` | Deshacer última acción | `DICP_OT_BackToAlignment` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 2159 |
-| `dicp.clear_landmarks` | Redibujar puntos | `DICP_OT_ClearLandmarks` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 2138 |
-| `dicp.import_ios_stl` | Import intraoral STL | `DICP_OT_ImportIOSSTL` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 297 |
-| `dicp.pick_landmarks` | Marcar zonas | `DICP_OT_PickLandmarks` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 423 |
-| `dicp.reset` | Back to Alignment Start | `DICP_OT_Reset` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 2189 |
-| `dicp.restore_source` | Restaurar posición | `DICP_OT_RestoreSource` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 2105 |
-| `dicp.review_alignment` | Revisar | `DICP_OT_ReviewAlignment` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 2014 |
-| `dicp.run_alignment` | Alinear modelos | `DICP_OT_RunAlignment` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 767 |
-| `dicp.send_to_dsg` | Siguiente | `DICP_OT_SendToDSG` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 2033 |
-| `dicp.use_selection` | Usar 2 seleccionados | `DICP_OT_UseSelection` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 394 |
-| `dsg.accept_closed_ios_model` | Use Closed IOS Model and Continue | `DSG_OT_AcceptClosedIOSModel` | [_guide_parts/02_implant_animation_geometry_c.py](../_guide_parts/02_implant_animation_geometry_c.py) | 165 |
-| `dsg.add_drill_channel` | Create Drill Channels | `DSG_OT_AddDrillChannel` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3289 |
-| `dsg.add_sleeve` | Sleeve Preview | `DSG_OT_AddSleeve` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2587 |
-| `dsg.ai_status_refresh` | Revisar motores de segmentación | `DSG_OT_AIStatusRefresh` | [cbct_dental_module.py](../cbct_dental_module.py) | 2478 |
-| `dsg.analyze_implant_safety` | Analyze Implant Safety | `DSG_OT_AnalyzeImplantSafety` | [_guide_parts/03_blockout_frame_geometry_b.py](../_guide_parts/03_blockout_frame_geometry_b.py) | 255 |
-| `dsg.analyze_retention` | Analyze Coronary Perimeter | `DSG_OT_AnalyzeRetention` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3405 |
-| `dsg.apply_microscrews_to_frame` | Add Microscrews to Frame | `DSG_OT_ApplyMicroscrewsToFrame` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1876 |
+| `dicp.auto_detect` | Detect models | `DICP_OT_AutoDetect` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 249 |
+| `dicp.back_to_alignment` | Deshacer última acción | `DICP_OT_BackToAlignment` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 1020 |
+| `dicp.clear_landmarks` | Redibujar puntos | `DICP_OT_ClearLandmarks` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 999 |
+| `dicp.import_ios_stl` | Import intraoral STL | `DICP_OT_ImportIOSSTL` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 179 |
+| `dicp.pick_landmarks` | Marcar zonas | `DICP_OT_PickLandmarks` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 305 |
+| `dicp.reset` | Back to Alignment Start | `DICP_OT_Reset` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 1050 |
+| `dicp.restore_source` | Restaurar posición | `DICP_OT_RestoreSource` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 966 |
+| `dicp.review_alignment` | Revisar | `DICP_OT_ReviewAlignment` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 896 |
+| `dicp.run_alignment` | Alinear modelos | `DICP_OT_RunAlignment` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 764 |
+| `dicp.send_to_dsg` | Siguiente | `DICP_OT_SendToDSG` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 915 |
+| `dicp.use_selection` | Usar 2 seleccionados | `DICP_OT_UseSelection` | [_alignment_parts/01_alignment_operators_ui.py](../_alignment_parts/01_alignment_operators_ui.py) | 276 |
+| `dsg.accept_closed_ios_model` | Use Closed IOS Model and Continue | `DSG_OT_AcceptClosedIOSModel` | [_guide_parts/02_implant_animation_geometry_c.py](../_guide_parts/02_implant_animation_geometry_c.py) | 167 |
+| `dsg.add_drill_channel` | Create Drill Channels | `DSG_OT_AddDrillChannel` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3305 |
+| `dsg.add_sleeve` | Sleeve Preview | `DSG_OT_AddSleeve` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2603 |
+| `dsg.ai_status_refresh` | Revisar motores de segmentación | `DSG_OT_AIStatusRefresh` | [cbct_dental_module.py](../cbct_dental_module.py) | 2673 |
+| `dsg.all_protected_neighbors` | MOSTRAR TODOS LOS VECINOS | `DSG_OT_ResetProtectedNeighbors` | [blender/protected_neighbors.py](../blender/protected_neighbors.py) | 195 |
+| `dsg.analyze_geodesic_frame_fem` | Analyze Surface-Geodesic FEM (Experimental) | `DSG_OT_AnalyzeGeodesicFrameFEM` | [frame_structural.py](../frame_structural.py) | 1863 |
+| `dsg.analyze_geodesic_groups` | Optimize Geodesic Groups (Experimental, Read-only) | `DSG_OT_AnalyzeGeodesicGroups` | [frame_structural.py](../frame_structural.py) | 1591 |
+| `dsg.analyze_implant_safety` | Analyze Implant Safety | `DSG_OT_AnalyzeImplantSafety` | [_guide_parts/03_blockout_frame_geometry_b.py](../_guide_parts/03_blockout_frame_geometry_b.py) | 167 |
+| `dsg.analyze_retention` | Analyze Coronary Perimeter | `DSG_OT_AnalyzeRetention` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3413 |
+| `dsg.apply_implant_optimization` | ACEPTAR CAMBIOS | `DSG_OT_ApplyOptimization` | [blender/implant_optimizer.py](../blender/implant_optimizer.py) | 444 |
+| `dsg.apply_microscrews_to_frame` | Add Microscrews to Frame | `DSG_OT_ApplyMicroscrewsToFrame` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1886 |
 | `dsg.apply_patient_engrave` | Engrave Name on Guide | `DSG_OT_ApplyPatientEngrave` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 91 |
-| `dsg.apply_post_irrigation_lateral_opening` | Apply Post-Irrigation Lateral Opening | `DSG_OT_ApplyPostIrrigationLateralOpening` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2903 |
-| `dsg.apply_reinforcements` | Add Connectors and Continue | `DSG_OT_ApplyReinforcements` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2585 |
-| `dsg.apply_selected_blockout_relief` | Apply Selected Local Relief | `DSG_OT_ApplySelectedBlockoutRelief` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3455 |
-| `dsg.apply_sleeves` | Apply Sleeves | `DSG_OT_ApplySleeves` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3036 |
-| `dsg.auto_prepare_retention` | Prepare Model | `DSG_OT_AutoPrepareRetention` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3544 |
+| `dsg.apply_post_irrigation_lateral_opening` | Apply Post-Irrigation Lateral Opening | `DSG_OT_ApplyPostIrrigationLateralOpening` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2919 |
+| `dsg.apply_reinforcements` | Add Connectors and Continue | `DSG_OT_ApplyReinforcements` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2600 |
+| `dsg.apply_selected_blockout_relief` | Apply Selected Local Relief | `DSG_OT_ApplySelectedBlockoutRelief` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3463 |
+| `dsg.apply_sleeves` | Apply Sleeves | `DSG_OT_ApplySleeves` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3052 |
+| `dsg.assign_upper_cavity` | ASIGNAR MALLA DE CAVIDAD | `DSG_OT_AssignUpperCavity` | [blender/upper_cavity_safety.py](../blender/upper_cavity_safety.py) | 249 |
+| `dsg.auto_prepare_retention` | Prepare Model | `DSG_OT_AutoPrepareRetention` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3506 |
 | `dsg.build_tube_frame` | Generate Tubular Frame | `DSG_OT_BuildTubeFrame` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1 |
-| `dsg.cancel_irrigation_preview` | Discard Preview | `DSG_OT_CancelIrrigationPreview` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 1182 |
-| `dsg.cancel_microscrew_preview` | Discard Pending Microscrew | `DSG_OT_CancelMicroscrewPreview` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1817 |
-| `dsg.cancel_reinforcement_preview` | Discard Pending Connector | `DSG_OT_CancelReinforcementPreview` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2514 |
-| `dsg.capture_axis` | Capture Axis from View | `DSG_OT_CaptureAxis` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2935 |
-| `dsg.capture_lateral_opening_view` | Use Current View for Post-Irrigation Opening | `DSG_OT_CaptureLateralOpeningView` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2285 |
-| `dsg.cbct_accept_fdi` | Confirmar FDI | `DSG_OT_CBCTAcceptFDI` | [cbct_dental_module.py](../cbct_dental_module.py) | 1990 |
-| `dsg.cbct_cancel_post_smooth` | Cancelar suavizado | `DSG_OT_CancelPostSmooth` | [cbct_post_smoothing.py](../cbct_post_smoothing.py) | 248 |
-| `dsg.cbct_delete_tooth` | Marcar diente como ausente | `DSG_OT_CBCTDeleteTooth` | [cbct_dental_module.py](../cbct_dental_module.py) | 2350 |
-| `dsg.cbct_edit_fdi` | Corregir FDI seleccionado | `DSG_OT_CBCTEditFDI` | [cbct_dental_module.py](../cbct_dental_module.py) | 2209 |
-| `dsg.cbct_improve_geometry` | Mejorar geometría | `DSG_OT_CBCTImproveGeometry` | [cbct_dental_module.py](../cbct_dental_module.py) | 2100 |
-| `dsg.cbct_post_smooth_report` | Resultado del suavizado | `DSG_OT_PostSmoothReport` | [cbct_post_smoothing.py](../cbct_post_smoothing.py) | 253 |
-| `dsg.cbct_post_smooth_teeth` | Suavizar dientes | `DSG_OT_PostSmoothTeeth` | [cbct_post_smoothing.py](../cbct_post_smoothing.py) | 234 |
-| `dsg.cbct_swap_arches` | Intercambiar maxilar / mandíbula | `DSG_OT_CBCTSwapArches` | [cbct_dental_module.py](../cbct_dental_module.py) | 2273 |
-| `dsg.cbct_toggle_fdi` | Mostrar/Ocultar FDI | `DSG_OT_CBCTToggleFDI` | [cbct_dental_module.py](../cbct_dental_module.py) | 2197 |
-| `dsg.cbct_toggle_surface_smoothing` | Suavizar superficie CBCT | `DSG_OT_CBCTToggleSurfaceSmoothing` | [cbct_dental_module.py](../cbct_dental_module.py) | 1040 |
-| `dsg.center_selected_microscrew_mpr` | Center Microscrew MPR | `DSG_OT_CenterSelectedMicroscrewMPR` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 257 |
+| `dsg.cancel_irrigation_preview` | Discard Preview | `DSG_OT_CancelIrrigationPreview` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 1184 |
+| `dsg.cancel_microscrew_preview` | Discard Pending Microscrew | `DSG_OT_CancelMicroscrewPreview` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1827 |
+| `dsg.cancel_reinforcement_preview` | Discard Pending Connector | `DSG_OT_CancelReinforcementPreview` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2529 |
+| `dsg.capture_axis` | Capture Axis from View | `DSG_OT_CaptureAxis` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2946 |
+| `dsg.capture_lateral_opening_view` | Use Current View for Post-Irrigation Opening | `DSG_OT_CaptureLateralOpeningView` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2301 |
+| `dsg.cbct_accept_fdi` | Confirmar FDI | `DSG_OT_CBCTAcceptFDI` | [cbct_dental_module.py](../cbct_dental_module.py) | 2194 |
+| `dsg.cbct_cancel_post_smooth` | Cancelar suavizado | `DSG_OT_CancelPostSmooth` | [cbct_post_smoothing.py](../cbct_post_smoothing.py) | 253 |
+| `dsg.cbct_delete_tooth` | Marcar diente como ausente | `DSG_OT_CBCTDeleteTooth` | [cbct_dental_module.py](../cbct_dental_module.py) | 2556 |
+| `dsg.cbct_edit_fdi` | Corregir FDI seleccionado | `DSG_OT_CBCTEditFDI` | [cbct_dental_module.py](../cbct_dental_module.py) | 2415 |
+| `dsg.cbct_improve_geometry` | Mejorar geometría | `DSG_OT_CBCTImproveGeometry` | [cbct_dental_module.py](../cbct_dental_module.py) | 2306 |
+| `dsg.cbct_post_smooth_report` | Resultado del suavizado | `DSG_OT_PostSmoothReport` | [cbct_post_smoothing.py](../cbct_post_smoothing.py) | 258 |
+| `dsg.cbct_post_smooth_teeth` | Suavizar dientes | `DSG_OT_PostSmoothTeeth` | [cbct_post_smoothing.py](../cbct_post_smoothing.py) | 239 |
+| `dsg.cbct_swap_arches` | Intercambiar maxilar / mandíbula | `DSG_OT_CBCTSwapArches` | [cbct_dental_module.py](../cbct_dental_module.py) | 2479 |
+| `dsg.cbct_toggle_fdi` | Mostrar/Ocultar FDI | `DSG_OT_CBCTToggleFDI` | [cbct_dental_module.py](../cbct_dental_module.py) | 2403 |
+| `dsg.cbct_toggle_surface_smoothing` | Suavizar superficie CBCT | `DSG_OT_CBCTToggleSurfaceSmoothing` | [cbct_dental_module.py](../cbct_dental_module.py) | 1043 |
+| `dsg.center_selected_microscrew_mpr` | Center Microscrew MPR | `DSG_OT_CenterSelectedMicroscrewMPR` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 261 |
 | `dsg.clean_guide_islands` | Remove Separate Fragments | `DSG_OT_CleanGuideIslands` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 176 |
-| `dsg.clear_base_perimeter` | Clear Base Perimeter | `DSG_OT_ClearBasePerimeter` | [_guide_parts/02_implant_animation_geometry_b.py](../_guide_parts/02_implant_animation_geometry_b.py) | 1878 |
-| `dsg.clear_contour` | Clear Outline | `DSG_OT_ClearContour` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3886 |
-| `dsg.clear_dicom_measurements` | Clear DICOM Measurements | `DSG_OT_ClearDICOMMeasurements` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 1551 |
+| `dsg.clear_base_perimeter` | Clear Base Perimeter | `DSG_OT_ClearBasePerimeter` | [_guide_parts/02_implant_animation_geometry_b.py](../_guide_parts/02_implant_animation_geometry_b.py) | 1897 |
+| `dsg.clear_contour` | Clear Outline | `DSG_OT_ClearContour` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3842 |
+| `dsg.clear_dicom_measurements` | Clear DICOM Measurements | `DSG_OT_ClearDICOMMeasurements` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 1562 |
 | `dsg.clear_engrave_preview` | Clear Preview | `DSG_OT_ClearEngravePreview` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 74 |
-| `dsg.clear_irrigation_flow_simulation` | Clear Irrigation Simulation | `DSG_OT_ClearIrrigationFlowSimulation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 2290 |
+| `dsg.clear_irrigation_flow_simulation` | Clear Irrigation Simulation | `DSG_OT_ClearIrrigationFlowSimulation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 2292 |
+| `dsg.clear_protected_neighbors` | QUITAR DIENTES VECINOS | `DSG_OT_ClearProtectedNeighbors` | [blender/protected_neighbors.py](../blender/protected_neighbors.py) | 208 |
 | `dsg.clinical_add_condition` | Añadir condición | `DSG_OT_ClinicalAddCondition` | [clinical_context.py](../clinical_context.py) | 346 |
 | `dsg.clinical_add_lab` | Añadir analítica | `DSG_OT_ClinicalAddLab` | [clinical_context.py](../clinical_context.py) | 365 |
 | `dsg.clinical_add_medication` | Añadir medicamento | `DSG_OT_ClinicalAddMedication` | [clinical_context.py](../clinical_context.py) | 299 |
@@ -4258,136 +5253,179 @@ Regenerar: `python dsg/tools/gen_index.py dsg --write`. Comprobar vigencia: `pyt
 | `dsg.clinical_copy_request` | Copiar petición clínica MCP | `DSG_OT_ClinicalCopyRequest` | [clinical_context.py](../clinical_context.py) | 389 |
 | `dsg.clinical_remove_last_medication` | Quitar último medicamento | `DSG_OT_ClinicalRemoveLastMedication` | [clinical_context.py](../clinical_context.py) | 331 |
 | `dsg.clinical_save_basics` | Guardar datos básicos | `DSG_OT_ClinicalSaveBasics` | [clinical_context.py](../clinical_context.py) | 279 |
-| `dsg.close_dicom_review` | Close DICOM Review | `DSG_OT_CloseDICOMReview` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 372 |
-| `dsg.close_model_base` | Close Model Base Automatically | `DSG_OT_CloseModelBase` | [_guide_parts/02_implant_animation_geometry_c.py](../_guide_parts/02_implant_animation_geometry_c.py) | 230 |
-| `dsg.close_scan_holes` | Close Scan Holes | `DSG_OT_CloseScanHoles` | [_guide_parts/02_implant_animation_geometry_b.py](../_guide_parts/02_implant_animation_geometry_b.py) | 2486 |
-| `dsg.confirm_axis` | Confirm Axis | `DSG_OT_ConfirmAxis` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2986 |
-| `dsg.confirm_blockout` | Confirm Blockout | `DSG_OT_ConfirmBlockout` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3556 |
-| `dsg.confirm_contour` | Confirm Outline | `DSG_OT_ConfirmContour` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3900 |
-| `dsg.confirm_drill` | Confirm Channels → Final Boolean | `DSG_OT_ConfirmDrill` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3632 |
-| `dsg.confirm_implant` | Confirm Implants | `DSG_OT_ConfirmImplant` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4323 |
-| `dsg.confirm_irrigation` | Apply Irrigation and Continue | `DSG_OT_ConfirmIrrigation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 2306 |
+| `dsg.close_dicom_review` | Close DICOM Review | `DSG_OT_CloseDICOMReview` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 421 |
+| `dsg.close_model_base` | Close Model Base Automatically | `DSG_OT_CloseModelBase` | [_guide_parts/02_implant_animation_geometry_c.py](../_guide_parts/02_implant_animation_geometry_c.py) | 232 |
+| `dsg.close_scan_holes` | Close Scan Holes | `DSG_OT_CloseScanHoles` | [_guide_parts/02_implant_animation_geometry_b.py](../_guide_parts/02_implant_animation_geometry_b.py) | 2510 |
+| `dsg.color_implant_inclination_plane` | Color del marco | `DSG_OT_ColorInclinationPlane` | [blender/implant_plane.py](../blender/implant_plane.py) | 377 |
+| `dsg.confirm_axis` | Confirm Axis | `DSG_OT_ConfirmAxis` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2997 |
+| `dsg.confirm_blockout` | Confirm Blockout | `DSG_OT_ConfirmBlockout` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3518 |
+| `dsg.confirm_contour` | Confirm Outline | `DSG_OT_ConfirmContour` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3856 |
+| `dsg.confirm_drill` | Confirm Channels → Final Boolean | `DSG_OT_ConfirmDrill` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3648 |
+| `dsg.confirm_implant` | Confirm Implants | `DSG_OT_ConfirmImplant` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4281 |
+| `dsg.confirm_irrigation` | Apply Irrigation and Continue | `DSG_OT_ConfirmIrrigation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 2308 |
 | `dsg.confirm_irrigation_preview` | Confirm | `DSG_OT_ConfirmIrrigationPreview` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 436 |
-| `dsg.confirm_microscrew_preview` | Confirm Microscrew | `DSG_OT_ConfirmMicroscrewPreview` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1800 |
-| `dsg.confirm_model` | Confirm Model | `DSG_OT_ConfirmModel` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2911 |
-| `dsg.confirm_reinforcement_preview` | Confirm Reinforcement Connector | `DSG_OT_ConfirmReinforcementPreview` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2477 |
-| `dsg.confirm_sleeve` | Continue to Irrigation | `DSG_OT_ConfirmSleeve` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3223 |
-| `dsg.confirm_tube_frame` | Confirm Frame | `DSG_OT_ConfirmTubeFrame` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2144 |
-| `dsg.continue_after_irrigation` | Continue After Irrigation | `DSG_OT_ContinueAfterIrrigation` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3006 |
-| `dsg.continue_to_name_export` | Continue to Name and Export | `DSG_OT_ContinueToNameExport` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1664 |
+| `dsg.confirm_microscrew_preview` | Confirm Microscrew | `DSG_OT_ConfirmMicroscrewPreview` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1810 |
+| `dsg.confirm_model` | Confirm Model | `DSG_OT_ConfirmModel` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2922 |
+| `dsg.confirm_protected_neighbors` | CONFIRMAR SELECCIÓN | `DSG_OT_ConfirmProtectedNeighbors` | [blender/protected_neighbors.py](../blender/protected_neighbors.py) | 220 |
+| `dsg.confirm_reinforcement_preview` | Confirm Reinforcement Connector | `DSG_OT_ConfirmReinforcementPreview` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2492 |
+| `dsg.confirm_sleeve` | Continue to Irrigation | `DSG_OT_ConfirmSleeve` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3239 |
+| `dsg.confirm_tube_frame` | Confirm Frame | `DSG_OT_ConfirmTubeFrame` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2157 |
+| `dsg.confirm_upper_cavities` | CONFIRMAR CAVIDADES SUPERIORES | `DSG_OT_ConfirmUpperCavities` | [blender/upper_cavity_safety.py](../blender/upper_cavity_safety.py) | 235 |
+| `dsg.confirm_virtual_extraction` | SIGUIENTE | `DSG_OT_ConfirmVirtualExtraction` | [blender/virtual_extraction.py](../blender/virtual_extraction.py) | 222 |
+| `dsg.continue_after_irrigation` | Continue After Irrigation | `DSG_OT_ContinueAfterIrrigation` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3022 |
+| `dsg.continue_to_name_export` | Continue to Name and Export | `DSG_OT_ContinueToNameExport` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1670 |
 | `dsg.copy_mcp_bridge_config` | Copy MCP Bridge Config | `DSG_OT_CopyMCPBridgeConfig` | [roadmap_module.py](../roadmap_module.py) | 1542 |
-| `dsg.copy_pipeline_diagnostic` | Copiar diagnóstico | `DSG_OT_CopyPipelineDiagnostic` | [cbct_dental_module.py](../cbct_dental_module.py) | 2499 |
+| `dsg.copy_pipeline_diagnostic` | Copiar diagnóstico | `DSG_OT_CopyPipelineDiagnostic` | [cbct_dental_module.py](../cbct_dental_module.py) | 2694 |
 | `dsg.create_animated_drills` | Create Animated Drills | `DSG_OT_CreateAnimatedDrills` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 1616 |
-| `dsg.create_animated_microscrews` | Create Animated Screws | `DSG_OT_CreateAnimatedMicroscrews` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1955 |
-| `dsg.create_apply_sleeves` | Create and Apply Sleeves | `DSG_OT_CreateApplySleeves` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2739 |
-| `dsg.create_implant` | Create Implant | `DSG_OT_CreateImplant` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3936 |
-| `dsg.create_implant_emergence_tubes` | Create Implant Emergence Tubes | `DSG_OT_CreateImplantEmergenceTubes` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4248 |
-| `dsg.create_sequential_insertion_animation` | Create Screw, Drill and Implant Sequence | `DSG_OT_CreateSequentialInsertionAnimation` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 1955 |
-| `dsg.draw_base_perimeter` | Draw Base Perimeter | `DSG_OT_DrawBasePerimeter` | [_guide_parts/02_implant_animation_geometry_b.py](../_guide_parts/02_implant_animation_geometry_b.py) | 1800 |
+| `dsg.create_animated_microscrews` | Create Animated Screws | `DSG_OT_CreateAnimatedMicroscrews` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1968 |
+| `dsg.create_apply_sleeves` | Create and Apply Sleeves | `DSG_OT_CreateApplySleeves` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2755 |
+| `dsg.create_implant` | Create Implant | `DSG_OT_CreateImplant` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3892 |
+| `dsg.create_implant_emergence_tubes` | Create Implant Emergence Tubes | `DSG_OT_CreateImplantEmergenceTubes` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4206 |
+| `dsg.create_implant_inclination_plane` | Plano radiográfico del implante | `DSG_OT_CreateInclinationPlane` | [blender/implant_plane.py](../blender/implant_plane.py) | 340 |
+| `dsg.create_sequential_insertion_animation` | Create Screw, Drill and Implant Sequence | `DSG_OT_CreateSequentialInsertionAnimation` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 1957 |
+| `dsg.discard_implant_optimization` | DESCARTAR CAMBIOS / CANCELAR | `DSG_OT_DiscardOptimization` | [blender/implant_optimizer.py](../blender/implant_optimizer.py) | 453 |
+| `dsg.draw_base_perimeter` | Draw Base Perimeter | `DSG_OT_DrawBasePerimeter` | [_guide_parts/02_implant_animation_geometry_b.py](../_guide_parts/02_implant_animation_geometry_b.py) | 1819 |
+| `dsg.edit_protected_neighbors` | ELEGIR DIENTES VECINOS | `DSG_OT_EditProtectedNeighbors` | [blender/protected_neighbors.py](../blender/protected_neighbors.py) | 186 |
+| `dsg.estimate_geodesic_contact` | Evaluate Contact Profile (Experimental) | `DSG_OT_EstimateGeodesicContact` | [frame_structural.py](../frame_structural.py) | 1531 |
 | `dsg.evidence_copy_rule` | Copiar regla + bibliografía | `DSG_OT_EvidenceCopyRule` | [evidence_context.py](../evidence_context.py) | 117 |
 | `dsg.evidence_copy_search` | Buscar offline y copiar | `DSG_OT_EvidenceCopySearch` | [evidence_context.py](../evidence_context.py) | 130 |
 | `dsg.evidence_copy_summary` | Copiar resumen científico | `DSG_OT_EvidenceCopySummary` | [evidence_context.py](../evidence_context.py) | 108 |
 | `dsg.evidence_copy_update_request` | Preparar actualización MCP | `DSG_OT_EvidenceCopyUpdateRequest` | [evidence_context.py](../evidence_context.py) | 143 |
 | `dsg.export_guide_stl` | Export Guide STL | `DSG_OT_ExportGuideSTL` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 201 |
-| `dsg.final_view_cbct_stl` | Toggle CBCT STL Layer | `DSG_OT_FinalViewCBCTSTL` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 565 |
-| `dsg.final_view_model` | Toggle Model Layer | `DSG_OT_FinalViewModel` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 543 |
-| `dsg.force_confirm_blockout` | Continue After Manual Seating Review | `DSG_OT_ForceConfirmBlockout` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3705 |
-| `dsg.force_orthographic_view` | Restore Orthographic Precision View | `DSG_OT_ForceOrthographicView` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2449 |
-| `dsg.generate_blockout` | Generate Blockout | `DSG_OT_GenerateBlockout` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3338 |
-| `dsg.install_ai_runtime` | Instalar motores de segmentación | `DSG_OT_InstallAIRuntime` | [cbct_dental_module.py](../cbct_dental_module.py) | 2459 |
+| `dsg.extraction_extension_preview` | VER EXTENSIÓN OCLUSAL | `DSG_OT_ExtensionPreview` | [blender/extraction_extension.py](../blender/extraction_extension.py) | 99 |
+| `dsg.final_view_cbct_stl` | Toggle CBCT STL Layer | `DSG_OT_FinalViewCBCTSTL` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 571 |
+| `dsg.final_view_model` | Toggle Model Layer | `DSG_OT_FinalViewModel` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 549 |
+| `dsg.finish_segmented_teeth` | Mejorar dientes | `DSG_OT_FinishSegmentedTeeth` | [blender/segmentation_finish.py](../blender/segmentation_finish.py) | 158 |
+| `dsg.force_confirm_blockout` | Continue After Manual Seating Review | `DSG_OT_ForceConfirmBlockout` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3665 |
+| `dsg.force_orthographic_view` | Restore Orthographic Precision View | `DSG_OT_ForceOrthographicView` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2460 |
+| `dsg.generate_blockout` | Generate Blockout | `DSG_OT_GenerateBlockout` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3346 |
+| `dsg.inspect_final_boolean_path` | Profile Sections Along Final Guide (Experimental) | `DSG_OT_InspectFinalBooleanPath` | [frame_structural.py](../frame_structural.py) | 1729 |
+| `dsg.inspect_final_boolean_section` | Inspect Final Guide Section (Experimental) | `DSG_OT_InspectFinalBooleanSection` | [frame_structural.py](../frame_structural.py) | 1805 |
+| `dsg.install_ai_runtime` | Instalar motores de segmentación | `DSG_OT_InstallAIRuntime` | [cbct_dental_module.py](../cbct_dental_module.py) | 2654 |
 | `dsg.install_dicom_runtime` | Preparar Motor DICOM offline | `DSG_OT_install_dicom_runtime` | [_dicom_parts/06_operators_a.py](../_dicom_parts/06_operators_a.py) | 138 |
+| `dsg.ios_begin_tooth_removal` | Seleccionar diente del IOS | `DSG_OT_IOSBeginToothRemoval` | [blender/ios_tooth_edit.py](../blender/ios_tooth_edit.py) | 175 |
+| `dsg.ios_cancel_tooth_removal` | Cancelar edición del diente | `DSG_OT_IOSCancelToothRemoval` | [blender/ios_tooth_edit.py](../blender/ios_tooth_edit.py) | 292 |
+| `dsg.ios_circle_selection` | Seleccionar con círculo (C) | `DSG_OT_IOSCircleSelection` | [blender/ios_guided_selection.py](../blender/ios_guided_selection.py) | 302 |
+| `dsg.ios_clear_selection` | Empezar selección de nuevo | `DSG_OT_IOSClearSelection` | [blender/ios_guided_selection.py](../blender/ios_guided_selection.py) | 286 |
+| `dsg.ios_close_tooth_socket` | Cerrar hueco hacia dentro | `DSG_OT_IOSCloseToothSocket` | [blender/ios_tooth_edit.py](../blender/ios_tooth_edit.py) | 228 |
+| `dsg.ios_retry_socket_boolean` | Reintentar booleana después del cierre | `DSG_OT_IOSRetrySocketBoolean` | [blender/ios_tooth_edit.py](../blender/ios_tooth_edit.py) | 324 |
+| `dsg.ios_save_tooth_selection` | GUARDAR SELECCIÓN (P) | `DSG_OT_IOSSaveToothSelection` | [blender/ios_guided_selection.py](../blender/ios_guided_selection.py) | 227 |
+| `dsg.ios_selection_mode` | Modo de selección | `DSG_OT_IOSSelectionMode` | [blender/ios_guided_selection.py](../blender/ios_guided_selection.py) | 271 |
+| `dsg.ios_skip_tooth_removal` | SIGUIENTE | `DSG_OT_IOSSkipToothRemoval` | [blender/ios_skip_removal.py](../blender/ios_skip_removal.py) | 7 |
 | `dsg.link_irrigation` | Link | `DSG_OT_LinkIrrigation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 833 |
-| `dsg.measure_dicom_two_points` | Measure Two Points in DICOM MPR | `DSG_OT_MeasureDICOMTwoPoints` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 1431 |
-| `dsg.measure_implant_to_dicom` | Measure Implant to DICOM | `DSG_OT_MeasureImplantToDICOM` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 1293 |
-| `dsg.open_dicom_review` | Review DICOM | `DSG_OT_OpenDICOMReview` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 307 |
-| `dsg.open_or_center_implant_mpr` | Implant MPR | `DSG_OT_OpenOrCenterImplantMPR` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 230 |
-| `dsg.open_or_center_microscrew_mpr` | Microscrew MPR | `DSG_OT_OpenOrCenterMicroscrewMPR` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 279 |
-| `dsg.optimize_frame_fem` | Optimize Frame | `DSG_OT_OptimizeFrameFEM` | [frame_structural.py](../frame_structural.py) | 816 |
-| `dsg.parallelize_implants` | Parallelize Implants to Master | `DSG_OT_ParallelizeImplants` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4188 |
-| `dsg.pick_lateral_opening_side` | Pick Lateral Opening Side | `DSG_OT_PickLateralOpeningSide` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2494 |
+| `dsg.measure_dicom_two_points` | Measure Two Points in DICOM MPR | `DSG_OT_MeasureDICOMTwoPoints` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 1442 |
+| `dsg.measure_implant_to_dicom` | Measure Implant to DICOM | `DSG_OT_MeasureImplantToDICOM` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 1304 |
+| `dsg.open_dicom_review` | Review DICOM | `DSG_OT_OpenDICOMReview` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 347 |
+| `dsg.open_or_center_implant_mpr` | Implant MPR | `DSG_OT_OpenOrCenterImplantMPR` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 234 |
+| `dsg.open_or_center_microscrew_mpr` | Microscrew MPR | `DSG_OT_OpenOrCenterMicroscrewMPR` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 283 |
+| `dsg.optimize_frame_fem` | Optimize Frame | `DSG_OT_OptimizeFrameFEM` | [frame_structural.py](../frame_structural.py) | 1380 |
+| `dsg.optimize_implant_position` | BUSCAR POSICIÓN | `DSG_OT_OptimizePosition` | [blender/implant_optimizer.py](../blender/implant_optimizer.py) | 432 |
+| `dsg.optimize_implant_size` | COMPARAR TAMAÑOS | `DSG_OT_OptimizeSize` | [blender/implant_optimizer.py](../blender/implant_optimizer.py) | 438 |
+| `dsg.optional_next` | SIGUIENTE | `DSG_OT_OptionalNext` | [blender/optional_next.py](../blender/optional_next.py) | 53 |
+| `dsg.parallelize_implants` | Parallelize Implants to Master | `DSG_OT_ParallelizeImplants` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4146 |
+| `dsg.perform_virtual_extraction` | REALIZAR OPERACIÓN BOOLEANA | `DSG_OT_PerformVirtualExtraction` | [blender/virtual_extraction.py](../blender/virtual_extraction.py) | 141 |
+| `dsg.pick_lateral_opening_side` | Pick Lateral Opening Side | `DSG_OT_PickLateralOpeningSide` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2510 |
 | `dsg.place_engrave_anchor` | Place Name on Surface | `DSG_OT_PlaceEngraveAnchor` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 1 |
 | `dsg.play_animated_drills` | Play Drill Insertion | `DSG_OT_PlayAnimatedDrills` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 1672 |
-| `dsg.play_animated_microscrews` | Play Microscrew Insertion | `DSG_OT_PlayAnimatedMicroscrews` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2016 |
-| `dsg.play_sequential_insertion_animation` | Play Screw, Drill and Implant Sequence | `DSG_OT_PlaySequentialInsertionAnimation` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2180 |
-| `dsg.prepare_aligned_model` | Choose Insertion Axis from View | `DSG_OT_PrepareAlignedModel` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2851 |
-| `dsg.prepare_and_create_drill_channels` | Prepare and Create Drill Channels | `DSG_OT_PrepareAndCreateDrillChannels` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3577 |
-| `dsg.prepare_immediate_extraction` | Prepare Immediate Extraction | `DSG_OT_PrepareImmediateExtraction` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 2338 |
-| `dsg.preview_automatic_base_perimeter` | Preview Automatic Base Perimeter | `DSG_OT_PreviewAutomaticBasePerimeter` | [_guide_parts/02_implant_animation_geometry_b.py](../_guide_parts/02_implant_animation_geometry_b.py) | 1774 |
-| `dsg.protect_drill_insertion` | Clear Drill Insertion Path | `DSG_OT_ProtectDrillInsertion` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3268 |
-| `dsg.rebuild_lateral_window_from_irrigation` | Legacy Lateral Window Rebuild (disabled) | `DSG_OT_RebuildLateralWindowFromIrrigation` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2783 |
+| `dsg.play_animated_microscrews` | Play Microscrew Insertion | `DSG_OT_PlayAnimatedMicroscrews` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2029 |
+| `dsg.play_sequential_insertion_animation` | Play Screw, Drill and Implant Sequence | `DSG_OT_PlaySequentialInsertionAnimation` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2184 |
+| `dsg.prepare_aligned_model` | Choose Insertion Axis from View | `DSG_OT_PrepareAlignedModel` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2862 |
+| `dsg.prepare_and_create_drill_channels` | Prepare and Create Drill Channels | `DSG_OT_PrepareAndCreateDrillChannels` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3593 |
+| `dsg.prepare_immediate_extraction` | Prepare Immediate Extraction | `DSG_OT_PrepareImmediateExtraction` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 2375 |
+| `dsg.prepare_retention_unified` | PREPARAR MODELO RETENTIVO | `DSG_OT_PrepareRetentionUnified` | [blender/retention_finish.py](../blender/retention_finish.py) | 28 |
+| `dsg.prepare_upper_cavities` | IDENTIFICAR SENOS Y CAVIDAD NASAL | `DSG_OT_PrepareUpperCavities` | [blender/upper_cavity_safety.py](../blender/upper_cavity_safety.py) | 216 |
+| `dsg.preview_automatic_base_perimeter` | Preview Automatic Base Perimeter | `DSG_OT_PreviewAutomaticBasePerimeter` | [_guide_parts/02_implant_animation_geometry_b.py](../_guide_parts/02_implant_animation_geometry_b.py) | 1793 |
+| `dsg.preview_geodesic_frame_fem` | Preview Surface-Geodesic Reinforcements (Experimental) | `DSG_OT_PreviewGeodesicFrameFEM` | [frame_structural.py](../frame_structural.py) | 1504 |
+| `dsg.protect_drill_insertion` | Clear Drill Insertion Path | `DSG_OT_ProtectDrillInsertion` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 3284 |
+| `dsg.rebuild_lateral_window_from_irrigation` | Legacy Lateral Window Rebuild (disabled) | `DSG_OT_RebuildLateralWindowFromIrrigation` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2799 |
 | `dsg.refresh_roadmap_status` | Refresh Roadmap | `DSG_OT_RefreshRoadmapStatus` | [roadmap_module.py](../roadmap_module.py) | 1559 |
-| `dsg.remove_last_dicom_measurement` | Delete Last DICOM Measurement | `DSG_OT_RemoveLastDICOMMeasurement` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 1536 |
-| `dsg.remove_last_implant` | Delete Last Implant | `DSG_OT_RemoveLastImplant` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4095 |
-| `dsg.remove_last_irrigation` | Delete | `DSG_OT_RemoveLastIrrigation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 1127 |
-| `dsg.remove_last_microscrew` | Delete Last Microscrew | `DSG_OT_RemoveLastMicroscrew` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1836 |
-| `dsg.remove_last_reinforcement` | Delete Last Connector | `DSG_OT_RemoveLastReinforcement` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2532 |
-| `dsg.reset` | Reset Workflow | `DSG_OT_Reset` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2466 |
-| `dsg.reset_current_step` | Back One Clinical Step | `DSG_OT_ResetCurrentStep` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2633 |
-| `dsg.restore_immediate_tooth` | Restore Immediate Tooth | `DSG_OT_RestoreImmediateTooth` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 2379 |
-| `dsg.run_boolean_preflight` | Check / Repair Meshes | `DSG_OT_RunBooleanPreflight` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2365 |
+| `dsg.remove_last_dicom_measurement` | Delete Last DICOM Measurement | `DSG_OT_RemoveLastDICOMMeasurement` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 1547 |
+| `dsg.remove_last_implant` | Delete Last Implant | `DSG_OT_RemoveLastImplant` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4053 |
+| `dsg.remove_last_irrigation` | Delete | `DSG_OT_RemoveLastIrrigation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 1129 |
+| `dsg.remove_last_microscrew` | Delete Last Microscrew | `DSG_OT_RemoveLastMicroscrew` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1846 |
+| `dsg.remove_last_reinforcement` | Delete Last Connector | `DSG_OT_RemoveLastReinforcement` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2547 |
+| `dsg.reopen_protected_neighbors` | Cambiar dientes vecinos | `DSG_OT_ReopenProtectedNeighbors` | [blender/protected_neighbors.py](../blender/protected_neighbors.py) | 233 |
+| `dsg.reset` | Reset Workflow | `DSG_OT_Reset` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2477 |
+| `dsg.reset_current_step` | Back One Clinical Step | `DSG_OT_ResetCurrentStep` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2644 |
+| `dsg.restore_immediate_tooth` | Restore Immediate Tooth | `DSG_OT_RestoreImmediateTooth` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 2416 |
+| `dsg.review_upper_cavities` | REVISAR SENOS Y CAVIDAD NASAL | `DSG_OT_ReviewUpperCavities` | [blender/upper_cavity_safety.py](../blender/upper_cavity_safety.py) | 226 |
+| `dsg.rotate_implant_inclination_plane` | Orientación del plano | `DSG_OT_RotateInclinationPlane` | [blender/implant_plane.py](../blender/implant_plane.py) | 360 |
+| `dsg.run_boolean_preflight` | Check / Repair Meshes | `DSG_OT_RunBooleanPreflight` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2376 |
 | `dsg.run_safety_failtests` | Ejecutar failtests DSG | `DSG_OT_RunSafetyFailtests` | [runtime_bootstrap.py](../runtime_bootstrap.py) | 193 |
 | `dsg.runtime_preflight` |  | `DSG_OT_RuntimePreflight` | [runtime_bootstrap.py](../runtime_bootstrap.py) | 176 |
-| `dsg.select_axis` | Select Axis | `DSG_OT_SelectAxis` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2975 |
-| `dsg.select_mpr_implant` | Select Implant for MPR | `DSG_OT_SelectMPRImplant` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 195 |
-| `dsg.select_retention_preset` | Select Retention Profile | `DSG_OT_SelectRetentionPreset` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3001 |
+| `dsg.select_axis` | Select Axis | `DSG_OT_SelectAxis` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2986 |
+| `dsg.select_mpr_implant` | Select Implant for MPR | `DSG_OT_SelectMPRImplant` | [_guide_parts/01_workflow_state_mpr_objects_b.py](../_guide_parts/01_workflow_state_mpr_objects_b.py) | 199 |
+| `dsg.select_retention_preset` | Select Retention Profile | `DSG_OT_SelectRetentionPreset` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3012 |
 | `dsg.set_axis_from_fdi` | Propose Implant Axis from FDI | `DSG_OT_SetAxisFromFDI` | [roadmap_module.py](../roadmap_module.py) | 442 |
 | `dsg.set_irrigation_cylinder_channel_mode` | Set cylinder channel mode | `DSG_OT_SetIrrigationCylinderChannelMode` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 61 |
-| `dsg.set_parallel_master` | Use Selected as Master | `DSG_OT_SetParallelMaster` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4168 |
+| `dsg.set_parallel_master` | Use Selected as Master | `DSG_OT_SetParallelMaster` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4126 |
 | `dsg.show_animated_drill_start` | Show Start Position | `DSG_OT_ShowAnimatedDrillStart` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 1752 |
 | `dsg.show_animated_drill_stop` | Show Maximum Insertion | `DSG_OT_ShowAnimatedDrillStop` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 1765 |
-| `dsg.show_animated_microscrew_start` | Show Microscrew Start Position | `DSG_OT_ShowAnimatedMicroscrewStart` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2106 |
-| `dsg.show_animated_microscrew_stop` | Show Microscrew Final Seat | `DSG_OT_ShowAnimatedMicroscrewStop` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2124 |
+| `dsg.show_animated_microscrew_start` | Show Microscrew Start Position | `DSG_OT_ShowAnimatedMicroscrewStart` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2119 |
+| `dsg.show_animated_microscrew_stop` | Show Microscrew Final Seat | `DSG_OT_ShowAnimatedMicroscrewStop` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2137 |
 | `dsg.show_exact_irrigation_lumen_diagnostic` | Show Checked Water Lumen | `DSG_OT_ShowExactIrrigationLumenDiagnostic` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 379 |
-| `dsg.simulate_irrigation_flow` | Update Solid Water Flow | `DSG_OT_SimulateIrrigationFlow` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 2149 |
-| `dsg.skip_irrigation` | Skip Irrigation | `DSG_OT_SkipIrrigation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 1199 |
+| `dsg.show_safety_contacts` | ALERTA DE SEGURIDAD | `DSG_OT_ShowSafetyContacts` | [blender/safety_alerts.py](../blender/safety_alerts.py) | 96 |
+| `dsg.simulate_irrigation_flow` | Update Solid Water Flow | `DSG_OT_SimulateIrrigationFlow` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 2151 |
+| `dsg.skip_irrigation` | Skip Irrigation | `DSG_OT_SkipIrrigation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 1201 |
 | `dsg.skip_patient_name` | Continue Without Name | `DSG_OT_SkipPatientName` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 155 |
-| `dsg.skip_reinforcement` | Skip Reinforcement Connectors | `DSG_OT_SkipReinforcement` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2551 |
-| `dsg.start_drawing` | Draw / Continue Outline | `DSG_OT_StartDrawing` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3723 |
+| `dsg.skip_reinforcement` | Skip Reinforcement Connectors | `DSG_OT_SkipReinforcement` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2566 |
+| `dsg.start_drawing` | Draw / Continue Outline | `DSG_OT_StartDrawing` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3679 |
 | `dsg.start_irrigation` | Draw Irrigation Channel | `DSG_OT_StartIrrigation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 218 |
 | `dsg.start_irrigation_from_points` | Irrigation Preview from Points | `DSG_OT_StartIrrigationFromPoints` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 181 |
 | `dsg.start_mcp_bridge` | Start MCP Bridge | `DSG_OT_StartMCPBridge` | [roadmap_module.py](../roadmap_module.py) | 1522 |
-| `dsg.start_microscrew` | Select 3 Microscrew Points | `DSG_OT_StartMicroscrew` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1487 |
-| `dsg.start_reinforcement` | Draw Reinforcement Chain | `DSG_OT_StartReinforcement` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2280 |
+| `dsg.start_microscrew` | Select 3 Microscrew Points | `DSG_OT_StartMicroscrew` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1488 |
+| `dsg.start_reinforcement` | Draw Reinforcement Chain | `DSG_OT_StartReinforcement` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2295 |
 | `dsg.stop_animated_drills` | Stop Drill Animation | `DSG_OT_StopAnimatedDrills` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 1698 |
-| `dsg.stop_animated_microscrews` | Stop Microscrew Animation | `DSG_OT_StopAnimatedMicroscrews` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2052 |
+| `dsg.stop_animated_microscrews` | Stop Microscrew Animation | `DSG_OT_StopAnimatedMicroscrews` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2065 |
 | `dsg.stop_mcp_bridge` | Stop MCP Bridge | `DSG_OT_StopMCPBridge` | [roadmap_module.py](../roadmap_module.py) | 1532 |
-| `dsg.stop_sequential_insertion_animation` | Stop Insertion Sequence | `DSG_OT_StopSequentialInsertionAnimation` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2215 |
+| `dsg.stop_sequential_insertion_animation` | Stop Insertion Sequence | `DSG_OT_StopSequentialInsertionAnimation` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2225 |
 | `dsg.toggle_animated_drills_visibility` | Show or Hide Animated Drills | `DSG_OT_ToggleAnimatedDrillsVisibility` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 1721 |
-| `dsg.toggle_animated_microscrews_visibility` | Show or Hide Animated Microscrews | `DSG_OT_ToggleAnimatedMicroscrewsVisibility` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2079 |
-| `dsg.toggle_blockout_visibility` | Show/Hide Model | `DSG_OT_ToggleBlockoutVisibility` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 441 |
-| `dsg.toggle_contour_point_edit` | Edit Frame Points | `DSG_OT_ToggleContourPointEdit` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3841 |
-| `dsg.toggle_guide_visibility` | Show/Hide Guide | `DSG_OT_ToggleGuideVisibility` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 462 |
-| `dsg.toggle_implant_parallel_lock` | Lock Implant for Parallelization | `DSG_OT_ToggleImplantParallelLock` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4132 |
+| `dsg.toggle_animated_microscrews_visibility` | Show or Hide Animated Microscrews | `DSG_OT_ToggleAnimatedMicroscrewsVisibility` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2092 |
+| `dsg.toggle_blockout_visibility` | Show/Hide Model | `DSG_OT_ToggleBlockoutVisibility` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 447 |
+| `dsg.toggle_contour_point_edit` | Edit Frame Points | `DSG_OT_ToggleContourPointEdit` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3797 |
+| `dsg.toggle_extraction_tooth_smoothing` | Suavizado del diente a extraer | `DSG_OT_ToggleExtractionSmoothing` | [blender/extraction_extension.py](../blender/extraction_extension.py) | 110 |
+| `dsg.toggle_guide_visibility` | Show/Hide Guide | `DSG_OT_ToggleGuideVisibility` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 468 |
+| `dsg.toggle_implant_inclination_planes` | Mostrar/ocultar planos del implante | `DSG_OT_ToggleInclinationPlanes` | [blender/implant_plane.py](../blender/implant_plane.py) | 393 |
+| `dsg.toggle_implant_parallel_lock` | Lock Implant for Parallelization | `DSG_OT_ToggleImplantParallelLock` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 4090 |
 | `dsg.toggle_irrigation_implant_seal` | Open / Seal Implant Irrigation | `DSG_OT_ToggleIrrigationImplantSeal` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 94 |
-| `dsg.toggle_lateral_opening` | Lateral Opening (moved) | `DSG_OT_ToggleLateralOpening` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2258 |
-| `dsg.toggle_sequential_insertion_visibility` | Show or Hide Screws, Drills and Implants | `DSG_OT_ToggleSequentialInsertionVisibility` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2250 |
+| `dsg.toggle_lateral_opening` | Lateral Opening (moved) | `DSG_OT_ToggleLateralOpening` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 2274 |
+| `dsg.toggle_mpr_plane` | Mostrar/ocultar MPR | `DSG_OT_ToggleMPRPlane` | [blender/mpr_view.py](../blender/mpr_view.py) | 199 |
+| `dsg.toggle_protected_neighbor` | Conservar diente vecino | `DSG_OT_ToggleProtectedNeighbor` | [blender/protected_neighbors.py](../blender/protected_neighbors.py) | 164 |
+| `dsg.toggle_sequential_insertion_visibility` | Show or Hide Screws, Drills and Implants | `DSG_OT_ToggleSequentialInsertionVisibility` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2265 |
+| `dsg.undo_virtual_extraction` | Restaurar diente | `DSG_OT_UndoVirtualExtraction` | [blender/virtual_extraction.py](../blender/virtual_extraction.py) | 241 |
 | `dsg.update_confirm_irrigation` | Confirm | `DSG_OT_UpdateConfirmIrrigation` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 529 |
 | `dsg.update_engrave_preview` | Update Preview | `DSG_OT_UpdateEngravePreview` | [_guide_parts/08_export_final_ui_registration.py](../_guide_parts/08_export_final_ui_registration.py) | 51 |
-| `dsg.update_final_animation` | Update Final Animation | `DSG_OT_UpdateFinalAnimation` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2119 |
+| `dsg.update_final_animation` | Update Final Animation | `DSG_OT_UpdateFinalAnimation` | [_guide_parts/07_reinforcement_animation.py](../_guide_parts/07_reinforcement_animation.py) | 2123 |
 | `dsg.update_irrigation_preview` | Update Walls from Path | `DSG_OT_UpdateIrrigationPreview` | [_guide_parts/06_irrigation_b.py](../_guide_parts/06_irrigation_b.py) | 330 |
-| `dsg.update_microscrew_from_visual` | Update Microscrew From Visual | `DSG_OT_UpdateMicroscrewFromVisual` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1722 |
-| `dsg.use_selected_ios_model` | Use Selected IOS Model | `DSG_OT_UseSelectedIOSModel` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2803 |
-| `dsg.validate_blockout_seating` | Validate Guide Seating | `DSG_OT_ValidateBlockoutSeating` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3415 |
-| `dsg.workflow_undo` | Deshacer último cambio DSG | `DSG_OT_WorkflowUndo` | [workflow_history.py](../workflow_history.py) | 337 |
-| `dsg_suite.accept_fdi_select_teeth` | FDI correcto · elegir dientes | `DSG_SUITE_OT_AcceptFDIAndSelectTeeth` | [core.py](../core.py) | 1453 |
-| `dsg_suite.back_workflow` | Atrás | `DSG_SUITE_OT_BackWorkflow` | [core.py](../core.py) | 3149 |
-| `dsg_suite.build_immediate_arch_models` | Siguiente · crear modelos alveolares | `DSG_SUITE_OT_BuildImmediateArchModels` | [core.py](../core.py) | 1554 |
-| `dsg_suite.change_route` | Cambiar ruta | `DSG_SUITE_OT_ChangeRoute` | [core.py](../core.py) | 1045 |
-| `dsg_suite.choose_patient_folder` | Elegir paciente | `DSG_SUITE_OT_ChoosePatientFolder` | [core.py](../core.py) | 939 |
-| `dsg_suite.confirm_immediate_models` | Confirmar y alinear | `DSG_SUITE_OT_ConfirmImmediateModels` | [core.py](../core.py) | 1619 |
-| `dsg_suite.confirm_ios_postextraction` | Confirmar IOS postextracción | `DSG_SUITE_OT_ConfirmIOSPostExtraction` | [core.py](../core.py) | 2729 |
-| `dsg_suite.confirm_simple_stl` | Confirmar arcadas y alinear | `DSG_SUITE_OT_ConfirmSimpleSTL` | [core.py](../core.py) | 1250 |
-| `dsg_suite.fix_immediate_extraction_selection` | Fijar dientes de extracción | `DSG_SUITE_OT_FixImmediateExtractionSelection` | [core.py](../core.py) | 1519 |
-| `dsg_suite.install_engines_core` |  | `DSG_SUITE_OT_InstallEnginesCore` | [core.py](../core.py) | 3858 |
-| `dsg_suite.load_patient_cbct` | Cargar CBCT del paciente | `DSG_SUITE_OT_LoadPatientCBCT` | [core.py](../core.py) | 1031 |
-| `dsg_suite.prepare_ios_postextraction` | Preparar selección IOS postextracción | `DSG_SUITE_OT_PrepareIOSPostExtraction` | [core.py](../core.py) | 1882 |
-| `dsg_suite.recover_immediate_inputs` | Recover Immediate Inputs | `DSG_SUITE_OT_RecoverImmediateInputs` | [core.py](../core.py) | 2953 |
-| `dsg_suite.restart_alignment` | Reiniciar alineamiento | `DSG_SUITE_OT_RestartAlignment` | [core.py](../core.py) | 3241 |
-| `dsg_suite.restart_dicom` | Reiniciar DICOM | `DSG_SUITE_OT_RestartDICOM` | [core.py](../core.py) | 3210 |
-| `dsg_suite.restart_dsg` | Reiniciar DSG | `DSG_SUITE_OT_RestartDSG` | [core.py](../core.py) | 3266 |
-| `dsg_suite.restore_ios_preextraction` | Restaurar IOS preextracción | `DSG_SUITE_OT_RestoreIOSPreExtraction` | [core.py](../core.py) | 2874 |
-| `dsg_suite.set_stage` | Open module | `DSG_SUITE_OT_SetStage` | [core.py](../core.py) | 3401 |
-| `dsg_suite.start_immediate_route` | Implante inmediato | `DSG_SUITE_OT_StartImmediateRoute` | [core.py](../core.py) | 1340 |
-| `dsg_suite.start_simple_route` | Implante simple | `DSG_SUITE_OT_StartSimpleRoute` | [core.py](../core.py) | 1209 |
-| `dsg_suite.toggle_antagonist` | Toggle Antagonist | `DSG_SUITE_OT_ToggleAntagonist` | [core.py](../core.py) | 3472 |
-| `dsg_suite.use_selected_ios` | Use selected IOS | `DSG_SUITE_OT_UseSelectedIOS` | [core.py](../core.py) | 3440 |
+| `dsg.update_microscrew_from_visual` | Update Microscrew From Visual | `DSG_OT_UpdateMicroscrewFromVisual` | [_guide_parts/05_frame_microscrews_sleeves_drill.py](../_guide_parts/05_frame_microscrews_sleeves_drill.py) | 1723 |
+| `dsg.use_selected_ios_model` | Use Selected IOS Model | `DSG_OT_UseSelectedIOSModel` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 2814 |
+| `dsg.validate_blockout_seating` | Validate Guide Seating | `DSG_OT_ValidateBlockoutSeating` | [_guide_parts/04_properties_clinical_operators.py](../_guide_parts/04_properties_clinical_operators.py) | 3423 |
+| `dsg.voxel_remesh_restore` | Mallas originales | `DSG_OT_VoxelRemeshRestore` | [cbct_dental_module.py](../cbct_dental_module.py) | 2163 |
+| `dsg.voxel_remesh_segmented` | Remesh vóxel | `DSG_OT_VoxelRemeshSegmented` | [cbct_dental_module.py](../cbct_dental_module.py) | 2121 |
+| `dsg_suite.accept_fdi_select_teeth` | FDI correcto · elegir dientes | `DSG_SUITE_OT_AcceptFDIAndSelectTeeth` | [core.py](../core.py) | 1501 |
+| `dsg_suite.back_workflow` | Atrás | `DSG_SUITE_OT_BackWorkflow` | [core.py](../core.py) | 3458 |
+| `dsg_suite.build_immediate_arch_models` | Siguiente · crear modelos alveolares | `DSG_SUITE_OT_BuildImmediateArchModels` | [core.py](../core.py) | 1603 |
+| `dsg_suite.change_route` | Cambiar ruta | `DSG_SUITE_OT_ChangeRoute` | [core.py](../core.py) | 1074 |
+| `dsg_suite.choose_patient_folder` | Elegir paciente | `DSG_SUITE_OT_ChoosePatientFolder` | [core.py](../core.py) | 968 |
+| `dsg_suite.confirm_immediate_models` | Confirmar | `DSG_SUITE_OT_ConfirmImmediateModels` | [core.py](../core.py) | 1668 |
+| `dsg_suite.confirm_ios_postextraction` | Confirmar IOS postextracción | `DSG_SUITE_OT_ConfirmIOSPostExtraction` | [core.py](../core.py) | 3027 |
+| `dsg_suite.confirm_simple_stl` | Confirmar arcadas y alinear | `DSG_SUITE_OT_ConfirmSimpleSTL` | [core.py](../core.py) | 1279 |
+| `dsg_suite.fix_immediate_extraction_selection` | Fijar dientes de extracción | `DSG_SUITE_OT_FixImmediateExtractionSelection` | [core.py](../core.py) | 1567 |
+| `dsg_suite.install_engines_core` |  | `DSG_SUITE_OT_InstallEnginesCore` | [core.py](../core.py) | 4109 |
+| `dsg_suite.load_patient_cbct` | Cargar CBCT del paciente | `DSG_SUITE_OT_LoadPatientCBCT` | [core.py](../core.py) | 1060 |
+| `dsg_suite.prepare_ios_postextraction` | Preparar selección IOS postextracción | `DSG_SUITE_OT_PrepareIOSPostExtraction` | [core.py](../core.py) | 1941 |
+| `dsg_suite.recover_immediate_inputs` | Recover Immediate Inputs | `DSG_SUITE_OT_RecoverImmediateInputs` | [core.py](../core.py) | 3262 |
+| `dsg_suite.restart_alignment` | Reiniciar alineamiento | `DSG_SUITE_OT_RestartAlignment` | [core.py](../core.py) | 3550 |
+| `dsg_suite.restart_dicom` | Reiniciar DICOM | `DSG_SUITE_OT_RestartDICOM` | [core.py](../core.py) | 3519 |
+| `dsg_suite.restart_dsg` | Reiniciar DSG | `DSG_SUITE_OT_RestartDSG` | [core.py](../core.py) | 3575 |
+| `dsg_suite.restore_ios_preextraction` | Restaurar IOS preextracción | `DSG_SUITE_OT_RestoreIOSPreExtraction` | [core.py](../core.py) | 3174 |
+| `dsg_suite.set_stage` | Open module | `DSG_SUITE_OT_SetStage` | [core.py](../core.py) | 3710 |
+| `dsg_suite.start_immediate_route` | Implante inmediato | `DSG_SUITE_OT_StartImmediateRoute` | [core.py](../core.py) | 1371 |
+| `dsg_suite.start_simple_route` | Implante simple | `DSG_SUITE_OT_StartSimpleRoute` | [core.py](../core.py) | 1238 |
+| `dsg_suite.toggle_antagonist` | Toggle Antagonist | `DSG_SUITE_OT_ToggleAntagonist` | [core.py](../core.py) | 3781 |
+| `dsg_suite.use_selected_ios` | Use selected IOS | `DSG_SUITE_OT_UseSelectedIOS` | [core.py](../core.py) | 3749 |
+
+
+## Axial radial web V2 (2026-10-21)
+
+The Optimize Frame action now dispatches to `blender/axial_web_pipeline.py` for new snapshots. See `docs/AXIAL_RADIAL_WEB.md`. The V1 worker and review paths remain available for their original requests. `axial_radial_web.py` builds the shared distance graph, `blender/axial_design_sheet.py` constructs the IOS-guided extrados, `axial_capsule.py` and `blender/axial_implicit_web.py` form the shared volume, and `blender/axial_web_mesh.py` verifies the final geometry. `axial_web_contract.py` binds the inputs, artifacts and receipts.

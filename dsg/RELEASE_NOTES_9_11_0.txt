@@ -1,0 +1,417 @@
+DSG 9.11.0 — "DSG v9 DICOM y eficiencia corregidas"
+
+1. DICOM invertido
+- Los CBCT multi-frame (todos los cortes en un archivo) se reordenan por la
+  posición real de cada corte a lo largo de la normal X×Y. Antes se apilaban
+  en el orden del archivo: si el equipo los guardaba de arriba abajo, el
+  volumen salía en espejo y la IA recibía un cráneo invertido.
+- El origen del volumen es ahora el primer corte ya ordenado.
+- Aviso en el log si faltan ImagePositionPatient (series clásicas o
+  multi-frame) o ImageOrientationPatient.
+
+2. Eficiencia tras la segmentación
+- El historial Ctrl+Z ya no hace una copia completa del caso (hash del CBCT,
+  lectura de todas las mallas y .blend comprimido) antes y después de cada
+  botón. Solo la hacen los operadores DICOM y los cambios de etapa: cargar
+  paciente/CBCT, iniciar ruta, CONFIRMAR + ALINEAR, CONTINUAR a la guía,
+  atrás y reinicios. El resto usa el Ctrl+Z nativo de Blender.
+- Tras un Ctrl+Z nativo no se recarga el CBCT desde disco si el punto de
+  recuperación no cambió.
+- La carpeta scripts/dsg_history conserva como máximo 40 estados por caso y
+  borra los datos que ya nadie usa.
+
+3. Alineación solo con 3 puntos
+- Eliminado el modo automático y sus botones.
+- ALINEAR = ajuste con los 3 pares de puntos + un ICP punto-a-plano recortado
+  sobre los dientes en 10 mm alrededor de los puntos. Un solo paso, sin
+  modal. Prueba sintética: de 2,08 mm tras los clics a 0,08 mm en 0,5 s.
+- SciPy se carga explícitamente desde el runtime privado antes del ICP.
+- Módulo de alineación: de 5.478 a 2.753 líneas.
+
+Limitaciones conocidas
+- Tras un Ctrl+Z nativo dentro de la guía, las imágenes MPR pueden mostrar
+  el último corte calculado hasta que se muevan.
+- Validado con pruebas sintéticas fuera de Blender; falta un caso real.
+
+----------------------------------------------------------------------
+DSG 9.11.1 — Ctrl+Z nativo de Blender
+
+- Ctrl+Z es ya solo el deshacer de Blender: no se guarda ninguna copia del
+  caso en disco, no se calcula ningún hash del CBCT y no se lee ninguna malla
+  al pulsar botones. Desaparece el atajo propio de DSG sobre Ctrl+Z.
+- Para volver al inicio de una etapa se usan los botones deterministas que ya
+  tenía el addon: ↻ DICOM (paciente y CBCT conservados, elegir ruta),
+  ↻ ALINEAR (DICOM e IOS conservados, sin puntos ni ICP) y ↻ DSG (DICOM y
+  alineación conservados, guía vacía), además de ATRÁS.
+- Se conservan las protecciones de seguridad: antes de deshacer se cancelan
+  la segmentación en curso, el suavizado, las herramientas modales y los
+  temporizadores DSG, y se vacían las cachés de geometría. Tras deshacer no
+  hay avance automático de etapa hasta la siguiente acción.
+- Vuelven a ejecutarse las reparaciones de etapa tras deshacer que el
+  historial anterior desactivaba (ruta inmediata, paso de la guía, planos MPR).
+- Ctrl+Z no recupera los datos del CBCT en memoria (volumen, labelmap). Si se
+  deshace más allá de la segmentación, la ruta vuelve a CBCT listo y se
+  segmenta de nuevo o se usa ↻ DICOM.
+- La carpeta scripts/dsg_history de versiones anteriores ya no se usa y se
+  puede borrar a mano.
+
+----------------------------------------------------------------------
+DSG 9.12.0 — Animación final de presentación
+
+Paleta (modo Solid, color por objeto; materiales y STL no cambian)
+- Modelo gris, fresa negra, microtornillos morados, implante titanio claro,
+  férula turquesa. El turquesa es el color de la acción.
+
+Efectos sincronizados
+- Anillo turquesa sobre el cilindro del implante activo, visible desde que
+  entra la fresa hasta que el implante queda asentado.
+- Destello turquesa claro (6 fotogramas) cuando la fresa llega al tope,
+  cuando el implante asienta y cuando cada microtornillo asienta.
+- Férula turquesa opaca al entrar y salir; translúcida durante la cirugía
+  para ver fresa, implante y tornillos dentro.
+- Hueso CBCT translúcido mientras se fresa y se colocan los implantes.
+- Plano final: con la férula ya oculta, los implantes pasan a turquesa
+  durante 2 s.
+- Los objetos siguen apareciendo y ocultándose como antes.
+
+Vista de presentación al pulsar Reproducir
+- Fondo oscuro, sombras, realce de cavidades y brillo especular; sin
+  rejilla, ejes ni ayudas de la vista. Detener devuelve la vista exacta.
+- Selector de velocidad ×0,75 · ×1 · ×1,5 junto a Reproducir.
+
+Ritmo
+- Pausa de 0,5 s tras asentar la férula, tras cada implante y antes de
+  desatornillar. Implante 56 fotogramas, férula 30, extracción 34.
+- Giro limitado a 28° por fotograma en fresa, implante y microtornillo:
+  antes la fresa giraba ~105°/fotograma y parecía quieta o al revés.
+
+Corrección Blender 5
+- Las curvas de animación se leen también en el formato de Blender 5
+  (channelbags). Antes, la interpolación y el borrado de curvas al recrear
+  la animación fallaban sin avisar en Blender 5.2.
+
+----------------------------------------------------------------------
+DSG 9.13.0 — Remesh vóxel de los elementos segmentados
+
+- Botón REMESH VÓXEL (n) con campo "Vóxel mm" (0,25 mm por defecto,
+  0,05–2 mm). Actúa sobre todo lo segmentado: dientes individuales, maxilar,
+  mandíbula, canal mandibular, arcadas de la ruta simple y mallas DICOM de
+  dientes/hueso. Excluye las copias ocultas del punto de recuperación DICOM.
+- Aparece junto a SUAVIZAR DIENTES (revisión FDI, selección, alvéolos y
+  alineación) y en la revisión de arcadas de la ruta simple.
+- Siempre parte de la malla original (antes de remesh y de suavizado): se
+  puede repetir con otro tamaño sin acumular pérdidas. MALLAS ORIGINALES (n)
+  devuelve la geometría previa. También funciona Ctrl+Z.
+- Respeta la escala del objeto; no usa operadores de vista.
+- Al aplicarlo se invalida la caché de SUAVIZAR DIENTES de esos objetos.
+- Los modelos alveolares del implante inmediato se construyen con la malla
+  vigente: aplica el remesh antes de CREAR ALVÉOLOS si quieres que lo hereden.
+- Verificado en Blender 5.2.2: diente simulado 1.280 → 6.780 caras en
+  0,03 s; altura 6,40 → 6,38 mm.
+
+----------------------------------------------------------------------
+DSG 9.14.0 — BUSCAR SUPERFICIE rápido y extracción virtual robusta
+
+BUSCAR SUPERFICIE
+- El IOS y el hueso se recortan una sola vez con NumPy a la zona de los
+  dientes elegidos y sus vecinos (+6 mm). Los cuatro intentos de búsqueda
+  trabajan sobre ese recorte y la selección se traslada al IOS completo.
+  Antes cada intento convertía todo el IOS en Python, construía su BVH,
+  normales, adyacencias y curvatura y recorría todas sus caras.
+- Medido en Blender 5.2.2 con un IOS de 562.500 caras: coste fijo por intento
+  2,42 s → 0,11 s; peor caso de 4 intentos 9,7 s → 0,9 s.
+- La puntuación por cara se escribe con foreach_set (antes, cara a cara).
+
+Resto radicular o diente cubierto por encía
+- Si no hay corona visible en el IOS, BUSCAR SUPERFICIE ya no da error: deja
+  la copia sin selección y el panel indica "Sin corona visible · Booleana
+  directa". También se puede deseleccionar todo a mano para forzar ese modo.
+
+APLICAR + CERRAR (nuevo orden)
+1. Si hay corona seleccionada, se retira y se tapa (igual que antes).
+2. Se cierra el IOS en un sólido manifold ANTES de la booleana (huecos
+   secundarios + base), con las funciones de cierre que ya existían.
+3. Cada diente CBCT se prepara como cortador: remesh vóxel 0,20 mm (una sola
+   cáscara cerrada), sin cámara pulpar ni cáscaras internas, y dilatado
+   0,15 mm para separarlo de la superficie del IOS donde casi coinciden.
+4. Booleana DIFFERENCE sólido − sólido: MANIFOLD; si el resultado no es
+   manifold, EXACT; después EXACT con tolerancia a huecos.
+5. Limpieza de islas y verificación final: 0 bordes y 0 aristas no manifold.
+- Un resto radicular medio enterrado deja su alvéolo abierto donde cruza la
+  encía y una cavidad interna donde está cubierto, sin láminas sueltas.
+- Prueba en Blender 5.2.2: resto radicular con techo casi coincidente con la
+  encía → MANIFOLD en 0,14 s, 0 bordes, 0 aristas no manifold, 1 isla.
+  Restando el diente sin preparar quedaba una isla pulpar flotando.
+- REINTENTAR continúa desde el último paso completado; RESTAURAR elimina
+  también las copias intermedias.
+
+DSG 9.15.0 · Botón SIGUIENTE y bucle del modelo cerrado
+-------------------------------------------------------
+Alineamiento
+- Con los modelos alineados aparece siempre un botón SIGUIENTE en el módulo
+  de alineamiento. Se salta cualquier paso pendiente y se pasa a DSG.
+- SIGUIENTE ya no se bloquea:
+  · si la validación de tres zonas no se superó, solo avisa;
+  · si el IOS postextracción está a medias, se descarta, se recupera el IOS
+    alineado original y se avisa;
+  · si el IOS postextracción está confirmado, se usa ese.
+- Sale del modo edición antes de cambiar de etapa.
+
+Bucle modelo cerrado → modelo retentivo → eje de inserción
+- Causa (comprobada en la escena real): DSG_Model_Closed no se reconocía como
+  IOS válido. Al calcular o confirmar el modelo retentivo, DSG volvía a elegir
+  el IOS abierto de respaldo (Dental_IOS_Aligned). El paso 1 detectaba de
+  nuevo "modelo abierto" y nunca se llegaba a la colocación de implantes.
+- Ahora el modelo cerrado generado a partir del IOS alineado se acepta como
+  la misma anatomía. Cuando el IOS abierto tiene un modelo cerrado aceptado,
+  se usa siempre el cerrado (búsqueda del IOS, modelo retentivo, panel).
+- El modelo cerrado hereda la marca dental_suite_aligned.
+
+DSG 9.16.0 · Extracción virtual paso a paso y panel de implantes sin bloqueo
+---------------------------------------------------------------------------
+Causa del bloqueo (comprobada en la escena real)
+- El panel de dientes vecinos cambiaba la visibilidad de los dientes CBCT
+  mientras Blender dibujaba el panel. Blender lo prohíbe ("Writing to ID
+  classes in this context is not allowed") y cortaba el panel justo después
+  de ELEGIR DIENTES VECINOS: desaparecían Diámetro/Longitud, AÑADIR IMPLANTE
+  y SIGUIENTE.
+- Ahora el panel solo dibuja; la visibilidad se aplica en el siguiente ciclo
+  y solo si algo cambia. Lo mismo para los cilindros de seguridad de los
+  microtornillos en el paso de estructura, que tenían el mismo fallo.
+
+Nuevo orden en Planificación de implantes (ruta inmediata)
+1. El diente CBCT que se va a extraer se muestra en la vista 3D.
+2. REALIZAR EXTRACCIÓN VIRTUAL: resta el diente (cortador vóxel cerrado) del
+   hueso CBCT para crear el alvéolo, con booleana MANIFOLD, y oculta el
+   diente. Si la booleana del IOS seguía pendiente, también la completa.
+   Si la segmentación ya dejó el alvéolo vacío, el hueso no se modifica.
+3. SIGUIENTE: abre directamente ELEGIR DIENTES VECINOS y la planificación
+   del implante.
+- Restaurar diente deshace la extracción (devuelve el hueso original).
+- Medido en Blender 5.2.2 con el maxilar real (1,56 M caras): ~2,5 s.
+
+DSG 9.16.1 · Selección del diente corregible y borde sin caras invertidas
+------------------------------------------------------------------------
+"El suavizado invertiría una cara del borde; revisa la selección."
+- Causa (reproducida con la selección real de 4.269 vértices): al borrar
+  por vértices quedaban triángulos finos en el borde; el suavizado los
+  invertía y se cancelaba todo el cierre.
+- Ahora la región se borra por caras y el suavizado protege cada vértice:
+  si mover un vértice invertiría una de sus caras, ese vértice no se mueve
+  y el resto del borde sí. Con la misma selección: borde de 297 vértices,
+  0 caras invertidas, 0 aristas no manifold.
+
+Selección en varias pasadas y corrección
+- El círculo trabaja en modo AÑADIR: cada pasada suma a la anterior (antes
+  cada pasada reemplazaba la selección).
+- Botones AÑADIR / QUITAR para seguir marcando o borrar lo que sobra, y
+  "Empezar selección de nuevo".
+- P (REVISAR SELECCIÓN) limpia la selección y la muestra: une la parte
+  principal, rellena huecos sin marcar, suaviza los dientes de sierra del
+  pincel y elimina cruces del borde. Se puede corregir y pulsar P otra vez.
+- CERRAR HUECO usa siempre la selección actual (la última corrección).
+- Si el cierre falla, la malla vuelve al estado anterior y la selección se
+  conserva para corregirla.
+
+DSG 9.16.2 · PREPARAR MODELO RETENTIVO sin cuello de botella
+------------------------------------------------------------
+Medido en Blender 5.2.2 con el modelo real (184.002 vértices, 322.503 caras)
+- Antes: ~100 s por clic (cálculo 61,6 s + comprobación de asiento 18 s,
+  repetida dos veces). Ahora: ~6 s (cálculo 1,8 s + comprobación 2,6 s,
+  una sola vez).
+
+Causa
+- El blockout por rayos de v7 se diseñó para un IOS abierto. Sobre el modelo
+  cerrado, cada vértice orientado hacia la vista lanzaba su rayo hacia el
+  interior del sólido y "chocaba" con la base artificial a 6–24 mm: se
+  movían 151.528 de 184.002 vértices (media 9,5 mm) y la comprobación de
+  asiento daba siempre REVISIÓN (residuo máximo 19,9 mm).
+- Esos rayos largos atravesando las paredes finas de la base costaban
+  ~0,33 ms cada uno.
+
+Solución
+- Las caras de la base cerrada (paredes y tapa, aristas > 1 mm) no detienen
+  rayos ni los lanzan: no son anatomía.
+- Solo se lanzan rayos desde vértices cuya normal mira en el sentido de
+  inserción (los que pueden estar en una retención), y solo cuentan los
+  impactos en caras exteriores.
+- Resultado: 8.754 vértices movidos, media 0,9 mm, máximo 8,6 mm (solo
+  retenciones reales); residuo máximo 0,84 mm.
+- La comprobación de asiento usa las mismas reglas, está vectorizada y ya
+  no se ejecuta dos veces por clic.
+
+DSG 9.16.3 · Tamaño del implante editable y dientes vecinos bajo control
+-----------------------------------------------------------------------
+Diámetro y longitud del implante
+- Cambiar Diámetro o Longitud en Planificación de implantes modifica el
+  implante activo (o el último creado) al momento: ya no hay que borrarlo y
+  crear uno nuevo. La plataforma se queda en el mismo punto y el eje no
+  cambia; con la longitud solo se desplaza el ápice.
+- Cada campo cambia solo su medida (cambiar el diámetro no altera la
+  longitud de otro implante seleccionado).
+- El panel indica a qué implante se aplica el cambio.
+- Los cilindros de seguridad del implante se actualizan con el nuevo tamaño.
+
+Dientes vecinos
+- Por defecto ya no se muestra ningún diente vecino: aparecer los ~28
+  dientes segmentados a la vez ralentizaba Blender y parecía que se
+  importaban dientes no seleccionados.
+- Nuevo botón QUITAR DIENTES VECINOS (durante ELEGIR DIENTES VECINOS) que
+  oculta todos; MOSTRAR TODOS hace lo contrario.
+- Ocultar un vecino no desactiva su comprobación de seguridad.
+
+DSG 9.16.4 · Revisión DICOM del implante sin cuello de botella
+-------------------------------------------------------------
+Comprobado en la escena real con la revisión abierta: 53 objetos visibles y
+5,76 millones de caras (28 dientes, incluido el extraído, maxilar 1,56 M,
+mandíbula 1,93 M y conducto) cuando la revisión solo necesita los planos.
+
+Al abrir la revisión
+- Ya no se muestran todas las mallas segmentadas. Se ven los planos DICOM,
+  el implante, los dientes vecinos que hayas elegido y el conducto
+  mandibular solo en implantes inferiores. En el caso real: 4,96 M de caras
+  dejan de cargarse.
+
+Lentitud que seguía al salir de la revisión
+- Causa: la comprobación de seguridad del implante (1,1–1,4 s) se repetía
+  en CADA actualización de Blender (cada paso del deslizador DICOM, cada
+  clic) mientras el implante tocara un diente: al no existir una posición
+  libre guardada, nunca se daba por comprobado.
+- Ahora solo se comprueba cuando el implante se mueve o cambia de tamaño.
+- La comprobación es más rápida: la geometría de dientes y conducto se
+  convierte una sola vez (NumPy) y se reutiliza; 1,1 s → 0,16 s, mismo
+  resultado (contacto con FDI 14 y 16).
+- El conducto mandibular ya no se comprueba en implantes superiores.
+
+DSG 9.16.5 · CREAR ESTRUCTURA: "anchors lie on disconnected surface components"
+------------------------------------------------------------------------------
+- Causa (reproducida en la escena real): DSG_PassiveCombined une el IOS y
+  el modelo retentivo como dos capas superpuestas y desconectadas (2 × 180.977
+  vértices). Cada punto del contorno se pegaba a la capa más cercana; en el
+  caso real quedaron alternados (capa 0, 1, 0, 1) y no existía ruta por
+  superficie entre el punto 1 y el 2.
+- Ahora todos los puntos se colocan en una sola capa: la retentiva (la que
+  está desplazada según el eje de inserción, donde apoya la guía). Si la
+  superficie no es de dos capas iguales, se usa la componente más grande.
+- Caso real: 2 puntos reubicados (máx. 0,13 mm), los 4 tramos resueltos por
+  superficie (24, 18, 25 y 20 mm) en 0,37 s. Nunca se traza por el aire.
+
+DSG 9.16.6 · Estructura con líneas suaves
+-----------------------------------------
+- Antes el tubo seguía la ruta más corta sobre la superficie con 0,15 mm de
+  tolerancia: subía por cada cúspide y bajaba a cada tronera, y con 3 mm de
+  radio parecía una pila de rollos ("muñeco de Michelin").
+- Ahora la línea central se suaviza antes del barrido: la altura según el
+  eje de inserción con un filtro amplio (≈5 mm con radio 3) y el recorrido en
+  planta con uno suave. Ningún punto se aleja más del 45 % del radio de la
+  ruta resuelta, así que el tubo sigue apoyado en el modelo (la booleana
+  final recorta lo que entra en la anatomía, igual que antes).
+- Menos puntos de control y más espaciados: curvas largas y uniformes.
+- Caso real: 60 → 25 puntos de control.
+
+DSG 9.17.0 · Frame con grosor garantizado tras la booleana
+---------------------------------------------------------
+Problema (medido en el caso real con la estructura 9.16.6)
+- 64 de 211 secciones quedaban por debajo de 2 mm tras la booleana y en la
+  peor el tubo estaba totalmente enterrado (−1,5 mm: no quedaría frame).
+  La inserción variaba entre el 46 % y el 119 % del diámetro.
+
+Predicción de la booleana con rutas geodésicas
+- Para cada sección (cada ~0,4 mm) se toma la franja del modelo retentivo
+  situada a menos de un radio de la ruta MEDIDO SOBRE LA SUPERFICIE (no se
+  cuentan la pared opuesta de una tronera ni el otro lado de una cúspide),
+  se corta con el plano normal al tubo y se calcula lo que dejará la
+  booleana: grosor restante e inserción.
+
+Límites (elegidos por el usuario)
+- Grosor mínimo tras la booleana: 2 mm, en cada sección.
+- Inserción máxima: 45 % del diámetro, en cada sección.
+- Inserción mínima (apoyo): 30 % del diámetro dentro de cada tramo de ±4 mm;
+  el tubo puede pasar por encima de un valle entre cúspides apoyándose en
+  las vecinas (más material ahí, no menos) en vez de bajar a cada valle,
+  que es lo que producía el aspecto de "muñeco de Michelin".
+- Si en algún punto no se pueden cumplir a la vez, el tubo se engrosa solo
+  en ese tramo (hasta ×1,5) con transición suave.
+
+Línea suave
+- Para cada sección se calcula el intervalo permitido y se busca la línea de
+  mínima flexión dentro de él (sin esquinas). El suavizado 9.16.6 también
+  usa ahora mínima flexión: desaparecen las pequeñas esquinas donde tocaba
+  su límite.
+- Caso sintético con cúspides de 2 mm: curvatura media 1,29 (ruta) → 0,078,
+  grosor mínimo 0,84 → 2,99 mm, inserción ≤ 45 %, apoyo ≥ 37 %, 0 tramos
+  fuera de límites (test automático tests_pure/test_frame_embed.py).
+- El panel de la estructura muestra la predicción: grosor mínimo, inserción
+  máxima y apoyo mínimo, y avisa si algún tramo queda fuera de límites.
+
+9.17.1
+- Se eliminan las líneas discontinuas que salían de los números FDI hacia el centro (líneas de relación de Blender: las etiquetas siguen al diente, pero la superposición "Relationship Lines" se desactiva en las vistas 3D al crear etiquetas y al abrir archivos).
+
+9.18.0
+- Modelo cerrado: la tapa ya no cubre de lado a lado (casco convexo). Sigue el contorno del IOS (si la arcada es una U, la tapa es una U).
+- Transición curva tipo bevel entre la pared y la tapa (cuarto de círculo de 1,5 mm, 6 anillos).
+- El contorno se suaviza con un gaussiano por longitud de arco (sin encoger) hasta que es un polígono simple; la tapa se triangula sin añadir vértices: el modelo sigue siendo manifold y la anatomía no se toca.
+- Si el plan no es válido se usa la tapa anterior como respaldo.
+- Verificado en el caso real: 0 aristas abiertas, 0 no-manifold, 12,5 s.
+
+9.18.1 / 9.18.2
+- Suavizado de la línea donde termina el IOS abierto antes de cerrar: la línea del borde se filtra con un gaussiano por longitud de arco (sigma 1 mm, desplazamiento máx. 0,6 mm) y el desplazamiento se reparte en una franja de 2 mm que se desvanece hasta el escaneo intacto.
+- Seguridad: si alguna cara se invierte solo se retraen sus vértices; el bloqueo anatómico libera exactamente los vértices de esa franja y sigue verificando todo lo demás.
+- Pared: el contorno sale rápido del zigzag del escáner (70 % suave a un tercio de la altura, 6 anillos) y las caras nuevas usan sombreado suave: menos estrías verticales.
+- Verificado en el caso real: manifold, 0 aristas abiertas, bloqueo anatómico OK (37.738 vértices de franja liberados), 14,7 s.
+
+9.19.0
+- Retención en tiempo real: al mover el deslizador, el modelo retentivo se actualiza al instante (sin lanzar rayos de nuevo; la distancia de bloqueo de cada vértice se guarda al calcular). Los alivios locales se conservan.
+- Alivio local en tiempo real: en Modo Edición la selección se ve ya aliviada; cambia al cambiar la selección o el valor. Se fija al salir de Modo Edición o con PREPARAR.
+- Sin zonas vacías ni huecas: el relleno es un campo continuo (los vértices cuyo rayo se escapó ya no quedan como pozos, los bordes hacen rampa en lugar de escalón) y el alivio siempre va hacia fuera con degradado de 3 anillos.
+- La comprobación de asiento se lanza sola 1 s después del último cambio (COMPROBANDO ASIENTO…).
+- 9.19.1: cierre de pozos: un vértice que no se mueve por sí mismo (normal ruidosa) pero está rodeado de vértices elevados (≥60 %) los sigue. Caso real: 92 → 1 pozo real (los otros 30 tienen una superficie encima a menos de la retención y no deben subir). Retención en vivo: 130 ms con 219.000 vértices.
+
+9.19.2
+- Extracción: las booleanas del alvéolo (IOS y hueso) se evaluaban sobre objetos ocultos por el flujo; Blender no evalúa modificadores de objetos ocultos y devolvía la malla original sin cortar (el hueso salía siempre «sin cambios»). Ahora el objeto se hace visible solo durante la evaluación.
+- Si el diente CBCT es corto (corona mal segmentada) y termina por debajo de la superficie del IOS, el cortador se prolonga por su eje hasta atravesarla (+1 mm, con la anchura de su parte superior): el alvéolo se abre siempre en vez de quedar como burbuja interna que la limpieza eliminaba.
+
+9.19.4
+- Comprobación de apertura del alvéolo rehecha: ya no lanza un solo rayo por el eje del diente (fallaba en caninos inclinados, donde el eje sale del modelo, y en molares, donde el rayo choca con la furca). Ahora mide la pared real del alvéolo: los puntos del modelo que quedan sobre la superficie del cortador tras eliminar islas; el más profundo debe llegar a la mitad de la longitud del diente.
+- Reconoce un alvéolo que ya existía (reaplicar la booleana ya no se rechaza).
+- Validado en el caso real con los 14 dientes superiores: booleana MANIFOLD y manifold en 14/14, apertura verificada en 14/14 (antes 11/14), extensión necesaria 0,65-1,28 mm (6,45 mm en el 15 con corona incompleta), la extensión no añade contacto con dientes vecinos. Cortador enterrado (burbuja interna): rechazado en 3/3.
+
+9.20.0 · Nuevo orden de la ruta inmediata
+1. Seleccionar el diente en el IOS y cerrar el hueco (o SIGUIENTE): ya no se hace la booleana y el resto radicular no se muestra.
+2. Modelo retentivo: solo exige el hueco cerrado; el resto radicular (y la vista previa de la extensión) permanece oculto.
+3. Tras confirmar el modelo retentivo: se muestra el resto radicular, la barra «Extensión coronal · mm» con vista previa, y el botón REALIZAR OPERACIÓN BOOLEANA, que crea el hueco del implante en el IOS y en el hueso. Si la booleana del IOS falla no se marca nada como hecho (se puede ajustar la barra y repetir). Después se muestra el IOS con el hueco (el modelo pasivo de la guía no cambia).
+4. SIGUIENTE → paso de dientes vecinos con CONFIRMAR SELECCIÓN.
+5. Colocación del implante, revisión DICOM, etc.
+
+9.20.1
+- Corregido el error «Extensión insuficiente» al REALIZAR OPERACIÓN BOOLEANA: la extensión necesaria se calculaba con el punto más alto del IOS en una columna ancha alrededor del eje, que incluía las cúspides de los dientes vecinos (caso real FDI 15: pedía 6,52 mm). Ahora se mide cuánto tiene que subir la sección del resto radicular para salir del IOS (rayos desde dentro de la sección): 1,65 mm. Validado en los 14 dientes superiores: booleana manifold y alvéolo abierto hasta el ápice en todos.
+
+9.20.2
+- Revisión DICOM: fallaba con «radiographic_quad_view.poll() failed» y dejaba los planos en negro cuando el archivo decía CBCT cargado pero los vóxeles ya no estaban en memoria (no se guardan en el .blend: pasa al reabrir el archivo, reiniciar Blender o actualizar el add-on). Ahora la revisión recarga sola los vóxeles desde la ruta del paciente, sin tocar la escena ni los dientes segmentados (la carga normal de paciente sí los borra, por eso no se usa). Si no se puede, avisa claramente y no deja planos negros.
+
+9.21.0 · Zonas de peligro desde la segmentación (senos maxilares y cavidad nasal)
+- Las zonas salen de la misma segmentación que dientes, hueso y canal (clases 56-59) y quedan activas desde el principio: ya no hace falta IDENTIFICAR, REVISAR, CONFIRMAR ni ASIGNAR para planificar.
+- Cavidad nasal: no se puede invadir (cualquier invasión bloquea la confirmación); aviso si el implante queda a menos de 1 mm.
+- Seno maxilar: se permite invadir hasta 2 mm con ALERTA (halo amarillo y aviso en el panel); más de 2 mm bloquea.
+- La profundidad se mide en 3D: punto del implante más hundido dentro de la zona respecto a su superficie.
+- Panel: una línea por zona con su estado en vivo (libre / alerta / bloqueo) y un botón para ver las zonas (azul seno, rojo nasal). Si una zona sale del campo de visión del CBCT, se indica.
+- Si la segmentación no tiene zonas (casos antiguos): aviso y botón DELIMITAR SENOS Y CAVIDAD NASAL; no bloquea.
+- Referencias: DTX Studio avisa (no bloquea) con 1,5 mm alrededor del implante; estudios de protrusión en seno de hasta 3 mm con 98 % de supervivencia a un año.
+
+9.22.6 · Optimizador de implantes y catálogos
+- Posición: traslación en el marco del implante; profundidad con límite propio (0 por defecto); umbral de mejora 0,03 y elección del menor movimiento entre las equivalentes.
+- Tamaño: implante actual reconocido por referencia o medida; criterio Mayor medida / Mayor soporte; topes de diámetro y longitud.
+- Reserva de pared igual en ambos motores, con zona cervical libre configurable (1 mm).
+- Medidas nominales aplicables: revalidación de la envolvente y redimensionado del implante DSG con plataforma y eje fijos; restauración si no cabe.
+- Bibliotecas: BTI tienda oficial (267 refs, 10 plataformas), Klockner VEGA/VEGA+, MIS SEVEN/C1, Astra Tech EV/Profile EV; Straumann SP de la matriz del usuario.
+- Menores: "Guardar como" ya no caduca la propuesta; topología cacheada por evaluación; sin paso de deshacer vacío.
+
+9.22.8 · Seno maxilar en el optimizador
+- Invasión del seno hasta el límite de la planificación manual (2 mm) con alerta; >2 mm rechazo; nasal 2 mm de margen.
+- Solo un cruce real de superficies cuenta como invasión; remuestreo a ~0,1 mm para cruces finos.
+- Opción en el panel para volver a exigir 2 mm de separación.
+
+9.22.9 · Implante inmediato en el optimizador
+- Alvéolos de los dientes a extraer excluidos de la falta de hueso y de la cobertura.
+- Anclaje apical mínimo en hueso nativo (3 mm, configurable).
+- Panel: % en alvéolo y anclaje apical de la propuesta.

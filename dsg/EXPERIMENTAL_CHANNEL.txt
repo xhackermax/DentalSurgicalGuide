@@ -1,0 +1,8 @@
+GF3 EXPERIMENTAL | Nominal size libraries: BTI Store (267 refs), Klockner VEGA/VEGA+, MIS SEVEN/C1, Astra Tech EV, user Straumann matrix 2026-10-14
+Package: DSG 9.22.7; baseline: user-installed DSG 9.22.6
+Validation status: RESEARCH ONLY / NO CLINICAL APPROVAL
+Nominal sizes are applied only by resizing DSG's own implant after revalidating the circumscribed nominal envelope; they are not manufacturer CAD.
+Both manifests describe current bundled content; manifest files are excluded from their own hash lists.
+Do not use for patient guide fabrication or surgery.
+Native-bone diagnostic measurements and solid proposals; preserves user limits and clinical review flags.
+Rejected alternatives and hypothetical graft scenarios are advisory only, never admissible/applicable. Joint size/translation search preserves all clinical thresholds.

@@ -22,6 +22,36 @@ def run(request):
     _configure_vtk_smp(g.vtk)
     np=g.np;root=Path(request['job_dir']);started=time.perf_counter()
     def status(text):atomic_json(root/'status.json',{'message':text})
+    if request.get('mode') in ('ORGANIC', 'ORGANIC_ARCHES'):
+        # Rebuild each tooth from the model's own 0.5 mm grid (see organic_teeth.py).
+        import SimpleITK as sitk
+        from dsg import organic_teeth as organic
+        status('Recuperando la rejilla del modelo…')
+        labels=np.load(request['labels_path'],allow_pickle=False)
+        arches=request['mode']=='ORGANIC_ARCHES'
+        if arches:
+            # Merge existing masks only: no FDI objects, inference, or tooth workers.
+            lut=np.zeros(256,dtype=np.uint8)
+            lut[list(range(1,17))+[54]]=1
+            lut[list(range(17,33))+[53]]=2
+            labels=lut[labels]
+        spacing=np.asarray(request['spacing_zyx_mm'],dtype=float);dims=np.asarray(request['dims_zyx'],dtype=float)
+        signs=np.asarray(request['display_signs_xyz'],dtype=float)
+        def to_display(zyx):return ((np.asarray(zyx)-.5*(dims-1))*spacing)[:,::-1]*signs
+        boxes=g.ndimage.find_objects(labels);low_shape,ratio=organic.model_grid(labels.shape,spacing)
+        cache=None if arches else organic.NeighbourCache(labels,ratio,low_shape,boxes,sitk);rows=[]
+        for target in request['targets']:
+            k=int(target['label']);status(f"Reconstruyendo arcada {k} con ITK…" if arches else f"Reconstruyendo diente {target['fdi']}…")
+            row={'label':k,'fdi':int(target['fdi']),'status':'SKIPPED','method':organic.ALGORITHM,'fallback_reason':'','mask_modified':False};rows.append(row)
+            try:
+                source=np.load(target['source_vertices_path'],allow_pickle=False)
+                v,f,stats=organic.organic_tooth(labels,k,spacing,to_display=to_display,source_xyz=source,sitk=sitk,boxes=boxes,cache=cache,surface_kind="ARCH" if arches else "TOOTH")
+                vp=root/f'v_{k}.npy';fp=root/f'f_{k}.npy';np.save(vp,v);np.save(fp,f)
+                row.update(stats,status='READY',vertices_path=str(vp),faces_path=str(fp),raw_vertex_count=len(source))
+            except Exception as exc:row['fallback_reason']=str(exc)[:240]
+        atomic_json(root/'result.json',{'status':'OK','mode':request['mode'],'method':organic.ALGORITHM,'teeth':rows,
+                    'elapsed_s':time.perf_counter()-started,'mask_modified':False,'shared_contacts_preserved_by_construction':not arches})
+        status('Dientes reconstruidos');return
     if request.get('mode')=='VISUAL':
         from dsg.surface_smoothing import smooth_surface_preserving_volume
         rows=[]

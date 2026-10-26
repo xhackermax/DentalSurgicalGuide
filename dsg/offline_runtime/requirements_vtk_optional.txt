@@ -1,3 +1,6 @@
-# Optional CBCT surface accelerator for Blender 5.2 / Python 3.13.
-# DSG remains fully functional without it and falls back to scikit-image Lewiner.
+# VTK is optional for the ordinary DSG CBCT extraction pipeline:
+# geometry can fall back to scikit-image Lewiner when the feature supports it.
+# IMPORTANT: the VTK-specific "SUAVIZAR DIENTES" workflow requires vtk.
+# If vtk is missing, that workflow must show a clear install dependency error.
+# Do NOT silently bootstrap pip/VTK inside the clinical Blender workflow.
 vtk>=9.6,<9.8

@@ -2704,6 +2704,10 @@ def apply_difference_exact_checked(context, base_obj, cutter_obj, modifier_name,
 
     original_mesh = base_obj.data.copy()
     last_message = 'Boolean DIFFERENCE EXACT no pudo aplicarse'
+    # Pre-existing defects of the operand (from an earlier cut) are tolerated;
+    # only a result with MORE non-manifold edges than the input is rejected.
+    _before = get_mesh_solid_report(base_obj, max_polygons=900000)
+    bad_before = int(_before.get('bad_edges') or 0) if _before.get('checked') else 0
 
     def restore_fresh_original():
         fresh = original_mesh.copy()
@@ -2761,9 +2765,11 @@ def apply_difference_exact_checked(context, base_obj, cutter_obj, modifier_name,
         cleanup_boolean_result_minimal(base_obj)
         report = get_mesh_solid_report(base_obj, max_polygons=900000)
         if report.get('checked') and not report.get('solid'):
-            bad = report.get('bad_edges', 0)
-            deg = report.get('degenerate_faces', 0)
-            return False, f'non-solid result: edges={bad}, degenerate faces={deg}'
+            bad = int(report.get('bad_edges') or 0)
+            deg = int(report.get('degenerate_faces') or 0)
+            if not (bad_before > 0 and bad <= bad_before and deg == 0):
+                return False, (f'non-solid result: edges={bad}, degenerate faces={deg}'
+                               + (f' (input already had {bad_before})' if bad_before else ''))
 
         suffix = '' if removed_components == 0 else f' · {islands_msg}'
         return True, f'DIFFERENCE {selected_solver} OK' + suffix

@@ -6,7 +6,11 @@ def orient_empty_to_vector(empty, axis_vec):
 def get_insertion_axis():
     empty = get_axis_empty()
     if empty:
-        axis = empty.matrix_world.to_3x3() @ Vector((0, 0, 1))
+        # A hidden control can retain an unevaluated identity matrix_world
+        # after loading. An unconstrained, unparented basis is its exact world
+        # transform even while the dependency graph excludes the control.
+        matrix = empty.matrix_basis if empty.parent is None and not empty.constraints else empty.matrix_world
+        axis = matrix.to_3x3() @ Vector((0, 0, 1))
         if axis.length > 1.0e-8:
             return axis.normalized()
     return Vector((0, 0, 1))
@@ -711,11 +715,53 @@ def make_embedded_drill_visual_mesh(
     return mesh, radial_scale, stop_template_mm, desired_bottom_mm, desired_tip_mm
 
 
+def max_visible_turns(frames):
+    """Turns that keep the spin readable (no wagon-wheel effect)."""
+    return max(0.5, float(ANIMATION_MAX_SPIN_DEG_PER_FRAME) * max(1, int(frames)) / 360.0)
+
+
+def _action_fcurve_collections(action):
+    """F-Curve collections of an Action in Blender 4.x (legacy) and 5.x (slotted).
+
+    Blender 5 removed ``Action.fcurves``; curves live in the channelbags of the
+    keyframe strips. Earlier DSG code used ``action.fcurves`` inside
+    ``try/except`` blocks, so on Blender 5.2 interpolation and cleanup were
+    silently skipped.
+    """
+    if action is None:
+        return []
+    try:
+        return [action.fcurves]
+    except AttributeError:
+        pass
+    collections = []
+    for layer in action.layers:
+        for strip in layer.strips:
+            for bag in strip.channelbags:
+                collections.append(bag.fcurves)
+    return collections
+
+
+def _action_fcurves(action):
+    curves = []
+    for collection in _action_fcurve_collections(action):
+        curves.extend(list(collection))
+    return curves
+
+
+def _remove_action_fcurve(action, fcurve):
+    for collection in _action_fcurve_collections(action):
+        if any(item == fcurve for item in collection):
+            collection.remove(fcurve)
+            return True
+    return False
+
+
 def _set_fcurve_interpolation_linear(action, prefixes=('location', 'rotation_quaternion')):
     if action is None:
         return
     try:
-        for fcurve in action.fcurves:
+        for fcurve in _action_fcurves(action):
             if not any(fcurve.data_path.startswith(prefix) for prefix in prefixes):
                 continue
             for key in fcurve.keyframe_points:
@@ -853,7 +899,7 @@ def _set_constant_interpolation_for_data_paths(action, data_paths):
         return
     wanted = set(data_paths)
     try:
-        for fcurve in action.fcurves:
+        for fcurve in _action_fcurves(action):
             if fcurve.data_path not in wanted:
                 continue
             for key in fcurve.keyframe_points:
@@ -870,9 +916,9 @@ def clear_implant_drill_visibility_animation(implant_obj):
     try:
         if implant_obj.animation_data and implant_obj.animation_data.action:
             action = implant_obj.animation_data.action
-            for fcurve in list(action.fcurves):
+            for fcurve in _action_fcurves(action):
                 if fcurve.data_path in {'hide_viewport', 'hide_render'}:
-                    action.fcurves.remove(fcurve)
+                    _remove_action_fcurve(action, fcurve)
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
     try:
@@ -957,11 +1003,11 @@ def clear_implant_insertion_animation(implant_obj, restore_final=True):
     try:
         if implant_obj.animation_data and implant_obj.animation_data.action:
             action = implant_obj.animation_data.action
-            for fcurve in list(action.fcurves):
+            for fcurve in _action_fcurves(action):
                 if fcurve.data_path in {
                         'location', 'rotation_quaternion', 'rotation_euler',
                         'hide_viewport', 'hide_render'}:
-                    action.fcurves.remove(fcurve)
+                    _remove_action_fcurve(action, fcurve)
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
     if restore_final and final_matrix is not None:
@@ -1373,9 +1419,9 @@ def animate_implant_screw_in_after_drill(props, implant_obj, sequence_start_fram
         implant_obj.keyframe_insert(data_path='hide_render', frame=int(frame))
 
     implant_obj.rotation_mode = 'QUATERNION'
-    turns = max(
-        ANIMATED_IMPLANT_MIN_TURNS,
-        float(travel) * ANIMATED_IMPLANT_TURNS_PER_MM)
+    turns = min(
+        max(ANIMATED_IMPLANT_MIN_TURNS, float(travel) * ANIMATED_IMPLANT_TURNS_PER_MM),
+        max_visible_turns(insertion_end_frame - insertion_start_frame))
     apply_clockwise_helical_animation(
         implant_obj, final_rotation,
         start_location, final_location,
@@ -1417,6 +1463,10 @@ def get_animated_drill_objects():
 
 
 def remove_animated_drills():
+    try:
+        clear_presentation_animation()
+    except NameError:
+        pass
     removed = 0
     implant_names = set()
     for obj in list(bpy.data.objects):
@@ -1536,8 +1586,9 @@ def build_animated_drill_for_implant(context, props, implant_obj, index,
     contact_frame = start_frame + max(1, int(math.ceil(total_duration * 0.5)))
     if contact_frame >= end_frame:
         contact_frame = end_frame - 1
-    drill_turns = max(ANIMATED_DRILL_MIN_TURNS,
-                      start_offset * ANIMATED_DRILL_TURNS_PER_MM)
+    drill_turns = min(
+        max(ANIMATED_DRILL_MIN_TURNS, start_offset * ANIMATED_DRILL_TURNS_PER_MM),
+        max_visible_turns(contact_frame - start_frame))
     apply_clockwise_helical_roundtrip_animation(
         obj, rotation, start_location, final_location,
         start_frame, contact_frame, end_frame,
@@ -1833,6 +1884,12 @@ def remove_pending_microscrew_visuals():
                 removed += 1
         except (ReferenceError, RuntimeError):
             continue
+    # Their safety cylinders must not outlive them.
+    try:
+        from .blender import microscrew_safety
+        microscrew_safety.remove_orphans()
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
     return removed
 
 
@@ -1931,6 +1988,9 @@ def build_static_microscrew_visual(context, record, name, index=0, preview=False
     obj.display_type = 'SOLID'
     obj.show_in_front = True
     obj.hide_render = True
+    context.view_layer.update()
+    from .blender import microscrew_safety
+    microscrew_safety.sync(context,obj)
     return obj
 
 def build_animated_microscrew(context, props, record, index,
@@ -1985,8 +2045,9 @@ def build_animated_microscrew(context, props, record, index,
     obj.display_type = 'SOLID'
     obj.show_in_front = False
     obj.hide_render = True
-    screw_turns = max(ANIMATED_MICROSCREW_MIN_TURNS,
-                      start_offset * ANIMATED_MICROSCREW_TURNS_PER_MM)
+    screw_turns = min(
+        max(ANIMATED_MICROSCREW_MIN_TURNS, start_offset * ANIMATED_MICROSCREW_TURNS_PER_MM),
+        max_visible_turns(end_frame - start_frame))
     apply_clockwise_helical_animation(
         obj, rotation, start_location, final_location,
         start_frame, end_frame, screw_turns)
@@ -2166,11 +2227,11 @@ def clear_final_guide_visibility_animation(guide_obj):
         owns_keys = bool(guide_obj.get('DSG_final_sequence_visibility_animation'))
         if owns_keys and guide_obj.animation_data and guide_obj.animation_data.action:
             action = guide_obj.animation_data.action
-            for fcurve in list(action.fcurves):
+            for fcurve in _action_fcurves(action):
                 if fcurve.data_path in {
                         'hide_viewport', 'hide_render', 'location',
                         'rotation_euler', 'rotation_quaternion', 'scale'}:
-                    action.fcurves.remove(fcurve)
+                    _remove_action_fcurve(action, fcurve)
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
     restore_guide_home_transform(guide_obj, make_visible=True)
@@ -2522,7 +2583,8 @@ def _sleeve_window_entries_for_implant(props, implant_obj):
 
 
 def _resolve_lateral_window_for_implant(context, props, implant_obj,
-                                         sleeve_matrix, outer_radius):
+                                         sleeve_matrix, outer_radius,
+                                         clearance_mm=None):
     """Resolve a safe window from actual irrigation geometry or the saved view.
 
     With confirmed irrigation, the whole occupied C/direct geometry is sampled
@@ -2561,7 +2623,7 @@ def _resolve_lateral_window_for_implant(context, props, implant_obj,
 
     bins = max(180, int(SLEEVE_WINDOW_ANGULAR_BINS))
     occupied = [False] * bins
-    clearance = float(SLEEVE_WINDOW_IRRIGATION_CLEARANCE_MM_FIXED)
+    clearance = float(SLEEVE_WINDOW_IRRIGATION_CLEARANCE_MM_FIXED if clearance_mm is None else clearance_mm)
     diana_radius = float(SLEEVE_WINDOW_DEFAULT_CROSSCHECK_RADIUS_MM)
     marked_samples = 0
 

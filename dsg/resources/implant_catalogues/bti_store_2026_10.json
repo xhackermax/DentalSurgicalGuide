@@ -1,0 +1,2225 @@
+{
+ "schema_version": 2,
+ "units": "mm",
+ "source": "BTI Store (shop.bti-biotechnologyinstitute.com), categorías Implantes Interna/Externa/Atrofia vertical/Atrofia horizontal",
+ "retrieved": "2026-10-14",
+ "note": "Medidas nominales (diámetro y longitud) por referencia comercial. No incluye geometría 3D del fabricante. Disponibilidad según mercado.",
+ "catalogues": {
+  "BTI_P25": {
+   "family": "BTI Interna Plataforma 2.5",
+   "connection": "Interna",
+   "platform": "Plataforma 2.5",
+   "platform_mm": 2.5,
+   "items": [
+    {
+     "ref": "IIP2CA2555",
+     "diameter_mm": 2.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP2CA2565",
+     "diameter_mm": 2.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP2CA2575",
+     "diameter_mm": 2.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP2CA2585",
+     "diameter_mm": 2.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP2CA2510",
+     "diameter_mm": 2.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP2CA2511",
+     "diameter_mm": 2.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP2CA2513",
+     "diameter_mm": 2.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    }
+   ]
+  },
+  "BTI_P30": {
+   "family": "BTI Interna Plataforma 3.0",
+   "connection": "Interna",
+   "platform": "Plataforma 3.0",
+   "platform_mm": 3.0,
+   "items": [
+    {
+     "ref": "IIP3CA2555",
+     "diameter_mm": 2.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA2565",
+     "diameter_mm": 2.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA2575",
+     "diameter_mm": 2.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA2585",
+     "diameter_mm": 2.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA2510",
+     "diameter_mm": 2.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA2511",
+     "diameter_mm": 2.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA2513",
+     "diameter_mm": 2.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3045",
+     "diameter_mm": 3.0,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3055",
+     "diameter_mm": 3.0,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3065",
+     "diameter_mm": 3.0,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3075",
+     "diameter_mm": 3.0,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3085",
+     "diameter_mm": 3.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3010",
+     "diameter_mm": 3.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3011",
+     "diameter_mm": 3.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3013",
+     "diameter_mm": 3.0,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3345",
+     "diameter_mm": 3.3,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3355",
+     "diameter_mm": 3.3,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3365",
+     "diameter_mm": 3.3,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3375",
+     "diameter_mm": 3.3,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3385",
+     "diameter_mm": 3.3,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3310",
+     "diameter_mm": 3.3,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3311",
+     "diameter_mm": 3.3,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3CA3313",
+     "diameter_mm": 3.3,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    }
+   ]
+  },
+  "BTI_P30X": {
+   "family": "BTI Interna Plataforma 3.0-X",
+   "connection": "Interna",
+   "platform": "Plataforma 3.0-X",
+   "platform_mm": 3.0,
+   "items": [
+    {
+     "ref": "IIP3XCA3545",
+     "diameter_mm": 3.5,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3XCA3555",
+     "diameter_mm": 3.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3XCA3565",
+     "diameter_mm": 3.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3XCA3575",
+     "diameter_mm": 3.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3XCA3585",
+     "diameter_mm": 3.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3XCA3510",
+     "diameter_mm": 3.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3XCA3511",
+     "diameter_mm": 3.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIP3XCA3513",
+     "diameter_mm": 3.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    }
+   ]
+  },
+  "BTI_CORE": {
+   "family": "BTI CORE",
+   "connection": "Interna",
+   "platform": "Estrecha CORE",
+   "platform_mm": 3.5,
+   "items": [
+    {
+     "ref": "IIPECA3345",
+     "diameter_mm": 3.3,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3355",
+     "diameter_mm": 3.3,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3365",
+     "diameter_mm": 3.3,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3375",
+     "diameter_mm": 3.3,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3385",
+     "diameter_mm": 3.3,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3310",
+     "diameter_mm": 3.3,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3311",
+     "diameter_mm": 3.3,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3313",
+     "diameter_mm": 3.3,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3315",
+     "diameter_mm": 3.3,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3545",
+     "diameter_mm": 3.5,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3555",
+     "diameter_mm": 3.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3565",
+     "diameter_mm": 3.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3575",
+     "diameter_mm": 3.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3585",
+     "diameter_mm": 3.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3510",
+     "diameter_mm": 3.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3511",
+     "diameter_mm": 3.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3513",
+     "diameter_mm": 3.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3515",
+     "diameter_mm": 3.5,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPECA3745",
+     "diameter_mm": 3.75,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA3755",
+     "diameter_mm": 3.75,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA3765",
+     "diameter_mm": 3.75,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA3775",
+     "diameter_mm": 3.75,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA3785",
+     "diameter_mm": 3.75,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA3710",
+     "diameter_mm": 3.75,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA3711",
+     "diameter_mm": 3.75,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA3713",
+     "diameter_mm": 3.75,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA3715",
+     "diameter_mm": 3.75,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4045",
+     "diameter_mm": 4.0,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4055",
+     "diameter_mm": 4.0,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4065",
+     "diameter_mm": 4.0,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4075",
+     "diameter_mm": 4.0,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4085",
+     "diameter_mm": 4.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4010",
+     "diameter_mm": 4.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4011",
+     "diameter_mm": 4.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4013",
+     "diameter_mm": 4.0,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4245",
+     "diameter_mm": 4.25,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4255",
+     "diameter_mm": 4.25,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4265",
+     "diameter_mm": 4.25,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4275",
+     "diameter_mm": 4.25,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4285",
+     "diameter_mm": 4.25,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4210",
+     "diameter_mm": 4.25,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4211",
+     "diameter_mm": 4.25,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4213",
+     "diameter_mm": 4.25,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4745",
+     "diameter_mm": 4.75,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4755",
+     "diameter_mm": 4.75,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4765",
+     "diameter_mm": 4.75,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4775",
+     "diameter_mm": 4.75,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4785",
+     "diameter_mm": 4.75,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4710",
+     "diameter_mm": 4.75,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPECA4711",
+     "diameter_mm": 4.75,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    }
+   ]
+  },
+  "BTI_COREX": {
+   "family": "BTI CORE-X",
+   "connection": "Interna",
+   "platform": "Estrecha CORE-X",
+   "platform_mm": 3.5,
+   "items": [
+    {
+     "ref": "IIPEXCA3545",
+     "diameter_mm": 3.5,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3555",
+     "diameter_mm": 3.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3565",
+     "diameter_mm": 3.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3575",
+     "diameter_mm": 3.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3585",
+     "diameter_mm": 3.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3510",
+     "diameter_mm": 3.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3511",
+     "diameter_mm": 3.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3513",
+     "diameter_mm": 3.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3745",
+     "diameter_mm": 3.75,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3755",
+     "diameter_mm": 3.75,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3765",
+     "diameter_mm": 3.75,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3775",
+     "diameter_mm": 3.75,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3785",
+     "diameter_mm": 3.75,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3710",
+     "diameter_mm": 3.75,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3711",
+     "diameter_mm": 3.75,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA3713",
+     "diameter_mm": 3.75,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4045",
+     "diameter_mm": 4.0,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4055",
+     "diameter_mm": 4.0,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4065",
+     "diameter_mm": 4.0,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4075",
+     "diameter_mm": 4.0,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4085",
+     "diameter_mm": 4.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4010",
+     "diameter_mm": 4.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4011",
+     "diameter_mm": 4.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4013",
+     "diameter_mm": 4.0,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4245",
+     "diameter_mm": 4.25,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4255",
+     "diameter_mm": 4.25,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4265",
+     "diameter_mm": 4.25,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4275",
+     "diameter_mm": 4.25,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4285",
+     "diameter_mm": 4.25,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4210",
+     "diameter_mm": 4.25,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4211",
+     "diameter_mm": 4.25,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4213",
+     "diameter_mm": 4.25,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4545",
+     "diameter_mm": 4.5,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4555",
+     "diameter_mm": 4.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4565",
+     "diameter_mm": 4.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4575",
+     "diameter_mm": 4.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4585",
+     "diameter_mm": 4.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4510",
+     "diameter_mm": 4.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4511",
+     "diameter_mm": 4.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4745",
+     "diameter_mm": 4.75,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4755",
+     "diameter_mm": 4.75,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4765",
+     "diameter_mm": 4.75,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4775",
+     "diameter_mm": 4.75,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4785",
+     "diameter_mm": 4.75,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4710",
+     "diameter_mm": 4.75,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA4711",
+     "diameter_mm": 4.75,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5045",
+     "diameter_mm": 5.0,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5055",
+     "diameter_mm": 5.0,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5065",
+     "diameter_mm": 5.0,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5075",
+     "diameter_mm": 5.0,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5085",
+     "diameter_mm": 5.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5010",
+     "diameter_mm": 5.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5011",
+     "diameter_mm": 5.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5545",
+     "diameter_mm": 5.5,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5555",
+     "diameter_mm": 5.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5565",
+     "diameter_mm": 5.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5575",
+     "diameter_mm": 5.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5585",
+     "diameter_mm": 5.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5510",
+     "diameter_mm": 5.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPEXCA5511",
+     "diameter_mm": 5.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    }
+   ]
+  },
+  "BTI_INT_UNI": {
+   "family": "BTI Interna Universal",
+   "connection": "Interna",
+   "platform": "Universal",
+   "platform_mm": 4.1,
+   "items": [
+    {
+     "ref": "IIPUCA3555",
+     "diameter_mm": 3.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPUCA3565",
+     "diameter_mm": 3.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA3575",
+     "diameter_mm": 3.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPUCA3585",
+     "diameter_mm": 3.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPUCA3510",
+     "diameter_mm": 3.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA3511",
+     "diameter_mm": 3.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPUCA3513",
+     "diameter_mm": 3.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPUCA3515",
+     "diameter_mm": 3.5,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IIPUCA3755",
+     "diameter_mm": 3.75,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA3765",
+     "diameter_mm": 3.75,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA3775",
+     "diameter_mm": 3.75,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA3785",
+     "diameter_mm": 3.75,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA3710",
+     "diameter_mm": 3.75,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA3711",
+     "diameter_mm": 3.75,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA3713",
+     "diameter_mm": 3.75,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA3715",
+     "diameter_mm": 3.75,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4055",
+     "diameter_mm": 4.0,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4065",
+     "diameter_mm": 4.0,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4075",
+     "diameter_mm": 4.0,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4085",
+     "diameter_mm": 4.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4010",
+     "diameter_mm": 4.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4011",
+     "diameter_mm": 4.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4013",
+     "diameter_mm": 4.0,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4015",
+     "diameter_mm": 4.0,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4255",
+     "diameter_mm": 4.25,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4265",
+     "diameter_mm": 4.25,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4275",
+     "diameter_mm": 4.25,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4285",
+     "diameter_mm": 4.25,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4210",
+     "diameter_mm": 4.25,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4211",
+     "diameter_mm": 4.25,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4213",
+     "diameter_mm": 4.25,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPUCA4215",
+     "diameter_mm": 4.25,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    }
+   ]
+  },
+  "BTI_INT_UNIPLUS": {
+   "family": "BTI Interna Universal Plus",
+   "connection": "Interna",
+   "platform": "Universal Plus",
+   "platform_mm": 4.1,
+   "items": [
+    {
+     "ref": "IIPSCA4545",
+     "diameter_mm": 4.5,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA4555",
+     "diameter_mm": 4.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA4565",
+     "diameter_mm": 4.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA4575",
+     "diameter_mm": 4.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA4585",
+     "diameter_mm": 4.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA4510",
+     "diameter_mm": 4.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA4511",
+     "diameter_mm": 4.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA4513",
+     "diameter_mm": 4.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA4515",
+     "diameter_mm": 4.5,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5045",
+     "diameter_mm": 5.0,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5055",
+     "diameter_mm": 5.0,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5065",
+     "diameter_mm": 5.0,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5075",
+     "diameter_mm": 5.0,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5085",
+     "diameter_mm": 5.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5010",
+     "diameter_mm": 5.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5011",
+     "diameter_mm": 5.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5013",
+     "diameter_mm": 5.0,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5015",
+     "diameter_mm": 5.0,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5545",
+     "diameter_mm": 5.5,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5555",
+     "diameter_mm": 5.5,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5565",
+     "diameter_mm": 5.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5575",
+     "diameter_mm": 5.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5585",
+     "diameter_mm": 5.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5510",
+     "diameter_mm": 5.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5511",
+     "diameter_mm": 5.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA5513",
+     "diameter_mm": 5.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA6045",
+     "diameter_mm": 6.0,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA6055",
+     "diameter_mm": 6.0,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA6065",
+     "diameter_mm": 6.0,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA6075",
+     "diameter_mm": 6.0,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA6085",
+     "diameter_mm": 6.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA6010",
+     "diameter_mm": 6.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IIPSCA6011",
+     "diameter_mm": 6.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    }
+   ]
+  },
+  "BTI_TINY": {
+   "family": "BTI TINY",
+   "connection": "Externa",
+   "platform": "Estrecha TINY",
+   "platform_mm": 3.5,
+   "items": [
+    {
+     "ref": "IRTCA2585",
+     "diameter_mm": 2.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA2510",
+     "diameter_mm": 2.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA2511",
+     "diameter_mm": 2.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA2513",
+     "diameter_mm": 2.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3085",
+     "diameter_mm": 3.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3010",
+     "diameter_mm": 3.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3011",
+     "diameter_mm": 3.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3013",
+     "diameter_mm": 3.0,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3385",
+     "diameter_mm": 3.3,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3310",
+     "diameter_mm": 3.3,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3311",
+     "diameter_mm": 3.3,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3313",
+     "diameter_mm": 3.3,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3565",
+     "diameter_mm": 3.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3575",
+     "diameter_mm": 3.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3585",
+     "diameter_mm": 3.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3510",
+     "diameter_mm": 3.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3511",
+     "diameter_mm": 3.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3513",
+     "diameter_mm": 3.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": true
+    },
+    {
+     "ref": "IRTCA3745",
+     "diameter_mm": 3.75,
+     "length_mm": 4.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRTCA3755",
+     "diameter_mm": 3.75,
+     "length_mm": 5.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRTCA3765",
+     "diameter_mm": 3.75,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRTCA3775",
+     "diameter_mm": 3.75,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRTCA3785",
+     "diameter_mm": 3.75,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRTCA3710",
+     "diameter_mm": 3.75,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRTCA3711",
+     "diameter_mm": 3.75,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRTCA3713",
+     "diameter_mm": 3.75,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    }
+   ]
+  },
+  "BTI_EXT_UNI": {
+   "family": "BTI Externa Universal",
+   "connection": "Externa",
+   "platform": "Universal",
+   "platform_mm": 4.1,
+   "items": [
+    {
+     "ref": "IRPUCA3765",
+     "diameter_mm": 3.75,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA3775",
+     "diameter_mm": 3.75,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA3785",
+     "diameter_mm": 3.75,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA3710",
+     "diameter_mm": 3.75,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA3711",
+     "diameter_mm": 3.75,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA3713",
+     "diameter_mm": 3.75,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA3715",
+     "diameter_mm": 3.75,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA4065",
+     "diameter_mm": 4.0,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA4075",
+     "diameter_mm": 4.0,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA4085",
+     "diameter_mm": 4.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA4010",
+     "diameter_mm": 4.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA4011",
+     "diameter_mm": 4.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA4013",
+     "diameter_mm": 4.0,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPUCA4015",
+     "diameter_mm": 4.0,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    }
+   ]
+  },
+  "BTI_EXT_UNIPLUS": {
+   "family": "BTI Externa Universal Plus",
+   "connection": "Externa",
+   "platform": "Universal Plus",
+   "platform_mm": 4.1,
+   "items": [
+    {
+     "ref": "IRPSCA4565",
+     "diameter_mm": 4.5,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA4575",
+     "diameter_mm": 4.5,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA4585",
+     "diameter_mm": 4.5,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA4510",
+     "diameter_mm": 4.5,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA4511",
+     "diameter_mm": 4.5,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA4513",
+     "diameter_mm": 4.5,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA4515",
+     "diameter_mm": 4.5,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA5065",
+     "diameter_mm": 5.0,
+     "length_mm": 6.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA5075",
+     "diameter_mm": 5.0,
+     "length_mm": 7.5,
+     "availability": "LISTED",
+     "atrophy_vertical": true,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA5085",
+     "diameter_mm": 5.0,
+     "length_mm": 8.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA5010",
+     "diameter_mm": 5.0,
+     "length_mm": 10,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA5011",
+     "diameter_mm": 5.0,
+     "length_mm": 11.5,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA5013",
+     "diameter_mm": 5.0,
+     "length_mm": 13,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    },
+    {
+     "ref": "IRPSCA5015",
+     "diameter_mm": 5.0,
+     "length_mm": 15,
+     "availability": "LISTED",
+     "atrophy_vertical": false,
+     "atrophy_horizontal": false
+    }
+   ]
+  }
+ }
+}

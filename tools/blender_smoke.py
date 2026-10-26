@@ -86,6 +86,11 @@ def main() -> int:
         if mod is None:
             failures.append(f"enable[{cycle}] returned None")
             break
+        # Some operators register from a bpy.app.timers callback, which never
+        # fires before this background script ends; run it as the UI would.
+        deferred = getattr(mod, "_deferred_initialize", None)
+        if deferred is not None:
+            deferred()
         missing = sorted(i for i in _referenced_operator_ids() if not _registered(i) and not i.startswith(("wm.", "screen.", "object.", "mesh.", "view3d.", "ed.", "sculpt.", "transform.", "import_", "export_", "preferences.")))
         if missing:
             failures.append(f"cycle {cycle}: dead operator references: {missing}")

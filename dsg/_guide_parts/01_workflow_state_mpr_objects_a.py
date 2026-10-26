@@ -14,7 +14,7 @@ STEP_DONE          = 9
 TOTAL_STEPS        = 10
 
 # Global clinical numbering includes the two stages that precede this module:
-# 1 DICOM import, 2 IOS–DICOM alignment, then the ten guide stages 3–12.
+# 1 DICOM import, 2 IOSâ€“DICOM alignment, then the ten guide stages 3â€“12.
 GLOBAL_CLINICAL_STEP_OFFSET = 2
 GLOBAL_TOTAL_CLINICAL_STEPS = TOTAL_STEPS + GLOBAL_CLINICAL_STEP_OFFSET
 
@@ -37,19 +37,19 @@ STEP_LABELS = [
 
 STEP_LABELS_ES = [
     "Modelo retentivo",
-    "Planificación de implantes",
+    "PlanificaciÃ³n de implantes",
     "Contorno",
     "Microtornillo",
     "Cilindros",
-    "Irrigación",
+    "IrrigaciÃ³n",
     "Refuerzos",
     "Canales de fresado",
     "Corte final",
-    "Nombre y exportación",
+    "Nombre y exportaciÃ³n",
 ]
 
 def _migrate_model_implant_guide_flow(scene):
-    """Migrate earlier scenes to model → implants → contour.
+    """Migrate earlier scenes to model â†’ implants â†’ contour.
 
     Only the first three visible stages are remapped. Frame and every later
     stage retain their historical numeric indices, preserving downstream
@@ -110,10 +110,10 @@ def _migrate_model_implant_guide_flow(scene):
         return False
 
 
-# Precisión visual: DSG guarda la proyección que tenía cada View3D al entrar
-# en el flujo y usa una proyección ortográfica durante las operaciones de
-# medida, paralelismo, contorno y posicionamiento. La orientación, el punto de
-# vista y el zoom permanecen libres; solamente se elimina la distorsión focal.
+# PrecisiÃ³n visual: DSG guarda la proyecciÃ³n que tenÃ­a cada View3D al entrar
+# en el flujo y usa una proyecciÃ³n ortogrÃ¡fica durante las operaciones de
+# medida, paralelismo, contorno y posicionamiento. La orientaciÃ³n, el punto de
+# vista y el zoom permanecen libres; solamente se elimina la distorsiÃ³n focal.
 PRECISION_VIEW_BACKUP_KEY = "_dsg_precision_projection_backup_v1"
 PRECISION_VIEW_ACTIVE_KEY = "_dsg_precision_projection_active_v1"
 
@@ -351,7 +351,7 @@ def _schedule_zero_boundary_auto_advance(scene, model):
             _set_obj_hidden(target_model, False, selectable_when_visible=True)
             _tag_dsg_view3d_redraw()
             workflow_history.commit(bpy.context,'Modelo cerrado preparado')
-            bpy.ops.ed.undo_push(message='DSG · Modelo cerrado preparado')
+            bpy.ops.ed.undo_push(message='DSG Â· Modelo cerrado preparado')
         except Exception as exc:
             print(f'[DSG] Zero-boundary auto-advance warning: {exc}')
         finally:
@@ -566,7 +566,7 @@ def _workflow_checkpoint_prop_state(props):
         'show_reinforcement_options', 'show_sequence_panel', 'show_name_tools',
         'show_final_visibility',
         'blockout_confirmed', 'axis_confirmed', 'model_prepared',
-        'blockout_relief', 'retention_preset', 'implant_diameter', 'implant_length',
+        'blockout_relief', 'blockout_draft_deg', 'retention_preset', 'implant_diameter', 'implant_length',
         'tube_radius', 'connector_diameter', 'microscrew_diameter',
         'microscrew_length', 'sleeve_inner_diameter', 'sleeve_wall',
         'sleeve_height', 'sleeve_lateral_opening',
@@ -1275,7 +1275,7 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
     props = getattr(scene, 'dsg_props', None)
     if props is None:
         return {'ok': False, 'target': target_step, 'fallback': STEP_MODEL,
-                'message_en': 'DSG properties are unavailable', 'message_es': 'Las propiedades DSG no están disponibles'}
+                'message_en': 'DSG properties are unavailable', 'message_es': 'Las propiedades DSG no estÃ¡n disponibles'}
 
     model = _workflow_model_candidate(props, context)
     if not _valid_obj(model):
@@ -1305,7 +1305,7 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
         if stored_passive_sig and stored_passive_sig != _workflow_object_signature(passive):
             return {'ok': False, 'target': target_step, 'fallback': STEP_IMPLANT,
                     'message_en': 'The retentive model changed after confirmation; confirm it again',
-                    'message_es': 'El modelo retentivo cambió después de confirmarlo; confírmalo de nuevo'}
+                    'message_es': 'El modelo retentivo cambiÃ³ despuÃ©s de confirmarlo; confÃ­rmalo de nuevo'}
         try:
             implants = get_all_implant_objects(props)
         except Exception:
@@ -1321,7 +1321,7 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
         if violations:
             return {'ok': False, 'target': target_step, 'fallback': STEP_IMPLANT,
                     'message_en': 'Correct the interimplant spacing before continuing',
-                    'message_es': 'Corrige la separación entre implantes antes de continuar'}
+                    'message_es': 'Corrige la separaciÃ³n entre implantes antes de continuar'}
         stored_implant_sig = str(scene.get(WORKFLOW_IMPLANT_SIGNATURE_KEY, '') or '')
         current_implant_sig = _workflow_implants_signature(props)
         stored_implant_schema = int(scene.get(WORKFLOW_IMPLANT_SIGNATURE_SCHEMA_KEY, 0) or 0)
@@ -1339,7 +1339,7 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
         if stored_implant_sig and stored_implant_sig != current_implant_sig:
             return {'ok': False, 'target': target_step, 'fallback': STEP_IMPLANT,
                     'message_en': 'An implant was moved after confirmation; confirm the implant plan again',
-                    'message_es': 'Se movió un implante después de confirmarlo; confirma de nuevo la planificación'}
+                    'message_es': 'Se moviÃ³ un implante despuÃ©s de confirmarlo; confirma de nuevo la planificaciÃ³n'}
 
     if target_step >= STEP_FRAME:
         contour_count = _workflow_contour_count(props)
@@ -1354,7 +1354,7 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
         if stored_contour_sig and current_contour_sig and stored_contour_sig != current_contour_sig:
             return {'ok': False, 'target': target_step, 'fallback': STEP_CONTOUR,
                     'message_en': 'The outline changed after confirmation; confirm it again',
-                    'message_es': 'El contorno cambió después de confirmarlo; confírmalo de nuevo'}
+                    'message_es': 'El contorno cambiÃ³ despuÃ©s de confirmarlo; confÃ­rmalo de nuevo'}
 
     if target_step >= STEP_SLEEVE:
         if not _valid_obj(frame) and not (_valid_obj(guide) and bool(guide.get('DSG_sleeves_applied', False))):
@@ -1375,7 +1375,7 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
         if stored_frame_sig and current_frame_sig and stored_frame_sig != current_frame_sig:
             return {'ok': False, 'target': target_step, 'fallback': STEP_FRAME,
                     'message_en': 'The frame changed after confirmation; confirm it again',
-                    'message_es': 'La estructura cambió después de confirmarla; confírmala de nuevo'}
+                    'message_es': 'La estructura cambiÃ³ despuÃ©s de confirmarla; confÃ­rmala de nuevo'}
 
     if target_step >= STEP_IRRIGATION:
         guide = _workflow_guide_candidate(props)
@@ -1389,25 +1389,25 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
         if stored_sleeve_sig and current_guide_sig and stored_sleeve_sig != current_guide_sig and not _workflow_irrigation_resolved(scene, guide, target_step):
             return {'ok': False, 'target': target_step, 'fallback': STEP_SLEEVE,
                     'message_en': 'The sleeve guide changed before irrigation was resolved; rebuild or confirm the sleeves',
-                    'message_es': 'La guía con cilindros cambió antes de resolver la irrigación; reconstruye o confirma los cilindros'}
+                    'message_es': 'La guÃ­a con cilindros cambiÃ³ antes de resolver la irrigaciÃ³n; reconstruye o confirma los cilindros'}
 
     if target_step >= STEP_REINFORCEMENT:
         if not _workflow_irrigation_resolved(scene, guide, target_step):
             return {'ok': False, 'target': target_step, 'fallback': STEP_IRRIGATION,
                     'message_en': 'Apply irrigation or explicitly continue without it',
-                    'message_es': 'Aplica la irrigación o continúa explícitamente sin ella'}
+                    'message_es': 'Aplica la irrigaciÃ³n o continÃºa explÃ­citamente sin ella'}
         stored_irrigation_sig = str(scene.get(WORKFLOW_IRRIGATION_SIGNATURE_KEY, '') or '')
         current_irrigation_sig = _workflow_object_signature(guide)
         if stored_irrigation_sig and current_irrigation_sig and stored_irrigation_sig != current_irrigation_sig and not _workflow_reinforcement_resolved(scene, guide, target_step):
             return {'ok': False, 'target': target_step, 'fallback': STEP_IRRIGATION,
                     'message_en': 'The guide changed after irrigation; resolve irrigation again',
-                    'message_es': 'La guía cambió después de la irrigación; resuelve de nuevo la irrigación'}
+                    'message_es': 'La guÃ­a cambiÃ³ despuÃ©s de la irrigaciÃ³n; resuelve de nuevo la irrigaciÃ³n'}
 
     if target_step >= STEP_DRILL:
         if not _workflow_reinforcement_resolved(scene, guide, target_step):
             return {'ok': False, 'target': target_step, 'fallback': STEP_REINFORCEMENT,
                     'message_en': 'Apply the reinforcements or explicitly continue without them',
-                    'message_es': 'Aplica los refuerzos o continúa explícitamente sin ellos'}
+                    'message_es': 'Aplica los refuerzos o continÃºa explÃ­citamente sin ellos'}
         stored_reinforcement_sig = str(scene.get(WORKFLOW_REINFORCEMENT_SIGNATURE_KEY, '') or '')
         current_reinforcement_sig = _workflow_object_signature(guide)
         if (stored_reinforcement_sig and current_reinforcement_sig
@@ -1416,14 +1416,14 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
                 and not bool(guide.get('DSG_drill_insertion_protected', False))):
             return {'ok': False, 'target': target_step, 'fallback': STEP_REINFORCEMENT,
                     'message_en': 'The guide changed after reinforcement; resolve that step again',
-                    'message_es': 'La guía cambió después de los refuerzos; resuelve de nuevo ese paso'}
+                    'message_es': 'La guÃ­a cambiÃ³ despuÃ©s de los refuerzos; resuelve de nuevo ese paso'}
 
     if target_step >= STEP_FINAL_CUT:
         guide = _workflow_guide_candidate(props)
         if not _valid_obj(guide):
             return {'ok': False, 'target': target_step, 'fallback': STEP_DRILL,
                     'message_en': 'The guide is unavailable; rebuild the previous stage',
-                    'message_es': 'La guía no está disponible; reconstruye el paso anterior'}
+                    'message_es': 'La guÃ­a no estÃ¡ disponible; reconstruye el paso anterior'}
         if int(guide.get('DSG_drill_channel_count', 0) or 0) <= 0:
             return {'ok': False, 'target': target_step, 'fallback': STEP_DRILL,
                     'message_en': 'Create the drill channels before the final Boolean',
@@ -1435,11 +1435,11 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
                 and not bool(guide.get('DSG_final_cut_completed', False))):
             return {'ok': False, 'target': target_step, 'fallback': STEP_DRILL,
                     'message_en': 'The drill-channel guide changed after confirmation; confirm the channels again',
-                    'message_es': 'La guía con canales cambió después de confirmarla; confirma de nuevo los canales'}
+                    'message_es': 'La guÃ­a con canales cambiÃ³ despuÃ©s de confirmarla; confirma de nuevo los canales'}
         if not _valid_obj(get_confirmed_passive_model_obj()):
             return {'ok': False, 'target': target_step, 'fallback': STEP_IMPLANT,
                     'message_en': 'The confirmed retentive model is missing; return to implant planning',
-                    'message_es': 'Falta el modelo retentivo confirmado; vuelve a planificación de implantes'}
+                    'message_es': 'Falta el modelo retentivo confirmado; vuelve a planificaciÃ³n de implantes'}
 
     if target_step >= STEP_NAME:
         guide = _workflow_guide_candidate(props)
@@ -1451,7 +1451,7 @@ def _workflow_requirement_report(context, target_step, *, scene=None):
         if not final_ready:
             return {'ok': False, 'target': target_step, 'fallback': STEP_FINAL_CUT,
                     'message_en': 'Complete and validate the final guide Boolean before export',
-                    'message_es': 'Completa y valida la booleana final de la guía antes de exportar'}
+                    'message_es': 'Completa y valida la booleana final de la guÃ­a antes de exportar'}
 
     return {'ok': True, 'target': target_step, 'fallback': target_step,
             'message_en': 'Workflow stage ready', 'message_es': 'Paso del flujo preparado'}
@@ -1468,6 +1468,14 @@ def _workflow_highest_valid_step(context, *, scene=None):
     return highest
 
 
+def _workflow_irrigation_helpers(scene):
+    """The path and checked lumen belong to irrigation, like its outer preview."""
+    return [obj for obj in scene.objects
+            if obj.name.startswith(IRR_PREVIEW_PATH_PREFIX)
+            or obj.name == IRR_LUMEN_DIAGNOSTIC_NAME
+            or bool(obj.get('DSG_irrigation_lumen_diagnostic', False))]
+
+
 def _workflow_hide_known_stage_objects():
     roles = {
         ROLE_BLOCKOUT, ROLE_BLOCKOUT_VISUAL, ROLE_RETENTION_BOUNDARY, ROLE_PASSIVE, ROLE_FRAME,
@@ -1477,17 +1485,30 @@ def _workflow_hide_known_stage_objects():
     }
     for obj in list(bpy.data.objects):
         try:
-            role = str(obj.get(SUITE_ROLE_KEY, obj.get(LEGACY_ROLE_KEY, '')) or '')
+            # 9.24.10: DSG objects carry their role in dental_suite_dsg_role;
+            # the suite/legacy keys hold the component name (DSG_GUIDE...).
+            role = str(obj.get('dental_suite_dsg_role', '') or obj.get(SUITE_ROLE_KEY, obj.get(LEGACY_ROLE_KEY, '')) or '')
         except Exception:
             role = ''
-        if role in roles:
-            _set_obj_hidden(obj, True, selectable_when_visible=False)
+        if (role in roles or bool(obj.get('DSG_undercut_fill', False))
+                or obj.name == CONTOUR_CURVE_NAME
+                or obj.name.startswith(IRR_PREVIEW_PATH_PREFIX)
+                or obj.name == IRR_LUMEN_DIAGNOSTIC_NAME
+                or bool(obj.get('DSG_irrigation_lumen_diagnostic', False))):
+            # Hidden in the view layer only: the geometry stays evaluated by
+            # the depsgraph, which the FEM, ray casts and Booleans read.
+            try:
+                obj.hide_viewport = False
+                obj.hide_select = True
+                obj.hide_set(True)
+            except Exception:
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 def _workflow_show_objects(objects, *, selectable=True):
     shown = []
     for obj in objects:
-        if _valid_obj(obj) and obj not in shown:
+        if _valid_obj(obj) and not obj.get('DSG_obsolete_hidden') and not obj.get('DSG_checkpoint_source_name') and not obj.get('DSG_workflow_checkpoint_source_name') and obj not in shown:
             _set_obj_hidden(obj, False, selectable_when_visible=selectable)
             shown.append(obj)
     return shown
@@ -1544,6 +1565,22 @@ def _apply_clinical_model_material(obj):
         return False
 
 
+def _apply_irrigation_review_material(obj, kind):
+    from .blender.clinical_materials import apply
+    apply(obj, kind, thin=(kind == 'IOS'))
+
+
+def _show_irrigation_references(context, model, implants, guide):
+    _workflow_show_objects([model], selectable=True)
+    _workflow_show_objects(implants, selectable=False)
+    if _valid_obj(model):
+        model['DSG_irrigation_ios_reference'] = True
+        _apply_irrigation_review_material(model, 'IOS')
+    for implant in implants:
+        _apply_irrigation_review_material(implant, 'IMPLANT')
+    _apply_irrigation_review_material(guide, 'GUIDE')
+
+
 def _restore_workflow_stage(context, scene, step):
     """Reconstruct visibility, material preview and controllers for one stage."""
     global _WORKFLOW_RESTORE_ACTIVE
@@ -1555,6 +1592,21 @@ def _restore_workflow_stage(context, scene, step):
     _WORKFLOW_RESTORE_ACTIVE = True
     try:
         step = max(STEP_MODEL, min(STEP_NAME, int(step)))
+        if step != STEP_REINFORCEMENT:
+            for obj in list(scene.objects):
+                if obj.pop('DSG_reinforcement_ios_reference', False):
+                    _set_obj_hidden(obj, True, selectable_when_visible=False)
+        if step != STEP_IRRIGATION:
+            for obj in list(scene.objects):
+                if obj.pop('DSG_irrigation_ios_reference', False):
+                    _set_obj_hidden(obj, True, selectable_when_visible=False)
+        if step != STEP_IMPLANT:
+            from .blender import implant_optimizer
+            if implant_optimizer.STATE.get('process') is not None or bpy.data.objects.get(implant_optimizer.PREVIEW) is not None:
+                implant_optimizer.discard()
+        if step == STEP_IMPLANT:
+            from . import cbct_dental_module as dental
+            dental.labels_visible(False)
         props.drawing_active = False
         props.irr_drawing_active = False
         unregister_contour_draw_handler()
@@ -1562,9 +1614,24 @@ def _restore_workflow_stage(context, scene, step):
         _draw_callback_irrigation._current_chain = []
 
         if step == STEP_IMPLANT:
-            return _restore_implant_planning_state(
+            restored = _restore_implant_planning_state(
                 context, scene, _IMPLANT_STEP_RETURN_STATE.get(str(scene.name), {}))
+            # 9.24.5: if the DICOM review is still open, the IOS must stay hidden.
+            from .blender import mpr_view
+            mpr_view.sync(context)
+            from .blender import workflow_visibility
+            workflow_visibility.capture(context)
+            return restored
 
+        # 9.24.9: leave the implant step's radiographic view (implant MPR
+        # planes, CBCT ghost); the planes' on/off preference is kept.
+        try:
+            from .blender import implant_plane, mpr_view
+            for plane in implant_plane.planes(scene):
+                plane.hide_set(True)
+            mpr_view.sync(context)
+        except Exception as exc:
+            print(f'[DSG] MPR exit warning: {exc}')
         if _dicom_review_is_active(context):
             _close_dicom_review_for_guide(context)
         else:
@@ -1572,6 +1639,10 @@ def _restore_workflow_stage(context, scene, step):
             _set_dicom_measurements_visibility(False)
         _set_material_preview_guide_view(context)
         _workflow_hide_known_stage_objects()
+        if step != STEP_MODEL:
+            axis_empty = bpy.data.objects.get(AXIS_EMPTY_NAME)
+            if axis_empty is not None:
+                _set_obj_hidden(axis_empty, True, selectable_when_visible=False)
 
         model = _workflow_model_candidate(props, context)
         _apply_clinical_model_material(model)
@@ -1584,9 +1655,19 @@ def _restore_workflow_stage(context, scene, step):
 
         active = None
         if step == STEP_MODEL:
-            shown = _workflow_show_objects([model, blockout, passive])
-            active = blockout if _valid_obj(blockout) else (passive if _valid_obj(passive) else model)
-            _set_retention_boundary_visible(bool(_valid_obj(blockout)))
+            # 9.24.1: one model on screen â€“ the confirmed retentive model, or
+            # the united review model, or the closed IOS.
+            united = bpy.data.objects.get(BLOCKOUT_VISUAL_NAME)
+            if _valid_obj(passive):
+                shown = _workflow_show_objects([passive])
+                active = passive
+            elif _valid_obj(united) and united.get('DSG_blockout_visual_source') == 'UNITED_MODEL':
+                shown = _workflow_show_objects([united])
+                active = united
+            else:
+                shown = _workflow_show_objects([model, blockout])
+                active = blockout if _valid_obj(blockout) else model
+            _set_retention_boundary_visible(False)
         elif step == STEP_CONTOUR:
             if not _valid_obj(contour):
                 try:
@@ -1604,11 +1685,14 @@ def _restore_workflow_stage(context, scene, step):
                 except Exception as exc:
                     print(f'[DSG] Blockout visual warning: {exc}')
                     visual = None
-            _workflow_show_objects([passive] + implants + [contour])
-            if _valid_obj(visual):
+            # 9.24.9: contour step shows only the IOS (and the contour drawn on it).
+            for implant in implants:
+                _set_obj_hidden(implant, True, selectable_when_visible=False)
+            _workflow_show_objects([passive, contour])
+            if _valid_obj(visual) and not _valid_obj(passive):
                 _set_obj_hidden(visual, False, selectable_when_visible=False)
-            _set_retention_boundary_visible(True)
-            active = contour if _valid_obj(contour) else (implants[-1] if implants else passive)
+            _set_retention_boundary_visible(False)
+            active = contour if _valid_obj(contour) else passive
         elif step == STEP_FRAME:
             micros = []
             try:
@@ -1634,10 +1718,19 @@ def _restore_workflow_stage(context, scene, step):
                     STEP_REINFORCEMENT: ROLE_REINFORCEMENT,
                     STEP_DRILL: ROLE_DRILL_VISUAL}[step]
             try:
-                extras = find_dsg_objects(role=role)
+                extras = [obj for obj in find_dsg_objects(role=role)
+                          if not obj.get('dental_suite_dsg_role')
+                          or obj.get('dental_suite_dsg_role') == role]
             except Exception:
                 extras = []
             _workflow_show_objects([guide] + extras)
+            if step == STEP_IRRIGATION:
+                _workflow_show_objects(_workflow_irrigation_helpers(scene))
+                _show_irrigation_references(context, model, implants, guide)
+            elif step == STEP_REINFORCEMENT:
+                _workflow_show_objects([model], selectable=True)
+                if _valid_obj(model):
+                    model['DSG_reinforcement_ios_reference'] = True
             active = guide
         elif step == STEP_FINAL_CUT:
             _workflow_show_objects([guide, passive])
@@ -1646,8 +1739,14 @@ def _restore_workflow_stage(context, scene, step):
             _workflow_show_objects([guide])
             active = guide
 
+        if step >= STEP_SLEEVE and _valid_obj(guide):
+            _hide_retained_guide_sources()
         if _valid_obj(active):
             set_active(context, active)
+        from .blender import clinical_materials
+        clinical_materials.sync(context)
+        from .blender import workflow_visibility
+        workflow_visibility.capture(context)
         _tag_dsg_view3d_redraw()
         return True
     except Exception as exc:
@@ -1707,6 +1806,12 @@ def _set_workflow_gate(scene, report):
 
 def _require_workflow_stage(operator, context, required_step, *, action_en='', action_es=''):
     operator_id = str(getattr(operator, 'bl_idname', '') or '')
+    if operator_id in {'dsg.prepare_aligned_model', 'DSG_OT_prepare_aligned_model'}:
+        from .blender.ios_tooth_edit import immediate_ready
+        if not immediate_ready(context):
+            _dsg_report(operator, {'ERROR'}, 'Remove the IOS tooth and close the socket inward first.',
+                        'Prepara el IOS: elimina el diente y cierra el hueco hacia dentro, o pulsa SIGUIENTE.')
+            return False
     if operator_id in AGENT_USER_ONLY_OPERATOR_IDS and core.reject_external_agent_for_user_gate(
             operator, action=operator_id):
         return False
@@ -1725,8 +1830,8 @@ def _require_workflow_stage(operator, context, required_step, *, action_en='', a
             f'This action belongs to step {int(required_step) + 1}. Use Back to return there; '
             'DSG will not modify an earlier clinical stage from a later panel.')
         message_es = (
-            f'Esta acción pertenece al paso {int(required_step) + 1}. Usa Atrás para volver; '
-            'DSG no modificará un paso clínico anterior desde un panel posterior.')
+            f'Esta acciÃ³n pertenece al paso {int(required_step) + 1}. Usa AtrÃ¡s para volver; '
+            'DSG no modificarÃ¡ un paso clÃ­nico anterior desde un panel posterior.')
         _dsg_report(operator, {'ERROR'}, message_en, message_es)
         _schedule_workflow_stage_restore(scene, current_step, delay=0.02)
         return False
@@ -1888,7 +1993,7 @@ def _dsg_report(operator, levels, english_message, spanish_message=None):
     operator.report(levels, message)
 
 
-# Estado GPU — módulo global
+# Estado GPU â€” mÃ³dulo global
 _CONTOUR_DRAW_HANDLER = None
 _IRR_DRAW_HANDLER  = None
 _PREFLIGHT_UI_CACHE = {}
@@ -1896,9 +2001,9 @@ _DICOM_MEASURE_UPDATE_LOCK = False
 _DICOM_MEASURE_UPDATE_PENDING = False
 
 
-# ─────────────────────────────────────────────────────────────
-# Registro / recuperación robusta de objetos DSG
-# ─────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Registro / recuperaciÃ³n robusta de objetos DSG
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _suite_role(obj):
     return core.role_of(obj) if _valid_obj(obj) else ''
@@ -1966,13 +2071,42 @@ def _is_strict_ios_blockout_source(obj):
         or canonical.startswith('DENTAL_IOS')
         or name.startswith('DENTAL_IOS')
     )
-    return explicitly_ios
+    if explicitly_ios:
+        return True
+    # DSG v9: the closed manifold model generated from an aligned IOS is the
+    # same anatomy. Rejecting it made the retentive-model step fall back to
+    # the open IOS backup, which sent the panel back to "close the model".
+    return _is_closed_counterpart_of_aligned_ios(obj)
+
+
+def _is_closed_counterpart_of_aligned_ios(obj):
+    if not bool(obj.get(CLOSED_MODEL_ACCEPTED_FLAG, False) or obj.get('DSG_base_closed_manifold', False)):
+        return False
+    for other in bpy.data.objects:
+        if other is obj or str(other.get('DSG_closed_model_name', '') or '') != obj.name:
+            continue
+        role = _suite_role(other)
+        if (role in {ROLE_IOS_ALIGNED_SUITE, ROLE_IOS_SCAN_SUITE}
+                or bool(other.get('dental_suite_aligned', False))
+                or str(other.get('dental_suite_canonical_name', '') or '').upper().startswith('DENTAL_IOS')):
+            return True
+    return False
+
+
+def _closed_counterpart(obj):
+    """Accepted closed model generated from this (open) IOS, if any."""
+    if not _valid_obj(obj) or not bool(obj.get(OPEN_MODEL_BACKUP_FLAG, False)):
+        return None
+    closed = bpy.data.objects.get(str(obj.get('DSG_closed_model_name', '') or ''))
+    if _valid_obj(closed) and closed is not obj and _is_closed_counterpart_of_aligned_ios(closed):
+        return closed
+    return None
 
 
 def _find_aligned_ios(context=None):
     obj = _find_suite_object(ROLE_IOS_ALIGNED_SUITE)
     if _is_strict_ios_blockout_source(obj):
-        return obj
+        return _closed_counterpart(obj) or obj
     # Compatibility fallback for older Alignment builds, but still require an
     # explicit IOS identity. Never fall back to an arbitrary active mesh.
     candidates = [
@@ -1986,7 +2120,8 @@ def _find_aligned_ios(context=None):
     ]
     if candidates:
         visible = [o for o in candidates if not o.hide_get() and not o.hide_viewport]
-        return (visible or candidates)[-1]
+        chosen = (visible or candidates)[-1]
+        return _closed_counterpart(chosen) or chosen
     return None
 
 
@@ -1999,7 +2134,7 @@ def _resolve_blockout_source_model(context, source_obj):
     pointer is stale or invalid, the most recent aligned IOS remains the fallback.
     """
     if _is_strict_ios_blockout_source(source_obj):
-        return source_obj
+        return _closed_counterpart(source_obj) or source_obj
     aligned = _find_aligned_ios(context)
     if _is_strict_ios_blockout_source(aligned):
         return aligned
@@ -2072,6 +2207,45 @@ def _show_dicom_objects(context):
             obj.hide_set(False)
         except Exception:
             _DSG_LOG.debug("suppressed exception", exc_info=True)
+
+
+DICOM_SEGMENTATION_PREFIXES = ('SEG_', 'STL_Dientes', 'STL_Hueso', 'Dental_DICOM_')
+
+
+def _is_dicom_segmentation_mesh(obj):
+    """Segmented teeth/bone/canal meshes: heavy, never needed to read an MPR."""
+    if obj.type != 'MESH':
+        return False
+    if _suite_role(obj) in {ROLE_DICOM_TEETH_SUITE, ROLE_DICOM_BONE_SUITE}:
+        return True
+    return bool(str(obj.name).startswith(DICOM_SEGMENTATION_PREFIXES)
+                or obj.get('DSG_fdi_number') or obj.get('DSG_tooth_instance'))
+
+
+def _show_dicom_review_objects(context):
+    """DICOM review: MPR planes and helpers only, plus chosen neighbours.
+
+    Revealing every DICOM-related object loaded all 28 segmented teeth, both
+    jaws and the canal (>3 M faces) at once, which froze the review.
+    """
+    from .blender import protected_neighbors
+    scene = context.scene
+    keep = protected_neighbors.kept(scene)
+    lower = protected_neighbors.lower(scene)
+    canals = set(protected_neighbors.canals())
+    _set_dicom_collections_hidden(context, False)
+    for obj in list(scene.objects):
+        if not _is_dicom_related_object(obj) and obj not in canals:
+            continue
+        if _is_dicom_segmentation_mesh(obj) or obj in canals:
+            show = (int(obj.get('DSG_fdi_number', 0) or 0) in keep) or (obj in canals and lower)
+        else:
+            show = True
+        obj.hide_viewport = not show
+        try:
+            obj.hide_set(not show)
+        except RuntimeError:
+            pass  # object outside the active view layer
 
 
 def _hide_dicom_objects(context):
@@ -2748,7 +2922,8 @@ def _restore_active_view3d_state(context, state):
             perspective = str(state.get('view_perspective', 'ORTHO'))
             if perspective in {'PERSP', 'ORTHO', 'CAMERA'}:
                 rv3d.view_perspective = perspective
-            rv3d.update()
+            if not bpy.app.background:
+                rv3d.update()
         except Exception:
             _DSG_LOG.debug("suppressed exception", exc_info=True)
     try:

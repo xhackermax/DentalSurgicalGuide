@@ -341,6 +341,11 @@ def install_umamba2(req, base_progress=0.0, span=1.0):
         raise RuntimeError("U-Mamba2: falta un checkpoint FINAL ToothFairy3; los pesos SSL no son un segmentador")
 
 
+# Engines whose native kernels cannot be built on this platform. An "ALL"
+# install skips them instead of reporting the whole install as PARTIAL.
+UNSUPPORTED_ENGINES = frozenset({"UMAMBA2"}) if os.name == "nt" else frozenset()
+
+
 def main():
     req_path = Path(sys.argv[-1]).resolve()
     req = json.loads(req_path.read_text(encoding="utf-8"))
@@ -370,6 +375,10 @@ def _install_request(req):
             ("UMAMBA2", install_umamba2),
         ]
         for idx, (name, fn) in enumerate(jobs):
+            if name in UNSUPPORTED_ENGINES:
+                outcomes[name] = {"status": "UNSUPPORTED", "error": "No disponible en este sistema operativo"}
+                print(f"[DSG INSTALL] {name} omitido: no soportado en este sistema", flush=True)
+                continue
             try:
                 fn(req, idx / 3.0, 1.0 / 3.0)
                 outcomes[name] = {"status": "READY", "error": ""}

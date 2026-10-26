@@ -220,7 +220,7 @@ class DSG_OT_ExportGuideSTL(Operator, ExportHelper):
         name="Minimum wall (mm)", default=1.0, min=0.0, max=10.0, precision=2,
         description="Walls thinner than this are reported (depends on resin and printer)")
     min_canal_distance_mm: FloatProperty(
-        name="Implant–canal margin (mm)", default=2.0, min=0.0, max=10.0, precision=2,
+        name="Implant–canal margin (mm)", default=2.0, min=2.0, max=10.0, precision=2,
         description="Implants closer than this to the segmented mandibular canal are reported")
     write_report: BoolProperty(
         name="Write traceability report", default=True,
@@ -250,6 +250,12 @@ class DSG_OT_ExportGuideSTL(Operator, ExportHelper):
             return {'CANCELLED'}
         ensure_object_mode(context)
         from .guide_export import service as export_service
+        from .blender.safety_volume import gate as implant_safety_gate
+        if not implant_safety_gate(context,self,nerve_margin_mm=float(self.min_canal_distance_mm)):
+            return {'CANCELLED'}
+        from .blender import microscrew_safety
+        if not microscrew_safety.gate(context,self):
+            return {'CANCELLED'}
         from .guide_export.policy import ExportPolicy
         gate = export_service.ExportGate(
             ExportPolicy(min_wall_thickness_mm=float(self.min_wall_thickness_mm),
@@ -445,7 +451,12 @@ class DSG_OT_ToggleBlockoutVisibility(Operator):
 
     def execute(self, context):
         props = context.scene.dsg_props
-        targets = get_blockout_visibility_objects(props)
+        if int(props.current_step) in {STEP_IRRIGATION, STEP_REINFORCEMENT}:
+            # Irrigation displays the closed IOS, not the retained passive cutter.
+            model = _workflow_model_candidate(props, context)
+            targets = [model] if _valid_obj(model) else []
+        else:
+            targets = get_blockout_visibility_objects(props)
         shown, valid = _toggle_visibility_for_objects(targets)
         if shown is None:
             _dsg_report(self, {'ERROR'}, "DSG_PassiveCombined was not found", "No se encontró el modelo final DSG_PassiveCombined")
@@ -466,6 +477,7 @@ class DSG_OT_ToggleGuideVisibility(Operator):
 
     def execute(self, context):
         props = context.scene.dsg_props
+        _hide_retained_guide_sources()
         targets = get_guide_visibility_objects(props)
         shown, valid = _toggle_visibility_for_objects(targets)
         if shown is None:
@@ -511,6 +523,11 @@ def _prepare_final_overlay_view(context, props):
     """
     _close_dicom_review_for_guide(context)
     _set_dicom_measurements_visibility(False)
+    # The dark blockout-zone preview belongs to the retentive step; in the
+    # final review it would be drawn over the (united) model.
+    _zone_visual = bpy.data.objects.get(BLOCKOUT_VISUAL_NAME)
+    if _zone_visual is not None:
+        _set_obj_hidden(_zone_visual, True)
 
     # The guide must always remain visible during final inspection.
     guide_targets = get_guide_visibility_objects(props)
@@ -552,6 +569,14 @@ class DSG_OT_FinalViewModel(Operator):
             _dsg_report(self, {'ERROR'}, 'Final model not found', 'No se encontró el modelo final')
             return {'CANCELLED'}
         guide_targets = _prepare_final_overlay_view(context, props)
+        # Modelos retentivos calculados con versiones anteriores eran dos
+        # superficies superpuestas; se convierten a la unión booleana.
+        try:
+            if any(obj.hide_get() for obj in targets if _valid_obj(obj)):
+                if upgrade_passive_to_union(context):
+                    targets = get_blockout_visibility_objects(props)
+        except Exception:
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
         shown, valid = _toggle_final_reference_layer(targets)
         if shown and valid:
             set_active(context, guide_targets[0] if guide_targets else valid[0])
@@ -1865,9 +1890,14 @@ def _draw_step_model_axis(layout, b, context, props):
     remain internal. They are deliberately not shown in the normal workflow.
     """
     model = getattr(props, 'model_obj', None)
-    detected = model if _valid_obj(model) else _find_aligned_ios(context)
+    detected = (_closed_counterpart(model) or model) if _valid_obj(model) else _find_aligned_ios(context)
     blockout = bpy.data.objects.get(BLOCKOUT_NAME)
     blockout_ready = _valid_obj(blockout)
+
+    from .blender import ios_tooth_edit
+    if ios_tooth_edit.editing(context):
+        ios_tooth_edit.draw(b, context)
+        return
 
     if not _valid_obj(detected):
         warning = b.row()
@@ -1884,42 +1914,38 @@ def _draw_step_model_axis(layout, b, context, props):
     topology = get_model_topology_report_cached(detected)
     if topology.get('checked') and not _workflow_closed_boundary_passes(topology):
         preparation = b.box()
-        preparation.alert = True
-        preparation.label(
+        # Only the warning is red; the action buttons keep the blue primary
+        # style used everywhere else (``alert`` on the box tinted them red).
+        warning = preparation.column(align=True)
+        warning.alert = True
+        warning.label(
             text=_ui_text(props, 'Open model detected', 'Modelo abierto detectado'),
             icon='ERROR')
         boundary = topology.get('boundary_edges')
         if boundary is not None:
-            preparation.label(text=_ui_text(
+            warning.label(text=_ui_text(
                 props, f'Open border edges: {int(boundary)}',
                 f'Aristas de borde abiertas: {int(boundary)}'))
-        if not bool(detected.get(SCAN_HOLES_PROCESSED_FLAG, False)):
-            holes = preparation.box()
-            holes.label(
-                text=_ui_text(props, 'STEP 1 · CLOSE SCAN HOLES', 'PASO 1 · CERRAR AGUJEROS'),
-                icon_value=icon_manager.icon_id('contour'))
-            action = _primary_action(holes)
-            action.operator(
-                'dsg.close_scan_holes',
-                text=_ui_text(props, 'CLOSE SAFE HOLES', 'CERRAR AGUJEROS SEGUROS'),
-                icon_value=icon_manager.icon_id('validate'))
-            holes.label(text=_ui_text(
-                props, 'Original dental vertices remain locked.',
-                'Los vértices dentarios originales permanecen bloqueados.'), icon='LOCKED')
-            return
         base = preparation.box()
-        base.label(
-            text=_ui_text(props, 'STEP 2 · GENERATE CLOSED MODEL', 'PASO 2 · GENERAR MODELO CERRADO'),
-            icon_value=icon_manager.icon_id('model'))
+        from .blender import progress_overlay
+        progress_overlay.draw_bar(base)
         action = _primary_action(base)
         action.operator(
             'dsg.close_model_base',
-            text=_ui_text(props, 'GENERATE CLOSED MODEL', 'GENERAR MODELO CERRADO'),
+            text=_ui_text(props, 'GENERATE CLOSED MODEL', 'CREAR MODELO CERRADO'),
             icon_value=icon_manager.icon_id('validate'))
         base.label(text=_ui_text(
-            props, 'Creates DSG_Model_Closed; the original IOS is preserved.',
-            'Crea DSG_Model_Closed; se conserva el IOS original.'), icon='DUPLICATE')
+            props, 'Closes safe holes when needed, then creates the closed model; preserves the original IOS.',
+            'Cierra los agujeros seguros si hace falta y crea el modelo cerrado; conserva el IOS original.'), icon='DUPLICATE')
         return
+
+    if topology.get('checked') and _workflow_closed_boundary_passes(topology):
+        ios_tooth_edit.draw(b, context)
+        from .blender import ios_socket_boolean, protected_neighbors
+        # The root remnant stays hidden until the retentive model is done.
+        protected_neighbors.request_sync(context)
+        if not ios_socket_boolean.draw_closure(b, context, detected):
+            return
 
     closed_model_accepted = bool(
         detected.get(CLOSED_MODEL_ACCEPTED_FLAG, False)
@@ -1969,14 +1995,23 @@ def _draw_step_model_axis(layout, b, context, props):
     instructions.prop(
         props, 'blockout_relief',
         text=_ui_text(props, 'Retention', 'Retención'))
+    instructions.prop(
+        props, 'blockout_draft_deg',
+        text=_ui_text(props, 'Draft angle (°)', 'Ángulo de desmoldeo (°)'))
+    from .blender import live_relief
+    if blockout_ready and not live_relief.supports_live_retention(blockout):
+        instructions.label(
+            text=_ui_text(props, 'Calculate once to see retention live.',
+                          'Calcula una vez para ver la retención en vivo.'),
+            icon='INFO')
 
     choose = _primary_action(b)
     choose.operator(
-        'dsg.prepare_aligned_model',
+        'dsg.prepare_retention_unified',
         text=_ui_text(
             props,
-            'UPDATE RETENTIVE MODEL' if blockout_ready else 'CALCULATE RETENTIVE MODEL',
-            'ACTUALIZAR MODELO RETENTIVO' if blockout_ready else 'CALCULAR MODELO RETENTIVO'),
+            'PREPARE RETENTIVE MODEL',
+            'PREPARAR MODELO RETENTIVO'),
         icon='ORIENTATION_VIEW')
 
     if blockout_ready:
@@ -1985,7 +2020,11 @@ def _draw_step_model_axis(layout, b, context, props):
             blockout.get('DSG_seating_validation_summary', '')
             or getattr(props, 'blockout_seating_summary', ''))
         review = b.box()
-        if seating_status == 'PASSED':
+        if seating_status == 'PENDING':
+            review.label(
+                text=_ui_text(props, 'CHECKING SEATING…', 'COMPROBANDO ASIENTO…'),
+                icon='TIME')
+        elif seating_status == 'PASSED':
             review.label(
                 text=_ui_text(props, 'SEATING CHECK · PASSED', 'COMPROBACIÓN DE ASIENTO · SUPERADA'),
                 icon_value=icon_manager.icon_id('status_ok'))
@@ -2002,27 +2041,27 @@ def _draw_step_model_axis(layout, b, context, props):
                 icon='ORIENTATION_VIEW')
         if seating_summary:
             review.label(text=seating_summary, icon='INFO')
-        recheck = _secondary_action(review)
-        recheck.operator(
-            'dsg.validate_blockout_seating',
-            text=_ui_text(props, 'RECHECK SEATING', 'VOLVER A COMPROBAR ASIENTO'),
-            icon='CHECKMARK')
         local = _secondary_box(
             review, props, 'Local contact relief', 'Alivio local de contacto')
         local.label(
             text=_ui_text(
                 props,
-                'Optional: select teal vertices in Edit Mode; only the blockout moves along the insertion axis.',
-                'Opcional: selecciona vértices turquesa en Modo Edición; solo el blockout avanza según el eje de inserción.'),
+                'Select teal vertices in Edit Mode: the relief is shown live.',
+                'Selecciona vértices turquesa en Modo Edición: el alivio se ve en vivo.'),
             icon='EDITMODE_HLT')
+        local.label(
+            text=_ui_text(
+                props,
+                'Leave Edit Mode or press PREPARE to fix it.',
+                'Sal de Modo Edición o pulsa PREPARAR para fijarlo.'),
+            icon='CHECKMARK')
         local.prop(
             props, 'blockout_local_relief_mm',
             text=_ui_text(props, 'Local relief', 'Alivio local'))
-        local_action = _secondary_action(local)
-        local_action.operator(
-            'dsg.apply_selected_blockout_relief',
-            text=_ui_text(props, 'APPLY SELECTED RELIEF', 'APLICAR ALIVIO SELECCIONADO'),
-            icon='MOD_SHRINKWRAP')
+        from .blender import live_relief
+        live_status = live_relief.status_text()
+        if live_status:
+            local.label(text=live_status, icon='HIDE_OFF')
         if seating_status == 'PASSED':
             confirm = _primary_action(b)
             confirm.operator(
@@ -2063,14 +2102,14 @@ def _draw_step_contour(layout, b, context, props):
         if not _valid_obj(blockout):
             calculate = ui_style.primary_action(recovery)
             calculate.operator(
-                'dsg.prepare_aligned_model',
-                text=_ui_text(props, 'CALCULATE BLOCKOUT FROM VIEW', 'CALCULAR BLOCKOUT DESDE LA VISTA'),
+                'dsg.prepare_retention_unified',
+                text=_ui_text(props, 'PREPARE RETENTIVE MODEL', 'PREPARAR MODELO RETENTIVO'),
                 icon='ORIENTATION_VIEW')
         elif not optimized:
             recalculate = ui_style.primary_action(recovery)
             recalculate.operator(
-                'dsg.prepare_aligned_model',
-                text=_ui_text(props, 'RECALCULATE INSERTION FROM VIEW', 'RECALCULAR INSERCIÓN DESDE LA VISTA'),
+                'dsg.prepare_retention_unified',
+                text=_ui_text(props, 'PREPARE RETENTIVE MODEL', 'PREPARAR MODELO RETENTIVO'),
                 icon='ORIENTATION_VIEW')
         return
 
@@ -2083,7 +2122,7 @@ def _draw_step_contour(layout, b, context, props):
         and context.view_layer.objects.active == contour_obj)
 
     visual = bpy.data.objects.get(BLOCKOUT_VISUAL_NAME)
-    if _valid_obj(visual):
+    if _valid_obj(visual) and visual.get('DSG_blockout_visual_source') != 'UNITED_MODEL':
         visual_note = b.row()
         visual_note.label(
             text=_ui_text(
@@ -2135,7 +2174,7 @@ def _draw_step_contour(layout, b, context, props):
         return
 
     primary = _primary_action(b)
-    primary.operator('dsg.confirm_contour', text=_ui_text(props, 'CONTINUE', 'CONTINUAR'), icon_value=icon_manager.icon_id('continue'))
+    primary.operator('dsg.confirm_contour', text=_ui_text(props, 'NEXT', 'SIGUIENTE'), icon_value=icon_manager.icon_id('continue'))
     tools = _compact_tools(b)
     tools.operator('dsg.toggle_contour_point_edit', text=_ui_text(props, 'Edit points', 'Editar puntos'), icon_value=icon_manager.icon_id('edit_points'))
     tools.operator('dsg.start_drawing', text=_ui_text(props, 'Add points', 'Añadir puntos'), icon_value=icon_manager.icon_id('contour'))
@@ -2148,7 +2187,10 @@ def _draw_dicom_review_box_for_guide_step(box, context, props):
     if dicom_props is None or not bool(getattr(dicom_props, 'volume_loaded', False)):
         return
     microscrew = _selected_mpr_microscrew(context)
-    active = _dicom_review_is_active(context)
+    from .blender import implant_plane
+    compact = implant_plane.plane_for(microscrew)
+    compact = compact if compact is not None and compact.get('DSG_microscrew_mpr') and not compact.hide_get() else None
+    active = _dicom_review_is_active(context) or compact is not None
     review = box.box()
     review.label(
         text=_ui_text(
@@ -2163,9 +2205,12 @@ def _draw_dicom_review_box_for_guide_step(box, context, props):
                 'dsg.center_selected_microscrew_mpr',
                 text=_ui_text(props, 'CENTER SELECTED MICROSCREW', 'CENTRAR MICROTORNILLO SELECCIONADO'),
                 icon_value=icon_manager.icon_id('mpr'))
-        row = review.row(align=True)
-        row.prop(dicom_props, 'axial_move_z', text='Z', slider=True)
-        row.prop(dicom_props, 'sagittal_rotate_z', text=_ui_text(props, 'Inclination', 'Inclinación'), slider=True)
+        if compact is not None:
+            review.prop(compact, 'dsg_implant_mpr_angle', text='Inclinación MPR', slider=True)
+        else:
+            row = review.row(align=True)
+            row.prop(dicom_props, 'axial_move_z', text='Z', slider=True)
+            row.prop(dicom_props, 'sagittal_rotate_z', text=_ui_text(props, 'Inclination', 'Inclinación'), slider=True)
         finish = ui_style.secondary_action(review)
         finish.operator(
             'dsg.close_dicom_review',
@@ -2200,14 +2245,15 @@ def _draw_implant_passive_blockout_box(container, context, props):
             'Confirma el modelo retentivo antes de planificar implantes.'),
         icon='LOCKED')
     fit.prop(props, 'blockout_relief', text=_ui_text(props, 'Retention', 'Retención'))
+    fit.prop(props, 'blockout_draft_deg', text=_ui_text(props, 'Draft angle (°)', 'Ángulo de desmoldeo (°)'))
 
     calculate = ui_style.primary_action(fit)
     calculate.operator(
-        'dsg.prepare_aligned_model',
+        'dsg.prepare_retention_unified',
         text=_ui_text(
             props,
-            'UPDATE RETENTIVE MODEL' if _valid_obj(blockout) else 'CALCULATE RETENTIVE MODEL',
-            'ACTUALIZAR MODELO RETENTIVO' if _valid_obj(blockout) else 'CALCULAR MODELO RETENTIVO'),
+            'PREPARE RETENTIVE MODEL',
+            'PREPARAR MODELO RETENTIVO'),
         icon='ORIENTATION_VIEW')
 
     if _valid_obj(blockout):
@@ -2286,6 +2332,12 @@ def _immediate_target_tooth(scene):
 def _immediate_extraction_ready(scene) -> bool:
     if core.clinical_route(scene) != core.ROUTE_IMMEDIATE:
         return True
+    from .blender import virtual_extraction
+    if virtual_extraction.performed(scene):
+        return True
+    # Older scenes that already have implants keep their previous gate.
+    if count_implants(scene.dsg_props) <= 0:
+        return False
     # DSG 9.2.1 prepares extraction sockets BEFORE alignment.  One or several
     # teeth are hidden with H, then maxilla+visible upper teeth and
     # mandible+visible lower teeth are Ctrl+J composites.  That pre-alignment
@@ -2394,6 +2446,11 @@ def _draw_immediate_implant_gate(container, context, props) -> bool:
     if core.clinical_route(scene) != core.ROUTE_IMMEDIATE:
         return True
 
+    from .blender.ios_tooth_edit import immediate_ready
+    if not immediate_ready(context):
+        container.label(text='Elimina el diente o pulsa SIGUIENTE; completa la booleana del IOS.', icon='LOCKED')
+        return False
+
     multi_fdis = str(scene.get("DSG_immediate_extraction_fdis", "") or "").strip()
     upper_name = str(scene.get("DSG_immediate_upper_composite", "") or "")
     lower_name = str(scene.get("DSG_immediate_lower_composite", "") or "")
@@ -2437,11 +2494,6 @@ def _draw_immediate_implant_gate(container, context, props) -> bool:
             text=_ui_text(props, 'Virtual extraction prepared · socket planning active',
                                   'Extracción virtual preparada · planificación alveolar activa'),
             icon_value=icon_manager.icon_id('status_ok'))
-        restore = ui_style.tertiary_action(box)
-        restore.operator(
-            DSG_OT_RestoreImmediateTooth.bl_idname,
-            text=_ui_text(props, 'Restore tooth', 'Restaurar diente'),
-            icon_value=icon_manager.icon_id('back'))
         return True
 
     box.label(
@@ -2459,72 +2511,74 @@ def _draw_immediate_implant_gate(container, context, props) -> bool:
 
 
 def _draw_step_implant(layout, b, context, props):
-    immediate_ready = _draw_immediate_implant_gate(b, context, props)
     passive_ready = _draw_implant_passive_blockout_box(b, context, props)
+    if not passive_ready:
+        return
+    # Immediate route, after the retentive model: root remnant + coronal
+    # extension bar → REALIZAR OPERACIÓN BOOLEANA → SIGUIENTE; then the
+    # neighbour teeth (CONFIRMAR SELECCIÓN); only then implant placement.
+    from .blender import virtual_extraction, protected_neighbors
+    immediate_ready = virtual_extraction.draw(b, context)
+    if not immediate_ready:
+        protected_neighbors.request_sync(context)
+        return
+    if not protected_neighbors.draw_step(b, context):
+        return
+    # Order: alerts → 1 implant → 2 radiographic review (MPR list)
+    #        → 3 safety → accessory → SIGUIENTE.
+    from .blender import safety_alerts
+    safety_alerts.draw_warning(b, context)
     implant_count = count_implants(props)
     dicom_props = getattr(context.scene, 'dicom_wizard_pro', None)
     dicom_loaded = bool(dicom_props and getattr(dicom_props, 'volume_loaded', False))
     review_active = bool(dicom_loaded and _dicom_review_is_active(context))
 
-    dimensions = b.row(align=True)
+    # ── 1 · Implant ────────────────────────────────────────────
+    box = _section(b, _ui_text(props, '1 · Implant', '1 · Implante'), icon_value=icon_manager.icon_id('add_implant'))
+    dimensions = box.row(align=True)
     dimensions.prop(props, 'implant_diameter', text=_ui_text(props, 'Diameter', 'Diámetro'))
     dimensions.prop(props, 'implant_length', text=_ui_text(props, 'Length', 'Longitud'))
-
+    from .blender.implant_resize import target_implant
+    resized = target_implant(context) if implant_count else None
+    if resized is not None:
+        box.label(text=_ui_text(props, f'Size changes apply to {resized.name}', f'El tamaño se aplica a {resized.name}'), icon='MODIFIER')
     if implant_count == 0:
-        primary = _primary_action(b, enabled=bool(passive_ready and immediate_ready))
+        primary = _primary_action(box, enabled=bool(passive_ready and immediate_ready))
         primary.operator('dsg.create_implant', text=_ui_text(props, 'ADD IMPLANT', 'AÑADIR IMPLANTE'), icon_value=icon_manager.icon_id('add_implant'))
         return
-
-    # Secondary efficacy tools are drawn after the direct Continue action.
-    emergence_active = len(get_implant_emergence_tubes()) >= implant_count
-
-    if dicom_loaded and review_active:
-        _draw_implant_dicom_review(b, context, props, dicom_props, True)
-
-    spacing_results = get_interimplant_spacing_results(props) if implant_count >= 2 else []
-    if spacing_results:
-        worst = spacing_results[0]
-        unsafe = float(worst['clearance_mm']) < (
-            INTERIMPLANT_MIN_CLEARANCE_MM - INTERIMPLANT_NUMERIC_TOLERANCE_MM)
-        if unsafe:
-            warning = b.row()
-            warning.alert = True
-            warning.label(
-                text=_ui_text(
-                    props,
-                    f'Implants too close: {worst["clearance_mm"]:.2f} mm',
-                    f'Implantes demasiado próximos: {worst["clearance_mm"]:.2f} mm'),
-                icon='ERROR')
-
-    primary = _primary_action(b, enabled=bool(passive_ready and immediate_ready))
-    primary.operator('dsg.confirm_implant', text=_ui_text(props, 'CONTINUE', 'CONTINUAR'), icon_value=icon_manager.icon_id('continue'))
-
-    optional = _secondary_box(
-        b, props, 'Optional · improve effectiveness',
-        'Opcional · mejorar eficacia')
-    tools = _secondary_action(optional)
-    tools.operator('dsg.create_implant', text=_ui_text(props, 'Add another implant', 'Añadir otro implante'), icon_value=icon_manager.icon_id('add_implant'))
-    tools.operator(
-        'dsg.create_implant_emergence_tubes',
-        text=_ui_text(
-            props,
-            'Select emergence controls' if emergence_active else 'Create emergence controls',
-            'Seleccionar controles de emergencia' if emergence_active else 'Crear controles de emergencia'),
-        icon_value=icon_manager.icon_id('edit_implant'))
-    safety = optional.row(align=True)
-    safety.prop(
-        props, 'implant_tooth_clearance',
-        text=_ui_text(props, 'Tooth safety', 'Seguridad diente'))
-    safety.operator(
-        'dsg.analyze_implant_safety',
-        text=_ui_text(props, 'Analyze', 'Analizar'),
-        icon_value=icon_manager.icon_id('measure_distance'))
-    delete_row = ui_style.destructive_action(optional, compact=True)
+    tools = _secondary_action(box)
+    tools.operator('dsg.create_implant', text=_ui_text(props, 'Add implant', 'Añadir implante'), icon_value=icon_manager.icon_id('add_implant'))
+    delete_row = ui_style.destructive_action(box, compact=True)
     delete_row.operator('dsg.remove_last_implant', text=_ui_text(props, 'Delete last implant', 'Eliminar último implante'), icon_value=icon_manager.icon_id('delete_implant'))
 
-    if dicom_loaded and not review_active:
-        _draw_implant_dicom_review(b, context, props, dicom_props, False)
+    # ── 2 · Radiographic review (MPR) ──────────────────────────
+    if dicom_loaded:
+        _draw_implant_mpr_list(b, context, props, dicom_props, review_active)
 
+    # ── 3 · Safety ─────────────────────────────────────────────
+    safety_container = b.box()
+    if _tertiary_header(_raw(safety_container), props, 'show_implant_safety', '3 · Safety', '3 · Seguridad'):
+        safety_box = safety_container
+        spacing_results = get_interimplant_spacing_results(props) if implant_count >= 2 else []
+        if spacing_results:
+            worst = spacing_results[0]
+            if float(worst['clearance_mm']) < (INTERIMPLANT_MIN_CLEARANCE_MM - INTERIMPLANT_NUMERIC_TOLERANCE_MM):
+                warning = safety_box.row()
+                warning.alert = True
+                warning.label(
+                    text=_ui_text(
+                        props,
+                        f'Implants too close: {worst["clearance_mm"]:.2f} mm',
+                        f'Implantes demasiado próximos: {worst["clearance_mm"]:.2f} mm'),
+                    icon='ERROR')
+        clearance = safety_box.row(align=True)
+        clearance.prop(props, 'implant_tooth_clearance', text=_ui_text(props, 'Tooth safety', 'Seguridad diente'))
+        from .blender import nerve_safety
+        nerve_safety.draw(safety_box, context)
+        from .blender import upper_cavity_safety
+        upper_cavity_safety.draw(safety_box, context)
+
+    # ── Accessory · parallelization ────────────────────────────
     if implant_count >= 2 and _tertiary_header(
             b, props, 'show_parallel_tools',
             'Accessory · parallelization', 'Accesorio · paralelización'):
@@ -2547,6 +2601,66 @@ def _draw_step_implant(layout, b, context, props):
             'dsg.toggle_implant_parallel_lock',
             text=_ui_text(props, 'Lock selected implant', 'Bloquear implante seleccionado'))
 
+    primary = _primary_action(b, enabled=bool(passive_ready and immediate_ready))
+    primary.operator('dsg.confirm_implant', text=_ui_text(props, 'NEXT', 'SIGUIENTE'), icon_value=icon_manager.icon_id('continue'))
+
+
+def _raw(layout):
+    """Underlying Blender layout (section titles bypass the minimal-UI proxy)."""
+    return getattr(layout, '_layout', layout)
+
+
+def _section(container, title, **icon):
+    box = container.box()
+    _raw(box).label(text=title, **icon)
+    return box
+
+
+def _draw_implant_mpr_list(b, context, props, dicom_props, review_active):
+    """2 · Radiographic review: target implant, open/exit, and the MPR planes
+    as a list, each with its own show/hide eye."""
+    from .blender import implant_plane, mpr_view
+    box = b.box()
+    head = box.row(align=True)
+    _raw(head).label(text=_ui_text(props, '2 · Radiographic review (MPR)', '2 · Revisión radiográfica (MPR)'),
+                     icon_value=icon_manager.icon_id('mpr'))
+    if review_active or implant_plane.planes(context.scene):
+        shown = mpr_view.any_shown(context)
+        eye = head.operator('dsg.toggle_mpr_plane', text='', icon='HIDE_OFF' if shown else 'HIDE_ON',
+                            depress=shown)
+        eye.kind = 'ALL'
+    target = box.row(align=True)
+    target.prop(props, 'mpr_target_implant', text=_ui_text(props, 'Implant', 'Implante'))
+    target.operator('dsg.select_mpr_implant', text='', icon_value=icon_manager.icon_id('select_implant'))
+    if review_active:
+        box.operator('dsg.close_dicom_review', text=_ui_text(props, 'Exit DICOM view', 'Salir de vista DICOM'),
+                     icon_value=icon_manager.icon_id('close'))
+    else:
+        open_row = ui_style.secondary_action(box)
+        open_row.operator('dsg.open_or_center_implant_mpr',
+                          text=_ui_text(props, 'Review selected implant', 'Revisar implante seleccionado'),
+                          icon_value=icon_manager.icon_id('mpr'))
+    planes = box.column(align=True)
+    if review_active:
+        for kind, prop, label in (('AXIAL', 'axial_move_z', 'Plano Z'),
+                                  ('SAGITTAL', 'sagittal_rotate_z', _ui_text(props, 'Inclination', 'Inclinación'))):
+            row = planes.row(align=True)
+            shown = mpr_view.plane_shown(kind)
+            eye = row.operator('dsg.toggle_mpr_plane', text='', icon='HIDE_OFF' if shown else 'HIDE_ON',
+                               depress=shown)
+            eye.kind = kind
+            row.prop(dicom_props, prop, text=label, slider=True)
+    implant_plane.draw_rows(planes, context)
+    from .blender import implant_optimizer
+    implant_optimizer.draw(b, context)
+    if review_active:
+        measure = _compact_tools(box)
+        measure.operator('dsg.measure_implant_to_dicom', text=_ui_text(props, 'Implant distance', 'Distancia implante'),
+                         icon_value=icon_manager.icon_id('measure_distance'))
+        measure.operator('dsg.measure_dicom_two_points', text=_ui_text(props, 'Free distance', 'Distancia libre'),
+                         icon_value=icon_manager.icon_id('measure_two_points'))
+
+
 def _draw_sequential_insertion_animation(box, context, props,
                                          allow_create=False,
                                          create_text=None):
@@ -2566,6 +2680,8 @@ def _draw_sequential_insertion_animation(box, context, props,
                  if all_objects else create_text)
         create.operator('dsg.update_final_animation', text=label)
 
+    speed = box.row(align=True)
+    speed.prop(props, 'animation_speed', expand=True)
     controls = box.row(align=True)
     controls.enabled = bool(all_objects)
     controls.operator('dsg.play_sequential_insertion_animation', text=_ui_text(props, 'Play', 'Reproducir'))
@@ -2580,7 +2696,30 @@ def _draw_sequential_insertion_animation(box, context, props,
 
 
 
+def _draw_frame_boolean_prediction(b, frame):
+    """Predicted state of the frame after the final Boolean (geodesic sections)."""
+    status = str(frame.get('DSG_frame_embed_status', '') or '')
+    if status not in {'OK', 'REVIEW'}:
+        return
+    thickness = float(frame.get('DSG_frame_embed_min_thickness_mm', 0.0))
+    deepest = float(frame.get('DSG_frame_embed_embed_max_fraction', 0.0)) * 100.0
+    support = float(frame.get('DSG_frame_embed_support_min_fraction', 0.0)) * 100.0
+    row = b.row()
+    row.alert = status != 'OK'
+    row.label(text=f'Tras la booleana: grosor mín. {thickness:.1f} mm · inserción ≤ {deepest:.0f}% · apoyo ≥ {support:.0f}%',
+              icon='CHECKMARK' if status == 'OK' else 'ERROR')
+    factor = float(frame.get('DSG_frame_embed_max_radius_factor', 1.0))
+    if factor > 1.01:
+        b.label(text=f'Engrosado local hasta ×{factor:.2f} donde la anatomía lo exige', icon='MOD_THICKNESS')
+    if status != 'OK':
+        b.label(text=f"{int(frame.get('DSG_frame_embed_out_of_range_stations', 0))} tramos fuera de límites: revisa el contorno", icon='INFO')
+
+
 def _draw_step_frame(layout, b, context, props):
+    from .blender import microscrew_safety, protected_neighbors
+    # DSG v9: Panel.draw must not write ID data; both run on the next tick.
+    microscrew_safety.request_refresh(context)
+    protected_neighbors.request_sync(context)
     frame = _workflow_frame_candidate(props)
 
     if not _valid_obj(frame):
@@ -2589,6 +2728,7 @@ def _draw_step_frame(layout, b, context, props):
         primary.operator('dsg.build_tube_frame', text=_ui_text(props, 'CREATE STRUCTURE', 'CREAR ESTRUCTURA'), icon_value=icon_manager.icon_id('frame'))
         return
 
+    _draw_frame_boolean_prediction(b, frame)
     review_active = _dicom_review_is_active(context)
     if review_active:
         _draw_dicom_review_box_for_guide_step(b, context, props)
@@ -2606,13 +2746,15 @@ def _draw_step_frame(layout, b, context, props):
         tools.operator('dsg.update_microscrew_from_visual', text=_ui_text(props, 'Update', 'Actualizar'), icon_value=icon_manager.icon_id('edit_implant'))
         discard = ui_style.destructive_action(b, compact=True)
         discard.operator('dsg.cancel_microscrew_preview', text=_ui_text(props, 'Discard microscrew', 'Descartar microtornillo'), icon_value=icon_manager.icon_id('delete'))
+        next_action = _secondary_action(b)
+        next_action.operator('dsg.optional_next', text=_ui_text(props, 'NEXT', 'SIGUIENTE'), icon_value=icon_manager.icon_id('continue'))
         if not review_active:
             _draw_dicom_review_box_for_guide_step(b, context, props)
         return
 
     if confirmed:
         primary = _primary_action(b)
-        primary.operator('dsg.apply_microscrews_to_frame', text=_ui_text(props, 'APPLY AND CONTINUE', 'APLICAR Y CONTINUAR'), icon_value=icon_manager.icon_id('validate'))
+        primary.operator('dsg.optional_next', text=_ui_text(props, 'NEXT', 'SIGUIENTE'), icon_value=icon_manager.icon_id('validate'))
         tools = ui_style.destructive_action(b, compact=True)
         tools.operator('dsg.remove_last_microscrew', text=_ui_text(props, 'Delete last microscrew', 'Eliminar último microtornillo'), icon_value=icon_manager.icon_id('delete'))
         if not review_active:
@@ -2620,7 +2762,7 @@ def _draw_step_frame(layout, b, context, props):
         return
 
     primary = _primary_action(b)
-    primary.operator('dsg.confirm_tube_frame', text=_ui_text(props, 'CONTINUE', 'CONTINUAR'), icon_value=icon_manager.icon_id('continue'))
+    primary.operator('dsg.optional_next', text=_ui_text(props, 'NEXT', 'SIGUIENTE'), icon_value=icon_manager.icon_id('continue'))
     optional = _secondary_box(
         b, props, 'Optional · improve fixation',
         'Opcional · mejorar fijación')
@@ -2656,7 +2798,7 @@ def _draw_step_sleeve(layout, b, context, props):
         primary = _primary_action(b)
         primary.operator(
             'dsg.confirm_sleeve',
-            text=_ui_text(props, 'CONTINUE', 'CONTINUAR'),
+            text=_ui_text(props, 'NEXT', 'SIGUIENTE'),
             icon_value=icon_manager.icon_id('continue'))
     else:
         frame = _workflow_frame_candidate(props)
@@ -2792,8 +2934,8 @@ def _draw_step_irrigation(layout, b, context, props):
 
         primary = _primary_action(b)
         primary.operator(
-            'dsg.continue_after_irrigation',
-            text=_ui_text(props, 'CONTINUE', 'CONTINUAR'),
+            'dsg.optional_next',
+            text=_ui_text(props, 'NEXT', 'SIGUIENTE'),
             icon_value=icon_manager.icon_id('continue'))
         return
 
@@ -2813,14 +2955,16 @@ def _draw_step_irrigation(layout, b, context, props):
             'dsg.remove_last_irrigation',
             text=_ui_text(props, 'Discard channel', 'Descartar conducto'),
             icon_value=icon_manager.icon_id('delete'))
+        next_action = _secondary_action(b)
+        next_action.operator('dsg.optional_next', text=_ui_text(props, 'NEXT', 'SIGUIENTE'), icon_value=icon_manager.icon_id('continue'))
         return
 
     if not walls:
         primary = _primary_action(b)
         primary.operator(
-            'dsg.skip_irrigation',
-            text=_ui_text(props, 'CONTINUE WITHOUT IRRIGATION',
-                          'CONTINUAR SIN IRRIGACIÓN'),
+            'dsg.optional_next',
+            text=_ui_text(props, 'NEXT',
+                          'SIGUIENTE'),
             icon_value=icon_manager.icon_id('continue'))
 
         optional = _secondary_box(
@@ -2848,6 +2992,8 @@ def _draw_step_irrigation(layout, b, context, props):
         'dsg.confirm_irrigation',
         text=_ui_text(props, 'APPLY IRRIGATION', 'APLICAR IRRIGACIÓN'),
         icon_value=icon_manager.icon_id('continue'))
+    next_action = _secondary_action(b)
+    next_action.operator('dsg.optional_next', text=_ui_text(props, 'NEXT', 'SIGUIENTE'), icon_value=icon_manager.icon_id('continue'))
 
     optional = _secondary_box(
         b, props, 'Optional · additional channels',
@@ -2878,7 +3024,38 @@ def _draw_step_irrigation(layout, b, context, props):
         dimensions.prop(props, 'irr_wall_thickness', text=_ui_text(props, 'Thickness', 'Grosor'))
 
 
+def _draw_geodesic_research_tools(b, props):
+    """Show all diagnostic-only FEM tools also after routes are confirmed."""
+    research = _secondary_box(
+        b, props, 'Research · geodesic and contact diagnostics',
+        'Investigación · geodésicas, FEM y contacto')
+    row = _secondary_action(research)
+    row.operator(
+        'dsg.analyze_geodesic_frame_fem',
+        text=_ui_text(props, 'Analyze surface FEM (EXPERIMENTAL)',
+                      'Analizar FEM superficial (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
+    row.operator(
+        'dsg.preview_geodesic_frame_fem',
+        text=_ui_text(props, 'Preview geodesic FEM (EXPERIMENTAL)',
+                      'Vista previa FEM geodésico (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
+    row.operator(
+        'dsg.estimate_geodesic_contact',
+        text=_ui_text(props, 'Estimate contact (EXPERIMENTAL)',
+                      'Estimar contacto (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
+    row.operator(
+        'dsg.analyze_geodesic_groups',
+        text=_ui_text(props, 'Analyze whole-route topology (EXPERIMENTAL)',
+                      'Analizar topología por rutas (EXPERIMENTAL)'),
+        icon_value=icon_manager.icon_id('reinforcement'))
+
+
 def _draw_step_reinforcement(layout, b, context, props):
+    from .blender import generative_frame
+    if generative_frame.draw_review(b, context):
+        return
     pending = get_pending_reinforcement_preview(props)
     confirmed = get_confirmed_reinforcement_curves()
 
@@ -2893,14 +3070,17 @@ def _draw_step_reinforcement(layout, b, context, props):
             'dsg.cancel_reinforcement_preview',
             text=_ui_text(props, 'Discard reinforcement', 'Descartar refuerzo'),
             icon_value=icon_manager.icon_id('delete'))
+        next_action = _secondary_action(b)
+        next_action.operator('dsg.optional_next', text=_ui_text(props, 'NEXT', 'SIGUIENTE'), icon_value=icon_manager.icon_id('continue'))
         return
 
     if confirmed:
         primary = _primary_action(b)
         primary.operator(
-            'dsg.apply_reinforcements',
-            text=_ui_text(props, 'APPLY AND CONTINUE', 'APLICAR Y CONTINUAR'),
+            'dsg.optional_next',
+            text=_ui_text(props, 'NEXT', 'SIGUIENTE'),
             icon_value=icon_manager.icon_id('continue'))
+        _secondary_action(b).operator('dsg.optimize_frame_fem', text=_ui_text(props, 'OPTIMIZE FRAME', 'OPTIMIZAR FRAME'), icon_value=icon_manager.icon_id('reinforcement'))
         optional = _secondary_box(
             b, props, 'Optional · additional reinforcements',
             'Opcional · refuerzos adicionales')
@@ -2914,6 +3094,7 @@ def _draw_step_reinforcement(layout, b, context, props):
             'dsg.remove_last_reinforcement',
             text=_ui_text(props, 'Delete last reinforcement', 'Eliminar último refuerzo'),
             icon_value=icon_manager.icon_id('delete'))
+        _draw_geodesic_research_tools(b, props)
         return
 
     # KISS: una acción principal. FEM decide topología, radios, poda y rigidez;
@@ -2933,8 +3114,8 @@ def _draw_step_reinforcement(layout, b, context, props):
         text=_ui_text(props, 'Add manually', 'Añadir manualmente'),
         icon_value=icon_manager.icon_id('reinforcement'))
     tools.operator(
-        'dsg.skip_reinforcement',
-        text=_ui_text(props, 'Continue without', 'Continuar sin refuerzo'),
+        'dsg.optional_next',
+        text=_ui_text(props, 'NEXT', 'SIGUIENTE'),
         icon_value=icon_manager.icon_id('continue'))
     if _tertiary_header(
             optional, props, 'show_reinforcement_options',
@@ -2944,13 +3125,15 @@ def _draw_step_reinforcement(layout, b, context, props):
             props, 'connector_diameter',
             text=_ui_text(props, 'Manual connector thickness', 'Grosor manual'))
 
+    _draw_geodesic_research_tools(b, props)
+
 
 def _draw_step_drill(layout, b, context, props):
     guide = get_active_guide_obj(props)
     channels_ready = bool(_valid_obj(guide) and int(guide.get('DSG_drill_channel_count', 0)) > 0)
     primary = _primary_action(b, enabled=_valid_obj(guide) and count_implants(props) > 0)
     if channels_ready:
-        primary.operator('dsg.confirm_drill', text=_ui_text(props, 'CONTINUE', 'CONTINUAR'), icon_value=icon_manager.icon_id('continue'))
+        primary.operator('dsg.confirm_drill', text=_ui_text(props, 'NEXT', 'SIGUIENTE'), icon_value=icon_manager.icon_id('continue'))
     else:
         primary.operator('dsg.prepare_and_create_drill_channels', text=_ui_text(props, 'CREATE DRILL CHANNELS', 'CREAR CANALES DE FRESADO'), icon_value=icon_manager.icon_id('drill_channel'))
 
@@ -2964,7 +3147,7 @@ def _draw_step_final_cut(layout, b, context, props):
     if final_ready:
         primary.operator(
             'dsg.continue_to_name_export',
-            text=_ui_text(props, 'CONTINUE', 'CONTINUAR'),
+            text=_ui_text(props, 'NEXT', 'SIGUIENTE'),
             icon_value=icon_manager.icon_id('continue'))
     else:
         primary.operator('dct.apply_cut', text=_ui_text(props, 'FINISH GUIDE', 'FINALIZAR GUÍA'), icon_value=icon_manager.icon_id('finalize_guide'))
@@ -2987,6 +3170,24 @@ def _draw_step_name_export(layout, b, context, props):
         'dsg.export_guide_stl',
         text=_ui_text(props, 'EXPORT STL', 'EXPORTAR STL'),
         icon_value=icon_manager.icon_id('export_stl'))
+    if _valid_obj(guide) and bool(guide.get('DSG_final_cut_completed', False)):
+        diagnostic = _secondary_box(
+            b, props, 'Research · actual Boolean section',
+            'Investigación · sección tras booleana')
+        diagnostic.label(
+            text=_ui_text(props, 'Place cursor inside final guide',
+                          'Sitúa el cursor dentro de la guía final'),
+            icon='INFO')
+        diagnostic.operator(
+            'dsg.inspect_final_boolean_section',
+            text=_ui_text(props, 'Measure section (EXPERIMENTAL)',
+                          'Medir sección (EXPERIMENTAL)'),
+            icon='MESH_DATA')
+        diagnostic.operator(
+            'dsg.inspect_final_boolean_path',
+            text=_ui_text(props, 'Profile sections along POLY trace (EXPERIMENTAL)',
+                          'Analizar secciones en curva POLY (EXPERIMENTAL)'),
+            icon='CURVE_PATH')
 
     if _tertiary_header(
             b, props, 'show_name_tools',
@@ -3139,7 +3340,24 @@ class DSG_PT_Main(Panel):
 # Registro
 # ─────────────────────────────────────────────────────────────
 
+from .blender.ios_tooth_edit import CLASSES as _IOS_TOOTH_EDIT_CLASSES
+from .blender.extraction_extension import CLASSES as _EXTENSION_CLASSES
+from .blender.implant_plane import CLASSES as _INCLINATION_PLANE_CLASSES
+from .blender.mpr_view import CLASSES as _MPR_VIEW_CLASSES
+from .blender.retention_finish import CLASSES as _RETENTION_FINISH_CLASSES
+from .blender.optional_next import CLASSES as _OPTIONAL_NEXT_CLASSES
+from .blender.protected_neighbors import CLASSES as _NEIGHBOR_CLASSES
+from .blender.virtual_extraction import CLASSES as _VIRTUAL_EXTRACTION_CLASSES
+
 CLASSES = [
+    *_IOS_TOOTH_EDIT_CLASSES,
+    *_EXTENSION_CLASSES,
+    *_INCLINATION_PLANE_CLASSES,
+    *_MPR_VIEW_CLASSES,
+    *_RETENTION_FINISH_CLASSES,
+    *_OPTIONAL_NEXT_CLASSES,
+    *_NEIGHBOR_CLASSES,
+    *_VIRTUAL_EXTRACTION_CLASSES,
     DSG_ContourPoint,
     DSG_Props,
     DSG_OT_RunBooleanPreflight,
@@ -3505,6 +3723,16 @@ def deferred_post_register():
         _register_dicom_measure_handler()
         _DSG_MEASURE_HANDLER_OWNED = True
     _register_implant_navigation_restore_handler()
+    from .blender import safety_volume
+    safety_volume.register()
+    from .blender import implant_plane
+    implant_plane.register()
+    from .blender import implant_optimizer
+    implant_optimizer.register()
+    from .blender import ios_guided_selection
+    ios_guided_selection.register()
+    from .blender import live_relief
+    live_relief.register()
 
     _schedule_dsg_owned_data_cleanup()
     for existing_scene in scenes:
@@ -3534,6 +3762,18 @@ def unregister():
         restore_precision_projection(bpy.context)
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
+    from .blender import safety_volume
+    safety_volume.unregister()
+    from .blender import progress_overlay
+    progress_overlay.unregister()
+    from .blender import implant_plane
+    from .blender import implant_optimizer
+    implant_optimizer.unregister()
+    implant_plane.unregister()
+    from .blender import ios_guided_selection
+    ios_guided_selection.unregister()
+    from .blender import live_relief
+    live_relief.unregister()
     lifecycle.cancel_module_timers(__name__)
     _unregister_dsg_custom_icons()
     if _DSG_LOAD_HANDLER_OWNED:

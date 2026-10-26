@@ -6,13 +6,13 @@ _DSG_LOG = _dsg_logging.getLogger(__name__)
 # ``version`` MUST equal ``version.DSG_VERSION`` (enforced by
 # the runtime check in register() and Blender registration tests).
 bl_info = {
-    "name": "DSG Dental Surgical Guide",
+    "name": "DSG v9 DICOM y eficiencia corregidas",
     "author": "Max Tiburcio",
-    "version": (9, 10, 11),
+    "version": (9, 24, 17),
     "blender": (5, 2, 0),
     "location": "3D View > Sidebar > DSG (MCP: separate DSG MCP tab)",
-    "description": "Dental surgical guide planning: DICOM/CBCT + IOS, implants, sleeves and guide export",
-    "warning": "",
+    "description": "DSG 9.24.11: OPTIMIZAR FRAME: los refuerzos salen de los puntos dÃ©biles del frame, calculados sin el IOS (FEM del frame solo: flecha y flexiÃ³n, mÃ¡s esquinas y tramos rectos largos lejos del sleeve), se trazan por la superficie del IOS hasta el sleeve y el FEM ajusta su grosor; 9.24.10: paso de refuerzos: FEM experimental con 3â€“8 apoyos, anclajes del sleeve fuera de los dientes vecinos, OPTIMIZAR FRAME prueba tambiÃ©n rutas sobre la superficie, estimaciÃ³n de contacto tolera rutas sobre superficie plegada, la vista oculta modelo/implantes/relleno y los cÃ¡lculos siguen funcionando con ellos ocultos; 9.24.9: en el paso de contorno solo se ve el IOS (sin implantes, planos MPR ni fantasma del CBCT); la vista radiogrÃ¡fica queda limitada al paso de implantes; 9.24.8: la propuesta muestra siempre narrow Â· standard Â· wide: si la biblioteca elegida no tiene una plataforma, se toma de las bibliotecas hermanas del mismo sistema (p. ej. BTI Interna Universal Plus â†’ Universal y Plataforma 3.0), y se mantiene la regla de contenciÃ³n (si cabe una ancha, caben las contenidas); 9.24.7: las raÃ­ces vecinas estimadas se comprueban de forma exacta contra su plano (sin fallos de verificaciÃ³n con implantes nominales); 9.24.6: ruta simple: la propuesta de implante respeta las raÃ­ces vecinas estimadas a partir del diente eliminado del IOS (contactos mesial y distal); 9.24.5: en la revisiÃ³n DICOM el IOS permanece oculto aunque otra acciÃ³n lo vuelva a mostrar; 9.24.4: la propuesta de implante funciona en la ruta simple usando la arcada del CBCT como hueso (con aviso de revisar raÃ­ces vecinas); 9.24.3: la imagen fantasma del CBCT tambiÃ©n aparece en la ruta simple (arcadas coloreadas) y en la inmediata; 9.24.2: el Ã¡ngulo de desmoldeo solo inclina las paredes (mÃ¡x. 0,35 mm, en los primeros 3 mm) y ya no crea cortinas; 9.24.1: el modelo retentivo se muestra como un Ãºnico modelo manifold (sin colores ni lÃ­nea de mÃ¡ximo perÃ­metro); 9.24.0: modelo retentivo por extrusiÃ³n segÃºn la vista (mÃ©todo Open Dental CAD): las caras retentivas se extruyen hasta la superficie que las oculta y se unen al modelo; paredes sobre la lÃ­nea de mÃ¡ximo perÃ­metro coronario, retenciÃ³n horizontal y Ã¡ngulo de desmoldeo; 9.23.8: el modelo retentivo sitÃºa sus paredes sobre la lÃ­nea de ecuador real de la malla (mÃ¡ximo perÃ­metro coronario) en lugar de suavizar la rejilla; nuevo Ã¡ngulo de desmoldeo (paredes abiertas hacia la encÃ­a); 9.23.7: modelo retentivo segÃºn lÃ­nea de ecuador: se rellena toda la sombra de cada diente desde el eje de inserciÃ³n, la retenciÃ³n es la profundidad horizontal bajo el ecuador (como el calibrador de retenciÃ³n) y las paredes verticales se suavizan; ruta simple: al confirmar las arcadas se ven solo los dos IOS y se elige cuÃ¡l se alinea (botones SUPERIOR/INFERIOR o seleccionÃ¡ndolo en la vista); al marcar los 3 puntos solo se ve el modelo de la fase (IOS o CBCT); si una plataforma ancha cabe, la estrecha contenida en ella tambiÃ©n se propone (regla de contenciÃ³n); el modelo final de la fÃ©rula incluye el alvÃ©olo del diente extraÃ­do; blockout con relleno volumÃ©trico de undercuts (paredes verticales, sin caras estiradas) unido al IOS; guÃ­a tipo asistente (barra de pasos, nombre corto e indicaciÃ³n breve); botones de cerrar agujeros y generar modelo cerrado en azul (estilo principal); los modelos retentivos antiguos (superficies superpuestas) se convierten a uniÃ³n booleana al verlos en la vista final; la animaciÃ³n ya no muestra el anillo azul sobre el sleeve; el modelo retentivo es la uniÃ³n booleana IOS + zona retentiva (una sola superficie sÃ³lida); la vista final oculta la zona retentiva oscura; la apertura lateral corta cada pieza cerrada por separado (guÃ­a manifold); protecciÃ³n de fresa no se bloquea por defectos previos de la guÃ­a; la apertura lateral elimina fragmentos sueltos; apertura lateral: el lado marcado se corrige a la posiciÃ³n libre mÃ¡s cercana; FEM: usa el frame fuente tras los cilindros y admite 3â€“8 apoyos; SIGUIENTE conserva e incorpora el microtornillo colocado (antes se descartaba) y elimina cilindros de seguridad huÃ©rfanos; mejor propuesta por plataforma (narrow Â· standard Â· wide); corrige falsos rechazos del mapa 2D; bÃºsqueda conjunta de tamaÃ±o y trayectos anatÃ³micos con revalidaciÃ³n 3D muestreada",
+    "warning": "GF3 EXPERIMENTAL (2026-10-12): research only; not qualified for clinical surgical guides",
     "category": "3D View",
 }
 
@@ -74,6 +74,15 @@ _LAZY_SUBMODULES = frozenset({
     "evidence_context",
     "frame_structural_core",
     "frame_fem_core",
+    "frame_geodesic_paths",
+    "frame_geodesic_fem",
+    "frame_contact_core",
+    "frame_geodesic_groups",
+    "frame_boolean_section_core",
+    "frame_boolean_path_core",
+    "frame_swept_clearance_core",
+    "frame_sleeve_junction_core",
+    "frame_perimeter_fem",
     "frame_structural",
     "agent_core",
     "agent_scene_graph",
@@ -142,7 +151,7 @@ def _validate_installation():
         "core.py", "common_surface_match.py", "dental_surface_geometry.py", "dicom_module.py", "runtime_bootstrap.py",
         "pipeline_core/__init__.py", "pipeline_core/contracts.py", "pipeline_core/trace.py",
         "segmentation_engines.py", "segmentation_install_worker.py", "cbct_pipeline_worker.py", "cbct_pipeline_client.py", "cbct_dental_module.py", "alignment_module.py",
-        "guide_module.py", "guide_assets.py", "resources/guide_assets/manifest.json", "resources/guide_assets/drill_visual_template.b85", "resources/guide_assets/implant_template.b85", "resources/guide_assets/microscrew_visual_template.b85", "guide_export/__init__.py", "guide_export/policy.py", "guide_export/mesh_checks.py", "guide_export/report.py", "guide_export/blender_adapter.py", "guide_export/service.py", "frame_structural_core.py", "frame_fem_core.py", "frame_structural.py", "roadmap_module.py", "agent_core.py", "agent_scene_graph.py", "agent_facade.py", "clinical_core.py", "clinical_context.py", "evidence_core.py", "evidence_context.py",
+        "guide_module.py", "guide_assets.py", "resources/guide_assets/manifest.json", "resources/guide_assets/drill_visual_template.b85", "resources/guide_assets/implant_template.b85", "resources/guide_assets/microscrew_visual_template.b85", "guide_export/__init__.py", "guide_export/policy.py", "guide_export/mesh_checks.py", "guide_export/report.py", "guide_export/blender_adapter.py", "guide_export/service.py", "frame_structural_core.py", "frame_fem_core.py", "frame_surface_corridor.py", "frame_geodesic_paths.py", "frame_geodesic_fem.py", "frame_contact_core.py", "frame_geodesic_groups.py", "frame_boolean_section_core.py", "frame_boolean_path_core.py", "frame_swept_clearance_core.py", "frame_sleeve_junction_core.py", "frame_perimeter_fem.py", "frame_structural.py", "roadmap_module.py", "agent_core.py", "agent_scene_graph.py", "agent_facade.py", "clinical_core.py", "clinical_context.py", "evidence_core.py", "evidence_context.py",
         "resources/dental_assets/asset_contract_v1.json",
         "resources/clinical/source_registry.json",
         "resources/clinical/patient_context_schema_v1.json",
@@ -441,7 +450,7 @@ def _deferred_initialize():
             if scene is not None:
                 scene["DSG_runtime_preflight"] = _json.dumps(_health, ensure_ascii=False, default=str)
             _missing = [k for k in ("dicom_engine", "ai_dependencies", "semantic_model", "universal_model") if not _health.get(k)]
-            _text = "DSG listo · DICOM + segmentación verificados" if not _missing else "DSG preflight · falta: " + ", ".join(_missing)
+            _text = "DSG listo Â· DICOM + segmentaciÃ³n verificados" if not _missing else "DSG preflight Â· falta: " + ", ".join(_missing)
             try:
                 _blender_api().context.workspace.status_text_set(_text)
             except Exception:
@@ -515,6 +524,12 @@ def register():
             _REGISTERED.append(module)
         workflow_history.register()
         _REGISTERED.append(workflow_history)
+        from .blender import clinical_materials
+        clinical_materials.register()
+        _REGISTERED.append(clinical_materials)
+        from .blender import workflow_visibility
+        workflow_visibility.register()
+        _REGISTERED.append(workflow_visibility)
         _register_deferred_initializer()
         print(f"[DSG] REGISTERED v{DSG_VERSION_STR} | {__file__}")
     except Exception:

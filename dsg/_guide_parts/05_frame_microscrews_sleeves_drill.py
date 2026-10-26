@@ -60,13 +60,14 @@ class DSG_OT_BuildTubeFrame(Operator):
             return {'CANCELLED'}
 
         bevel_resolution = max(8, int(getattr(props, 'irr_bevel_resolution', 10)))
-        # The centreline is already a continuous surface polyline inside the semantic
-        # corridor. POLY preserves that route and avoids Bézier overshoot.
+        # One adaptive Catmull-Bezier sweep preserves the solved route and anchors.
         frame_obj = build_surface_poly_tube_mesh(
             context, frame_path, props.tube_radius,
             name=FRAME_NAME,
             bevel_resolution=bevel_resolution,
             cyclic=True,
+            anchors=frame_stats.get('resolved_anchor_points', []),
+            surface=surface_obj,
         )
         if not frame_obj:
             _dsg_report(
@@ -1716,6 +1717,9 @@ def update_pending_microscrew_from_visual(context, props):
     if not _valid_obj(rebuilt):
         detail = _LAST_MICROSCREW_PREVIEW_ERROR or 'error geométrico desconocido'
         return None, detail
+    # Resolve dependent MPR constraints against the fully rebuilt preview now,
+    # rather than waiting for another mouse movement or a manual centre action.
+    context.view_layer.update()
     return rebuilt, None
 
 
@@ -1748,6 +1752,15 @@ def confirm_pending_microscrew_object(context, props):
     preview = get_pending_microscrew_preview(props)
     if not _valid_obj(preview):
         return None, -1, 'There is no pending microscrew'
+
+    from .blender import microscrew_safety
+    visual = _microscrew_preview_visual_object()
+    if not _valid_obj(visual):
+        return None, -1, 'No se encontró el microtornillo visual para verificar su seguridad'
+    context.view_layer.update()
+    error = microscrew_safety.validate(context,visual)
+    if error:
+        return None, -1, error
 
     # Adding or confirming a placement changes the animation record set.
     invalidate_microscrew_animation(context)
@@ -1906,6 +1919,9 @@ class DSG_OT_ApplyMicroscrewsToFrame(Operator):
             _dsg_report(self, {'ERROR'}, 'There are no confirmed microscrews', 'No hay microtornillos confirmados')
             return {'CANCELLED'}
 
+        from .blender import microscrew_safety
+        if not microscrew_safety.gate(context,self):
+            return {'CANCELLED'}
         safe_remove_by_name(MICROSCREW_FRAME_COMBINED_TMP_NAME)
         combined = build_combined_mesh_object_world(
             context, [frame] + objects, MICROSCREW_FRAME_COMBINED_TMP_NAME)
@@ -1914,6 +1930,9 @@ class DSG_OT_ApplyMicroscrewsToFrame(Operator):
             return {'CANCELLED'}
 
         count = len(objects)
+        # Keep the frame's own metadata (support points P1..Pn, radius, ...);
+        # the merged object used to lose it and the FEM step then failed.
+        _inherit_dsg_custom_properties(frame, combined)
         old_frame_name = _safe_object_name(frame)
         if old_frame_name:
             safe_remove_by_name(old_frame_name)
@@ -2165,6 +2184,9 @@ class DSG_OT_ConfirmTubeFrame(Operator):
             _dsg_report(self, {'ERROR'}, "Incorpora los microtornillos confirmados a la estructura antes de continuar", "Incorpora los microtornillos confirmados a la estructura antes de continuar")
             return {'CANCELLED'}
 
+        from .blender import microscrew_safety
+        if not microscrew_safety.gate(context,self):
+            return {'CANCELLED'}
         frame_signature = _workflow_object_signature(props.frame_obj)
         if _workflow_signature_changed(context.scene, WORKFLOW_FRAME_SIGNATURE_KEY, frame_signature):
             _invalidate_workflow_after(context, STEP_FRAME, reason='frame_changed')
@@ -2407,6 +2429,9 @@ def _signed_angle_delta(a, b):
     return math.atan2(math.sin(float(a) - float(b)), math.cos(float(a) - float(b)))
 
 
+_LATERAL_WINDOW_CLEARANCE_STEPS_MM = (0.60, 0.45, 0.30, 0.20)
+
+
 def _resolve_user_lateral_window_for_implant(context, props, implant_obj,
                                                sleeve_matrix, outer_radius,
                                                inner_diameter):
@@ -2435,22 +2460,28 @@ def _resolve_user_lateral_window_for_implant(context, props, implant_obj,
     requested_half = max(math.radians(6.0), min(math.radians(75.0), math.asin(ratio)))
     entries = _sleeve_window_entries_for_implant(props, implant_obj)
 
+    adjusted_deg = 0.0
+    clearance_used = float(SLEEVE_WINDOW_IRRIGATION_CLEARANCE_MM_FIXED)
     if entries:
-        auto = _resolve_lateral_window_for_implant(
-            context, props, implant_obj, sleeve_matrix, outer_radius)
-        if not bool(auto.get('valid', False)):
-            return {
-                'valid': False,
-                'mode': 'USER_PICK_IRRIGATION_CONFLICT',
-                'message': str(auto.get('message', 'no safe irrigation-free sector remains')),
-            }
-        if bool(auto.get('width_reduced', False)):
+        # The irrigation clearance is a safety margin, not part of the channel:
+        # if the default margin leaves no sector wide enough for the drill,
+        # retry with smaller (still positive) margins before giving up.
+        auto = None
+        for clearance_used in _LATERAL_WINDOW_CLEARANCE_STEPS_MM:
+            auto = _resolve_lateral_window_for_implant(
+                context, props, implant_obj, sleeve_matrix, outer_radius,
+                clearance_mm=clearance_used)
+            if bool(auto.get('valid', False)) and not bool(auto.get('width_reduced', False)):
+                break
+        if not bool(auto.get('valid', False)) or bool(auto.get('width_reduced', False)):
             return {
                 'valid': False,
                 'mode': 'USER_PICK_IRRIGATION_CONFLICT',
                 'message': (
-                    f'the irrigation-free sector is narrower than the '
-                    f'{inner_diameter:.2f} mm sleeve lumen'),
+                    'el canal de irrigación ocupa casi todo el contorno del cilindro y no deja '
+                    f'hueco para una apertura de {inner_diameter:.2f} mm ni con margen '
+                    f'{_LATERAL_WINDOW_CLEARANCE_STEPS_MM[-1]:.2f} mm; usa irrigación directa '
+                    'o rehaz la irrigación con la salida en otro lado'),
             }
 
         automatic_center = float(auto.get('automatic_center_angle', auto.get('center_angle', 0.0)))
@@ -2459,18 +2490,18 @@ def _resolve_user_lateral_window_for_implant(context, props, implant_obj,
             math.radians(4.0),
             float(SLEEVE_WINDOW_MIN_SIDE_WALL_MM_FIXED) / outer_radius)
         allowed_offset = max(0.0, free_span * 0.5 - requested_half - side_margin)
-        delta = abs(_signed_angle_delta(center, automatic_center))
-        if delta > allowed_offset + math.radians(0.75):
-            return {
-                'valid': False,
-                'mode': 'USER_PICK_IRRIGATION_CONFLICT',
-                'free_span_rad': float(free_span),
-                'message': (
-                    'the selected side intersects the protected irrigation sector; '
-                    'click another side of the sleeve with more free space'),
-            }
-        free_span_deg = math.degrees(free_span)
+        signed = _signed_angle_delta(center, automatic_center)
+        delta = abs(signed)
         mode = 'USER_PICKED_IRRIGATION_SAFE'
+        if delta > allowed_offset + math.radians(0.75):
+            # The click is approximate: move it to the nearest feasible angle of
+            # the free sector instead of cancelling (same side, minimum change).
+            sign = 1.0 if signed >= 0.0 else -1.0
+            snapped = _normalize_angle_2pi(automatic_center + sign * allowed_offset)
+            adjusted_deg = math.degrees(abs(_signed_angle_delta(snapped, center)))
+            center = snapped
+            mode = 'USER_PICK_SNAPPED_TO_FREE_SECTOR'
+        free_span_deg = math.degrees(free_span)
     else:
         free_span_deg = 360.0
         mode = 'USER_PICKED_SIDE'
@@ -2487,7 +2518,10 @@ def _resolve_user_lateral_window_for_implant(context, props, implant_obj,
         'manual_rotation_requested_deg': math.degrees(rotation),
         'manual_rotation_applied_deg': math.degrees(rotation),
         'width_reduced': False,
-        'message': 'user-picked drill-entry side',
+        'adjusted_deg': float(adjusted_deg),
+        'irrigation_clearance_mm': float(clearance_used),
+        'message': ('user-picked drill-entry side' if adjusted_deg <= 0.0 else
+                    f'side moved {adjusted_deg:.0f}° to the nearest irrigation-free position'),
     }
 
 
@@ -2872,6 +2906,8 @@ def _build_post_irrigation_lateral_opening_cutter(context, props, guide):
                 'angle_rad': float(center_angle),
                 'picked_angle_rad': float(solution.get('picked_center_angle', center_angle)),
                 'fine_rotation_deg': float(solution.get('manual_rotation_applied_deg', 0.0)),
+                'adjusted_deg': float(solution.get('adjusted_deg', 0.0)),
+                'irrigation_clearance_mm': float(solution.get('irrigation_clearance_mm', SLEEVE_WINDOW_IRRIGATION_CLEARANCE_MM_FIXED)),
                 'width_mm': float(inner_diameter),
                 'free_span_deg': float(free_span_deg),
             })
@@ -2898,6 +2934,91 @@ def _build_post_irrigation_lateral_opening_cutter(context, props, guide):
         'DSG_implant_count': int(len(records)),
     })
     return cutter, records, ''
+
+
+def _cut_guide_shells(context, guide, cutter, prefix):
+    """DIFFERENCE applied per closed shell (MANIFOLD, EXACT as fallback),
+    then the shells are joined into a new object.  Raises on failure; the
+    original guide is never modified."""
+    parts = split_mesh_object_loose_parts(context, guide, prefix=prefix)
+    if not parts:
+        raise RuntimeError('could not split the guide into closed shells')
+    joined = None
+    try:
+        cutter_aabb = object_world_aabb(cutter)
+        kept = []
+        for index, part in enumerate(parts):
+            if _is_boolean_debris_part(part):
+                continue
+            kept.append(part)
+            if not aabb_overlap(object_world_aabb(part), cutter_aabb, margin=0.02):
+                continue
+            ok, message = apply_difference_manifold_checked(
+                context, part, cutter, f'{prefix}_Cut_{index:02d}')
+            if not ok:
+                ok, message = apply_difference_exact_checked(
+                    context, part, cutter, f'{prefix}_CutExact_{index:02d}',
+                    robust_retry=True, allow_manifold_fallback=False,
+                    retry_offsets=(0.01, 0.02, 0.04))
+            if not ok:
+                raise RuntimeError(f'shell {index + 1}: {message}')
+        kept = [p for p in kept if _valid_obj(p) and p.data and len(p.data.polygons)]
+        if not kept:
+            raise RuntimeError('the cut removed the whole guide')
+        joined = build_combined_mesh_object_world(context, kept, prefix + '_Joined')
+        if not _valid_obj(joined):
+            raise RuntimeError('could not join the cut shells')
+        return joined
+    finally:
+        for part in parts:
+            if _valid_obj(part) and part is not joined:
+                safe_remove_object(part)
+
+
+def _remove_boolean_debris_shells(obj, max_faces=40, max_volume_mm3=1.0):
+    """Delete the tiny loose fragments an EXACT cut leaves at the cutter
+    edges (a few faces, well under 1 mm³).  Real guide parts are far larger."""
+    bm = bmesh.new()
+    try:
+        bm.from_mesh(obj.data)
+        bm.faces.ensure_lookup_table()
+        seen = set()
+        doomed = []
+        for face in bm.faces:
+            if face.index in seen:
+                continue
+            stack = [face]
+            shell = []
+            seen.add(face.index)
+            while stack:
+                current = stack.pop()
+                shell.append(current)
+                for edge in current.edges:
+                    for other in edge.link_faces:
+                        if other.index not in seen:
+                            seen.add(other.index)
+                            stack.append(other)
+            if len(shell) > max_faces:
+                continue
+            volume = 0.0
+            for f in shell:
+                verts = [v.co for v in f.verts]
+                for i in range(1, len(verts) - 1):
+                    volume += verts[0].dot(verts[i].cross(verts[i + 1])) / 6.0
+            if abs(volume) < max_volume_mm3:
+                doomed.extend(shell)
+        if not doomed:
+            return 0
+        bmesh.ops.delete(bm, geom=list({f: None for f in doomed}), context='FACES')
+        loose = [v for v in bm.verts if not v.link_faces]
+        if loose:
+            bmesh.ops.delete(bm, geom=loose, context='VERTS')
+        bm.to_mesh(obj.data)
+        obj.data.update()
+        obj['DSG_lateral_opening_debris_faces_removed'] = len(doomed)
+        return len(doomed)
+    finally:
+        bm.free()
 
 
 class DSG_OT_ApplyPostIrrigationLateralOpening(Operator):
@@ -2935,25 +3056,18 @@ class DSG_OT_ApplyPostIrrigationLateralOpening(Operator):
             if not _valid_obj(cutter):
                 raise RuntimeError(error or 'could not build lateral opening cutter')
 
-            mesh = guide.data.copy()
-            work = bpy.data.objects.new('DSG_Guide_PostIrrigationOpening_WORK', mesh)
-            work.matrix_world = guide.matrix_world.copy()
-            link_object(context, work)
+            before_polygons = len(guide.data.polygons)
+            # The guide is several overlapping closed shells (frame, sleeves,
+            # irrigation).  One EXACT cut over the whole mesh left ~200
+            # non-manifold edges where shells overlap, which later blocked the
+            # drill protection and the drill channels.  Each closed shell is cut
+            # on its own and the results are joined again.
+            work = _cut_guide_shells(context, guide, cutter, 'DSG_LateralOpeningPart')
+            work.name = 'DSG_Guide_PostIrrigationOpening_WORK'
             _inherit_dsg_custom_properties(guide, work)
-            before_polygons = len(work.data.polygons)
-
-            modifier = work.modifiers.new('DSG_PostIrrigationLateralOpening', 'BOOLEAN')
-            modifier.operation = 'DIFFERENCE'
-            modifier.object = cutter
-            try:
-                modifier.solver = 'EXACT'
-            except Exception:
-                _DSG_LOG.debug("suppressed exception", exc_info=True)
-            set_boolean_exact_options(modifier, robust=True)
-            if not apply_modifier_direct(context, work, modifier.name):
-                raise RuntimeError('Boolean EXACT could not cut frame and sleeve together')
             if work.data is None or len(work.data.vertices) == 0 or len(work.data.polygons) == 0:
                 raise RuntimeError('lateral opening Boolean produced empty geometry')
+            debris = _remove_boolean_debris_shells(work)
             after_polygons = len(work.data.polygons)
 
             nominal_width = float(guide.get(
@@ -2985,10 +3099,13 @@ class DSG_OT_ApplyPostIrrigationLateralOpening(Operator):
                 _workflow_object_signature(props.guide_obj))
             prepare_final_cut_references(context, props, show_passive=False)
             _remove_lateral_window_pick_markers()
+            moved = [r for r in records if float(r.get('adjusted_deg', 0.0)) > 0.0]
+            note_es = ''.join(f" · {r['implant']}: lado corregido {r['adjusted_deg']:.0f}° hacia zona libre" for r in moved)
+            note_en = ''.join(f" · {r['implant']}: side moved {r['adjusted_deg']:.0f}° to a free position" for r in moved)
             _dsg_report(
                 self, {'INFO'},
-                f'Lateral opening applied after irrigation: {nominal_width:.2f} mm, frame + sleeve in one Boolean',
-                f'Apertura lateral aplicada después de irrigación: {nominal_width:.2f} mm, frame + cilindro en una sola booleana')
+                f'Lateral opening applied after irrigation: {nominal_width:.2f} mm, frame + sleeve in one Boolean' + note_en,
+                f'Apertura lateral aplicada después de irrigación: {nominal_width:.2f} mm, frame + cilindro en una sola booleana' + note_es)
             return {'FINISHED'}
         except Exception as exc:
             if _valid_obj(work):

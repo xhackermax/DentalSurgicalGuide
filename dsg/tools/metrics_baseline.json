@@ -1,9 +1,9 @@
 {
-  "broad_except": 1775,
-  "silent_except": 170,
-  "global_stmt": 95,
-  "getattr_hasattr": 1332,
+  "broad_except": 1759,
+  "silent_except": 161,
+  "global_stmt": 88,
+  "getattr_hasattr": 1327,
   "exec_calls": 1,
-  "bpy_outside_blender": 126,
-  "max_file_lines": 4487
+  "bpy_outside_blender": 127,
+  "max_file_lines": 4488
 }

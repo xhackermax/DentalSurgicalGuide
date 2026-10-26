@@ -90,7 +90,7 @@ def apply_result(scene,snapshots,result):
     properties={s['object'].as_pointer():{k:s['object'].get(k) for k in (ORIGINAL_MESH,CACHED_MESH,SOURCE_HASH,'DSG_post_smooth_mode','DSG_post_smooth_json')} for s in snapshots}
     try:
         for s in snapshots:
-            row=by_label.get(s['label'],{'status':'SKIPPED','fallback_reason':'Resultado no disponible'})
+            row=by_label.get(s.get('result_label',s['label']),{'status':'SKIPPED','fallback_reason':'Resultado no disponible'})
             if row['status']!='READY':continue
             v=np.load(row['vertices_path'],allow_pickle=False);f=np.load(row['faces_path'],allow_pickle=False)
             if v.ndim!=2 or v.shape[1]!=3 or f.ndim!=2 or f.shape[1]!=3 or not np.isfinite(v).all() or f.min()<0 or f.max()>=len(v):
@@ -144,6 +144,7 @@ def cancel(update_status=True):
     try:
         if update_status:job['scene'][STATUS]='Suavizado cancelado · geometría sin cambios'
     except ReferenceError:pass
+    if job.get('on_cancel'):job['on_cancel'](job)
     _cleanup(job)
 
 @persistent
@@ -155,6 +156,7 @@ def _poll():
     if job is None:return None
     try:
         if bpy.context.scene!=job['scene']:cancel();return None
+        if job.get('scope_valid') and not job['scope_valid']():cancel();return None
         if time.monotonic()-job['started']>300:cancel();job['scene'][STATUS]='Suavizado cancelado: tiempo máximo superado';return None
         status=Path(job['root'])/'status.json'
         if status.exists():
@@ -169,10 +171,12 @@ def _poll():
             from . import dicom_module
             if str(dicom_module.RUNTIME.semantic_source_signature)!=job['signature']:raise RuntimeError('Cambió el CBCT; resultado descartado')
         apply_result(job['scene'],job['snapshots'],result)
+        if job.get('on_complete'):job['on_complete'](job,result)
         from . import workflow_history
-        workflow_history.commit(bpy.context,'Suavizar dientes')
-        bpy.ops.ed.undo_push(message='DSG · Suavizar dientes')
+        workflow_history.commit(bpy.context,job.get('history_label','Suavizar dientes'))
+        bpy.ops.ed.undo_push(message='DSG · '+job.get('history_label','Suavizar dientes'))
     except Exception as exc:
+        if job.get('on_failure'):job['on_failure'](job)
         try:job['scene'][STATUS]=f'Suavizado no aplicado: {exc}'[:300]
         except ReferenceError:pass
     finally:
@@ -182,16 +186,16 @@ def _poll():
             for area in screen.areas:area.tag_redraw()
     return .3 if _JOB is not None else None
 
-def start(context,mode='CLEAN'):
+def start(context,mode='CLEAN',*,objects_override=None):
     global _JOB
     from . import dicom_module as dicom,segmentation_engines as engines
     if _JOB is not None:raise RuntimeError('Ya hay un suavizado en curso')
-    objects=tooth_objects(context.scene)
+    objects=tooth_objects(context.scene) if objects_override is None else list(objects_override)
     if not objects:raise RuntimeError('Segmenta los dientes antes de suavizar')
     if any(o.mode!='OBJECT' for o in objects):raise RuntimeError('Sal del modo edición antes de suavizar')
     import numpy as np
     labels=None
-    if mode=='CLEAN':
+    if mode in ('CLEAN','ORGANIC','ORGANIC_ARCHES'):
         if not dicom.RUNTIME.is_loaded():raise RuntimeError('Abre el CBCT original para comprobar la segmentación')
         labels=dicom.get_cached_semantic_cbct_labels(model_kind='universal',require_current_source=True)
         if labels is None:raise RuntimeError('La segmentación original no está disponible para este CBCT')
@@ -201,22 +205,27 @@ def start(context,mode='CLEAN'):
     workflow_history.begin(context,'Suavizar dientes')
     root=Path(tempfile.mkdtemp(prefix='DSG_POST_SMOOTH_'));snapshots=[snapshot_object(o) for o in objects];targets=[]
     try:
-        for s in snapshots:
+        for index,s in enumerate(snapshots):
             obj=s['object'];v,f=mesh_arrays(s['mesh']);k=s['label']
+            if mode=='ORGANIC_ARCHES':
+                arch=str(obj.get('DSG_simple_arch',''))
+                if arch not in ('UPPER','LOWER'):raise RuntimeError('Falta la identidad de la arcada simple')
+                s['result_label']=k=1 if arch=='UPPER' else 2
+            elif k<=0 and objects_override is not None:s['result_label']=k=index+1
             if k<=0:raise RuntimeError('Los dientes no tienen labels de segmentación')
             vp=root/f'source_v_{k}.npy';fp=root/f'source_f_{k}.npy';np.save(vp,v);np.save(fp,f)
             spacing=obj.get('DSG_cbct_spacing_zyx_mm')
             if spacing is None and dicom.RUNTIME.is_loaded():spacing=dicom.RUNTIME.spacing_zyx_mm
             if spacing is None:raise RuntimeError('Falta el espaciado del CBCT original')
             # Native segmented teeth use root-local coordinates. Reject modified local transforms.
-            if mode=='CLEAN' and not np.allclose(np.array(obj.matrix_basis),np.eye(4),atol=1e-6):raise RuntimeError('Restablece la transformación local de los dientes para usar el modo fiel')
+            if mode in ('CLEAN','ORGANIC','ORGANIC_ARCHES') and not np.allclose(np.array(obj.matrix_basis),np.eye(4),atol=1e-6):raise RuntimeError('Restablece la transformación local de los dientes para usar el modo fiel')
             targets.append({'label':k,'fdi':s['fdi'],'vertex_count':len(v),'source_vertices_path':str(vp),'source_faces_path':str(fp),'spacing_zyx_mm':list(spacing)})
         labels_path=root/'labels.npy'
         if labels is not None:np.save(labels_path,labels,allow_pickle=False)
         request={'job_dir':str(root),'mode':mode,'labels_path':str(labels_path),'targets':targets,
                  'site_paths':[str(engines.site_packages()),str(dicom.VENDOR_DIR)],
                  'spacing_zyx_mm':list(dicom.RUNTIME.spacing_zyx_mm),'dims_zyx':list(dicom.RUNTIME.dims_zyx),
-                 'display_signs_xyz':list(dicom._dicom_display_signs_xyz()) if mode=='CLEAN' else [1,1,1]}
+                 'display_signs_xyz':list(dicom._dicom_display_signs_xyz()) if mode in ('CLEAN','ORGANIC','ORGANIC_ARCHES') else [1,1,1]}
         rp=root/'request.json';rp.write_text(json.dumps(request,ensure_ascii=False),encoding='utf-8')
         log=(root/'worker.log').open('w',encoding='utf-8');env=os.environ.copy();env['PYTHONUNBUFFERED']='1'
         flags=getattr(subprocess,'CREATE_NO_WINDOW',0) if os.name=='nt' else 0
@@ -226,7 +235,7 @@ def start(context,mode='CLEAN'):
         _cleanup({'root':str(root),'log':None});raise
     _JOB={'scene':context.scene,'snapshots':snapshots,'root':str(root),'process':proc,'log':log,
           'started':time.monotonic(),
-          'signature':str(dicom.RUNTIME.semantic_source_signature) if mode=='CLEAN' else ''}
+          'signature':str(dicom.RUNTIME.semantic_source_signature) if mode in ('CLEAN','ORGANIC','ORGANIC_ARCHES') else ''}
     context.scene[STATUS]='Calculando suavizado de dientes…'
     if not bpy.app.timers.is_registered(_poll):bpy.app.timers.register(_poll,first_interval=.3)
     return True
@@ -264,6 +273,9 @@ class DSG_OT_PostSmoothReport(bpy.types.Operator):
         return {'FINISHED'}
 
 def draw(layout,context):
+    from . import dicom_module
+    if dicom_module.semantic_workflow_busy() or not tooth_objects(context.scene):
+        return
     props=context.scene.dsg_cbct_dental
     if busy(context.scene):
         layout.label(text=str(context.scene.get(STATUS,'Calculando…'))[:90])

@@ -101,6 +101,16 @@ def _restore_implant_planning_state(context, scene, state=None):
 
     props.drawing_active = False
     props.irr_drawing_active = False
+    from .blender import protected_neighbors, implant_plane
+    # 9.24.9: implant MPR planes are hidden outside step 2; bring them back
+    # as the clinician left them.
+    if implant_plane.visible(scene):
+        for plane in implant_plane.planes(scene):
+            plane.hide_set(False)
+    protected_neighbors.sync(context)
+    from .blender import mpr_view, workflow_visibility
+    mpr_view.sync(context)
+    workflow_visibility.capture(context)
     _tag_dsg_view3d_redraw()
     return True
 
@@ -144,6 +154,12 @@ def _schedule_implant_planning_state_restore(scene, *, require_armed=False, dela
 
 @persistent
 def _dsg_restore_implant_step_after_undo(_dummy=None):
+    """Schedule scene reconciliation after native undo has rebuilt its graph."""
+    lifecycle.unregister_timer(_reconcile_workflow_after_native_undo)
+    lifecycle.register_timer(_reconcile_workflow_after_native_undo,first_interval=.2)
+
+
+def _reconcile_workflow_after_native_undo():
     """Undo-post bridge for the complete DSG state machine.
 
     Blender restores datablocks but not every viewport/controller state.  After
@@ -158,6 +174,7 @@ def _dsg_restore_implant_step_after_undo(_dummy=None):
             _reconcile_workflow_after_undo(scene)
     except Exception as exc:
         print(f'[DSG] Undo workflow reconciliation warning: {exc}')
+    return None
 
 
 def _remove_implant_navigation_restore_handler():
@@ -182,6 +199,10 @@ def _dicom_review_is_active(context):
 
 
 def _close_dicom_review_for_guide(context):
+    from .blender import implant_plane
+    for plane in implant_plane.planes(context.scene):
+        if plane.get('DSG_microscrew_mpr'):
+            plane.hide_set(True)
     if _dicom_review_is_active(context):
         try:
             bpy.ops.dicom_wizard_pro.close_safe_mpr()
@@ -190,6 +211,8 @@ def _close_dicom_review_for_guide(context):
     _hide_dicom_objects(context)
     _set_dicom_measurements_visibility(False)
     _set_material_preview_guide_view(context)
+    from .blender import mpr_view
+    mpr_view.sync(context)
 
 
 class DSG_OT_SelectMPRImplant(Operator):
@@ -254,6 +277,54 @@ class DSG_OT_OpenOrCenterImplantMPR(Operator):
         return {'FINISHED'}
 
 
+def _open_compact_microscrew_mpr(context, microscrew):
+    from .blender import implant_plane, mpr_view
+    ok, message = _ensure_dicom_voxels(context)
+    if not ok:
+        return False, message
+    if _dicom_review_is_active(context):
+        _close_dicom_review_for_guide(context)
+    implant_plane.register()
+    _ensure_mpr_target_visible(context, microscrew)
+    plane = implant_plane.create(context, microscrew)
+    if plane.get('DSG_implant_mpr_status') != 'OK':
+        implant_plane._remove(plane)
+        return False, 'No se pudo generar el corte del CBCT para el microtornillo'
+    context.scene[implant_plane.VISIBLE_KEY] = True
+    for other in implant_plane.planes(context.scene):
+        other.hide_set(other != plane)
+    mpr_view.sync(context)
+    _set_material_preview_guide_view(context)
+    return True, f'MPR compacto centrado en {microscrew.name}'
+
+
+def _microscrew_mpr_update_required(context, microscrew):
+    """Compare the editable pose to the trajectory last built by Update."""
+    props = context.scene.dsg_props
+    if not _valid_obj(get_pending_microscrew_preview(props)):
+        return False
+    visual = (microscrew if microscrew.get('DSG_microscrew_visual_preview', False)
+              else _microscrew_preview_visual_object())
+    if not _valid_obj(visual) or not visual.get('DSG_microscrew_visual_preview', False):
+        return False
+    saved_axis = visual.get('DSG_microscrew_axis')
+    saved_top = visual.get('DSG_microscrew_sleeve_top')
+    if saved_axis is None or saved_top is None:
+        return True
+    axis = Vector(saved_axis)
+    if axis.length < 1e-8:
+        return True
+    axis.normalize()
+    contact_z = float(visual.get('DSG_microscrew_contact_local_z_mm', MICROSCREW_TEMPLATE_CONTACT_Z_MM))
+    saved_origin = Vector(saved_top) - axis * contact_z
+    current_axis = visual.matrix_world.to_3x3() @ Vector((0, 0, 1))
+    if current_axis.length < 1e-8:
+        return True
+    current_axis.normalize()
+    return ((visual.matrix_world.translation - saved_origin).length > .002
+            or (current_axis - axis).length > 1e-4)
+
+
 class DSG_OT_CenterSelectedMicroscrewMPR(Operator):
     bl_idname = 'dsg.center_selected_microscrew_mpr'
     bl_label = 'Center Microscrew MPR'
@@ -265,7 +336,13 @@ class DSG_OT_CenterSelectedMicroscrewMPR(Operator):
         if not _is_valid_mpr_microscrew(microscrew):
             _dsg_report(self, {'WARNING'}, 'Select a microscrew first', 'Selecciona primero un microtornillo')
             return {'CANCELLED'}
-        ok, message = _center_two_plane_mpr_on_microscrew(context, microscrew)
+        if _microscrew_mpr_update_required(context, microscrew):
+            _dsg_report(
+                self, {'WARNING'},
+                'The microscrew was moved or rotated. Press Update before centering the MPR.',
+                'El microtornillo se ha movido o girado. Pulsa Actualizar antes de centrar el MPR.')
+            return {'CANCELLED'}
+        ok, message = _open_compact_microscrew_mpr(context, microscrew)
         if not ok:
             _dsg_report(self, {'ERROR'}, message, message)
             return {'CANCELLED'}
@@ -287,13 +364,13 @@ class DSG_OT_OpenOrCenterMicroscrewMPR(Operator):
         if not _is_valid_mpr_microscrew(microscrew):
             _dsg_report(self, {'WARNING'}, 'Select a microscrew first', 'Selecciona primero un microtornillo')
             return {'CANCELLED'}
-        _ensure_mpr_target_visible(context, microscrew)
-        if not _dicom_review_is_active(context):
-            result = bpy.ops.dsg.open_dicom_review()
-            if 'CANCELLED' in result:
-                return {'CANCELLED'}
-        _ensure_mpr_target_visible(context, microscrew)
-        ok, message = _center_two_plane_mpr_on_microscrew(context, microscrew)
+        if _microscrew_mpr_update_required(context, microscrew):
+            _dsg_report(
+                self, {'WARNING'},
+                'The microscrew was moved or rotated. Press Update before centering the MPR.',
+                'El microtornillo se ha movido o girado. Pulsa Actualizar antes de centrar el MPR.')
+            return {'CANCELLED'}
+        ok, message = _open_compact_microscrew_mpr(context, microscrew)
         if not ok:
             _dsg_report(self, {'ERROR'}, message, message)
             return {'CANCELLED'}
@@ -302,6 +379,42 @@ class DSG_OT_OpenOrCenterMicroscrewMPR(Operator):
             f'MPR centred and aligned to {microscrew.name}',
             f'MPR centrado y alineado con {microscrew.name}')
         return {'FINISHED'}
+
+
+def _ensure_dicom_voxels(context):
+    """Reload the CBCT voxels when the file says loaded but memory is empty.
+
+    Voxels are not stored in the .blend, so after reopening the file,
+    restarting Blender or updating the add-on the review used to fail with
+    'radiographic_quad_view.poll() failed' and black planes.
+    """
+    from . import dicom_module as _dicom
+    if _dicom.RUNTIME.is_loaded():
+        return True, ''
+    candidates = [str(_dicom.RUNTIME.source_path or ''),
+                  str(context.scene.get('DSG_patient_dicom_path', '') or '')]
+    path = next((p for p in candidates if p and os.path.isfile(p)), '')
+    if not path:
+        return False, ('No se encuentra el CBCT de este paciente en el disco; '
+                       'vuelve a cargarlo con CARGAR CBCT.')
+    started = time.perf_counter()
+    try:
+        context.window_manager.progress_begin(0, 1)
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
+    try:
+        _dicom.rehydrate_runtime(path)
+    except Exception as exc:
+        return False, f'No se pudo recargar el CBCT ({exc}); vuelve a cargarlo con CARGAR CBCT.'
+    finally:
+        try:
+            context.window_manager.progress_end()
+        except Exception:
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
+    if not _dicom.RUNTIME.is_loaded():
+        return False, 'El CBCT no se pudo recargar; vuelve a cargarlo con CARGAR CBCT.'
+    print(f'[DSG] CBCT voxels reloaded for the DICOM review in {time.perf_counter() - started:.1f} s')
+    return True, ''
 
 
 class DSG_OT_OpenDICOMReview(Operator):
@@ -318,6 +431,10 @@ class DSG_OT_OpenDICOMReview(Operator):
         if not bool(getattr(dicom_props, 'volume_loaded', False)):
             _dsg_report(self, {'ERROR'}, 'Load the DICOM first', 'Carga primero el DICOM')
             return {'CANCELLED'}
+        ok, message = _ensure_dicom_voxels(context)
+        if not ok:
+            _dsg_report(self, {'ERROR'}, message, message)
+            return {'CANCELLED'}
         # MPR is resampled directly from the loaded DICOM voxels. An STL is
         # optional 3D context and must never gate implant/microscrew review.
         try:
@@ -325,15 +442,17 @@ class DSG_OT_OpenDICOMReview(Operator):
             _dicom._resolve_or_recover_mpr_surface(context, mutate_state=True)
         except Exception as exc:
             print('[DSG MPR] optional surface recovery warning:', repr(exc))
-        _show_dicom_objects(context)
+        _show_dicom_review_objects(context)
         _set_dicom_measurements_visibility(True)
         dicom_props.step = 4
         try:
             result = bpy.ops.dicom_wizard_pro.radiographic_quad_view('INVOKE_DEFAULT')
         except Exception as exc:
+            _close_dicom_review_for_guide(context)  # never leave black planes behind
             _dsg_report(self, {'ERROR'}, f'Could not open DICOM review: {exc}', f'No se pudo abrir la revisión DICOM: {exc}')
             return {'CANCELLED'}
         if 'CANCELLED' in result:
+            _close_dicom_review_for_guide(context)
             _dsg_report(self, {'ERROR'}, 'DICOM review could not be opened', 'No se pudo abrir la revisión DICOM')
             return {'CANCELLED'}
 
@@ -366,6 +485,9 @@ class DSG_OT_OpenDICOMReview(Operator):
             dicom_props['safe_mpr_keep_sidebar_for_dsg'] = True
         except Exception:
             _DSG_LOG.debug("suppressed exception", exc_info=True)
+        # Radiographic view: no IOS, only neighbour teeth and a CBCT ghost.
+        from .blender import mpr_view
+        mpr_view.sync(context)
         return {'FINISHED'}
 
 
@@ -903,7 +1025,12 @@ def _inherit_dsg_custom_properties(source_obj, target_obj, exclude_keys=None):
     """
     if not (_valid_obj(source_obj) and _valid_obj(target_obj)):
         return 0
+    # A replacement is a live result, even when its source was archived just
+    # before this copy. Clinical metadata survives; transient identity and
+    # visibility caches belong only to the old Blender object.
     excluded = {str(key) for key in (exclude_keys or ())}
+    excluded.update({'DSG_obsolete_hidden', 'DSG_archive_reason', 'DSG_archived_at',
+                     'DSG_hidden_source', 'DSG_checkpoint_source_name'})
     copied = 0
     try:
         keys = list(source_obj.keys())
@@ -911,7 +1038,8 @@ def _inherit_dsg_custom_properties(source_obj, target_obj, exclude_keys=None):
         keys = []
     for raw_key in keys:
         key = str(raw_key)
-        if key in excluded or not key.startswith('DSG_'):
+        if (key in excluded or not key.startswith('DSG_')
+                or key.startswith(('DSG_visibility_', 'DSG_workflow_checkpoint_'))):
             continue
         try:
             target_obj[key] = source_obj[key]
@@ -2313,6 +2441,175 @@ def _boolean_rescue_passive_model(context, original_obj, blockout_obj):
     return None, 0.0, int(attempts), boolean_error
 
 
+def _union_retentive_model(context, base, other):
+    """In-place MANIFOLD UNION of ``other`` into ``base``; removes ``other``.
+    Returns False (and leaves both untouched) when the result is not solid."""
+    try:
+        from .blender import progress_overlay
+        progress_overlay.begin(context, 'Modelo retentivo')
+        progress_overlay.step(10, 'Unión booleana IOS + zona retentiva')
+    except Exception:
+        progress_overlay = None
+    backup = base.data.copy()
+    ok = False
+    try:
+        modifier = base.modifiers.new('DSG_RetentiveUnion', 'BOOLEAN')
+        modifier.operation = 'UNION'
+        modifier.object = other
+        if 'MANIFOLD' not in get_supported_boolean_solvers(modifier):
+            base.modifiers.remove(modifier)
+            return False
+        modifier.solver = 'MANIFOLD'
+        if not apply_modifier_direct(context, base, modifier.name):
+            leftover = base.modifiers.get('DSG_RetentiveUnion')
+            if leftover is not None:
+                base.modifiers.remove(leftover)
+            return False
+        if progress_overlay:
+            progress_overlay.step(80, 'Comprobando que el modelo es sólido')
+        report = get_mesh_solid_report(base, max_polygons=3000000)
+        ok = bool(base.data.polygons) and not (report.get('checked') and not report.get('solid'))
+        return ok
+    except Exception:
+        _DSG_LOG.debug("retentive union failed", exc_info=True)
+        return False
+    finally:
+        if ok:
+            safe_remove_object(other)
+            if backup.users == 0:
+                bpy.data.meshes.remove(backup)
+        else:
+            _restore_object_mesh_copy(base, backup)
+        if progress_overlay:
+            progress_overlay.end(ok, 'Modelo retentivo unido' if ok else 'Unión no posible · se usan las dos superficies')
+
+
+def upgrade_passive_to_union(context, passive=None):
+    """Convert a legacy JOINED retentive model (IOS + blockout as two
+    overlapping shells) into the MANIFOLD union, in place.  The mesh datablock
+    is rewritten (not swapped) so step checkpoints sharing it follow.
+    Returns True when the model was upgraded."""
+    import bmesh
+    passive = passive or bpy.data.objects.get(COMBINED_NAME)
+    if not _valid_obj(passive) or passive.type != 'MESH':
+        return False
+    if str(passive.get('DSG_combination_method', '')) == 'MANIFOLD_UNION_IOS_PLUS_BLOCKOUT':
+        return False
+    if not bool(passive.get('DSG_overlapping_shells_intentional', False)):
+        return False
+    # 1) Preferred: recompute the union from the live closed IOS + blockout
+    #    (the legacy shells can share most faces exactly, which MANIFOLD
+    #    rejects; the original sources do not).
+    try:
+        props = context.scene.dsg_props
+        model = getattr(props, 'model_obj', None)
+        blockout = bpy.data.objects.get(BLOCKOUT_NAME)
+        if not _valid_obj(blockout):
+            # At the last steps the live blockout may only survive inside the
+            # step checkpoints; use the most recent one.
+            suffix = '__' + BLOCKOUT_NAME
+            saved = sorted(
+                (o for o in bpy.data.objects
+                 if o.type == 'MESH' and o.name.startswith(WORKFLOW_CHECKPOINT_COLLECTION_PREFIX)
+                 and o.name.endswith(suffix)),
+                key=lambda o: o.name)
+            blockout = saved[-1] if saved else None
+        if _valid_obj(model) and _valid_obj(blockout):
+            fresh = build_joined_passive_model(
+                context, model, blockout, output_name='DSG_UnionUpgrade_Fresh')
+            try:
+                if (_valid_obj(fresh) and str(fresh.get('DSG_combination_method', ''))
+                        == 'MANIFOLD_UNION_IOS_PLUS_BLOCKOUT'):
+                    out = bmesh.new()
+                    out.from_mesh(fresh.data)
+                    out.transform(passive.matrix_world.inverted_safe() @ fresh.matrix_world)
+                    out.to_mesh(passive.data)
+                    out.free()
+                    passive.data.update()
+                    for obj in bpy.data.objects:
+                        if obj.type == 'MESH' and obj.data == passive.data:
+                            obj['DSG_combination_method'] = 'MANIFOLD_UNION_IOS_PLUS_BLOCKOUT'
+                            obj['DSG_overlapping_shells_intentional'] = False
+                            obj['DSG_final_cut_cutter'] = 'original_union_blockout'
+                            obj['DSG_retentive_union_upgraded'] = True
+                    return True
+            finally:
+                for name in ('DSG_UnionUpgrade_Fresh', 'DSG_UnionUpgrade_Fresh_Orig_Copy',
+                             'DSG_UnionUpgrade_Fresh_Blockout_Copy'):
+                    leftover = bpy.data.objects.get(name)
+                    if _valid_obj(leftover):
+                        safe_remove_object(leftover)
+    except Exception:
+        _DSG_LOG.debug("passive union rebuild failed", exc_info=True)
+
+    # 2) Fallback: union of the shells stored in the legacy model.
+    bm = bmesh.new()
+    temps = []
+    try:
+        bm.from_mesh(passive.data)
+        bm.verts.ensure_lookup_table()
+        seen = set()
+        islands = []
+        for v in bm.verts:
+            if v.index in seen:
+                continue
+            stack = [v]
+            comp = []
+            seen.add(v.index)
+            while stack:
+                x = stack.pop()
+                comp.append(x.index)
+                for e in x.link_edges:
+                    y = e.other_vert(x)
+                    if y.index not in seen:
+                        seen.add(y.index)
+                        stack.append(y)
+            islands.append(comp)
+        if len(islands) < 2:
+            return False
+        islands.sort(key=len, reverse=True)
+
+        def _part(name, keep):
+            b = bm.copy()
+            b.verts.ensure_lookup_table()
+            bmesh.ops.delete(b, geom=[v for v in b.verts if v.index not in keep], context='VERTS')
+            me = bpy.data.meshes.new(name)
+            b.to_mesh(me)
+            b.free()
+            obj = bpy.data.objects.new(name, me)
+            obj.matrix_world = passive.matrix_world.copy()
+            context.scene.collection.objects.link(obj)
+            temps.append(obj)
+            return obj
+
+        base = _part('DSG_UnionUpgrade_A', set(islands[0]))
+        other = _part('DSG_UnionUpgrade_B', {i for isl in islands[1:] for i in isl})
+        if not _union_retentive_model(context, base, other):
+            return False
+        out = bmesh.new()
+        out.from_mesh(base.data)
+        out.to_mesh(passive.data)
+        out.free()
+        passive.data.update()
+        for obj in bpy.data.objects:
+            if obj.type == 'MESH' and obj.data == passive.data:
+                obj['DSG_combination_method'] = 'MANIFOLD_UNION_IOS_PLUS_BLOCKOUT'
+                obj['DSG_overlapping_shells_intentional'] = False
+                obj['DSG_retentive_union_upgraded'] = True
+        return True
+    except Exception:
+        _DSG_LOG.debug("passive union upgrade failed", exc_info=True)
+        return False
+    finally:
+        bm.free()
+        for obj in temps:
+            try:
+                if _valid_obj(obj):
+                    safe_remove_object(obj)
+            except Exception:
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
+
+
 def build_joined_passive_model(context, original_obj, blockout_obj,
                                output_name=COMBINED_NAME):
     """Create the v7-compatible passive cutter from evaluated IOS + blockout.
@@ -2347,6 +2644,82 @@ def build_joined_passive_model(context, original_obj, blockout_obj,
     block_copy.display_type = 'SOLID'
     _set_obj_hidden(orig_copy, False, selectable_when_visible=True)
     _set_obj_hidden(block_copy, False, selectable_when_visible=True)
+
+    # 9.23: preferred retentive model = closed IOS  ∪  volumetric undercut
+    # fill (vertical walls at the height of contour, no stretched faces).
+    try:
+        fills = ensure_undercut_fill(context, original_obj, blockout_obj)
+    except Exception:
+        _DSG_LOG.warning("undercut fill unavailable for the retentive model", exc_info=True)
+        fills = []
+    if fills:
+        united_fill = True
+        for fill in fills:
+            piece = duplicate_object_with_data(context, fill, output_name + '_FillPiece')
+            if not _valid_obj(piece):
+                united_fill = False
+                break
+            _set_obj_hidden(piece, False, selectable_when_visible=False)
+            if not _union_retentive_model(context, orig_copy, piece):
+                if _valid_obj(piece):
+                    safe_remove_object(piece)
+                united_fill = False
+                break
+        if united_fill:
+            safe_remove_object(block_copy)
+            passive = orig_copy
+            passive.name = output_name
+            passive.data.name = output_name + '_Mesh'
+            passive.display_type = 'SOLID'
+            _set_obj_hidden(passive, False, selectable_when_visible=True)
+            passive['DSG_contains_original'] = True
+            passive['DSG_contains_original_envelope'] = True
+            passive['DSG_contains_blockout'] = True
+            passive['DSG_final_cut_cutter'] = 'original_union_undercut_fill'
+            passive['DSG_combination_method'] = 'MANIFOLD_UNION_IOS_PLUS_BLOCKOUT'
+            passive['DSG_retentive_fill'] = 'VOLUMETRIC_UNDERCUT_FILL_V1'
+            passive['DSG_overlapping_shells_intentional'] = False
+            mat = (bpy.data.materials.get('DSG_PassiveCombinedMat')
+                   or bpy.data.materials.new('DSG_PassiveCombinedMat'))
+            mat.use_nodes = False
+            mat.diffuse_color = (0.86, 0.86, 0.78, 1.0)
+            passive.data.materials.clear()
+            passive.data.materials.append(mat)
+            return passive
+        # A failed piece restores orig_copy itself (see _union_retentive_model);
+        # rebuild it clean before the legacy route.
+        safe_remove_object(orig_copy)
+        orig_copy = duplicate_evaluated_object_with_data(context, original_obj, orig_name)
+        if not _valid_obj(orig_copy):
+            safe_remove_object(block_copy)
+            return None
+        orig_copy.display_type = 'SOLID'
+        _set_obj_hidden(orig_copy, False, selectable_when_visible=True)
+
+    # The retentive model is the Boolean UNION of the closed IOS and the
+    # blockout.  Joining the two overlapping shells (previous behaviour) looked
+    # wrong in the final view (both surfaces visible, z-fighting).  MANIFOLD
+    # handles both closed shells; if it fails the old join is kept.
+    united = _union_retentive_model(context, orig_copy, block_copy)
+    if united:
+        passive = orig_copy
+        passive.name = output_name
+        passive.data.name = output_name + '_Mesh'
+        passive.display_type = 'SOLID'
+        _set_obj_hidden(passive, False, selectable_when_visible=True)
+        passive['DSG_contains_original'] = True
+        passive['DSG_contains_original_envelope'] = True
+        passive['DSG_contains_blockout'] = True
+        passive['DSG_final_cut_cutter'] = 'original_union_blockout'
+        passive['DSG_combination_method'] = 'MANIFOLD_UNION_IOS_PLUS_BLOCKOUT'
+        passive['DSG_overlapping_shells_intentional'] = False
+        mat = (bpy.data.materials.get('DSG_PassiveCombinedMat')
+               or bpy.data.materials.new('DSG_PassiveCombinedMat'))
+        mat.use_nodes = False
+        mat.diffuse_color = (0.86, 0.86, 0.78, 1.0)
+        passive.data.materials.clear()
+        passive.data.materials.append(mat)
+        return passive
 
     passive = join_objects(context, [orig_copy, block_copy], output_name)
     if not _valid_obj(passive):
@@ -2508,18 +2881,37 @@ def get_blockout_visibility_objects(props=None):
 
 
 
+def _hide_retained_guide_sources():
+    """Retain technical source IDs without displaying them as clinical guides."""
+    get_guide_visibility_objects(bpy.context.scene.dsg_props)
+    hidden=[]
+    for obj in list(bpy.context.scene.objects):
+        if obj.get('DSG_obsolete_hidden') or obj.get('DSG_hidden_source'):
+            _set_obj_hidden(obj,True,selectable_when_visible=False)
+            obj.hide_render=True
+            hidden.append(obj)
+    return hidden
+
+
 def get_guide_visibility_objects(props=None):
+    """Only the current guide; archived guides never join the visibility toggle."""
     if props is not None:
         repair_core_object_pointers(props)
-    candidates = []
-    if props is not None:
-        candidates.append(getattr(props, 'guide_obj', None))
-    candidates.extend(find_dsg_objects(role=ROLE_GUIDE, exact_name=GUIDE_NAME, obj_type='MESH'))
-    out = []
+    canonical=bpy.data.objects.get(GUIDE_NAME)
+    # Transactional copies can inherit the archived source's metadata.
+    if (_valid_obj(canonical) and canonical.type=='MESH'
+            and not canonical.get('DSG_hidden_source')
+            and not canonical.get('DSG_checkpoint_source_name')
+            and not canonical.get('DSG_workflow_checkpoint_source_name')):
+        for key in ('DSG_obsolete_hidden','DSG_archive_reason'):
+            if key in canonical:del canonical[key]
+    candidates=[canonical,getattr(props,'guide_obj',None) if props is not None else None]
     for obj in candidates:
-        if _valid_obj(obj) and obj not in out:
-            out.append(obj)
-    return out
+        if (_valid_obj(obj) and obj.type=='MESH' and not obj.get('DSG_obsolete_hidden')
+                and not obj.get('DSG_hidden_source') and not obj.get('DSG_checkpoint_source_name')
+                and not obj.get('DSG_workflow_checkpoint_source_name')):
+            return [obj]
+    return []
 
 
 # ─────────────────────────────────────────────────────────────

@@ -1,0 +1,2455 @@
+{
+ "verified_on": "2026-10-15",
+ "scope": "Complete nominal implant references in the cited editions and BTI live shop listing; not all manufacturer products or all markets",
+ "catalogues": {
+  "MIS_SEVEN": [
+   {
+    "ref": "MF7-06600",
+    "diameter_mm": 6.0,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "MF7-08600",
+    "diameter_mm": 6.0,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "MF7-10600",
+    "diameter_mm": 6.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "MF7-11600",
+    "diameter_mm": 6.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "MF7-13600",
+    "diameter_mm": 6.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "MF7-D06420",
+    "diameter_mm": 4.2,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "MF7-D06500",
+    "diameter_mm": 5.0,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "MF7-D08375",
+    "diameter_mm": 3.75,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "MF7-D08420",
+    "diameter_mm": 4.2,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "MF7-D08500",
+    "diameter_mm": 5.0,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "MF7-D10330",
+    "diameter_mm": 3.3,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "MF7-D10375",
+    "diameter_mm": 3.75,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "MF7-D10420",
+    "diameter_mm": 4.2,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "MF7-D10500",
+    "diameter_mm": 5.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "MF7-D11330",
+    "diameter_mm": 3.3,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "MF7-D11375",
+    "diameter_mm": 3.75,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "MF7-D11420",
+    "diameter_mm": 4.2,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "MF7-D11500",
+    "diameter_mm": 5.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "MF7-D13330",
+    "diameter_mm": 3.3,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "MF7-D13375",
+    "diameter_mm": 3.75,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "MF7-D13420",
+    "diameter_mm": 4.2,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "MF7-D13500",
+    "diameter_mm": 5.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "MF7-D16330",
+    "diameter_mm": 3.3,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "MF7-D16375",
+    "diameter_mm": 3.75,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "MF7-D16420",
+    "diameter_mm": 4.2,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "MF7-D16500",
+    "diameter_mm": 5.0,
+    "length_mm": 16.0
+   }
+  ],
+  "MIS_C1": [
+   {
+    "ref": "C1-D08375",
+    "diameter_mm": 3.75,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "C1-D08420",
+    "diameter_mm": 4.2,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "C1-D08500",
+    "diameter_mm": 5.0,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "C1-D10330",
+    "diameter_mm": 3.3,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "C1-D10375",
+    "diameter_mm": 3.75,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "C1-D10420",
+    "diameter_mm": 4.2,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "C1-D10500",
+    "diameter_mm": 5.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "C1-D11330",
+    "diameter_mm": 3.3,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "C1-D11375",
+    "diameter_mm": 3.75,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "C1-D11420",
+    "diameter_mm": 4.2,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "C1-D11500",
+    "diameter_mm": 5.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "C1-D13330",
+    "diameter_mm": 3.3,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "C1-D13375",
+    "diameter_mm": 3.75,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "C1-D13420",
+    "diameter_mm": 4.2,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "C1-D13500",
+    "diameter_mm": 5.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "C1-D16330",
+    "diameter_mm": 3.3,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "C1-D16375",
+    "diameter_mm": 3.75,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "C1-D16420",
+    "diameter_mm": 4.2,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "C1-D16500",
+    "diameter_mm": 5.0,
+    "length_mm": 16.0
+   }
+  ],
+  "ASTRA_EV_S": [
+   {
+    "ref": "25212",
+    "diameter_mm": 3.0,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25213",
+    "diameter_mm": 3.0,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25214",
+    "diameter_mm": 3.0,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25215",
+    "diameter_mm": 3.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25216",
+    "diameter_mm": 3.0,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25221",
+    "diameter_mm": 3.6,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "25222",
+    "diameter_mm": 3.6,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25223",
+    "diameter_mm": 3.6,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25224",
+    "diameter_mm": 3.6,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25225",
+    "diameter_mm": 3.6,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25226",
+    "diameter_mm": 3.6,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25227",
+    "diameter_mm": 3.6,
+    "length_mm": 17.0
+   },
+   {
+    "ref": "25231",
+    "diameter_mm": 4.2,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "25232",
+    "diameter_mm": 4.2,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25233",
+    "diameter_mm": 4.2,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25234",
+    "diameter_mm": 4.2,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25235",
+    "diameter_mm": 4.2,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25236",
+    "diameter_mm": 4.2,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25237",
+    "diameter_mm": 4.2,
+    "length_mm": 17.0
+   },
+   {
+    "ref": "25241",
+    "diameter_mm": 4.8,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "25242",
+    "diameter_mm": 4.8,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25243",
+    "diameter_mm": 4.8,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25244",
+    "diameter_mm": 4.8,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25245",
+    "diameter_mm": 4.8,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25246",
+    "diameter_mm": 4.8,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25247",
+    "diameter_mm": 4.8,
+    "length_mm": 17.0
+   },
+   {
+    "ref": "25251",
+    "diameter_mm": 5.4,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "25252",
+    "diameter_mm": 5.4,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25253",
+    "diameter_mm": 5.4,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25254",
+    "diameter_mm": 5.4,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25255",
+    "diameter_mm": 5.4,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25256",
+    "diameter_mm": 5.4,
+    "length_mm": 15.0
+   }
+  ],
+  "ASTRA_EV_C": [
+   {
+    "ref": "25262",
+    "diameter_mm": 4.2,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25263",
+    "diameter_mm": 4.2,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25264",
+    "diameter_mm": 4.2,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25265",
+    "diameter_mm": 4.2,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25266",
+    "diameter_mm": 4.2,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25267",
+    "diameter_mm": 4.2,
+    "length_mm": 17.0
+   },
+   {
+    "ref": "25272",
+    "diameter_mm": 4.8,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25273",
+    "diameter_mm": 4.8,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25274",
+    "diameter_mm": 4.8,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25275",
+    "diameter_mm": 4.8,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25276",
+    "diameter_mm": 4.8,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25277",
+    "diameter_mm": 4.8,
+    "length_mm": 17.0
+   }
+  ],
+  "ASTRA_PROFILE_EV": [
+   {
+    "ref": "25440",
+    "diameter_mm": 4.2,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25441",
+    "diameter_mm": 4.2,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25442",
+    "diameter_mm": 4.2,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25443",
+    "diameter_mm": 4.2,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25444",
+    "diameter_mm": 4.2,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25445",
+    "diameter_mm": 4.2,
+    "length_mm": 17.0
+   },
+   {
+    "ref": "25446",
+    "diameter_mm": 4.8,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25447",
+    "diameter_mm": 4.8,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25448",
+    "diameter_mm": 4.8,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25449",
+    "diameter_mm": 4.8,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25450",
+    "diameter_mm": 4.8,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25451",
+    "diameter_mm": 4.8,
+    "length_mm": 17.0
+   },
+   {
+    "ref": "25452",
+    "diameter_mm": 4.2,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25453",
+    "diameter_mm": 4.2,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25454",
+    "diameter_mm": 4.2,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25455",
+    "diameter_mm": 4.2,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25456",
+    "diameter_mm": 4.2,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25457",
+    "diameter_mm": 4.2,
+    "length_mm": 17.0
+   },
+   {
+    "ref": "25458",
+    "diameter_mm": 4.8,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "25459",
+    "diameter_mm": 4.8,
+    "length_mm": 9.0
+   },
+   {
+    "ref": "25460",
+    "diameter_mm": 4.8,
+    "length_mm": 11.0
+   },
+   {
+    "ref": "25461",
+    "diameter_mm": 4.8,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "25462",
+    "diameter_mm": 4.8,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "25463",
+    "diameter_mm": 4.8,
+    "length_mm": 17.0
+   }
+  ],
+  "KLOCKNER_VEGA": [
+   {
+    "ref": "18 30 08",
+    "diameter_mm": 3.0,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "18 30 10",
+    "diameter_mm": 3.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "18 30 12",
+    "diameter_mm": 3.0,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "18 30 14",
+    "diameter_mm": 3.0,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "18 35 08",
+    "diameter_mm": 3.5,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "18 35 10",
+    "diameter_mm": 3.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "18 35 12",
+    "diameter_mm": 3.5,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "18 35 14",
+    "diameter_mm": 3.5,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "18 35 16",
+    "diameter_mm": 3.5,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "18 35 18",
+    "diameter_mm": 3.5,
+    "length_mm": 18.0
+   },
+   {
+    "ref": "18 40 08",
+    "diameter_mm": 4.0,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "18 40 10",
+    "diameter_mm": 4.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "18 40 12",
+    "diameter_mm": 4.0,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "18 40 14",
+    "diameter_mm": 4.0,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "18 40 16",
+    "diameter_mm": 4.0,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "18 40 18",
+    "diameter_mm": 4.0,
+    "length_mm": 18.0
+   },
+   {
+    "ref": "18 45 08",
+    "diameter_mm": 4.5,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "18 45 10",
+    "diameter_mm": 4.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "18 45 12",
+    "diameter_mm": 4.5,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "18 45 14",
+    "diameter_mm": 4.5,
+    "length_mm": 14.0
+   }
+  ],
+  "KLOCKNER_VEGA_PLUS": [
+   {
+    "ref": "19 31 08",
+    "diameter_mm": 3.1,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "19 31 10",
+    "diameter_mm": 3.1,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "19 31 12",
+    "diameter_mm": 3.1,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "19 31 14",
+    "diameter_mm": 3.1,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "19 36 08",
+    "diameter_mm": 3.6,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "19 36 10",
+    "diameter_mm": 3.6,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "19 36 12",
+    "diameter_mm": 3.6,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "19 36 14",
+    "diameter_mm": 3.6,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "19 36 16",
+    "diameter_mm": 3.6,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "19 36 18",
+    "diameter_mm": 3.6,
+    "length_mm": 18.0
+   },
+   {
+    "ref": "19 41 08",
+    "diameter_mm": 4.1,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "19 41 10",
+    "diameter_mm": 4.1,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "19 41 12",
+    "diameter_mm": 4.1,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "19 41 14",
+    "diameter_mm": 4.1,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "19 41 16",
+    "diameter_mm": 4.1,
+    "length_mm": 16.0
+   },
+   {
+    "ref": "19 41 18",
+    "diameter_mm": 4.1,
+    "length_mm": 18.0
+   },
+   {
+    "ref": "19 46 08",
+    "diameter_mm": 4.6,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "19 46 10",
+    "diameter_mm": 4.6,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "19 46 12",
+    "diameter_mm": 4.6,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "19 46 14",
+    "diameter_mm": 4.6,
+    "length_mm": 14.0
+   }
+  ],
+  "STRAUMANN_SP": [
+   {
+    "ref": "033.043S",
+    "diameter_mm": 4.1,
+    "length_mm": 4.0
+   },
+   {
+    "ref": "033.044S",
+    "diameter_mm": 4.8,
+    "length_mm": 4.0
+   },
+   {
+    "ref": "033.045S",
+    "diameter_mm": 4.8,
+    "length_mm": 4.0
+   },
+   {
+    "ref": "033.416S",
+    "diameter_mm": 3.3,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "033.417S",
+    "diameter_mm": 3.3,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "033.418S",
+    "diameter_mm": 3.3,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "033.419S",
+    "diameter_mm": 3.3,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "033.511S",
+    "diameter_mm": 3.3,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "033.512S",
+    "diameter_mm": 3.3,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "033.513S",
+    "diameter_mm": 3.3,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "033.514S",
+    "diameter_mm": 3.3,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "033.560S",
+    "diameter_mm": 4.1,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "033.561S",
+    "diameter_mm": 4.1,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "033.562S",
+    "diameter_mm": 4.1,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "033.563S",
+    "diameter_mm": 4.1,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "033.564S",
+    "diameter_mm": 4.1,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "033.590S",
+    "diameter_mm": 4.8,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "033.591S",
+    "diameter_mm": 4.8,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "033.592S",
+    "diameter_mm": 4.8,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "033.593S",
+    "diameter_mm": 4.8,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "033.594S",
+    "diameter_mm": 4.8,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "033.610S",
+    "diameter_mm": 4.8,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "033.611S",
+    "diameter_mm": 4.8,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "033.612S",
+    "diameter_mm": 4.8,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "033.613S",
+    "diameter_mm": 4.8,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "043.066S",
+    "diameter_mm": 4.8,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "043.067S",
+    "diameter_mm": 4.8,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "043.068S",
+    "diameter_mm": 4.8,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "043.069S",
+    "diameter_mm": 4.8,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "043.070S",
+    "diameter_mm": 4.8,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "043.161S",
+    "diameter_mm": 4.1,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "043.162S",
+    "diameter_mm": 4.1,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "043.163S",
+    "diameter_mm": 4.1,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "043.164S",
+    "diameter_mm": 4.1,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "043.165S",
+    "diameter_mm": 4.1,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "043.260S",
+    "diameter_mm": 3.3,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "043.261S",
+    "diameter_mm": 3.3,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "043.262S",
+    "diameter_mm": 3.3,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "043.263S",
+    "diameter_mm": 3.3,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "043.416S",
+    "diameter_mm": 3.3,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "043.417S",
+    "diameter_mm": 3.3,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "043.418S",
+    "diameter_mm": 3.3,
+    "length_mm": 12.0
+   },
+   {
+    "ref": "043.419S",
+    "diameter_mm": 3.3,
+    "length_mm": 14.0
+   },
+   {
+    "ref": "043.655S",
+    "diameter_mm": 4.8,
+    "length_mm": 6.0
+   },
+   {
+    "ref": "043.656S",
+    "diameter_mm": 4.8,
+    "length_mm": 8.0
+   },
+   {
+    "ref": "043.657S",
+    "diameter_mm": 4.8,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "043.658S",
+    "diameter_mm": 4.8,
+    "length_mm": 12.0
+   }
+  ],
+  "BTI_CORE": [
+   {
+    "ref": "IIPECA4785",
+    "diameter_mm": 4.75,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPECA4775",
+    "diameter_mm": 4.75,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPECA4765",
+    "diameter_mm": 4.75,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPECA4711",
+    "diameter_mm": 4.75,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPECA4710",
+    "diameter_mm": 4.75,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPECA4745",
+    "diameter_mm": 4.75,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPECA4285",
+    "diameter_mm": 4.25,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPECA4275",
+    "diameter_mm": 4.25,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPECA4265",
+    "diameter_mm": 4.25,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPECA4255",
+    "diameter_mm": 4.25,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPECA4213",
+    "diameter_mm": 4.25,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPECA4211",
+    "diameter_mm": 4.25,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPECA4210",
+    "diameter_mm": 4.25,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPECA3345",
+    "diameter_mm": 3.3,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPECA3310",
+    "diameter_mm": 3.3,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPECA3385",
+    "diameter_mm": 3.3,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPECA3375",
+    "diameter_mm": 3.3,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPECA3365",
+    "diameter_mm": 3.3,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPECA3355",
+    "diameter_mm": 3.3,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPECA3315",
+    "diameter_mm": 3.3,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IIPECA3313",
+    "diameter_mm": 3.3,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPECA3311",
+    "diameter_mm": 3.3,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPECA4075",
+    "diameter_mm": 4.0,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPECA4065",
+    "diameter_mm": 4.0,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPECA4055",
+    "diameter_mm": 4.0,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPECA4045",
+    "diameter_mm": 4.0,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPECA4013",
+    "diameter_mm": 4.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPECA4011",
+    "diameter_mm": 4.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPECA3785",
+    "diameter_mm": 3.75,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPECA3775",
+    "diameter_mm": 3.75,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPECA3755",
+    "diameter_mm": 3.75,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPECA3745",
+    "diameter_mm": 3.75,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPECA3715",
+    "diameter_mm": 3.75,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IIPECA3713",
+    "diameter_mm": 3.75,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPECA3711",
+    "diameter_mm": 3.75,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPECA3710",
+    "diameter_mm": 3.75,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPECA3585",
+    "diameter_mm": 3.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPECA3575",
+    "diameter_mm": 3.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPECA3565",
+    "diameter_mm": 3.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPECA3555",
+    "diameter_mm": 3.5,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPECA3545",
+    "diameter_mm": 3.5,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPECA3513",
+    "diameter_mm": 3.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPECA3511",
+    "diameter_mm": 3.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPECA3510",
+    "diameter_mm": 3.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPECA4755",
+    "diameter_mm": 4.75,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPECA4245",
+    "diameter_mm": 4.25,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPECA4085",
+    "diameter_mm": 4.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPECA4010",
+    "diameter_mm": 4.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPECA3765",
+    "diameter_mm": 3.75,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPECA3515",
+    "diameter_mm": 3.5,
+    "length_mm": 15.0
+   }
+  ],
+  "BTI_P25": [
+   {
+    "ref": "IIP2CA2513",
+    "diameter_mm": 2.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIP2CA2511",
+    "diameter_mm": 2.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIP2CA2510",
+    "diameter_mm": 2.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIP2CA2585",
+    "diameter_mm": 2.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIP2CA2565",
+    "diameter_mm": 2.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIP2CA2575",
+    "diameter_mm": 2.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIP2CA2555",
+    "diameter_mm": 2.5,
+    "length_mm": 5.5
+   }
+  ],
+  "BTI_COREX": [
+   {
+    "ref": "IIPEXCA5565",
+    "diameter_mm": 5.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPEXCA5545",
+    "diameter_mm": 5.5,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPEXCA5555",
+    "diameter_mm": 5.5,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPEXCA5510",
+    "diameter_mm": 5.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPEXCA5511",
+    "diameter_mm": 5.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPEXCA5585",
+    "diameter_mm": 5.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPEXCA5575",
+    "diameter_mm": 5.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPEXCA5011",
+    "diameter_mm": 5.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPEXCA5010",
+    "diameter_mm": 5.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPEXCA5065",
+    "diameter_mm": 5.0,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPEXCA5055",
+    "diameter_mm": 5.0,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPEXCA5075",
+    "diameter_mm": 5.0,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPEXCA5085",
+    "diameter_mm": 5.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPEXCA5045",
+    "diameter_mm": 5.0,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPEXCA3513",
+    "diameter_mm": 3.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPEXCA3510",
+    "diameter_mm": 3.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPEXCA3585",
+    "diameter_mm": 3.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPEXCA3575",
+    "diameter_mm": 3.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPEXCA3565",
+    "diameter_mm": 3.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPEXCA3555",
+    "diameter_mm": 3.5,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPEXCA3545",
+    "diameter_mm": 3.5,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPEXCA3511",
+    "diameter_mm": 3.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPEXCA3785",
+    "diameter_mm": 3.75,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPEXCA3775",
+    "diameter_mm": 3.75,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPEXCA3765",
+    "diameter_mm": 3.75,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPEXCA3755",
+    "diameter_mm": 3.75,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPEXCA3745",
+    "diameter_mm": 3.75,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPEXCA3713",
+    "diameter_mm": 3.75,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPEXCA3711",
+    "diameter_mm": 3.75,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPEXCA3710",
+    "diameter_mm": 3.75,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPEXCA4745",
+    "diameter_mm": 4.75,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPEXCA4785",
+    "diameter_mm": 4.75,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPEXCA4765",
+    "diameter_mm": 4.75,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPEXCA4755",
+    "diameter_mm": 4.75,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPEXCA4711",
+    "diameter_mm": 4.75,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPEXCA4710",
+    "diameter_mm": 4.75,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPEXCA4775",
+    "diameter_mm": 4.75,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPEXCA4555",
+    "diameter_mm": 4.5,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPEXCA4545",
+    "diameter_mm": 4.5,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPEXCA4585",
+    "diameter_mm": 4.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPEXCA4575",
+    "diameter_mm": 4.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPEXCA4565",
+    "diameter_mm": 4.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPEXCA4511",
+    "diameter_mm": 4.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPEXCA4510",
+    "diameter_mm": 4.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPEXCA4045",
+    "diameter_mm": 4.0,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPEXCA4085",
+    "diameter_mm": 4.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPEXCA4075",
+    "diameter_mm": 4.0,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPEXCA4065",
+    "diameter_mm": 4.0,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPEXCA4055",
+    "diameter_mm": 4.0,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPEXCA4013",
+    "diameter_mm": 4.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPEXCA4011",
+    "diameter_mm": 4.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPEXCA4010",
+    "diameter_mm": 4.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPEXCA4245",
+    "diameter_mm": 4.25,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPEXCA4285",
+    "diameter_mm": 4.25,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPEXCA4275",
+    "diameter_mm": 4.25,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPEXCA4265",
+    "diameter_mm": 4.25,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPEXCA4255",
+    "diameter_mm": 4.25,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPEXCA4213",
+    "diameter_mm": 4.25,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPEXCA4211",
+    "diameter_mm": 4.25,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPEXCA4210",
+    "diameter_mm": 4.25,
+    "length_mm": 10.0
+   }
+  ],
+  "BTI_P30X": [
+   {
+    "ref": "IIP3XCA3513",
+    "diameter_mm": 3.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIP3XCA3510",
+    "diameter_mm": 3.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIP3XCA3511",
+    "diameter_mm": 3.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIP3XCA3575",
+    "diameter_mm": 3.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIP3XCA3565",
+    "diameter_mm": 3.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIP3XCA3555",
+    "diameter_mm": 3.5,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIP3XCA3545",
+    "diameter_mm": 3.5,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIP3XCA3585",
+    "diameter_mm": 3.5,
+    "length_mm": 8.5
+   }
+  ],
+  "BTI_EXT_UNI": [
+   {
+    "ref": "IRPUCA4085",
+    "diameter_mm": 4.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IRPUCA4075",
+    "diameter_mm": 4.0,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IRPUCA4065",
+    "diameter_mm": 4.0,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IRPUCA4015",
+    "diameter_mm": 4.0,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IRPUCA4013",
+    "diameter_mm": 4.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IRPUCA4011",
+    "diameter_mm": 4.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IRPUCA4010",
+    "diameter_mm": 4.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IRPUCA3785",
+    "diameter_mm": 3.75,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IRPUCA3775",
+    "diameter_mm": 3.75,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IRPUCA3765",
+    "diameter_mm": 3.75,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IRPUCA3715",
+    "diameter_mm": 3.75,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IRPUCA3713",
+    "diameter_mm": 3.75,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IRPUCA3711",
+    "diameter_mm": 3.75,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IRPUCA3710",
+    "diameter_mm": 3.75,
+    "length_mm": 10.0
+   }
+  ],
+  "BTI_EXT_UNIPLUS": [
+   {
+    "ref": "IRPSCA5085",
+    "diameter_mm": 5.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IRPSCA5075",
+    "diameter_mm": 5.0,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IRPSCA5065",
+    "diameter_mm": 5.0,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IRPSCA5015",
+    "diameter_mm": 5.0,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IRPSCA5013",
+    "diameter_mm": 5.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IRPSCA5011",
+    "diameter_mm": 5.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IRPSCA5010",
+    "diameter_mm": 5.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IRPSCA4510",
+    "diameter_mm": 4.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IRPSCA4585",
+    "diameter_mm": 4.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IRPSCA4575",
+    "diameter_mm": 4.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IRPSCA4565",
+    "diameter_mm": 4.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IRPSCA4515",
+    "diameter_mm": 4.5,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IRPSCA4513",
+    "diameter_mm": 4.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IRPSCA4511",
+    "diameter_mm": 4.5,
+    "length_mm": 11.5
+   }
+  ],
+  "BTI_TINY": [
+   {
+    "ref": "IRTCA3785",
+    "diameter_mm": 3.75,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IRTCA3775",
+    "diameter_mm": 3.75,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IRTCA3765",
+    "diameter_mm": 3.75,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IRTCA3755",
+    "diameter_mm": 3.75,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IRTCA3745",
+    "diameter_mm": 3.75,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IRTCA3713",
+    "diameter_mm": 3.75,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IRTCA3711",
+    "diameter_mm": 3.75,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IRTCA3710",
+    "diameter_mm": 3.75,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IRTCA3585",
+    "diameter_mm": 3.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IRTCA3575",
+    "diameter_mm": 3.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IRTCA3565",
+    "diameter_mm": 3.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IRTCA3513",
+    "diameter_mm": 3.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IRTCA3511",
+    "diameter_mm": 3.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IRTCA3510",
+    "diameter_mm": 3.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IRTCA3085",
+    "diameter_mm": 3.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IRTCA3013",
+    "diameter_mm": 3.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IRTCA3011",
+    "diameter_mm": 3.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IRTCA3010",
+    "diameter_mm": 3.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IRTCA2585",
+    "diameter_mm": 2.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IRTCA2513",
+    "diameter_mm": 2.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IRTCA2511",
+    "diameter_mm": 2.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IRTCA2510",
+    "diameter_mm": 2.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IRTCA3310",
+    "diameter_mm": 3.3,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IRTCA3385",
+    "diameter_mm": 3.3,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IRTCA3313",
+    "diameter_mm": 3.3,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IRTCA3311",
+    "diameter_mm": 3.3,
+    "length_mm": 11.5
+   }
+  ],
+  "BTI_INT_UNIPLUS": [
+   {
+    "ref": "IIPSCA5545",
+    "diameter_mm": 5.5,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPSCA5585",
+    "diameter_mm": 5.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPSCA5575",
+    "diameter_mm": 5.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPSCA5565",
+    "diameter_mm": 5.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPSCA5555",
+    "diameter_mm": 5.5,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPSCA5513",
+    "diameter_mm": 5.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPSCA5511",
+    "diameter_mm": 5.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPSCA5510",
+    "diameter_mm": 5.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPSCA5045",
+    "diameter_mm": 5.0,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPSCA5085",
+    "diameter_mm": 5.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPSCA5075",
+    "diameter_mm": 5.0,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPSCA5065",
+    "diameter_mm": 5.0,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPSCA5055",
+    "diameter_mm": 5.0,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPSCA5015",
+    "diameter_mm": 5.0,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IIPSCA5013",
+    "diameter_mm": 5.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPSCA5011",
+    "diameter_mm": 5.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPSCA5010",
+    "diameter_mm": 5.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPSCA4585",
+    "diameter_mm": 4.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPSCA4575",
+    "diameter_mm": 4.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPSCA4565",
+    "diameter_mm": 4.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPSCA4555",
+    "diameter_mm": 4.5,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPSCA4545",
+    "diameter_mm": 4.5,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPSCA4515",
+    "diameter_mm": 4.5,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IIPSCA4513",
+    "diameter_mm": 4.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPSCA4511",
+    "diameter_mm": 4.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPSCA4510",
+    "diameter_mm": 4.5,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPSCA6010",
+    "diameter_mm": 6.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPSCA6085",
+    "diameter_mm": 6.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPSCA6075",
+    "diameter_mm": 6.0,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPSCA6065",
+    "diameter_mm": 6.0,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPSCA6055",
+    "diameter_mm": 6.0,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPSCA6045",
+    "diameter_mm": 6.0,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIPSCA6011",
+    "diameter_mm": 6.0,
+    "length_mm": 11.5
+   }
+  ],
+  "BTI_INT_UNI": [
+   {
+    "ref": "IIPUCA4285",
+    "diameter_mm": 4.25,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPUCA4275",
+    "diameter_mm": 4.25,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPUCA4265",
+    "diameter_mm": 4.25,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPUCA4255",
+    "diameter_mm": 4.25,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPUCA4215",
+    "diameter_mm": 4.25,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IIPUCA4213",
+    "diameter_mm": 4.25,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPUCA4211",
+    "diameter_mm": 4.25,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPUCA4210",
+    "diameter_mm": 4.25,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPUCA4085",
+    "diameter_mm": 4.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPUCA4075",
+    "diameter_mm": 4.0,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPUCA4065",
+    "diameter_mm": 4.0,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPUCA4055",
+    "diameter_mm": 4.0,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPUCA4015",
+    "diameter_mm": 4.0,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IIPUCA4013",
+    "diameter_mm": 4.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPUCA4011",
+    "diameter_mm": 4.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPUCA4010",
+    "diameter_mm": 4.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPUCA3785",
+    "diameter_mm": 3.75,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPUCA3775",
+    "diameter_mm": 3.75,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPUCA3765",
+    "diameter_mm": 3.75,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPUCA3755",
+    "diameter_mm": 3.75,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPUCA3715",
+    "diameter_mm": 3.75,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IIPUCA3713",
+    "diameter_mm": 3.75,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPUCA3711",
+    "diameter_mm": 3.75,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPUCA3710",
+    "diameter_mm": 3.75,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIPUCA3555",
+    "diameter_mm": 3.5,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIPUCA3585",
+    "diameter_mm": 3.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIPUCA3575",
+    "diameter_mm": 3.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIPUCA3565",
+    "diameter_mm": 3.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIPUCA3515",
+    "diameter_mm": 3.5,
+    "length_mm": 15.0
+   },
+   {
+    "ref": "IIPUCA3513",
+    "diameter_mm": 3.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIPUCA3511",
+    "diameter_mm": 3.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIPUCA3510",
+    "diameter_mm": 3.5,
+    "length_mm": 10.0
+   }
+  ],
+  "BTI_P30": [
+   {
+    "ref": "IIP3CA3345",
+    "diameter_mm": 3.3,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIP3CA3385",
+    "diameter_mm": 3.3,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIP3CA3375",
+    "diameter_mm": 3.3,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIP3CA3365",
+    "diameter_mm": 3.3,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIP3CA3355",
+    "diameter_mm": 3.3,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIP3CA3313",
+    "diameter_mm": 3.3,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIP3CA3311",
+    "diameter_mm": 3.3,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIP3CA3310",
+    "diameter_mm": 3.3,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIP3CA3045",
+    "diameter_mm": 3.0,
+    "length_mm": 4.5
+   },
+   {
+    "ref": "IIP3CA3085",
+    "diameter_mm": 3.0,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIP3CA3075",
+    "diameter_mm": 3.0,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIP3CA3065",
+    "diameter_mm": 3.0,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIP3CA3055",
+    "diameter_mm": 3.0,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIP3CA3013",
+    "diameter_mm": 3.0,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIP3CA3011",
+    "diameter_mm": 3.0,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIP3CA3010",
+    "diameter_mm": 3.0,
+    "length_mm": 10.0
+   },
+   {
+    "ref": "IIP3CA2585",
+    "diameter_mm": 2.5,
+    "length_mm": 8.5
+   },
+   {
+    "ref": "IIP3CA2575",
+    "diameter_mm": 2.5,
+    "length_mm": 7.5
+   },
+   {
+    "ref": "IIP3CA2565",
+    "diameter_mm": 2.5,
+    "length_mm": 6.5
+   },
+   {
+    "ref": "IIP3CA2555",
+    "diameter_mm": 2.5,
+    "length_mm": 5.5
+   },
+   {
+    "ref": "IIP3CA2513",
+    "diameter_mm": 2.5,
+    "length_mm": 13.0
+   },
+   {
+    "ref": "IIP3CA2511",
+    "diameter_mm": 2.5,
+    "length_mm": 11.5
+   },
+   {
+    "ref": "IIP3CA2510",
+    "diameter_mm": 2.5,
+    "length_mm": 10.0
+   }
+  ]
+ },
+ "sources": {
+  "BTI_*": {
+   "url": "https://shop.bti-biotechnologyinstitute.com/catalogo?category=49629&delta=60",
+   "edition": "Live shop 2026-10-15, pages1-6",
+   "listed_products": 303,
+   "individual_references": 267,
+   "group_placeholders_excluded": 36
+  },
+  "KLOCKNER_*": {
+   "url": "https://www.zauchnerdentalprodukte.at/wp-content/uploads/2025/09/VEGA_IM_KLOCKNER_EN.pdf",
+   "pages": [
+    5,
+    27
+   ]
+  },
+  "MIS_SEVEN": {
+   "url": "https://mis-implants.com/upload/pdf/Products/MIS_Internal_Hexagon_Catalog.pdf",
+   "edition": "2025"
+  },
+  "MIS_C1": {
+   "url": "https://mis-implants.com/upload/pdf/Products/MIS_Conical_Connection_Catalog.pdf",
+   "edition": "Downloaded on2026-10-15"
+  },
+  "ASTRA_*": {
+   "url": "https://assets.dentsplysirona.com/flagship/en_gb/products/implants/UK-IMP-DS-Implants-Price-Booklet-EN-062021-PG6682.pdf",
+   "edition": "UK2021",
+   "pages": [
+    14,
+    16
+   ]
+  },
+  "STRAUMANN_SP": {
+   "url": "https://www.straumann.com/content/dam/media-center/straumann/en-us/documents/brochure/product-catalog/CALIT-007-Product-Catalog-2021-DIGITAL.pdf",
+   "edition": "USA2021",
+   "pages": [
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25
+   ]
+  }
+ },
+ "source_hashes": [
+  {
+   "file": "astra.pdf",
+   "sha256": "93000ff2d5ac2732537b8195617dc558db1b966b3c121609e5047fcbe2702b4b",
+   "bytes": 4561491
+  },
+  {
+   "file": "mis_c1.pdf",
+   "sha256": "bd0b0905fc52d5d598b495615182aba1f117243aaf94a17a2ae4eb39c0f1119a",
+   "bytes": 25127733
+  },
+  {
+   "file": "mis_seven.pdf",
+   "sha256": "fcfceb5b2bd02ecc3a27b3455ec37f7a4424b2cb34270eff184ac485f7b05bb0",
+   "bytes": 16698076
+  },
+  {
+   "file": "straumann0.pdf",
+   "sha256": "926bc8a8d7f5dc145324fbdf4e162e5647be6c7adf2b61f127ceb470ef3be996",
+   "bytes": 7068123
+  },
+  {
+   "file": "straumann1.pdf",
+   "sha256": "8233bb74534a7a808289481cafc81a3949e210100e3bdf144f3513fee2f1fa7b",
+   "bytes": 3873737
+  },
+  {
+   "file": "vega.pdf",
+   "sha256": "5d4804aa12d3fcc4b36bd23c086687f1631501fc06345d4e2bf912044a10df0c",
+   "bytes": 10469742
+  }
+ ]
+}
