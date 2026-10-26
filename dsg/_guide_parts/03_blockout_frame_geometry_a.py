@@ -149,6 +149,11 @@ def apply_difference_manifold_checked(context, base_obj, cutter_obj, modifier_na
         return False, 'invalid objects'
     original_mesh = base_obj.data.copy()
     mod = None
+    # Defects already present in the operand (e.g. edges left by an earlier
+    # EXACT cut such as the lateral opening) must not block this cut; only
+    # NEW non-manifold edges created by it do.  The final remesh fuses shells.
+    before = get_mesh_solid_report(base_obj, max_polygons=900000)
+    bad_before = int(before.get('bad_edges') or 0) if before.get('checked') else 0
     try:
         clean_boolean_cutter_mesh(cutter_obj)
         mod = base_obj.modifiers.new(modifier_name, 'BOOLEAN')
@@ -183,11 +188,22 @@ def apply_difference_manifold_checked(context, base_obj, cutter_obj, modifier_na
                         repair, ensure_ascii=False, default=str)
                 except Exception:
                     _DSG_LOG.debug("suppressed exception", exc_info=True)
+        tolerated = 0
         if report.get('checked') and not report.get('solid'):
-            bad = report.get('bad_edges', 0)
-            deg = report.get('degenerate_faces', 0)
-            _restore_object_mesh_copy(base_obj, original_mesh)
-            return False, f'non-solid MANIFOLD result: edges={bad}, degenerate faces={deg}'
+            bad = int(report.get('bad_edges') or 0)
+            deg = int(report.get('degenerate_faces') or 0)
+            if bad_before > 0 and bad <= bad_before and deg == 0:
+                tolerated = bad
+            else:
+                _restore_object_mesh_copy(base_obj, original_mesh)
+                return False, (f'non-solid MANIFOLD result: edges={bad}, degenerate faces={deg}'
+                               + (f' (input already had {bad_before})' if bad_before else ''))
+        if tolerated:
+            try:
+                base_obj['DSG_boolean_preexisting_nonmanifold_edges'] = int(bad_before)
+                base_obj['DSG_boolean_result_nonmanifold_edges'] = int(tolerated)
+            except Exception:
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
 
         try:
             base_obj['DSG_boolean_solver'] = 'MANIFOLD'
@@ -255,6 +271,23 @@ def apply_drill_insertion_protection_to_components(context, components, cutters)
         safe_remove_object(combined)
 
 
+def _is_boolean_debris_part(obj, max_faces=40, max_volume_mm3=1.0):
+    """A few-face loose shell well under 1 mm³ (Boolean sliver, not anatomy)."""
+    try:
+        mesh = obj.data
+        if len(mesh.polygons) > max_faces:
+            return False
+        matrix = obj.matrix_world
+        volume = 0.0
+        for polygon in mesh.polygons:
+            verts = [matrix @ mesh.vertices[i].co for i in polygon.vertices]
+            for i in range(1, len(verts) - 1):
+                volume += verts[0].dot(verts[i].cross(verts[i + 1])) / 6.0
+        return abs(volume) < max_volume_mm3
+    except Exception:
+        return False
+
+
 def protect_guide_drill_insertion_transactional(context, props):
     """Limpia el eje sobre la guía y las paredes de irrigación por Boolean.
 
@@ -285,11 +318,23 @@ def protect_guide_drill_insertion_transactional(context, props):
     try:
         # 1) La guía se procesa por shells para evitar booleanas sobre una malla
         # multishell completa.
+        guide_report = get_mesh_solid_report(guide, max_polygons=1200000)
+        guide_bad = int(guide_report.get('bad_edges') or 0) if guide_report.get('checked') else 0
         parts = split_mesh_object_loose_parts(
             context, guide, prefix='DSG_DrillProtectPart')
         temp_objects.extend(parts)
         if not parts:
             return False, 'Could not split the guide into closed shells', 0
+        # Tiny loose fragments left by earlier EXACT cuts (lateral opening) are
+        # not guide parts: drop them instead of cutting them (they used to make
+        # the whole protection fail on a 6-face sliver).
+        kept = []
+        for part in parts:
+            if _is_boolean_debris_part(part):
+                safe_remove_object(part)
+            else:
+                kept.append(part)
+        parts = kept or parts
 
         # 2) Las paredes de irrigación se duplican para que el original sobreviva
         # a cualquier fallo de la booleana.
@@ -348,7 +393,9 @@ def protect_guide_drill_insertion_transactional(context, props):
         temp_objects.append(result)
 
         report = get_mesh_solid_report(result, max_polygons=1200000)
-        if report.get('checked') and not report.get('solid'):
+        if (report.get('checked') and not report.get('solid')
+                and not (guide_bad > 0 and int(report.get('bad_edges') or 0) <= guide_bad
+                         and int(report.get('degenerate_faces') or 0) == 0)):
             return (
                 False,
                 f'Non-solid protection result: edges={report.get("bad_edges", 0)}, '
@@ -2539,6 +2586,99 @@ def _auto_correct_blockout_insertion(bm, depths, usable_mask, displacement,
     }
 
 
+# DSG v9.16.2 · blockout on a CLOSED model.  The v7 view-parallel raycast was
+# written for an open IOS shell.  On the closed model every vertex facing the
+# viewer fired its ray into the solid and "hit" the artificial base 6-24 mm
+# away (≈80 % of the vertices moved, seating always in REVIEW) and those long
+# rays through the thin base walls made each ray ~0.3 ms (≈60 s per model).
+BLOCKOUT_BASE_FACE_EDGE_MM = 1.0
+BLOCKOUT_BASE_FACE_EDGE_MEDIAN_FACTOR = 6.0
+BLOCKOUT_FACING_EPS = 1.0e-3
+BLOCKOUT_HIT_ATTRIBUTE = 'DSG_hit_distance'
+
+
+def _mesh_world_coordinates(mesh, matrix):
+    coordinates = np.empty(len(mesh.vertices) * 3, dtype=np.float64)
+    mesh.vertices.foreach_get('co', coordinates)
+    transform = np.array(matrix, dtype=np.float64)
+    return coordinates.reshape(-1, 3) @ transform[:3, :3].T + transform[:3, 3]
+
+
+def _mesh_world_vertex_normals(mesh, matrix):
+    normals = np.empty(len(mesh.vertices) * 3, dtype=np.float64)
+    mesh.vertex_normals.foreach_get('vector', normals)
+    linear = np.array(matrix.to_3x3().inverted_safe().transposed(), dtype=np.float64)
+    normals = normals.reshape(-1, 3) @ linear.T
+    lengths = np.linalg.norm(normals, axis=1)
+    lengths[lengths < 1.0e-12] = 1.0
+    return normals / lengths[:, None]
+
+
+def _blockout_base_face_mask(mesh, world):
+    """Faces of the artificial closed base: long rim-to-cap walls and the cap.
+
+    Intraoral scan triangles are a few tenths of a millimetre; the closure
+    adds faces several millimetres long.  They are not anatomy, so they never
+    stop a blockout ray and never cast one.
+    """
+    if not len(mesh.polygons):
+        return np.zeros(0, dtype=bool)
+    edges = np.empty(len(mesh.edges) * 2, dtype=np.int64)
+    mesh.edges.foreach_get('vertices', edges)
+    edges = edges.reshape(-1, 2)
+    lengths = np.linalg.norm(world[edges[:, 0]] - world[edges[:, 1]], axis=1)
+    threshold = max(float(BLOCKOUT_BASE_FACE_EDGE_MM),
+                    float(BLOCKOUT_BASE_FACE_EDGE_MEDIAN_FACTOR) * float(np.median(lengths)))
+    corner_edges = np.empty(len(mesh.loops), dtype=np.int64)
+    mesh.loops.foreach_get('edge_index', corner_edges)
+    starts = np.empty(len(mesh.polygons), dtype=np.int64)
+    mesh.polygons.foreach_get('loop_start', starts)
+    return np.maximum.reduceat(lengths[corner_edges], starts) > threshold
+
+
+def _anatomy_vertex_mask(mesh, base_faces):
+    """Vertices that belong to at least one anatomical (non-base) face."""
+    totals = np.empty(len(mesh.polygons), dtype=np.int64)
+    mesh.polygons.foreach_get('loop_total', totals)
+    corner_vertices = np.empty(len(mesh.loops), dtype=np.int64)
+    mesh.loops.foreach_get('vertex_index', corner_vertices)
+    anatomical_corners = ~np.repeat(base_faces, totals)
+    mask = np.zeros(len(mesh.vertices), dtype=bool)
+    mask[corner_vertices[anatomical_corners]] = True
+    return mask
+
+
+def _anatomy_bvh(mesh, world, base_faces):
+    mesh.calc_loop_triangles()
+    count = len(mesh.loop_triangles)
+    triangles = np.empty(count * 3, dtype=np.int64)
+    mesh.loop_triangles.foreach_get('vertices', triangles)
+    owners = np.empty(count, dtype=np.int64)
+    mesh.loop_triangles.foreach_get('polygon_index', owners)
+    triangles = triangles.reshape(-1, 3)[~base_faces[owners]]
+    if not len(triangles):
+        return None
+    return BVHTree.FromPolygons(world.tolist(), triangles.tolist(), all_triangles=True)
+
+
+def _anatomy_surface(mesh, world, matrix, base_faces):
+    """(world, anatomical triangles, triangle normals, vertex normals) for the
+    survey-line tracing; all in world space."""
+    mesh.calc_loop_triangles()
+    count = len(mesh.loop_triangles)
+    triangles = np.empty(count * 3, dtype=np.int64)
+    mesh.loop_triangles.foreach_get('vertices', triangles)
+    owners = np.empty(count, dtype=np.int64)
+    mesh.loop_triangles.foreach_get('polygon_index', owners)
+    triangles = triangles.reshape(-1, 3)[~base_faces[owners]]
+    p0, p1, p2 = world[triangles[:, 0]], world[triangles[:, 1]], world[triangles[:, 2]]
+    normals = np.cross(p1 - p0, p2 - p0)
+    lengths = np.linalg.norm(normals, axis=1)
+    lengths[lengths < 1.0e-15] = 1.0
+    normals /= lengths[:, None]
+    return world, triangles, normals, _mesh_world_vertex_normals(mesh, matrix)
+
+
 def _evaluated_mesh_for_blockout(context, source_obj):
     depsgraph = context.evaluated_depsgraph_get()
     evaluated = source_obj.evaluated_get(depsgraph)
@@ -2557,7 +2697,8 @@ def build_blockout_bvh(
         relief_mm=0.10,
         min_hit_mm=BLOCKOUT_MIN_HIT_DEFAULT_MM,
         max_hit_mm=BLOCKOUT_MAX_HIT_DEFAULT_MM,
-        output_name=BLOCKOUT_NAME):
+        output_name=BLOCKOUT_NAME,
+        draft_deg=0.0):
     """Blockout v8: el raycast sencillo de v7, con evaluación, filtros y estadísticas."""
     started = time.perf_counter()
     axis = Vector(axis_vec)
@@ -2573,7 +2714,6 @@ def build_blockout_bvh(
 
     evaluated = None
     evaluated_mesh = None
-    bm_src = None
     bm_out = None
     created_mesh = None
     created_object = None
@@ -2583,14 +2723,15 @@ def build_blockout_bvh(
         if len(evaluated_mesh.vertices) == 0 or len(evaluated_mesh.polygons) == 0:
             raise ValueError("El IOS evaluado no contiene geometría utilizable")
 
-        bm_src = bmesh.new()
-        bm_src.from_mesh(evaluated_mesh)
-        bm_src.transform(evaluated.matrix_world)
-        bm_src.verts.ensure_lookup_table()
-        bm_src.faces.ensure_lookup_table()
-        tree = BVHTree.FromBMesh(bm_src)
+        world = _mesh_world_coordinates(evaluated_mesh, evaluated.matrix_world)
+        base_faces = _blockout_base_face_mask(evaluated_mesh, world)
+        tree = _anatomy_bvh(evaluated_mesh, world, base_faces)
         if tree is None:
             raise RuntimeError("No se pudo construir el BVH del IOS")
+        anatomy = _anatomy_vertex_mask(evaluated_mesh, base_faces)
+        facing = _mesh_world_vertex_normals(evaluated_mesh, evaluated.matrix_world) @ np.array(axis, dtype=np.float64)
+        # A vertex whose normal faces the viewer would fire into the solid.
+        candidates = np.flatnonzero(anatomy & (facing > BLOCKOUT_FACING_EPS))
 
         bm_out = bmesh.new()
         bm_out.from_mesh(evaluated_mesh)
@@ -2602,39 +2743,57 @@ def build_blockout_bvh(
         too_near = 0
         too_far = 0
         hidden_by_relief = 0
+        inside_hits = 0
         move_sum = 0.0
         move_max = 0.0
         hit_sum = 0.0
         hit_max = 0.0
+        reach = max_hit_mm if max_hit_mm > 0.0 else 1.0e6
+        # Ray result per vertex: -1 = never moves (not a candidate, or its ray
+        # travelled inside the model), 0 = candidate without a blocking
+        # surface, >0 = axial distance to it.  Kept on the blockout so the
+        # retention can be changed live without casting new rays.
+        hit_distances = np.full(len(bm_out.verts), -1.0, dtype=np.float32)
+        hit_distances[candidates] = 0.0
 
-        for vert in bm_out.verts:
+        for index in candidates.tolist():
+            vert = bm_out.verts[index]
             origin = vert.co + axis * float(BLOCKOUT_RAY_OFFSET_MM)
-            hit_loc, _hit_normal, _hit_index, _hit_distance = tree.ray_cast(origin, axis)
+            hit_loc, hit_normal, _hit_index, _hit_distance = tree.ray_cast(origin, axis, reach)
             if hit_loc is None:
                 no_hit += 1
                 continue
-
+            if hit_normal.dot(axis) >= 0.0:
+                inside_hits += 1  # back face: the ray travelled inside the model
+                hit_distances[index] = -1.0
+                continue
             hit_delta = float((hit_loc - vert.co).dot(axis))
+            hit_distances[index] = max(hit_delta, 1.0e-6)
             if hit_delta <= min_hit_mm:
                 too_near += 1
-                continue
-            if max_hit_mm > 0.0 and hit_delta > max_hit_mm:
+            elif max_hit_mm > 0.0 and hit_delta > max_hit_mm:
                 too_far += 1
-                continue
-
-            effective_move = hit_delta - relief_mm
-            # Evita el fallo de v7 por el que una colisión menor que el alivio
-            # desplazaba el vértice en dirección contraria al raycast.
-            if effective_move <= 0.0:
+            elif hit_delta - relief_mm <= 0.0:
                 hidden_by_relief += 1
-                continue
 
-            vert.co += axis * effective_move
-            moved += 1
-            move_sum += effective_move
-            move_max = max(move_max, effective_move)
-            hit_sum += hit_delta
-            hit_max = max(hit_max, hit_delta)
+        # Continuous fill (no pits among raised neighbours, ramps instead of
+        # steps at the borders); identical to the live retention slider.
+        from .blender.blockout_field import blockout_shift
+        edge_pairs = np.empty(len(evaluated_mesh.edges) * 2, dtype=np.int32)
+        evaluated_mesh.edges.foreach_get('vertices', edge_pairs)
+        shift = blockout_shift(hit_distances, relief_mm, edge_pairs,
+                               min_hit=min_hit_mm, max_hit=max_hit_mm)
+        moved_indices = np.flatnonzero(shift > 0.0)
+        for index in moved_indices.tolist():
+            bm_out.verts[index].co += axis * float(shift[index])
+        moved = int(len(moved_indices))
+        if moved:
+            move_sum = float(shift[moved_indices].sum())
+            move_max = float(shift[moved_indices].max())
+            measured = hit_distances[moved_indices]
+            measured = measured[measured > 0.0]
+            hit_sum = float(measured.sum()) * moved / max(1, len(measured))
+            hit_max = float(measured.max()) if len(measured) else 0.0
 
         if bm_out.faces:
             bmesh.ops.recalc_face_normals(bm_out, faces=bm_out.faces[:])
@@ -2645,6 +2804,9 @@ def build_blockout_bvh(
         created_mesh.update(calc_edges=True)
         if len(created_mesh.vertices) == 0 or len(created_mesh.polygons) == 0:
             raise RuntimeError("El blockout resultante quedó vacío")
+        if len(created_mesh.vertices) == len(hit_distances):
+            created_mesh.attributes.new(BLOCKOUT_HIT_ATTRIBUTE, 'FLOAT', 'POINT').data.foreach_set(
+                'value', hit_distances)
 
         created_object = bpy.data.objects.new(output_name, created_mesh)
         context.collection.objects.link(created_object)
@@ -2681,16 +2843,38 @@ def build_blockout_bvh(
         blockout["DSG_hits_too_near"] = too_near
         blockout["DSG_hits_too_far"] = too_far
         blockout["DSG_hits_below_relief"] = hidden_by_relief
+        blockout["DSG_rays_cast"] = int(len(candidates))
+        blockout["DSG_inside_hits_ignored"] = int(inside_hits)
+        blockout["DSG_base_faces_ignored"] = int(base_faces.sum())
         blockout["DSG_mean_move_mm"] = (move_sum / moved) if moved else 0.0
         blockout["DSG_max_move_mm"] = move_max
         blockout["DSG_mean_hit_mm"] = (hit_sum / moved) if moved else 0.0
         blockout["DSG_max_hit_found_mm"] = hit_max
         blockout["DSG_elapsed_seconds"] = elapsed
+        # 9.23: volumetric undercut fill (clean vertical walls, no curtains).
+        try:
+            from .blender import undercut_fill
+            undercut_fill.remove_fill()
+            undercut_points = world[hit_distances > float(min_hit_mm)]
+            if len(undercut_points):
+                fills, fill_stats = undercut_fill.build_fill_objects(
+                    context, tree, axis, undercut_points, relief_mm,
+                    extent_points=world[anatomy],
+                    candidate_hits=hit_distances[hit_distances > float(min_hit_mm)],
+                    draft_deg=float(draft_deg),
+                    surface=_anatomy_surface(evaluated_mesh, world, evaluated.matrix_world, base_faces),
+                    vertex_hits=hit_distances)
+                blockout["DSG_undercut_fill_layers"] = int(fill_stats['layers'])
+                blockout["DSG_undercut_fill_cells"] = int(fill_stats['cells'])
+                blockout["DSG_undercut_fill_cell_mm"] = float(fill_stats['cell_mm'])
+                blockout["DSG_undercut_fill_seconds"] = float(fill_stats['seconds'])
+            blockout["DSG_undercut_fill_relief_mm"] = float(relief_mm)
+            blockout["DSG_draft_deg"] = float(draft_deg)
+        except Exception:
+            _DSG_LOG.warning("undercut fill failed", exc_info=True)
         completed = True
         return blockout
     finally:
-        if bm_src is not None:
-            bm_src.free()
         if bm_out is not None:
             bm_out.free()
         if evaluated is not None and evaluated_mesh is not None:
@@ -2711,6 +2895,56 @@ def build_blockout_bvh(
                 except Exception:
                     _DSG_LOG.debug("suppressed exception", exc_info=True)
 
+
+
+def ensure_undercut_fill(context, source_obj, blockout_obj):
+    """Return the fill slabs for the blockout's current retention, rebuilding
+    them (from the per-vertex hits stored on the blockout) when missing or
+    stale.  An empty list means there is no undercut to fill."""
+    from .blender import undercut_fill
+    if not _valid_obj(blockout_obj) or not _valid_obj(source_obj):
+        return []
+    relief = max(0.0, float(blockout_obj.get('DSG_relief_mm', 0.0)))
+    props = getattr(getattr(context, 'scene', None), 'dsg_props', None)
+    draft = float(getattr(props, 'blockout_draft_deg', blockout_obj.get('DSG_draft_deg', 0.0)) or 0.0)
+    fills = undercut_fill.fill_objects()
+    if fills and all(abs(float(o.get('DSG_fill_relief_mm', -1.0)) - relief) < 1.0e-5
+                     and abs(float(o.get('DSG_fill_draft_deg', 0.0)) - draft) < 1.0e-5
+                     and int(o.get('DSG_fill_version', 1)) >= undercut_fill.FILL_VERSION for o in fills):
+        return fills
+    attribute = blockout_obj.data.attributes.get(BLOCKOUT_HIT_ATTRIBUTE)
+    if attribute is None:
+        return fills
+    axis_values = blockout_obj.get(BLOCKOUT_AXIS_WORLD_KEY, blockout_obj.get('DSG_axis'))
+    axis = Vector(axis_values).normalized()
+    evaluated, mesh = _evaluated_mesh_for_blockout(context, source_obj)
+    try:
+        if len(mesh.vertices) != len(blockout_obj.data.vertices):
+            return fills
+        world = _mesh_world_coordinates(mesh, evaluated.matrix_world)
+        base_faces = _blockout_base_face_mask(mesh, world)
+        tree = _anatomy_bvh(mesh, world, base_faces)
+        anatomy = _anatomy_vertex_mask(mesh, base_faces)
+        hits = np.empty(len(mesh.vertices), dtype=np.float32)
+        attribute.data.foreach_get('value', hits)
+        min_hit = float(blockout_obj.get('DSG_min_hit_mm', BLOCKOUT_MIN_HIT_DEFAULT_MM))
+        undercut_fill.remove_fill()
+        points = world[hits > min_hit]
+        if not len(points) or tree is None:
+            return []
+        fills, _stats = undercut_fill.build_fill_objects(
+            context, tree, axis, points, relief, extent_points=world[anatomy],
+            candidate_hits=hits[hits > min_hit], draft_deg=draft,
+            surface=_anatomy_surface(mesh, world, evaluated.matrix_world, base_faces),
+            vertex_hits=hits)
+        blockout_obj["DSG_undercut_fill_relief_mm"] = relief
+        blockout_obj["DSG_draft_deg"] = draft
+        return fills
+    finally:
+        try:
+            evaluated.to_mesh_clear()
+        except Exception:
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
 def _set_principled_input(bsdf, names, value):
@@ -2751,6 +2985,127 @@ def _blockout_zone_visual_material():
     return material
 
 
+BLOCKOUT_ADDED_SURFACE_MM = 0.03
+SURVEY_LINE_RADIUS_MM = 0.04
+SURVEY_LINE_MAX_GAP_MM = 0.6
+
+
+def _survey_line_material():
+    material = (bpy.data.materials.get('DSG_SurveyLineMat')
+                or bpy.data.materials.new('DSG_SurveyLineMat'))
+    material.diffuse_color = (0.86, 0.12, 0.10, 1.0)
+    try:
+        material.use_nodes = True
+        bsdf = material.node_tree.nodes.get('Principled BSDF')
+        _set_principled_input(bsdf, ('Base Color',), (0.86, 0.12, 0.10, 1.0))
+        _set_principled_input(bsdf, ('Emission Color', 'Emission'), (0.6, 0.05, 0.03, 1.0))
+        _set_principled_input(bsdf, ('Emission Strength',), 0.6)
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
+    return material
+
+
+def _append_survey_line_tubes(head, coords, faces):
+    """Add the traced line of maximum crown perimeter as thin red tubes."""
+    values = list(head.get('DSG_survey_points', []))
+    links = list(head.get('DSG_survey_edges', []))
+    if len(values) < 6 or len(links) < 2:
+        return 0
+    points = np.asarray(values, dtype=np.float64).reshape(-1, 3)
+    pairs = np.asarray(links, dtype=np.int64).reshape(-1, 2)
+    axis = Vector(head.get('DSG_fill_axis', (0.0, 0.0, 1.0))).normalized()
+    radius = float(SURVEY_LINE_RADIUS_MM)
+    added = 0
+    for a, b in pairs.tolist():
+        pa = Vector(points[a])
+        pb = Vector(points[b])
+        direction = pb - pa
+        length = direction.length
+        if length < 1.0e-6 or length > SURVEY_LINE_MAX_GAP_MM:
+            continue
+        direction /= length
+        side = direction.cross(axis)
+        if side.length < 1.0e-6:
+            side = direction.orthogonal()
+        side.normalize()
+        up = side.cross(direction).normalized()
+        ring = [side * radius, up * radius, -side * radius, -up * radius]
+        base = len(coords)
+        coords.extend(tuple(pa + r) for r in ring)
+        coords.extend(tuple(pb + r) for r in ring)
+        for n in range(4):
+            m = (n + 1) % 4
+            faces.append([base + n, base + m, base + 4 + m, base + 4 + n])
+        added += 1
+    return added
+BLOCKOUT_ADDED_SURFACE_JOIN_MM = 0.15
+
+
+def _united_model_visual(context, original_obj, fills):
+    """9.24.1: the retentive model shown as ONE closed (manifold) model.
+
+    model ∪ fill, with the model's own material: no colours, no survey line.
+    MANIFOLD union first, EXACT as fallback; the result is checked for
+    manifoldness (every edge shared by exactly two faces)."""
+    import bmesh
+    if not _valid_obj(original_obj) or original_obj.type != 'MESH' or not fills:
+        return None
+    union_mesh = None
+    manifold = False
+    solver_used = ''
+    for solver in ('MANIFOLD', 'EXACT'):
+        temp = bpy.data.objects.new('_DSG_RetentiveUnionPreview', original_obj.data)
+        temp.matrix_world = original_obj.matrix_world.copy()
+        context.scene.collection.objects.link(temp)
+        try:
+            for fill in fills:
+                modifier = temp.modifiers.new('DSG_fill_union', 'BOOLEAN')
+                modifier.operation = 'UNION'
+                modifier.object = fill
+                try:
+                    modifier.solver = solver
+                except Exception:
+                    modifier.solver = 'EXACT'
+            depsgraph = context.evaluated_depsgraph_get()
+            candidate = bpy.data.meshes.new_from_object(temp.evaluated_get(depsgraph), depsgraph=depsgraph)
+            candidate.transform(temp.matrix_world)
+        finally:
+            bpy.data.objects.remove(temp, do_unlink=True)
+        bm = bmesh.new()
+        bm.from_mesh(candidate)
+        open_edges = sum(1 for edge in bm.edges if not edge.is_manifold)
+        bm.free()
+        if union_mesh is not None:
+            bpy.data.meshes.remove(union_mesh)
+        union_mesh = candidate
+        solver_used = solver
+        if open_edges == 0 and len(candidate.polygons):
+            manifold = True
+            break
+    if union_mesh is None or not len(union_mesh.polygons):
+        if union_mesh is not None:
+            bpy.data.meshes.remove(union_mesh)
+        return None
+    union_mesh.name = BLOCKOUT_VISUAL_NAME + '_Mesh'
+    union_mesh.materials.clear()
+    for material in original_obj.data.materials:
+        union_mesh.materials.append(material)
+    visual = bpy.data.objects.new(BLOCKOUT_VISUAL_NAME, union_mesh)
+    link_object(context, visual)
+    visual.matrix_world = Matrix.Identity(4)
+    visual.display_type = 'SOLID'
+    visual.hide_render = True
+    visual['DSG_visual_only'] = True
+    visual['DSG_exclude_from_export'] = True
+    visual['DSG_blockout_visual_faces'] = int(len(union_mesh.polygons))
+    visual['DSG_blockout_visual_source'] = 'UNITED_MODEL'
+    visual['DSG_manifold'] = bool(manifold)
+    visual['DSG_union_solver'] = solver_used
+    register_dsg_object(visual, ROLE_BLOCKOUT_VISUAL, BLOCKOUT_VISUAL_NAME)
+    _set_obj_hidden(visual, True, selectable_when_visible=True)
+    return visual
+
+
 def _ensure_blockout_zone_visual(context, original_obj=None, blockout_obj=None,
                                   force_rebuild=False):
     """Create a non-exportable overlay containing only blockout-added faces.
@@ -2769,6 +3124,50 @@ def _ensure_blockout_zone_visual(context, original_obj=None, blockout_obj=None,
     blockout_obj = blockout_obj if _valid_obj(blockout_obj) else bpy.data.objects.get(BLOCKOUT_NAME)
     if not _valid_obj(blockout_obj) or blockout_obj.type != 'MESH':
         return None
+
+    # 9.23: show the volumetric undercut fill itself (what is really added).
+    try:
+        from .blender import undercut_fill
+        fills = undercut_fill.fill_objects()
+    except Exception:
+        fills = []
+    if fills:
+        if not _valid_obj(original_obj):
+            original_obj = bpy.data.objects.get(str(blockout_obj.get('DSG_source_object', '') or ''))
+        # 9.23.7: show only the surface the fill really adds (union minus the
+        # original surface).  The raw slabs cross the tooth near the height
+        # of contour and render as stripes.
+        try:
+            visual = _united_model_visual(context, original_obj, fills)
+        except Exception:
+            _DSG_LOG.warning("added-surface visual failed", exc_info=True)
+            visual = None
+        if visual is not None:
+            return visual
+        vertices = []
+        faces = []
+        for fill in fills:
+            offset = len(vertices)
+            vertices.extend(tuple(fill.matrix_world @ v.co) for v in fill.data.vertices)
+            faces.extend(tuple(offset + i for i in poly.vertices) for poly in fill.data.polygons)
+        mesh = bpy.data.meshes.new(BLOCKOUT_VISUAL_NAME + '_Mesh')
+        mesh.from_pydata(vertices, [], faces)
+        mesh.validate(clean_customdata=False)
+        mesh.update(calc_edges=True)
+        visual = bpy.data.objects.new(BLOCKOUT_VISUAL_NAME, mesh)
+        link_object(context, visual)
+        visual.matrix_world = Matrix.Identity(4)
+        visual.data.materials.append(_blockout_zone_visual_material())
+        visual.display_type = 'SOLID'
+        visual.hide_render = True
+        visual.hide_select = True
+        visual['DSG_visual_only'] = True
+        visual['DSG_exclude_from_export'] = True
+        visual['DSG_blockout_visual_faces'] = int(len(mesh.polygons))
+        visual['DSG_blockout_visual_source'] = 'UNDERCUT_FILL'
+        register_dsg_object(visual, ROLE_BLOCKOUT_VISUAL, BLOCKOUT_VISUAL_NAME)
+        _set_obj_hidden(visual, True, selectable_when_visible=False)
+        return visual
 
     if not _valid_obj(original_obj):
         source_name = str(blockout_obj.get('DSG_source_object', '') or '')
@@ -3040,6 +3439,8 @@ def get_implant_platform_center_world(props, implant_obj):
     if not is_valid_implant_obj(implant_obj):
         return None
     try:
+        if 'DSG_catalogue_platform_local_mm' in implant_obj:
+            return implant_obj.matrix_world @ Vector(implant_obj['DSG_catalogue_platform_local_mm'])
         platform_local_z = max(float(corner[2]) for corner in implant_obj.bound_box)
         return implant_obj.matrix_world @ Vector((0.0, 0.0, platform_local_z))
     except Exception:

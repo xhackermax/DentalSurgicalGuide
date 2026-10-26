@@ -1,9 +1,6 @@
 class DSG_ContourPoint(PropertyGroup):
     co: FloatVectorProperty(size=3, subtype='XYZ')
 
-
-
-
 def _irrigation_sleeve_channel_items(self, context):
     """Language-aware labels for the irrigation channel mode dropdown.
 
@@ -110,7 +107,15 @@ def _on_retention_percent_change(self, context):
     return None
 
 
+from .blender.ios_tooth_edit import socket_depth_property
+from .blender.extraction_extension import property_definition as extension_property
+from .blender.implant_resize import on_diameter_changed as _on_implant_diameter_update, on_length_changed as _on_implant_length_update  # noqa: E501
+from .blender.live_relief import on_retention_changed as _on_retention_update, on_local_relief_changed as _on_local_relief_update  # noqa: E501
+
+
 class DSG_Props(PropertyGroup):
+    ios_socket_depth_mm: socket_depth_property()
+    extraction_extension_mm: extension_property()
     current_step:        IntProperty(default=0, min=0, max=TOTAL_STEPS - 1, update=_on_current_step_update)
     mpr_target_implant: EnumProperty(
         name='Implant for MPR',
@@ -214,6 +219,7 @@ class DSG_Props(PropertyGroup):
     microscrew_animation_end_frame: IntProperty(
         name="Stop", default=60, min=2, max=10000,
         description="Frame where the STL conical head seats on the anatomical sleeve seat")
+    animation_speed: EnumProperty(name="Velocidad", items=ANIMATION_SPEED_ITEMS, default='1.0', description="Velocidad de reproducción de la animación final")
     # ── Fresa visual animada del paso 8 ─────────────────────
     drill_animation_distance: FloatProperty(
         name="Animation Travel (mm)", default=25.0, min=5.0, max=100.0, precision=1,
@@ -323,6 +329,9 @@ class DSG_Props(PropertyGroup):
         name="Water Fill Frames", default=6, min=1, max=30,
         description="Frames used to visibly fill the internal water path before the external spray appears")
 
+    show_implant_safety: BoolProperty(
+        name='Seguridad',default=False,
+        description='Despliega los márgenes y las estructuras protegidas; las comprobaciones y alertas permanecen activas')
     show_parallel_tools: BoolProperty(
         name="Parallelization", default=False,
         description="Shows or hides optional parallelization tools")
@@ -367,8 +376,14 @@ class DSG_Props(PropertyGroup):
 
     # Parámetros guía · blockout por rayos desde la vista (núcleo v7 restaurado)
     blockout_relief: FloatProperty(
-        name="Retención axial residual (mm)", default=0.10, min=0.0, max=0.30, precision=3,
-        description="Separación axial que queda sin rellenar respecto al bloqueo completo; un valor mayor puede conservar más retención")
+        name="Retención (mm)", default=0.10, min=0.0, max=0.30, precision=3,
+        description="Profundidad horizontal que la férula puede entrar bajo el ecuador dental (como el calibrador de retención); 0 bloquea todos los undercuts",
+        update=_on_retention_update)
+    blockout_draft_deg: FloatProperty(
+        name="Ángulo de desmoldeo (°)", default=0.0, min=0.0, max=6.0, precision=1, step=50,
+        description="Inclinación de las paredes del bloqueo respecto al eje de inserción: "
+                    "se abren hacia la encía (2–3° facilitan la inserción y retirada de la férula). "
+                    "Se aplica al PREPARAR el modelo retentivo")
     blockout_capture_view_on_generate: BoolProperty(
         name="Usar vista actual al generar", default=True,
         description="Recaptura la dirección exacta de la Vista 3D al calcular el modelo retentivo",
@@ -393,7 +408,8 @@ class DSG_Props(PropertyGroup):
         options={'HIDDEN'})
     blockout_local_relief_mm: FloatProperty(
         name="Alivio local (mm)", default=0.06, min=0.01, max=0.30, precision=3,
-        description="Avance axial aplicado solo a los vértices seleccionados del blockout; el IOS nunca se modifica")
+        description="Avance axial aplicado solo a los vértices seleccionados del blockout; se ve en tiempo real y el IOS nunca se modifica",
+        update=_on_local_relief_update)
     retention_level: EnumProperty(
         name="Retention profile",
         description="Evidence-informed whole-arch coronary-perimeter profile",
@@ -409,8 +425,8 @@ class DSG_Props(PropertyGroup):
         description="Compatibility value from the former continuous slider",
         default=55.0, min=10.0, max=95.0, precision=0, subtype='PERCENTAGE',
         options={'HIDDEN'}, update=_on_retention_percent_change)
-    implant_diameter:  FloatProperty(name="Implant Diameter (mm)",default=4.7,  min=2.0, max=7.0)
-    implant_length:    FloatProperty(name="Implant Length (mm)",default=10.0, min=5.0, max=18.0)
+    implant_diameter:  FloatProperty(name="Implant Diameter (mm)",default=4.7,  min=2.0, max=7.0, update=_on_implant_diameter_update)
+    implant_length:    FloatProperty(name="Implant Length (mm)",default=10.0, min=5.0, max=18.0, update=_on_implant_length_update)
     implant_tooth_clearance: FloatProperty(
         name="Tooth Safety (mm)",
         default=IMPLANT_TOOTH_CLEARANCE_DEFAULT_MM, min=0.0, max=5.0, precision=2,
@@ -1113,7 +1129,13 @@ def _update_all_dicom_measurements(scene=None):
     _DICOM_MEASURE_UPDATE_LOCK = True
     changed = False
     try:
-        for root in _dicom_measurement_roots():
+        from .blender import measurement_context
+        for root in list(_dicom_measurement_roots()):
+            if scene is not None and scene.objects.get(root.name) != root:
+                continue
+            if measurement_context.stale(root):
+                changed = _remove_dicom_measurement_root(root) or changed
+                continue
             changed = _update_one_dicom_measurement(root) or changed
     finally:
         _DICOM_MEASURE_UPDATE_LOCK = False
@@ -1252,6 +1274,8 @@ def _create_dicom_measurement(context, implant, vertex_index, point_a, point_b, 
     root['DSG_measure_marker_a'] = str(marker_a.name)
     root['DSG_measure_marker_b'] = str(marker_b.name)
     root['DSG_measure_units'] = 'mm'
+    from .blender import measurement_context
+    measurement_context.bind(context, root)
     _update_one_dicom_measurement(root)
     return root
 
@@ -1286,8 +1310,24 @@ def _create_dicom_mpr_measurement(context, point_a, point_b, plane_a_name, plane
     root['DSG_measure_marker_a'] = str(marker_a.name)
     root['DSG_measure_marker_b'] = str(marker_b.name)
     root['DSG_measure_units'] = 'mm'
+    from .blender import measurement_context
+    measurement_context.bind(context, root)
     _update_one_dicom_measurement(root)
     return root
+
+
+def _dicom_measurement_planes(context):
+    """Visible radiographic surfaces, including the planes following implants."""
+    from .blender import implant_plane
+    scene = context.scene
+    candidates = [scene.objects.get(name) for name in DICOM_MEASURE_PLANE_NAMES]
+    candidates.extend(implant_plane.planes(scene))
+    return [obj for obj in candidates if _valid_obj(obj) and obj.type == 'MESH'
+            and not obj.hide_viewport and not obj.hide_get() and obj.visible_get()]
+
+
+def _dicom_measurement_view_active(context):
+    return _dicom_review_is_active(context) or bool(_dicom_measurement_planes(context))
 
 
 class DSG_OT_MeasureImplantToDICOM(Operator):
@@ -1309,7 +1349,7 @@ class DSG_OT_MeasureImplantToDICOM(Operator):
         return (
             props is not None
             and int(getattr(props, 'current_step', -1)) == STEP_IMPLANT
-            and _dicom_review_is_active(context)
+            and _dicom_measurement_view_active(context)
             and bool(get_all_implant_objects(props))
         )
 
@@ -1329,7 +1369,7 @@ class DSG_OT_MeasureImplantToDICOM(Operator):
         return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
-        if not lifecycle.is_active() or not _dicom_review_is_active(context):
+        if not lifecycle.is_active() or not _dicom_measurement_view_active(context):
             self._finish_cursor(context)
             return {'CANCELLED'}
 
@@ -1381,11 +1421,7 @@ class DSG_OT_MeasureImplantToDICOM(Operator):
                 'Punto 2/2: haz clic en la zona anatómica sobre un plano DICOM visible')
             return {'RUNNING_MODAL'}
 
-        planes = []
-        for name in DICOM_MEASURE_PLANE_NAMES:
-            plane = bpy.data.objects.get(name)
-            if _valid_obj(plane) and plane.type == 'MESH':
-                planes.append(plane)
+        planes = _dicom_measurement_planes(context)
         plane_hit = _nearest_visible_raycast(
             context, planes, ray_origin, ray_direction)
         if plane_hit is None:
@@ -1446,7 +1482,7 @@ class DSG_OT_MeasureDICOMTwoPoints(Operator):
         return (
             props is not None
             and int(getattr(props, 'current_step', -1)) == STEP_IMPLANT
-            and _dicom_review_is_active(context)
+            and _dicom_measurement_view_active(context)
         )
 
     def invoke(self, context, event):
@@ -1464,7 +1500,7 @@ class DSG_OT_MeasureDICOMTwoPoints(Operator):
         return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
-        if not lifecycle.is_active() or not _dicom_review_is_active(context):
+        if not lifecycle.is_active() or not _dicom_measurement_view_active(context):
             self._finish_cursor(context)
             return {'CANCELLED'}
 
@@ -1488,11 +1524,7 @@ class DSG_OT_MeasureDICOMTwoPoints(Operator):
         if ray_origin is None:
             return {'RUNNING_MODAL'}
 
-        planes = []
-        for name in DICOM_MEASURE_PLANE_NAMES:
-            plane = bpy.data.objects.get(name)
-            if _valid_obj(plane) and plane.type == 'MESH':
-                planes.append(plane)
+        planes = _dicom_measurement_planes(context)
         plane_hit = _nearest_visible_raycast(context, planes, ray_origin, ray_direction)
         if plane_hit is None:
             _dsg_report(
@@ -3124,6 +3156,13 @@ def _validate_blockout_seating(context, source_obj, blockout_obj):
     evaluated = None
     evaluated_mesh = None
     bm = None
+    # 9.23: the volumetric undercut fill is part of the final cutter; points it
+    # covers cannot lock the guide.  Built before the evaluated mesh is taken.
+    try:
+        fills = ensure_undercut_fill(context, source_obj, blockout_obj)
+    except Exception:
+        _DSG_LOG.warning("undercut fill unavailable for seating audit", exc_info=True)
+        fills = []
     try:
         evaluated, evaluated_mesh = _evaluated_mesh_for_blockout(context, source_obj)
         if (len(evaluated_mesh.vertices) != len(blockout_obj.data.vertices)
@@ -3131,11 +3170,9 @@ def _validate_blockout_seating(context, source_obj, blockout_obj):
             report['reason'] = 'IOS and blockout topology do not match'
             return report
 
-        source_world = [evaluated.matrix_world @ vertex.co
-                        for vertex in evaluated_mesh.vertices]
-        blockout_world = [blockout_obj.matrix_world @ vertex.co
-                          for vertex in blockout_obj.data.vertices]
-        vertex_count = len(blockout_world)
+        source_coordinates = _mesh_world_coordinates(evaluated_mesh, evaluated.matrix_world)
+        blockout_coordinates = _mesh_world_coordinates(blockout_obj.data, blockout_obj.matrix_world)
+        vertex_count = len(blockout_coordinates)
         if not vertex_count:
             report['reason'] = 'blockout has no vertices'
             return report
@@ -3143,45 +3180,52 @@ def _validate_blockout_seating(context, source_obj, blockout_obj):
         relief_mm = max(0.0, float(blockout_obj.get('DSG_relief_mm', 0.0)))
         report['relief_mm'] = relief_mm
         step = max(1, int(math.ceil(vertex_count / float(BLOCKOUT_SEATING_SAMPLE_LIMIT))))
-        sampled_indices = range(0, vertex_count, step)
         lateral_limit = float(BLOCKOUT_SEATING_LATERAL_LIMIT_MM)
-        laterals = []
-        lateral_excess = 0
-        for index in sampled_indices:
-            delta = blockout_world[index] - source_world[index]
-            axial = delta.dot(axis)
-            lateral = (delta - axis * axial).length
-            laterals.append(float(lateral))
-            if lateral > lateral_limit:
-                lateral_excess += 1
-        report['sampled_vertices'] = len(laterals)
-        report['lateral_excess_vertices'] = int(lateral_excess)
-        report['max_lateral_mm'] = float(max(laterals) if laterals else 0.0)
+        axis_array = np.array(axis, dtype=np.float64)
+        delta = (blockout_coordinates - source_coordinates)[::step]
+        axial = delta @ axis_array
+        laterals = np.linalg.norm(delta - np.outer(axial, axis_array), axis=1)
+        lateral_excess = int((laterals > lateral_limit).sum())
+        report['sampled_vertices'] = int(len(laterals))
+        report['lateral_excess_vertices'] = lateral_excess
+        report['max_lateral_mm'] = float(laterals.max()) if len(laterals) else 0.0
         if lateral_excess:
             report['reason'] = 'candidate contains non-axial displacement'
             return report
 
-        bm = bmesh.new()
-        bm.from_mesh(blockout_obj.data)
-        bm.transform(blockout_obj.matrix_world)
-        bm.verts.ensure_lookup_table()
-        tree = BVHTree.FromBMesh(bm)
+        # Same rules as the blockout itself: the artificial base (identified on
+        # the source topology; the blockout has legitimate long walls) never
+        # blocks, and rays that would start inside the solid are not cast.
+        base_faces = _blockout_base_face_mask(evaluated_mesh, source_coordinates)
+        tree = _anatomy_bvh(blockout_obj.data, blockout_coordinates, base_faces)
         if tree is None:
             report['reason'] = 'could not build candidate BVH'
             return report
+        anatomy = _anatomy_vertex_mask(blockout_obj.data, base_faces)
+        facing = _mesh_world_vertex_normals(blockout_obj.data, blockout_obj.matrix_world) @ np.array(axis, dtype=np.float64)
+        candidates = np.flatnonzero(anatomy & (facing > BLOCKOUT_FACING_EPS))[::step]
 
         min_hit = max(float(BLOCKOUT_RAY_OFFSET_MM),
                       float(blockout_obj.get('DSG_min_hit_mm', BLOCKOUT_MIN_HIT_DEFAULT_MM)))
+        reach = float(blockout_obj.get('DSG_max_hit_mm', 0.0) or 0.0) or 1.0e6
         residuals = []
-        for index in range(0, len(bm.verts), step):
-            vertex = bm.verts[index]
-            origin = vertex.co + axis * float(BLOCKOUT_RAY_OFFSET_MM)
-            hit_loc, _normal, _face_index, _distance = tree.ray_cast(origin, axis)
-            if hit_loc is None:
+        residual_points = []
+        for index in candidates.tolist():
+            vertex = Vector(blockout_coordinates[index])
+            origin = vertex + axis * float(BLOCKOUT_RAY_OFFSET_MM)
+            hit_loc, hit_normal, _face_index, _distance = tree.ray_cast(origin, axis, reach)
+            if hit_loc is None or hit_normal.dot(axis) >= 0.0:
                 continue
-            residual = float((hit_loc - vertex.co).dot(axis))
+            residual = float((hit_loc - vertex).dot(axis))
             if residual > min_hit:
                 residuals.append(residual)
+                residual_points.append(source_coordinates[index])
+        report['fill_layers'] = int(len(fills))
+        if fills and residuals:
+            from .blender import undercut_fill
+            inside = undercut_fill.covered(residual_points, axis, fills)
+            report['fill_covered_hits'] = int(inside.sum())
+            residuals = [value for value, hidden in zip(residuals, inside) if not hidden]
 
         report['residual_hits'] = int(len(residuals))
         report['p90_residual_mm'] = _blockout_percentile(residuals, 90.0)
@@ -3191,7 +3235,13 @@ def _validate_blockout_seating(context, source_obj, blockout_obj):
         report['p90_limit_mm'] = p90_limit
         report['max_limit_mm'] = max_limit
 
-        if report['p90_residual_mm'] > p90_limit or report['max_residual_mm'] > max_limit:
+        # 9.24: one isolated sample over the limit is a scan spike, not a
+        # lock; REVIEW needs a cluster (BLOCKOUT_SEATING_MIN_OUTLIERS points).
+        deep = int(sum(1 for value in residuals if value > max_limit))
+        report['deep_residual_hits'] = deep
+        min_cluster = max(BLOCKOUT_SEATING_MIN_OUTLIERS,
+                          int(math.ceil(BLOCKOUT_SEATING_OUTLIER_FRACTION * report.get('sampled_vertices', 0))))
+        if report['p90_residual_mm'] > p90_limit or deep >= min_cluster:
             report['status'] = 'REVIEW'
             report['reason'] = 'residual axial obstruction requires a different insertion view or local relief review'
         else:
@@ -3251,6 +3301,7 @@ def _generate_view_raycast_blockout_transaction(context, props, model, axis):
             model,
             axis,
             relief_mm=float(getattr(props, 'blockout_relief', 0.10)),
+            draft_deg=float(getattr(props, 'blockout_draft_deg', 0.0)),
             min_hit_mm=float(getattr(props, 'blockout_min_hit_distance', BLOCKOUT_MIN_HIT_DEFAULT_MM)),
             max_hit_mm=float(getattr(props, 'blockout_max_hit_distance', BLOCKOUT_MAX_HIT_DEFAULT_MM)),
             output_name=BLOCKOUT_CANDIDATE_NAME)
@@ -3309,7 +3360,7 @@ def _generate_view_raycast_blockout_transaction(context, props, model, axis):
             visual = _ensure_blockout_zone_visual(
                 context, model, candidate, force_rebuild=True)
             if _valid_obj(visual):
-                _set_obj_hidden(visual, False, selectable_when_visible=False)
+                _set_obj_hidden(visual, False, selectable_when_visible=True)
         except Exception as exc:
             print(f'[DSG] Could not create blockout review overlay: {exc}')
         return candidate
@@ -3377,6 +3428,25 @@ class DSG_OT_GenerateBlockout(Operator):
             blockout = _generate_view_raycast_blockout_transaction(
                 context, props, model, axis)
             _set_obj_hidden(blockout, False, selectable_when_visible=True)
+            # 9.23: with a volumetric fill the review shows the closed IOS plus
+            # the teal fill (the real result), not the displaced-vertex shell.
+            try:
+                from .blender import undercut_fill
+                if undercut_fill.fill_objects():
+                    _set_obj_hidden(blockout, True)
+                    zone = bpy.data.objects.get(BLOCKOUT_VISUAL_NAME)
+                    if _valid_obj(zone):
+                        # 9.24.1: one united model, no overlay on the original
+                        _set_obj_hidden(model, True)
+                        _set_obj_hidden(zone, False, selectable_when_visible=True)
+                        try:
+                            _set_retention_boundary_visible(False)
+                        except Exception:
+                            _DSG_LOG.debug("suppressed exception", exc_info=True)
+                    else:
+                        _set_obj_hidden(model, False, selectable_when_visible=True)
+            except Exception:
+                _DSG_LOG.debug("suppressed exception", exc_info=True)
         except Exception as exc:
             _dsg_report(self, {'ERROR'}, f'Blockout error: {exc}', f'No se pudo generar el modelo retentivo: {exc}')
             return {'CANCELLED'}
@@ -3468,7 +3538,6 @@ class DSG_OT_ApplySelectedBlockoutRelief(Operator):
             and context.edit_object == blockout)
 
     def execute(self, context):
-        props = context.scene.dsg_props
         blockout = bpy.data.objects.get(BLOCKOUT_NAME)
         if not _valid_obj(blockout) or blockout.type != 'MESH':
             _dsg_report(self, {'ERROR'}, 'Generate the blockout first', 'Genera primero el modelo retentivo')
@@ -3479,65 +3548,20 @@ class DSG_OT_ApplySelectedBlockoutRelief(Operator):
                 'Select the teal blockout vertices in Edit Mode first',
                 'Selecciona primero los vértices turquesa del blockout en Modo Edición')
             return {'CANCELLED'}
-        axis_values = blockout.get(BLOCKOUT_AXIS_WORLD_KEY, blockout.get('DSG_axis'))
-        try:
-            axis_world = Vector(axis_values)
-        except Exception:
-            axis_world = Vector((0.0, 0.0, 0.0))
-        if axis_world.length <= 1.0e-10:
+        from .blender import live_relief
+        if live_relief.axis_local(blockout) is None:
             _dsg_report(self, {'ERROR'}, 'Insertion axis is unavailable', 'El eje de inserción no está disponible')
             return {'CANCELLED'}
-        axis_world.normalize()
-        try:
-            axis_local = blockout.matrix_world.inverted().to_3x3() @ axis_world
-        except Exception:
-            axis_local = axis_world.copy()
-        if axis_local.length <= 1.0e-10:
-            _dsg_report(self, {'ERROR'}, 'Could not transform the insertion axis', 'No se pudo transformar el eje de inserción')
-            return {'CANCELLED'}
-        axis_local.normalize()
-
-        bm = bmesh.from_edit_mesh(blockout.data)
-        bm.verts.ensure_lookup_table()
-        selected = [vertex for vertex in bm.verts if vertex.select]
-        if not selected:
+        # The live preview already shows the selection advanced by the
+        # slider amount; this fixes it and runs the seating audit once.
+        if not live_relief.preview(context, force=True):
             _dsg_report(self, {'ERROR'}, 'Select at least one blockout vertex', 'Selecciona al menos un vértice del blockout')
             return {'CANCELLED'}
-        amount = float(getattr(props, 'blockout_local_relief_mm', 0.06))
-        # A one-ring half-strength transition avoids a sharp, printable step at
-        # the edge of a clinician-selected contact relief zone.  The correction
-        # remains strictly in the insertion direction.
-        weights = {int(vertex.index): 1.0 for vertex in selected}
-        for vertex in selected:
-            for edge in vertex.link_edges:
-                neighbour = edge.other_vert(vertex)
-                if not neighbour.select:
-                    weights[int(neighbour.index)] = max(weights.get(int(neighbour.index), 0.0), 0.5)
-        for index, weight in weights.items():
-            bm.verts[index].co += axis_local * amount * float(weight)
-        bmesh.update_edit_mesh(blockout.data, loop_triangles=False, destructive=False)
-        blockout['DSG_local_relief_last_mm'] = amount
-        blockout['DSG_local_relief_last_vertices'] = int(len(weights))
-        blockout['DSG_local_relief_edits'] = int(blockout.get('DSG_local_relief_edits', 0)) + 1
-
-        requested = props.model_obj if _valid_obj(getattr(props, 'model_obj', None)) else None
-        try:
-            model = _resolve_blockout_source_model(context, requested)
-        except Exception:
-            model = None
-        if _valid_obj(model):
-            report = _validate_blockout_seating(context, model, blockout)
-            _store_blockout_seating_report(props, blockout, report)
-            try:
-                visual = _ensure_blockout_zone_visual(context, model, blockout, force_rebuild=True)
-                if _valid_obj(visual):
-                    _set_obj_hidden(visual, False, selectable_when_visible=False)
-            except Exception as exc:
-                print(f'[DSG] Could not refresh blockout review overlay: {exc}')
+        fixed = live_relief.commit(context, audit=True)
         _dsg_report(
             self, {'INFO'},
-            f'Local axial relief applied to {len(weights)} vertices; seating was rechecked',
-            f'Alivio axial local aplicado a {len(weights)} vértices; el asiento se ha vuelto a comprobar')
+            f'Local axial relief applied to {fixed} vertices; seating was rechecked',
+            f'Alivio axial local aplicado a {fixed} vértices; el asiento se ha vuelto a comprobar')
         return {'FINISHED'}
 
 
@@ -3646,6 +3670,14 @@ class DSG_OT_ConfirmBlockout(Operator):
             _set_blockout_ui_busy(context, False)
 
         combined['DSG_retentive_model_confirmed'] = True
+        # Virtual extraction already done (e.g. the retentive model is
+        # confirmed again afterwards): the new model must carry the socket.
+        try:
+            from .blender import virtual_extraction, ios_socket_boolean
+            if virtual_extraction.done(context.scene):
+                ios_socket_boolean.carve_passive(context, sorted(virtual_extraction.done(context.scene)))
+        except Exception as exc:
+            print(f'[DSG] Socket on the re-confirmed retentive model failed: {exc}')
         combined['DSG_confirmation_state'] = (
             'CONFIRMED_MANUAL_SEATING_REVIEW' if manual_override_used else 'CONFIRMED')
         combined['DSG_confirmation_version'] = '9.2.46'
@@ -3697,8 +3729,6 @@ class DSG_OT_ConfirmBlockout(Operator):
         _remove_retention_boundary()
         if manual_override_used:
             _dsg_report(self, {'WARNING'}, 'Retentive model continued after manual seating review; verify physical fit before surgery', 'Modelo retentivo continuado tras revisión manual del asiento; verifica el ajuste físico antes de la cirugía')
-        else:
-            _dsg_report(self, {'INFO'}, 'View-raycast retentive model confirmed; final voxel solidification remains in the final Boolean step', 'Modelo retentivo por rayos confirmado; la solidificación voxel se mantiene en la booleana final')
         return {'FINISHED'}
 
 
@@ -3710,11 +3740,7 @@ class DSG_OT_ForceConfirmBlockout(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
-        return context.window_manager.invoke_confirm(
-            self, event,
-            title='Confirmar tras revisión manual',
-            message='La auditoría automática no ha sido superada. Solo continúa si has revisado el asiento.',
-            confirm_text='CONTINUAR')
+        return self.execute(context)
 
     def execute(self, context):
         return bpy.ops.dsg.confirm_blockout('EXEC_DEFAULT', manual_override=True)
@@ -4052,6 +4078,8 @@ class DSG_OT_CreateImplant(Operator):
             'DSG_axis_method': str(axis_empty.get('DSG_axis_method', '') or '') if axis_source == 'fdi_tooth_axis' else 'manual_guide_axis',
         })
         target_fdi = int(obj.get('DSG_target_fdi', 0) or 0)
+        from .blender.nerve_safety import capture_arch
+        capture_arch(context.scene,obj)
         if dental_assets.valid_fdi(target_fdi, include_primary=False):
             obj['DSG_target_family_id'] = dental_assets.family_id(target_fdi)
             obj['DSG_target_tooth_class'] = dental_assets.tooth_class_from_fdi(target_fdi)
@@ -4364,6 +4392,9 @@ class DSG_OT_ConfirmImplant(Operator):
                     'Calcula y confirma el modelo retentivo antes de continuar al contorno de la guía')
             return {'CANCELLED'}
 
+        from .blender.safety_volume import gate
+        if not gate(context, self):
+            return {'CANCELLED'}
         violations = get_interimplant_spacing_violations(props)
         if violations:
             rebuild_implant_safety_halos(context, props)
@@ -4453,7 +4484,6 @@ class DSG_OT_ConfirmImplant(Operator):
 
         clear_implant_safety_halos()
         _close_dicom_review_for_guide(context)
-        _set_retention_boundary_visible(True)
         context.scene[WORKFLOW_IMPLANTS_CONFIRMED_KEY] = True
         for implant in implants:
             try:
@@ -4476,6 +4506,8 @@ class DSG_OT_ConfirmImplant(Operator):
 
         props.current_step = STEP_CONTOUR
         context.scene[GUIDE_FLOW_ORDER_KEY] = GUIDE_FLOW_ORDER_MODEL_IMPLANT
+        # 9.24.9: contour step view = only the IOS (no implants, MPR or ghost).
+        _restore_workflow_stage(context, context.scene, STEP_CONTOUR)
         _dsg_report(self, {'INFO'}, f"{len(implants)} implant(s) confirmed with ≥ {INTERIMPLANT_MIN_CLEARANCE_MM:.1f} mm interimplant spacing", f"{len(implants)} implante(s) confirmados con separación interimplantaria ≥ {INTERIMPLANT_MIN_CLEARANCE_MM:.1f} mm")
         return {'FINISHED'}
 
@@ -4483,5 +4515,3 @@ class DSG_OT_ConfirmImplant(Operator):
 # ─────────────────────────────────────────────────────────────
 # Paso 6 — Frame tubular (usa Bevel Joints)
 # ─────────────────────────────────────────────────────────────
-
-

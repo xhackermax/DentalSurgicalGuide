@@ -28,8 +28,8 @@ def run_all():
     installer = (ROOT / "segmentation_install_worker.py").read_text(encoding="utf-8")
     worker = (ROOT / "cbct_pipeline_worker.py").read_text(encoding="utf-8")
 
-    results.append(_ok("version_9_10_10", "DSG_VERSION = (9, 10, 11)" in version and '"version": (9, 10, 11)' in init,
-                       "Versión coherente 9.10.11", "Versiones internas no coinciden"))
+    results.append(_ok("version_9_10_10", "DSG_VERSION = (9, 22, 16)" in version and '"version": (9, 22, 16)' in init,
+                       "Versión coherente 9.22.16", "Versiones internas no coinciden"))
     results.append(_ok("blender_5_2_only", '"blender": (5, 2, 0)' in init and '(major, minor) != (5, 2)' in engines,
                        "Build limitada a Blender 5.2", "No está aplicado el gate exclusivo de Blender 5.2"))
     results.append(_ok("three_engines", all(token in engines for token in ('ENGINE_TOTALSEG', 'ENGINE_TOOTHSEG', 'ENGINE_UMAMBA2')),

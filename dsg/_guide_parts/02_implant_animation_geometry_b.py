@@ -1066,7 +1066,8 @@ def _close_main_boundary_with_planar_base(bm, loop_verts, outward_direction,
                                            base_depth, wall_margin=0.0,
                                            anatomy_clearance=0.0,
                                            collar_offset=0.0,
-                                           max_collar_tangent_shift=0.0):
+                                           max_collar_tangent_shift=0.0,
+                                           fillet=0.0, smoothing_length=0.0):
     """Create a deterministic manifold base without touching scan coordinates.
 
     The anatomical rim is extended through several newly-created transition
@@ -1173,6 +1174,23 @@ def _close_main_boundary_with_planar_base(bm, loop_verts, outward_direction,
                     f'Could not create a complete {label} bridge at rim edge {index}; '
                     'the operation was cancelled before mesh commit')
         return int(made)
+
+    u_lid_info = {}
+    if float(fillet) > 0.0:
+        # Lid that follows the arch (U stays U) with a rounded edge; the convex
+        # safety cap below is only the fallback when that plan is not valid.
+        from .blender import arch_base
+        u_plane = max(base_plane, max(rim_projection_work) + float(fillet) * 1.05)
+        built, u_lid_info = arch_base.build(
+            bm, loop_verts, collar_positions, direction, axis_u, axis_v,
+            u_plane, float(fillet), float(smoothing_length))
+        if built is not None:
+            lid_ring, u_side, u_cap = built
+            return lid_ring, u_side, u_cap, {
+                **collar_diagnostics, **u_lid_info,
+                'base_plane_projection': float(u_plane),
+                'effective_depth': float(u_plane - robust_rim),
+                'anatomy_clearance': float(required_clearance)}
 
     previous_ring = list(loop_verts)
     side_faces = 0
@@ -1334,6 +1352,7 @@ def _close_main_boundary_with_planar_base(bm, loop_verts, outward_direction,
         'effective_depth': float(depth),
         'anatomy_clearance': float(required_clearance),
         'safety_ring_vertices': int(len(safety_ring)),
+        **u_lid_info,
     }
     return list(safety_ring), int(side_faces), int(cap_faces), build_diagnostics
 
@@ -1984,6 +2003,7 @@ def _close_open_model_volumetric(context, source_obj, perimeter_obj=None):
     reconstruct one watertight shell.  The fitting anatomy is then projected
     back to the source scan where the two surfaces are already close.
     """
+    from .blender import progress_overlay as _progress
     closed = duplicate_object_with_data(context, source_obj, CLOSED_MODEL_NAME)
     closed.matrix_world = source_obj.matrix_world.copy()
     bm = None
@@ -2015,6 +2035,7 @@ def _close_open_model_volumetric(context, source_obj, perimeter_obj=None):
         boundary_verts = {
             vert for edge in bm.edges if len(edge.link_faces) != 2
             for vert in edge.verts}
+        _progress.step(42, 'Calculando la dirección de la base')
         direction, base_diagnostics = _automatic_base_direction(
             bm, list(boundary_verts) if boundary_verts else list(bm.verts),
             source_obj=source_obj, return_diagnostics=True)
@@ -2082,6 +2103,7 @@ def _close_open_model_volumetric(context, source_obj, perimeter_obj=None):
             basal_projection + base_depth)
         _append_base_prism_to_bmesh(
             bm, hull, axis_u, axis_v, direction, top_projection, bottom_projection)
+        _progress.step(87, 'Recalculando normales y guardando la malla')
         try:
             bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
         except Exception:
@@ -2413,6 +2435,7 @@ def close_scanned_model_holes(context, source_obj, perimeter_obj=None):
     step. If no safe secondary holes exist, the source object is simply marked
     as reviewed and remains the active model.
     """
+    from .blender import progress_overlay as _progress
     if not _valid_obj(source_obj) or source_obj.type != 'MESH':
         raise RuntimeError('No valid dental mesh was found')
 
@@ -2445,6 +2468,7 @@ def close_scanned_model_holes(context, source_obj, perimeter_obj=None):
         if bm is not None:
             bm.free()
 
+    _progress.step(92, 'Verificando que la anatomía dental no cambió')
     anatomy_ok, anatomy_reason = _verify_original_anatomy_vertices_unchanged(
         source_obj, repaired)
     if not anatomy_ok:
@@ -2533,7 +2557,7 @@ class DSG_OT_CloseScanHoles(Operator):
 
 
 def _verify_original_anatomy_vertices_unchanged(source_obj, closed_obj,
-                                                 tolerance=None):
+                                                 tolerance=None, released=None):
     """Verify preservation of the *surface anatomy* without false failures.
 
     Older DSG builds compared every mesh vertex as an exact coordinate multiset.
@@ -2562,7 +2586,17 @@ def _verify_original_anatomy_vertices_unchanged(source_obj, closed_obj,
             for vertex_index in polygon.vertices:
                 if 0 <= int(vertex_index) < len(surface_used):
                     surface_used[int(vertex_index)] = 1
-        surface_indices = [index for index, used in enumerate(surface_used) if used]
+        # Border band deliberately smoothed by the closure (blender/rim_smooth):
+        # those exact source vertices, and only those, are released.
+        released = released or set()
+        released_mask = bytearray(len(source_mesh.vertices))
+        if released:
+            from .blender.rim_smooth import coordinate_key
+            for vertex in source_mesh.vertices:
+                if coordinate_key(vertex.co) in released:
+                    released_mask[vertex.index] = 1
+        surface_indices = [index for index, used in enumerate(surface_used)
+                           if used and not released_mask[index]]
         ignored_non_surface = len(source_mesh.vertices) - len(surface_indices)
         if not surface_indices:
             return False, 'source mesh contains no facial surface vertices'
@@ -2639,6 +2673,8 @@ def _verify_original_anatomy_vertices_unchanged(source_obj, closed_obj,
         for triangle_index in range(0, triangle_count, step):
             triangle = source_triangles[triangle_index]
             indices = triangle.vertices
+            if any(released_mask[int(i)] for i in indices):
+                continue
             centroid = (
                 source_mesh.vertices[int(indices[0])].co
                 + source_mesh.vertices[int(indices[1])].co
@@ -2663,6 +2699,7 @@ def _verify_original_anatomy_vertices_unchanged(source_obj, closed_obj,
             'vertex_tolerance_local': float(tolerance),
             'surface_tolerance_local': float(surface_tolerance),
             'surface_audit': 'source_loop_triangle_centroids',
+            'released_border_vertices': int(sum(released_mask)),
         }
         try:
             closed_obj['DSG_anatomy_lock_diagnostics'] = json.dumps(
@@ -2843,21 +2880,26 @@ def _close_open_model_direct(context, source_obj, perimeter_obj=None):
     """Close the model by adding only secondary-hole caps and basal geometry.
 
     The scanned dental surface is immutable. Safe secondary holes are capped
-    first, the principal opening is then extended into basal walls and a cap.
-    No remesh, smoothing, merge, shrinkwrap, Boolean or source-vertex movement
-    is permitted.
+    first, the ragged border line of the open scan is smoothed (border band
+    only, capped, released explicitly from the anatomy lock), then the
+    principal opening is extended into basal walls and a lid.  No remesh,
+    merge, shrinkwrap or Boolean is used, and no other scan vertex moves.
     """
+    from .blender import progress_overlay as _progress
+    _progress.step(5, 'Duplicando el IOS (el original se conserva)')
     closed = duplicate_object_with_data(context, source_obj, CLOSED_MODEL_NAME)
     closed.matrix_world = source_obj.matrix_world.copy()
     original_vertex_count = len(source_obj.data.vertices)
     bm = None
     hole_diagnostics = {}
+    released_rim, rim_diagnostics = set(), {}
     try:
         bm = bmesh.new()
         bm.from_mesh(closed.data)
         bm.verts.ensure_lookup_table()
         bm.edges.ensure_lookup_table()
         bm.faces.ensure_lookup_table()
+        _progress.step(12, 'Limpiando caras duplicadas y aristas sueltas')
         _remove_safe_duplicate_faces_and_wire_edges(bm)
         exact_boundary_vertices_welded = _weld_exact_boundary_duplicates(
             bm, distance=1.0e-9)
@@ -2870,9 +2912,11 @@ def _close_open_model_direct(context, source_obj, perimeter_obj=None):
 
         # Required intermediate stage: close safe secondary scan holes first,
         # while protecting the largest/perimeter-guided component as the base.
+        _progress.step(22, 'Cerrando agujeros secundarios del escaneo')
         hole_diagnostics = _fill_secondary_scan_holes_bmesh(
             bm, source_obj, perimeter_obj=perimeter_obj)
 
+        _progress.step(34, 'Detectando el borde basal del IOS')
         bm.edges.ensure_lookup_table()
         boundary_edges = [edge for edge in bm.edges if len(edge.link_faces) == 1]
         candidates = []
@@ -2897,6 +2941,13 @@ def _close_open_model_direct(context, source_obj, perimeter_obj=None):
 
         direction, base_diagnostics = _automatic_base_direction(
             bm, main_loop, source_obj=source_obj, return_diagnostics=True)
+        # Clean the line where the open scan ends (border band only).
+        from .blender import rim_smooth
+        _progress.step(50, 'Suavizando la línea donde termina el IOS')
+        released_rim, rim_diagnostics = rim_smooth.smooth(
+            bm, main_loop,
+            sigma=_mm_to_object_units(source_obj, rim_smooth.SIGMA_MM),
+            max_shift=_mm_to_object_units(source_obj, rim_smooth.MAX_SHIFT_MM))
         coords = [vert.co for vert in bm.verts]
         mins = Vector((min(v[i] for v in coords) for i in range(3)))
         maxs = Vector((max(v[i] for v in coords) for i in range(3)))
@@ -2910,16 +2961,21 @@ def _close_open_model_direct(context, source_obj, perimeter_obj=None):
         wall_margin = _mm_to_object_units(source_obj, 0.20)
         anatomy_clearance = _mm_to_object_units(source_obj, 1.00)
         collar_offset = _mm_to_object_units(source_obj, 0.30)
+        _progress.step(62, 'Construyendo paredes, borde redondeado y tapa en U')
         max_collar_tangent_shift = _mm_to_object_units(source_obj, 0.18)
         _bottom_ring, side_faces, cap_faces, model_build_diagnostics = _close_main_boundary_with_planar_base(
             bm, main_loop, direction, base_depth,
             wall_margin=wall_margin,
             anatomy_clearance=anatomy_clearance,
             collar_offset=collar_offset,
-            max_collar_tangent_shift=max_collar_tangent_shift)
+            max_collar_tangent_shift=max_collar_tangent_shift,
+            fillet=_mm_to_object_units(source_obj, 1.5),
+            smoothing_length=_mm_to_object_units(source_obj, 1.0))
+        u_lid = bool(model_build_diagnostics.get('u_lid', False))
 
         # At this point no opening is intentional. Audit and repair the entire
         # residual topology, irrespective of the number of edges in a rim.
+        _progress.step(80, 'Reparando topología residual (manifold)')
         residual_diagnostics = _repair_residual_topology_globally(bm)
         residual_faces = int(residual_diagnostics.get('faces_added', 0))
 
@@ -2950,12 +3006,13 @@ def _close_open_model_direct(context, source_obj, perimeter_obj=None):
             bm.free()
 
     anatomy_ok, anatomy_reason = _verify_original_anatomy_vertices_unchanged(
-        source_obj, closed)
+        source_obj, closed, released=released_rim)
     if not anatomy_ok:
         safe_remove_object_with_data(closed)
         raise RuntimeError(
             f'Anatomy-lock verification failed: {anatomy_reason}')
 
+    _progress.step(96, 'Comprobando que el modelo es sólido y manifold')
     _clear_model_topology_cache()
     report = get_model_topology_report_cached(closed)
     if report.get('checked') and not report.get('solid'):
@@ -2968,7 +3025,9 @@ def _close_open_model_direct(context, source_obj, perimeter_obj=None):
             f"wire edges: {report.get('wire_edges')}). "
             'Remesh was not applied')
 
-    closed['DSG_base_closure_status'] = 'direct_rim_convex_safety_cap_anatomy_locked'
+    closed['DSG_base_closure_status'] = (
+        'direct_rim_arch_lid_rounded_anatomy_locked' if u_lid
+        else 'direct_rim_convex_safety_cap_anatomy_locked')
     closed['DSG_base_closed_manifold'] = bool(report.get('solid', False))
     closed['DSG_base_depth_mm'] = float(base_depth_mm)
     closed['DSG_base_min_anatomy_clearance_mm'] = 1.0
@@ -2989,7 +3048,11 @@ def _close_open_model_direct(context, source_obj, perimeter_obj=None):
     closed['DSG_base_branch_edges_split'] = int(initial_split_branch_edges)
     closed['DSG_base_boundary_junction_edges_split'] = int(initial_split_junction_edges)
     closed['DSG_base_exact_boundary_vertices_welded'] = int(exact_boundary_vertices_welded)
-    closed['DSG_base_footprint_method'] = 'DIRECT_RIM_TO_CONVEX_MANIFOLD_SAFETY_CAP'
+    closed['DSG_base_footprint_method'] = (
+        'ARCH_OUTLINE_LID_WITH_ROUNDED_EDGE' if u_lid
+        else 'DIRECT_RIM_TO_CONVEX_MANIFOLD_SAFETY_CAP')
+    closed['DSG_base_lid_fillet_mm'] = 1.5 if u_lid else 0.0
+    closed['DSG_base_rim_smoothing'] = json.dumps(rim_diagnostics, ensure_ascii=False)
     closed['DSG_base_star_footprint_used'] = False
     closed['DSG_base_side_faces_created'] = int(side_faces)
     closed['DSG_base_cap_faces_created'] = int(cap_faces)

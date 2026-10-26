@@ -171,6 +171,10 @@ def _translate_totalseg(np, labels_zyx, class_map):
             lut[raw_id] = 54
         elif name in {"left_inferior_alveolar_canal", "right_inferior_alveolar_canal"}:
             lut[raw_id] = 55
+        elif name == 'left_maxillary_sinus':
+            lut[raw_id] = 56
+        elif name == 'right_maxillary_sinus':
+            lut[raw_id] = 57
         elif "_pulp_" not in name:
             match = re.search(r"_fdi(\d+)$", name)
             if match:
@@ -233,6 +237,17 @@ def infer_totalseg(req, image, input_nifti: Path, np, nib, torch, status):
         raise RuntimeError(f"TotalSegmentator devolvió {tuple(raw_xyz.shape)} y se esperaba {expected_xyz}")
     raw_zyx = np.ascontiguousarray(np.transpose(raw_xyz, (2, 1, 0)))
     compat, counts = _translate_totalseg(np, raw_zyx, get_task_classes("teeth"))
+    nasal_status='NOT_REQUESTED'
+    if req.get('upper_cavities',True):
+        status('cavities','Identificando cavidad nasal · modelo de cabeza…',.74)
+        from dsg.cbct_upper_cavities import infer_nasal,merge_nasal
+        try:
+            nasal,classes=infer_nasal(image,used)
+            compat=merge_nasal(compat,nasal,classes)
+            nasal_status='PREDICTED_REVIEW_REQUIRED'
+        except Exception as exc:
+            nasal_status='UNVERIFIED: '+str(exc)
+            _LOG.warning('Cavidad nasal no verificada: %s',exc)
     return compat, {
         "engine": "TotalSegmentator",
         "engine_id": "TOTALSEG",
@@ -241,6 +256,7 @@ def infer_totalseg(req, image, input_nifti: Path, np, nib, torch, status):
         "inference_s": float(time.perf_counter() - started),
         "mode": "DIRECT_DATASET113" if direct else "OFFICIAL_CROP_PIPELINE",
         "gpu_fallback_error": gpu_error,
+        "nasal_cavity_status":nasal_status,
         "class_voxels": counts,
         "capabilities": ["TEETH", "FDI", "JAW", "CANAL", "SINUS", "PULP", "IMPLANT", "CROWN", "BRIDGE"],
     }
@@ -587,7 +603,7 @@ def main(trace=None,stop_event=None):
     del xyz, image
 
     status('labelmap','Comprobando el contrato de salida del motor…',0.79)
-    labelmap=Labelmap.parse(labels,dims,spacing,engine)
+    labelmap=Labelmap.parse(labels,dims,spacing,engine,require_teeth=route_mode != 'SIMPLE_ARCHES')
 
     status("normalize", "Salida normalizada · preparando geometría común DSG…", 0.80)
     normalized_path = job / f"{engine.lower()}_normalized_labels.npy"

@@ -15,7 +15,7 @@ import json
 import time
 
 import bpy
-from bpy.props import BoolProperty, EnumProperty, IntProperty, PointerProperty, StringProperty
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, PointerProperty, StringProperty
 from bpy.types import Operator, PropertyGroup
 from mathutils import Vector
 
@@ -891,8 +891,9 @@ def _create_fdi_label(fdi: int, root, collection, tooth_obj,
     obj = bpy.data.objects.new(name, curve)
     collection.objects.link(obj)
 
-    # Parent to the individual tooth, not DICOM_ROOT. This keeps Blender's
-    # relationship line short and ensures the label follows that tooth.
+    # Parent to the individual tooth so the label follows it.  The tooth's
+    # origin is the CBCT centre, so relationship lines are hidden
+    # (blender/relationship_lines.py) to avoid dashed lines to that centre.
     world_matrix, audit = _fdi_label_world_matrix(tooth_obj, arch_centres)
     obj.parent = tooth_obj
     obj.matrix_world = world_matrix
@@ -968,6 +969,8 @@ def rebuild_fdi_labels(context=None, *, strict: bool = False) -> list[bpy.types.
             _DSG_LOG.debug("suppressed exception", exc_info=True)
     if errors:
         print("[DSG FDI OVERLAY] " + " | ".join(errors[:8]))
+    from .blender import relationship_lines
+    relationship_lines.hide_all()
     return labels
 
 
@@ -979,7 +982,7 @@ def set_alignment_visual_smoothing(obj: bpy.types.Object, enabled: bool) -> None
     """Toggle measured, volume-preserving surface offsets without remeshing."""
     if obj is None or getattr(obj, "type", None) != "MESH":
         return
-    if obj.get('DSG_post_smooth_original_mesh') is not None:
+    if isinstance(obj.get('DSG_post_smooth_cached_mesh'),bpy.types.Mesh) and obj.data==obj.get('DSG_post_smooth_cached_mesh'):
         # A post-segmentation finish already replaces the displayed mesh.
         # Alignment review must not stack another smoother on top of it.
         mod = obj.modifiers.get(ALIGNMENT_VISUAL_SMOOTH_MODIFIER)
@@ -1069,8 +1072,8 @@ class DSG_OT_CBCTToggleSurfaceSmoothing(Operator):
 
 
 def draw_surface_smoothing(layout, context, *, show_note: bool = True) -> None:
-    from . import cbct_post_smoothing
-    cbct_post_smoothing.draw(layout, context)
+    from .blender import segmentation_finish
+    segmentation_finish.draw(layout, context)
 
 
 def reset_scene_state(scene=None) -> None:
@@ -1114,7 +1117,15 @@ def dentition_objects(context=None) -> list[bpy.types.Object]:
     return objects
 
 
+def _labels_hidden_for_implant_review() -> bool:
+    from . import core,guide_module as guide
+    scene=bpy.context.scene
+    return (core.infer_stage(scene)==core.STAGE_GUIDE
+            and scene.dsg_props.current_step==guide.STEP_IMPLANT)
+
+
 def labels_visible(visible: bool) -> None:
+    visible=bool(visible) and not _labels_hidden_for_implant_review()
     for obj in bpy.data.objects:
         if obj.name.startswith(LABEL_OBJECT_PREFIX):
             obj.hide_set(not bool(visible))
@@ -1122,6 +1133,9 @@ def labels_visible(visible: bool) -> None:
 
 def labels_visible_for_arch(arch: str) -> None:
     """Show FDI labels only for the CBCT arch used as alignment reference."""
+    if _labels_hidden_for_implant_review():
+        labels_visible(False)
+        return
     wanted = str(arch or "").upper()
     for obj in bpy.data.objects:
         if not obj.name.startswith(LABEL_OBJECT_PREFIX):
@@ -1568,6 +1582,7 @@ def _join_immediate_arch_sources(context, *, arch: str, bone_obj, teeth, output_
     teeth.  The mandibular nerve is never part of ``sources`` and therefore can
     never be swallowed by this Ctrl+J composite.
     """
+    from . import dicom_module
     if bone_obj is None or getattr(bone_obj, "type", None) != "MESH":
         raise RuntimeError(f"No se encontró el hueso separado para {arch}")
     _delete_named_mesh(output_name)
@@ -1611,7 +1626,7 @@ def _join_immediate_arch_sources(context, *, arch: str, bone_obj, teeth, output_
         # The bone is active, exactly as if the user selected bone + teeth and
         # pressed Ctrl+J with the jaw object as the active object.
         context.view_layer.objects.active = duplicates[0]
-        result = bpy.ops.object.join()
+        result = bpy.ops.object.join() if len(duplicates) > 1 else {'FINISHED'}
         if "FINISHED" not in result:
             raise RuntimeError(f"Ctrl+J no pudo unir {arch} con sus dientes")
         joined = context.view_layer.objects.active
@@ -1681,14 +1696,21 @@ def build_immediate_arch_composites(context, *, excluded_fdis) -> dict[str, Any]
         elif arch == "MANDIBLE":
             lower_teeth.append(tooth)
 
-    upper = _join_immediate_arch_sources(
-        context, arch="MAXILLA", bone_obj=maxilla, teeth=upper_teeth,
-        output_name=IMMEDIATE_UPPER_COMPOSITE_NAME, excluded_fdis=excluded,
-    )
-    lower = _join_immediate_arch_sources(
-        context, arch="MANDIBLE", bone_obj=mandible, teeth=lower_teeth,
-        output_name=IMMEDIATE_LOWER_COMPOSITE_NAME, excluded_fdis=excluded,
-    )
+    # Both model builds form one logical operation. Never leave only the
+    # first composite if the second Ctrl+J or metadata setup fails.
+    try:
+        upper = _join_immediate_arch_sources(
+            context, arch="MAXILLA", bone_obj=maxilla, teeth=upper_teeth,
+            output_name=IMMEDIATE_UPPER_COMPOSITE_NAME, excluded_fdis=excluded,
+        )
+        lower = _join_immediate_arch_sources(
+            context, arch="MANDIBLE", bone_obj=mandible, teeth=lower_teeth,
+            output_name=IMMEDIATE_LOWER_COMPOSITE_NAME, excluded_fdis=excluded,
+        )
+    except Exception:
+        _delete_named_mesh(IMMEDIATE_UPPER_COMPOSITE_NAME)
+        _delete_named_mesh(IMMEDIATE_LOWER_COMPOSITE_NAME)
+        raise
 
     # Display exactly the two joined jaw models plus the independent nerve.
     for source in dentition_objects(context):
@@ -1732,6 +1754,8 @@ def build_immediate_arch_composites(context, *, excluded_fdis) -> dict[str, Any]
 
 
 def ensure_segmented_alignment_composite(context) -> bpy.types.Object:
+    from .blender.segmentation_finish import cancel_before_alignment
+    cancel_before_alignment()
     sources = segmented_alignment_source_objects(context)
     teeth = dentition_objects(context)
     if not teeth:
@@ -1985,6 +2009,186 @@ class DSGCBCTDentalProperties(PropertyGroup):
     primary_count: IntProperty(default=0, min=0, options={"HIDDEN"})
     labels_visible: BoolProperty(default=True)
     status: StringProperty(default="")
+    voxel_remesh_size: FloatProperty(
+        name="Vóxel (mm)", default=0.25, min=0.05, max=2.0, step=1, precision=2,
+        description="Tamaño de vóxel del remesh; menor = más detalle y más polígonos")
+
+
+# --- DSG v9 · Remesh vóxel de todo lo segmentado ---------------------------
+VOXEL_REMESH_ORIGINAL_KEY = "DSG_voxel_remesh_original_mesh"
+VOXEL_REMESH_SIZE_KEY = "DSG_voxel_remesh_size_mm"
+_SEGMENTED_SCENE_KEYS = (
+    "DSG_maxilla_object", "DSG_mandible_object",
+    "DSG_simple_upper_object", "DSG_simple_lower_object",
+)
+
+
+def segmented_objects(context=None) -> list:
+    """Every mesh produced by CBCT segmentation: teeth, jaws, canal, arches."""
+    context = context or bpy.context
+    scene = context.scene
+    from . import core, dicom_module
+    found = {}
+    for obj in dentition_objects(context):
+        found[obj.name] = obj
+    names = [str(scene.get(key, "") or "") for key in _SEGMENTED_SCENE_KEYS]
+    names += [dicom_module.NAME_DICOM_TEETH, dicom_module.NAME_DICOM_BONE,
+              dicom_module.NAME_DICOM_MAXILLA, dicom_module.NAME_DICOM_MANDIBLE,
+              dicom_module.NAME_DICOM_MANDIBULAR_CANAL]
+    for name in names:
+        obj = scene.objects.get(name) if name else None
+        if obj is not None and obj.type == "MESH":
+            found[obj.name] = obj
+    roles = {core.ROLE_DICOM_TEETH, core.ROLE_DICOM_BONE, core.ROLE_DICOM_MANDIBULAR_CANAL}
+    for obj in scene.objects:
+        if obj.type == "MESH" and obj.name not in found and core.role_of(obj) in roles:
+            found[obj.name] = obj
+    checkpoint = core.DICOM_ROUTE_CHECKPOINT_COLLECTION
+    return sorted(
+        (obj for obj in found.values()
+         if not any(col.name == checkpoint for col in obj.users_collection)),
+        key=lambda item: item.name)
+
+
+def _remesh_source_mesh(obj):
+    """Original geometry: before any previous remesh and before smoothing."""
+    from . import cbct_post_smoothing as post
+    original = obj.get(VOXEL_REMESH_ORIGINAL_KEY)
+    if isinstance(original, bpy.types.Mesh):
+        return original
+    smoothing_original = obj.get(post.ORIGINAL_MESH)
+    if isinstance(smoothing_original, bpy.types.Mesh):
+        return smoothing_original
+    return obj.data
+
+
+def _forget_smoothing_cache(obj) -> None:
+    from . import cbct_post_smoothing as post
+    for key in (post.ORIGINAL_MESH, post.CACHED_MESH, post.SOURCE_HASH):
+        if key in obj:
+            del obj[key]
+
+
+def voxel_remesh_object(context, obj, voxel_size_mm: float):
+    """Replace obj.data with a voxel remesh of its original mesh."""
+    source = _remesh_source_mesh(obj)
+    scale = obj.matrix_world.to_scale()
+    mean_scale = max(1.0e-9, (abs(scale.x) + abs(scale.y) + abs(scale.z)) / 3.0)
+    temp = bpy.data.objects.new("__DSG_voxel_remesh_tmp", source)
+    context.scene.collection.objects.link(temp)
+    try:
+        modifier = temp.modifiers.new("DSG_VoxelRemesh", "REMESH")
+        modifier.mode = "VOXEL"
+        modifier.voxel_size = float(voxel_size_mm) / mean_scale
+        modifier.adaptivity = 0.0
+        modifier.use_smooth_shade = True
+        context.view_layer.update()
+        evaluated = temp.evaluated_get(context.evaluated_depsgraph_get())
+        mesh = bpy.data.meshes.new_from_object(evaluated)
+    finally:
+        bpy.data.objects.remove(temp, do_unlink=True)
+    if len(mesh.polygons) == 0:
+        bpy.data.meshes.remove(mesh)
+        raise RuntimeError(f"{obj.name}: el remesh quedó vacío; usa un vóxel menor")
+    mesh.name = f"{obj.name}_Voxel"
+    if not isinstance(obj.get(VOXEL_REMESH_ORIGINAL_KEY), bpy.types.Mesh):
+        source.use_fake_user = True
+        obj[VOXEL_REMESH_ORIGINAL_KEY] = source
+    _forget_smoothing_cache(obj)
+    previous = obj.data
+    obj.data = mesh
+    obj[VOXEL_REMESH_SIZE_KEY] = float(voxel_size_mm)
+    if previous is not source and previous.users == 0:
+        bpy.data.meshes.remove(previous)
+    return len(mesh.polygons)
+
+
+def restore_voxel_remesh(obj) -> bool:
+    original = obj.get(VOXEL_REMESH_ORIGINAL_KEY)
+    if not isinstance(original, bpy.types.Mesh):
+        return False
+    previous = obj.data
+    obj.data = original
+    original.use_fake_user = False
+    for key in (VOXEL_REMESH_ORIGINAL_KEY, VOXEL_REMESH_SIZE_KEY):
+        if key in obj:
+            del obj[key]
+    if previous is not original and previous.users == 0:
+        bpy.data.meshes.remove(previous)
+    return True
+
+
+class DSG_OT_VoxelRemeshSegmented(Operator):
+    bl_idname = "dsg.voxel_remesh_segmented"
+    bl_label = "Remesh vóxel"
+    bl_description = "Aplica un remesh vóxel a todos los elementos segmentados (dientes, maxilar, mandíbula, canal, arcadas) desde su malla original"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        from . import cbct_post_smoothing
+        return not cbct_post_smoothing.busy() and bool(segmented_objects(context))
+
+    def execute(self, context):
+        if context.mode != "OBJECT":
+            self.report({"ERROR"}, "Sal del modo edición antes del remesh")
+            return {"CANCELLED"}
+        size = float(context.scene.dsg_cbct_dental.voxel_remesh_size)
+        objects = segmented_objects(context)
+        started = time.perf_counter()
+        wm = context.window_manager
+        wm.progress_begin(0, len(objects))
+        done, faces, failed = 0, 0, []
+        try:
+            for index, obj in enumerate(objects):
+                try:
+                    faces += voxel_remesh_object(context, obj, size)
+                    done += 1
+                except RuntimeError as exc:
+                    failed.append(str(exc))
+                wm.progress_update(index + 1)
+        finally:
+            wm.progress_end()
+        elapsed = time.perf_counter() - started
+        context.scene["DSG_voxel_remesh_last"] = json.dumps(
+            {"objects": done, "faces": faces, "voxel_mm": size, "seconds": round(elapsed, 2), "failed": failed},
+            ensure_ascii=False)
+        if failed:
+            self.report({"WARNING"}, f"Remesh {size:.2f} mm: {done} elementos; sin cambios: {'; '.join(failed)[:180]}")
+        else:
+            self.report({"INFO"}, f"Remesh {size:.2f} mm: {done} elementos · {faces:,} caras · {elapsed:.1f} s")
+        return {"FINISHED"}
+
+
+class DSG_OT_VoxelRemeshRestore(Operator):
+    bl_idname = "dsg.voxel_remesh_restore"
+    bl_label = "Mallas originales"
+    bl_description = "Devuelve los elementos segmentados a la malla anterior al remesh vóxel"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        restored = sum(1 for obj in segmented_objects(context) if restore_voxel_remesh(obj))
+        if not restored:
+            self.report({"INFO"}, "No hay elementos con remesh vóxel")
+            return {"CANCELLED"}
+        self.report({"INFO"}, f"{restored} elementos devueltos a su malla original")
+        return {"FINISHED"}
+
+
+def draw_voxel_remesh(layout, context) -> None:
+    from . import dicom_module
+    if dicom_module.semantic_workflow_busy():
+        return
+    objects = segmented_objects(context)
+    if not objects:
+        return
+    remeshed = sum(1 for obj in objects if isinstance(obj.get(VOXEL_REMESH_ORIGINAL_KEY), bpy.types.Mesh))
+    box = layout.box()
+    row = box.row(align=True)
+    row.prop(context.scene.dsg_cbct_dental, "voxel_remesh_size", text="Vóxel mm")
+    row.operator(DSG_OT_VoxelRemeshSegmented.bl_idname, text=f"REMESH VÓXEL ({len(objects)})", icon="MOD_REMESH")
+    if remeshed:
+        box.operator(DSG_OT_VoxelRemeshRestore.bl_idname, text=f"MALLAS ORIGINALES ({remeshed})", icon="LOOP_BACK")
 
 
 class DSG_OT_CBCTAcceptFDI(Operator):
@@ -1993,6 +2197,8 @@ class DSG_OT_CBCTAcceptFDI(Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        from .blender.segmentation_finish import cancel_before_alignment
+        cancel_before_alignment()
         objects = dentition_objects()
         if not objects:
             self.report({"ERROR"}, "No hay dientes CBCT individualizados")
@@ -2387,8 +2593,6 @@ def draw_review(layout, context) -> None:
     if str(getattr(props, "status", "")):
         box.label(text=str(props.status)[:110])
 
-    draw_surface_smoothing(box, context)
-
     row = ui_style.secondary_action(box)
     row.operator(DSG_OT_CBCTToggleFDI.bl_idname, text="OCULTAR FDI" if props.labels_visible else "MOSTRAR FDI")
     edit = row.operator(DSG_OT_CBCTEditFDI.bl_idname, text="CORREGIR FDI")
@@ -2396,14 +2600,6 @@ def draw_review(layout, context) -> None:
     row2 = ui_style.tertiary_action(box)
     row2.operator(DSG_OT_CBCTDeleteTooth.bl_idname, text="MARCAR AUSENTE")
     row2.operator(DSG_OT_CBCTSwapArches.bl_idname, text="INTERCAMBIAR ARCOS")
-
-    improve = ui_style.primary_action(box)
-    improve.operator(
-        DSG_OT_CBCTImproveGeometry.bl_idname,
-        text="MEJORAR GEOMETRÍA",
-        icon="MOD_SMOOTH",
-    )
-    box.label(text="Selecciona un diente · ajuste subvoxel contra el CBCT original")
 
     arch_checked = bool(context.scene.get("DSG_cbct_arch_validation_checked", False))
     arch_source = str(context.scene.get("DSG_cbct_arch_validation_source", "NONE") or "NONE")
@@ -2453,7 +2649,6 @@ def draw_alignment_handoff(layout, context) -> None:
     box.label(text="FDI procedente del CBCT", icon_value=icon_manager.icon_id("status_ok" if accepted else "status_info"))
     box.label(text=f"{len(objects)} dientes · {'confirmado' if accepted else 'pendiente de revisión'}")
     box.label(text="El IOS se usa para alineamiento; no vuelve a numerar los dientes")
-    draw_surface_smoothing(box, context)
 
 
 class DSG_OT_InstallAIRuntime(Operator):
@@ -2515,7 +2710,9 @@ class DSG_OT_CopyPipelineDiagnostic(bpy.types.Operator):
         self.report({'INFO'},'Diagnóstico copiado')
         return {'FINISHED'}
 
+from .blender.segmentation_finish import CLASSES as _SEGMENTATION_FINISH_CLASSES
 CLASSES = (
+    *_SEGMENTATION_FINISH_CLASSES,
     DSGCBCTDentalProperties,
     DSG_OT_InstallAIRuntime,
     DSG_OT_AIStatusRefresh,
@@ -2530,6 +2727,8 @@ CLASSES = (
     DSG_OT_CBCTEditFDI,
     DSG_OT_CBCTSwapArches,
     DSG_OT_CBCTDeleteTooth,
+    DSG_OT_VoxelRemeshSegmented,
+    DSG_OT_VoxelRemeshRestore,
 )
 
 
@@ -2600,6 +2799,8 @@ def register():
         bpy.types.Scene.dsg_cbct_dental = PointerProperty(type=DSGCBCTDentalProperties)
         _SCENE_PROPERTY_OWNED = True
         cbct_post_smoothing.register_hooks()
+        from .blender import relationship_lines
+        relationship_lines.register()
         # IMPORTANT: do not touch bpy.data here. Blender/Mixar may still expose
         # _RestrictData while an add-on is being enabled. Existing-object
         # migration is performed by deferred_post_register() after normal
@@ -2640,6 +2841,8 @@ def deferred_post_register() -> bool:
 def unregister():
     global _SCENE_PROPERTY_OWNED, _DEFERRED_METADATA_MIGRATED
     cbct_post_smoothing.unregister_hooks()
+    from .blender import relationship_lines
+    relationship_lines.unregister()
     _DEFERRED_METADATA_MIGRATED = False
     if _SCENE_PROPERTY_OWNED and hasattr(bpy.types.Scene, "dsg_cbct_dental"):
         try:

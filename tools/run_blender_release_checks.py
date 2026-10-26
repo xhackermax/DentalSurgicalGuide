@@ -6,11 +6,10 @@ import tempfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-TESTS = ('test_surface_smoothing.py', 'test_post_segmentation_smoothing.py',
-         'test_workflow_history.py', 'test_history_beyond_native_limit.py',
-         'test_async_smoothing_undo.py', 'test_all_stage_history.py',
-         'test_modal_history.py', 'test_sleeve_operator_undo.py',
-         'test_mpr_image_history.py', 'test_pipeline_diagnostic.py')
+# Model-free Blender 5.2 cases that do not need an installed AI runtime.
+TESTS = ('test_runtime_status.py', 'test_pipeline_diagnostic.py',
+         'test_post_segmentation_smoothing.py', 'test_async_smoothing_undo.py',
+         'test_surface_smoothing.py')
 
 def main():
     parser = argparse.ArgumentParser()
@@ -21,8 +20,9 @@ def main():
     args = parser.parse_args()
     logs = (REPO / args.logs).resolve()
     logs.mkdir(parents=True, exist_ok=True)
-    archive = REPO / 'releases/v9.10.11/DSG_v9_10_11_BLENDER_5_2_PIPELINE_CONTRACTS_DIAGNOSTICS.zip'
-    cases = [('zip_install', REPO / 'tools/release_zip_smoke.py', str(archive)),
+    import build_addon_zip
+    archive = build_addon_zip.build(logs / 'zip', extension=False, license_id=None)
+    cases = [('zip_install', REPO / 'tools/release_zip_smoke.py', str(archive), str(REPO / 'dsg')),
              ('operators', REPO / 'tools/blender_smoke.py', str(REPO))]
     cases += [(Path(name).stem, REPO / 'dsg/tests_blender' / name, str(REPO)) for name in TESTS]
     if args.case:
@@ -30,8 +30,8 @@ def main():
         if not cases:
             parser.error('unknown case')
     failed = []
-    with tempfile.TemporaryDirectory(prefix='dsg9111-', ignore_cleanup_errors=True) as temp:
-        for name, script, argument in cases:
+    with tempfile.TemporaryDirectory(prefix='dsg-checks-', ignore_cleanup_errors=True) as temp:
+        for name, script, *arguments in cases:
             profile = Path(temp) / name
             env = dict(os.environ, BLENDER_USER_RESOURCES=str(profile),
                        BLENDER_USER_SCRIPTS=str(profile / 'scripts'))
@@ -40,7 +40,7 @@ def main():
             if args.vtk_site_packages:
                 library_path = str(Path(args.vtk_site_packages).resolve())
                 command += ['--python-expr', 'import sys; sys.path.append(' + repr(library_path) + ')']
-            command += ['--python', str(script), '--', argument]
+            command += ['--python', str(script), '--', *arguments]
             with log.open('w', encoding='utf-8') as stream:
                 process = subprocess.run(command,
                     cwd=REPO, env=env, stdout=stream, stderr=subprocess.STDOUT, timeout=600)

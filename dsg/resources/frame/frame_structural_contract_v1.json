@@ -1,6 +1,7 @@
 {
   "schema": "dsg.generative_frame.v1",
-  "contract_version": 2,
+  "contract_version": 3,
+  "dynamic_support_policy": {"minimum": 3, "maximum": 8, "identity_pattern": "P{index}", "legacy_four_support_template_only": true},
   "purpose": "Machine-readable structural context for MCP-assisted DSG frame analysis and generative reinforcement.",
   "support_nodes": [
     "P1",

@@ -1,5 +1,25 @@
 # Changelog
 
+## 9.24.17 — versión instalada en Blender 5.2
+
+El repositorio pasa de 9.10.11 a la copia de DSG instalada en Blender 5.2 del autor (`%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\dsg`, 20 de octubre de 2026). El historial 9.11–9.24 está en `dsg/docs/CHANGELOG.md` y en las notas de cada versión dentro de `dsg/docs/`.
+
+### Instalación de motores en Blender 5.2
+- Comprobado con los registros reales del equipo del autor (Windows, Blender 5.2, Python 3.13.13, RTX 2070): TotalSegmentator 2.18.0 y ToothSeg cargan sus checkpoints y hacen una pasada en GPU con PyTorch 2.14.1+cu126; DICOM y PyTorch quedan listos.
+- Corregido: en Windows, «DICOM + motores» terminaba siempre como `PARTIAL` con error porque intentaba U-Mamba2, que no puede instalarse en Windows. Ahora U-Mamba2 se marca `UNSUPPORTED` y la instalación termina `DONE`. En Linux no cambia nada.
+
+### Corregido
+- `bl_info` declaraba 9.24.14 mientras `version.py` decía 9.24.17. Blender mostraba una versión equivocada en Preferencias. `tests/test_version_ssot.py` lo detecta.
+
+### Comprobaciones del repositorio
+- `tools/verify_release.py` comprueba la versión y `dsg/BUILD_MANIFEST.json` en lugar del ZIP 9.10.11. Los archivos que difieren del manifest se listan como `DSG_MANIFEST_DRIFT`. En esta copia difieren 7 archivos de la celosía axial y `__init__.py`, `segmentation_install_worker.py` y `tests_pure/test_installer.py` (cambios de esta versión); hay 6 archivos nuevos que el manifest no lista.
+- `tools/run_checks.py` ejecuta los tests puros de `dsg/tests_pure` (uno por proceso) y el test de versión.
+- `tools/run_blender_release_checks.py` construye el ZIP desde el árbol y ejecuta los casos de Blender que no necesitan runtime IA. `tools/blender_smoke.py` ejecuta la inicialización diferida antes de buscar operadores sin registrar.
+
+### Pendiente (no forma parte de este cambio)
+- En Blender 5.2.3 (bpy, Linux) fallan 24 de 89 tests de `dsg/tests_blender`. Unos dependen de Windows o de tener los motores instalados (`test_engine_models`, `test_immediate_gate`); otros son de geometría o interfaz (por ejemplo `test_surface_smoothing` no encuentra el botón de suavizado en la revisión FDI inmediata).
+- `tests/` (raíz) conserva tests de 9.7 que importan módulos ya retirados (`engine_install`, `irrigation_network`).
+
 ## 9.10.11 — contratos y diagnóstico del pipeline
 
 Actualización desde el ZIP original del autor (8 de octubre de 2026).

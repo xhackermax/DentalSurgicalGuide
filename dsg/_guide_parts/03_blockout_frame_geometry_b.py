@@ -62,97 +62,9 @@ def _replace_mesh_data_preserve_object(obj, new_mesh):
 
 
 def create_implant_safety_halo(context, props, implant_obj):
-    """Create/reuse a longitudinal implant safety envelope.
+    from .blender.safety_volume import visible
+    return visible(context, props, implant_obj)
 
-    The former short platform ring is intentionally upgraded to span the full
-    implant body. Geometry is only a visual envelope; clinical clearance is
-    always measured from the real implant mesh to segmented teeth/BVH.
-    """
-    if not is_valid_implant_obj(implant_obj):
-        return None
-    implant_name = _safe_object_name(implant_obj) or ''
-    tooth_margin = max(0.0, float(getattr(
-        props, 'implant_tooth_clearance', IMPLANT_TOOTH_CLEARANCE_DEFAULT_MM)))
-    visual_margin = max(INTERIMPLANT_SAFETY_MARGIN_PER_IMPLANT_MM, tooth_margin)
-    implant_radius = get_implant_nominal_diameter_world(props, implant_obj) * 0.5
-    halo_radius = implant_radius + visual_margin
-    halo_height = max(
-        IMPLANT_SAFETY_ENVELOPE_MIN_HEIGHT_MM,
-        float(get_implant_length_world(props, implant_obj)))
-    center = get_implant_center_world(props, implant_obj)
-    axis = get_implant_axis_world(props, implant_obj)
-    if center is None or axis.length < 1e-8:
-        return None
-
-    existing = next((
-        halo for halo in get_implant_safety_halos()
-        if str(halo.get('DSG_implant_name', '') or '') == implant_name
-    ), None)
-
-    if _valid_obj(existing):
-        current_radius = float(existing.get('DSG_safety_envelope_radius_mm', -1.0) or -1.0)
-        current_height = float(existing.get('DSG_safety_envelope_height_mm', -1.0) or -1.0)
-        if abs(current_radius - halo_radius) > 1.0e-4 or abs(current_height - halo_height) > 1.0e-4:
-            mesh = make_cylinder_mesh(
-                _implant_safety_halo_name(implant_obj) + '_Mesh',
-                halo_radius, halo_height, verts=64)
-            _replace_mesh_data_preserve_object(existing, mesh)
-        existing.matrix_world = _matrix_along_local_z(center, axis)
-        world_matrix = existing.matrix_world.copy()
-        existing.parent = implant_obj
-        try:
-            existing.matrix_parent_inverse = implant_obj.matrix_world.inverted_safe()
-        except Exception:
-            existing.matrix_parent_inverse = implant_obj.matrix_world.inverted()
-        existing.matrix_world = world_matrix
-        try:
-            existing.hide_viewport = False
-            existing.hide_render = True
-            existing.hide_select = True
-            existing.hide_set(False)
-            existing.show_in_front = True
-        except Exception:
-            _DSG_LOG.debug("suppressed exception", exc_info=True)
-        existing['DSG_safety_margin_mm'] = float(visual_margin)
-        existing['DSG_tooth_clearance_margin_mm'] = float(tooth_margin)
-        existing['DSG_safety_envelope_radius_mm'] = float(halo_radius)
-        existing['DSG_safety_envelope_height_mm'] = float(halo_height)
-        existing['DSG_safety_envelope_longitudinal'] = True
-        return existing
-
-    mesh = make_cylinder_mesh(
-        _implant_safety_halo_name(implant_obj) + '_Mesh',
-        halo_radius, halo_height, verts=64)
-    halo = bpy.data.objects.new(_implant_safety_halo_name(implant_obj), mesh)
-    link_object(context, halo)
-    halo.matrix_world = _matrix_along_local_z(center, axis)
-    world_matrix = halo.matrix_world.copy()
-    halo.parent = implant_obj
-    try:
-        halo.matrix_parent_inverse = implant_obj.matrix_world.inverted_safe()
-    except Exception:
-        halo.matrix_parent_inverse = implant_obj.matrix_world.inverted()
-    halo.matrix_world = world_matrix
-    halo.display_type = 'WIRE'
-    halo.show_in_front = True
-    halo.hide_render = True
-    halo.hide_select = True
-    try:
-        halo.color = (0.10, 0.55, 1.0, 1.0)
-    except Exception:
-        _DSG_LOG.debug("suppressed exception", exc_info=True)
-    register_dsg_object(halo, ROLE_IMPLANT, halo.name, {
-        'DSG_implant_safety_halo': True,
-        'DSG_implant_name': str(implant_obj.name),
-        'DSG_safety_margin_mm': float(visual_margin),
-        'DSG_tooth_clearance_margin_mm': float(tooth_margin),
-        'DSG_min_interimplant_clearance_mm': float(INTERIMPLANT_MIN_CLEARANCE_MM),
-        'DSG_safety_envelope_radius_mm': float(halo_radius),
-        'DSG_safety_envelope_height_mm': float(halo_height),
-        'DSG_safety_envelope_longitudinal': True,
-        'DSG_safety_visual_only': True,
-    })
-    return halo
 
 def rebuild_implant_safety_halos(context, props):
     """Reuse one stable halo Object per implant instead of delete/recreate loops."""
@@ -808,7 +720,11 @@ def get_sleeve_matrix_world(props, implant_obj=None):
         if raw:
             values = json.loads(raw) if isinstance(raw, str) else raw
             if len(values) == 4 and all(len(row) == 4 for row in values):
-                return Matrix(values)
+                stored = Matrix(values)
+                loc, rot, _scale = stored.decompose()
+                # The physical sleeve dimensions come from clinical props.
+                # Preserve pose, never inherit arbitrary implant scaling.
+                return Matrix.LocRotScale(loc, rot, None)
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
 
@@ -819,7 +735,8 @@ def get_sleeve_matrix_world(props, implant_obj=None):
     gap = max(0.0, float(getattr(props, 'sleeve_implant_gap', 0.0)))
     shift = get_sleeve_occlusal_sign(props, implant) * (implant_len * 0.5 + gap + sleeve_h * 0.5)
     mx.translation = implant.matrix_world.to_translation() + axis * shift
-    return mx
+    loc, rot, _scale = mx.decompose()
+    return Matrix.LocRotScale(loc, rot, None)
 
 
 def get_sleeve_center_world(props, implant_obj=None):
@@ -2237,7 +2154,18 @@ def _frame_width_surface_bvh(context, surface_obj, cache):
         evaluated = surface_obj.evaluated_get(depsgraph)
         matrix = evaluated.matrix_world.copy()
         inverse = matrix.inverted()
-        tree = BVHTree.FromObject(evaluated, depsgraph)
+        try:
+            tree = BVHTree.FromObject(evaluated, depsgraph)
+        except Exception:
+            # 9.24.10: a model hidden in the current step is not evaluated by
+            # the depsgraph; its own mesh (no modifiers on DSG models) is used.
+            mesh = surface_obj.data
+            mesh.calc_loop_triangles()
+            tree = BVHTree.FromPolygons(
+                [v.co.copy() for v in mesh.vertices],
+                [tuple(t.vertices) for t in mesh.loop_triangles], all_triangles=True)
+            matrix = surface_obj.matrix_world.copy()
+            inverse = matrix.inverted()
         if tree is None:
             return None, None, None, 'could not build width-validation BVH'
         cache['width_bvh'] = tree

@@ -12,7 +12,7 @@ class InputError(DSGError):pass
 class EngineError(DSGError):pass
 class MeshingError(DSGError):pass
 
-VALID_COMPAT=frozenset(range(33))|{53,54,55}
+VALID_COMPAT=frozenset(range(33))|{53,54,55,56,57,58,59}
 SCHEMA_VERSION=1
 
 def _geometry(dims,spacing):
@@ -58,7 +58,7 @@ class Labelmap:
     counts:dict
     fdis:frozenset
     @classmethod
-    def parse(cls,data,dims,spacing,engine):
+    def parse(cls,data,dims,spacing,engine,*,require_teeth=True):
         dims,spacing=_geometry(dims,spacing)
         if data.shape!=dims or data.ndim!=3:raise ContractError('labelmap','dimensiones distintas del CBCT')
         if data.dtype not in (np.dtype('uint8'),np.dtype('uint16')):raise ContractError('labelmap','dtype inválido')
@@ -66,7 +66,9 @@ class Labelmap:
         values=set(int(v) for v in labels)
         if values-VALID_COMPAT:raise ContractError('labelmap','etiquetas fuera del contrato DSG',labels=sorted(values-VALID_COMPAT))
         fdis=frozenset(compat_to_fdi(v) for v in values if 1<=v<=32)
-        if not fdis:raise ContractError('labelmap','no produjo dientes individualizados')
+        if require_teeth and not fdis:raise ContractError('labelmap','no produjo dientes individualizados')
+        if not require_teeth and not ({53,54} & values):
+            raise ContractError('labelmap','SIMPLE_ARCHES no produjo maxila ni mandíbula')
         return cls(data,dims,spacing,str(engine),{int(k):int(v) for k,v in zip(labels,counts)},fdis)
     def summary(self):
         return {'dims_zyx':list(self.dims),'spacing_zyx':list(self.spacing_zyx),
@@ -77,18 +79,23 @@ class Labelmap:
 class ResultManifest:
     payload:dict
     @classmethod
-    def parse(cls,payload,expected_run_id=None):
+    def parse(cls,payload,expected_run_id=None,*,require_teeth=True,expected_route_mode=None):
         if payload.get('schema_version')!=SCHEMA_VERSION:raise ContractError('manifest','versión incompatible; vuelve a ejecutar la segmentación')
         run_id=payload.get('run_id','')
         if not isinstance(run_id,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',run_id):raise ContractError('manifest','run_id inválido')
         if expected_run_id and run_id!=expected_run_id:raise ContractError('manifest','resultado de otra ejecución')
         if payload.get('status') not in ('OK','ERROR'):raise ContractError('manifest','estado inválido')
+        if expected_route_mode is not None and str(payload.get('route_mode','FULL')).upper()!=str(expected_route_mode).upper():
+            raise ContractError('manifest','resultado de otra ruta clínica')
         if payload['status']=='OK':
             contract=payload.get('labelmap_contract')
             if not isinstance(contract,dict):raise ContractError('manifest','falta el contrato del labelmap')
             dims=contract.get('dims_zyx',[]);labels=contract.get('labels',[])
             if len(dims)!=3 or any(type(v)!=int or v<=0 for v in dims):raise ContractError('manifest','dimensiones inválidas')
             if contract.get('dtype') not in ('uint8','uint16') or not labels or any(type(v)!=int or v not in VALID_COMPAT for v in labels):raise ContractError('manifest','labels o dtype inválidos')
-            if not any(1<=v<=32 for v in labels):raise ContractError('manifest','no produjo dientes individualizados')
+            if require_teeth and not any(1<=v<=32 for v in labels):
+                raise ContractError('manifest','no produjo dientes individualizados')
+            if not require_teeth and not any(v in (53,54) for v in labels):
+                raise ContractError('manifest','SIMPLE_ARCHES no produjo maxila ni mandíbula')
             if not isinstance(payload.get('normalized_labels_path'),str) or not payload['normalized_labels_path']:raise ContractError('manifest','falta el archivo de labels')
         return cls(payload)

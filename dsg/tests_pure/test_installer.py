@@ -77,13 +77,26 @@ class InstallerTests(unittest.TestCase):
             req = {"runtime_root": tmp, "site_packages": tmp + "/site", "engine": "ALL"}
             request = Path(tmp) / "request.json"
             request.write_text(json.dumps(req))
-            with patch.object(sys, "argv", ["installer", str(request)]), patch.object(worker, "install_totalseg"), patch.object(worker, "install_toothseg"), patch.object(worker, "install_umamba2", side_effect=RuntimeError("unsupported")):
+            with patch.object(sys, "argv", ["installer", str(request)]), patch.object(worker, "UNSUPPORTED_ENGINES", frozenset()), patch.object(worker, "install_totalseg"), patch.object(worker, "install_toothseg"), patch.object(worker, "install_umamba2", side_effect=RuntimeError("unsupported")):
                 worker.main()
             status = json.loads((Path(tmp) / "install_status.json").read_text())
             self.assertEqual(status["phase"], "PARTIAL")
             self.assertFalse(status["running"])
             self.assertEqual(status["detail"]["engines"]["TOOTHSEG"]["status"], "READY")
             self.assertEqual(status["detail"]["engines"]["UMAMBA2"]["status"], "ERROR")
+
+    def test_all_install_skips_engine_unsupported_on_platform(self):
+        # Windows cannot build the U-Mamba2 kernels; "ALL" must still end DONE.
+        with tempfile.TemporaryDirectory() as tmp:
+            req = {"runtime_root": tmp, "site_packages": tmp + "/site", "engine": "ALL"}
+            with patch.object(worker, "UNSUPPORTED_ENGINES", frozenset({"UMAMBA2"})), patch.object(worker, "install_totalseg"), patch.object(worker, "install_toothseg"), patch.object(worker, "install_umamba2") as umamba:
+                worker._install_request(req)
+            umamba.assert_not_called()
+            status = json.loads((Path(tmp) / "install_status.json").read_text())
+            self.assertEqual(status["phase"], "DONE")
+            self.assertEqual(status["error"], "")
+            self.assertEqual(status["detail"]["engines"]["UMAMBA2"]["status"], "UNSUPPORTED")
+            self.assertEqual(status["detail"]["engines"]["TOTALSEG"]["status"], "READY")
 
 if __name__ == "__main__":
     unittest.main()

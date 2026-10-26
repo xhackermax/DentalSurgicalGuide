@@ -339,3 +339,8 @@ Deuda y diferencias que siguen siendo reales:
 El historial archivado requiere modo Object y una única escena; Edit y varias escenas usan el historial nativo. Instalar paquetes o exportar archivos externos no se deshace con Ctrl+Z. La recuperación no recrea estados anteriores a la instalación de esta función. Los checkpoints y arrays se guardan en `scripts/dsg_history`; ver el README antes de mover un caso a otro equipo.
 
 Los algoritmos de suavizado y sus parámetros no se cambian por añadir este mapa. La geometría suavizada y la original se gestionan en `cbct_post_smoothing.py`; el cálculo vive en `cbct_post_smoothing_worker.py`, `surface_smoothing.py` y `surface_nets_geometry.py`.
+
+
+## Axial radial web V2 (2026-10-21)
+
+The Optimize Frame action now dispatches to `blender/axial_web_pipeline.py` for new snapshots. See `docs/AXIAL_RADIAL_WEB.md`. The V1 worker and review paths remain available for their original requests. `axial_radial_web.py` builds the shared distance graph, `blender/axial_design_sheet.py` constructs the IOS-guided extrados, `axial_capsule.py` and `blender/axial_implicit_web.py` form the shared volume, and `blender/axial_web_mesh.py` verifies the final geometry. `axial_web_contract.py` binds the inputs, artifacts and receipts.

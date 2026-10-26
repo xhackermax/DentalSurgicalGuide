@@ -19,6 +19,8 @@ with tempfile.TemporaryDirectory() as td:
     mesh.from_pydata([(-1,-1,-1),(1,-1,-1),(1,1,-1),(-1,1,-1),(-1,-1,1),(1,-1,1),(1,1,1),(-1,1,1)],[],[(0,3,2,1),(4,5,6,7),(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7)])
     obj=bpy.data.objects.new('UndoTooth',mesh);bpy.context.scene.collection.objects.link(obj)
     obj['DSG_tooth_instance']=True;obj['DSG_universal_label']=8;obj['DSG_fdi_number']=11
+    bpy.context.preferences.edit.use_global_undo=True
+    bpy.ops.ed.undo_push(message='Before async smoothing')
     source_hash=post.mesh_hash(mesh);raw=alignment._mesh_graph_from_objects([obj]).points.copy()
     history.begin(bpy.context,'Suavizar dientes');snapshot=post.snapshot_object(obj)
     root=Path(td);v,f=post.mesh_arrays(mesh);np.save(root/'v.npy',v*.95);np.save(root/'f.npy',f)

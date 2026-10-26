@@ -152,6 +152,8 @@ def close_open_dental_model_base(context, source_obj, perimeter_obj=None):
     source_obj[OPEN_MODEL_BACKUP_FLAG] = True
     source_obj['DSG_closed_model_name'] = CLOSED_MODEL_NAME
     closed[CLOSED_MODEL_ACCEPTED_FLAG] = True
+    if bool(source_obj.get('dental_suite_aligned', False)):
+        closed['dental_suite_aligned'] = True
     closed[EXTERNAL_CLOSED_MODEL_FLAG] = False
     register_dsg_object(closed, ROLE_MODEL, CLOSED_MODEL_NAME)
     _set_obj_hidden(source_obj, True, selectable_when_visible=False)
@@ -229,10 +231,10 @@ class DSG_OT_AcceptClosedIOSModel(Operator):
 
 class DSG_OT_CloseModelBase(Operator):
     bl_idname = 'dsg.close_model_base'
-    bl_label = 'Close Model Base Automatically'
+    bl_label = 'Crear modelo cerrado'
     bl_description = (
-        'After the scan-hole review, duplicates the scan and adds only basal '
-        'walls and a cap. Tooth vertices are locked; no remesh is used')
+        'Reviews and closes safe scan holes when needed, then creates the closed '
+        'model with basal walls and a cap. Original dental anatomy is preserved')
     bl_options = {'REGISTER', 'UNDO'}
 
     use_drawn_perimeter: BoolProperty(
@@ -255,10 +257,34 @@ class DSG_OT_CloseModelBase(Operator):
                     'No valid visible perimeter is available',
                     'No hay un perímetro visible válido')
                 return {'CANCELLED'}
+        from .blender import progress_overlay
+        # One user action, using the same two existing operations in clinical order.
+        # Already reviewed holes and already closed IOS models need no repair pass.
+        if (not bool(model.get(SCAN_HOLES_PROCESSED_FLAG, False))
+                and not _workflow_closed_boundary_passes(get_model_topology_report_cached(model))):
+            progress_overlay.begin(context, 'Cerrando agujeros seguros')
+            try:
+                result = bpy.ops.dsg.close_scan_holes('EXEC_DEFAULT')
+                if 'FINISHED' not in result:
+                    progress_overlay.end(False, 'No se pudieron revisar los agujeros')
+                    return {'CANCELLED'}
+                # Hole closure may create a repaired copy; base creation must use it.
+                model = props.model_obj
+                if not _valid_obj(model):
+                    raise RuntimeError('No se encontró el modelo tras revisar los agujeros')
+            except Exception as exc:
+                progress_overlay.end(False, str(exc))
+                _dsg_report(self, {'ERROR'},
+                            f'Safe scan-hole closure failed: {exc}',
+                            f'No se pudo crear el modelo cerrado: {exc}')
+                return {'CANCELLED'}
+            progress_overlay.end(True, 'Agujeros revisados')
+        progress_overlay.begin(context, 'Modelo cerrado')
         try:
             closed, report = close_open_dental_model_base(
                 context, model, perimeter_obj=perimeter)
         except Exception as exc:
+            progress_overlay.end(False, str(exc))
             _dsg_report(
                 self, {'ERROR'},
                 f'Anatomy-safe base closure failed: {exc}',
@@ -268,6 +294,7 @@ class DSG_OT_CloseModelBase(Operator):
         closed[CLOSED_MODEL_ACCEPTED_FLAG] = True
         closed[EXTERNAL_CLOSED_MODEL_FLAG] = False
         props.model_obj = closed
+        progress_overlay.end(True, 'Modelo cerrado listo' if report.get('solid') else 'Procesado · solidez no verificada')
         _remove_retention_previews()
         _clear_retention_geometry_cache()
         _clear_model_topology_cache()
@@ -2101,7 +2128,7 @@ def _irrigation_sample_tangent(samples, index):
 
 
 def irrigation_model_cut_preflight(context, entry, props, passive_model=None,
-                                   label='irrigation'):
+                                   label='irrigation', *, _model_tree=None, _model_solid_report=None):
     """Preflight the exact irrigation water lumen against the passive model.
 
     The blocker is deliberately based on the water passage, not on the whole
@@ -2133,7 +2160,7 @@ def irrigation_model_cut_preflight(context, entry, props, passive_model=None,
         }
 
     try:
-        model_tree = _build_world_surface_bvh(context, model)
+        model_tree = _model_tree if _model_tree is not None else _build_world_surface_bvh(context, model)
     except Exception:
         model_tree = None
     if model_tree is None:
@@ -2163,7 +2190,7 @@ def irrigation_model_cut_preflight(context, entry, props, passive_model=None,
     retained_wall_guard = max(lumen_guard, min(0.18, final_voxel * 0.90))
 
     try:
-        model_solid_report = get_mesh_solid_report(model, max_polygons=500000)
+        model_solid_report = _model_solid_report if _model_solid_report is not None else get_mesh_solid_report(model, max_polygons=500000)
     except Exception:
         model_solid_report = {'checked': False, 'solid': False}
     inside_checks_enabled = bool(

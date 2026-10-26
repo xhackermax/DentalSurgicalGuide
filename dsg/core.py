@@ -50,6 +50,7 @@ VALID_STAGES = {STAGE_DICOM, STAGE_ALIGNMENT, STAGE_GUIDE}
 ROLE_DICOM_TEETH = "DICOM_TEETH"
 ROLE_DICOM_BONE = "DICOM_BONE"
 ROLE_DICOM_MANDIBULAR_CANAL = "DICOM_MANDIBULAR_CANAL"
+ROLE_DICOM_UPPER_CAVITY = 'DICOM_UPPER_CAVITY'
 ROLE_DICOM_ALIGNMENT_COMPOSITE = "DICOM_ALIGNMENT_COMPOSITE"
 ROLE_IOS_SCAN = "IOS_SCAN"
 ROLE_IOS_ALIGNED = "IOS_ALIGNED"
@@ -395,6 +396,7 @@ def _is_dicom_related_object(obj) -> bool:
         ROLE_DICOM_TEETH,
         ROLE_DICOM_BONE,
         ROLE_DICOM_MANDIBULAR_CANAL,
+        ROLE_DICOM_UPPER_CAVITY,
         ROLE_DICOM_ALIGNMENT_COMPOSITE,
     }:
         return True
@@ -457,11 +459,38 @@ def prepare_guide_entry_view(context, ios=None) -> None:
                 _DSG_LOG.debug("suppressed exception", exc_info=True)
 
 
+_DANGER_ZONES_BEFORE_ALIGNMENT = "DSG_danger_zones_shown_before_alignment"
+
+
+def _sync_danger_zones_for_stage(scene, stage: str) -> None:
+    """Sinus and nasal zones are hidden while aligning (they cover the teeth
+    used for the 3 points) and come back as they were afterwards."""
+    if not hasattr(scene, "dsg_show_danger_zones"):
+        return
+    try:
+        if stage == STAGE_ALIGNMENT:
+            if _DANGER_ZONES_BEFORE_ALIGNMENT not in scene:
+                scene[_DANGER_ZONES_BEFORE_ALIGNMENT] = bool(scene.dsg_show_danger_zones)
+            if scene.dsg_show_danger_zones:
+                scene.dsg_show_danger_zones = False
+            else:
+                from .blender import upper_cavity_safety
+                for zone in upper_cavity_safety.objects(scene):
+                    zone.hide_set(True)
+        elif _DANGER_ZONES_BEFORE_ALIGNMENT in scene:
+            previous = bool(scene.pop(_DANGER_ZONES_BEFORE_ALIGNMENT))
+            if previous != bool(scene.dsg_show_danger_zones):
+                scene.dsg_show_danger_zones = previous
+    except Exception:
+        _DSG_LOG.debug("danger zone visibility not synced", exc_info=True)
+
+
 def set_stage(scene, stage: str) -> None:
     stage = str(stage).upper()
     if stage not in VALID_STAGES:
         stage = STAGE_DICOM
     scene[SUITE_STAGE_KEY] = stage
+    _sync_danger_zones_for_stage(scene, stage)
 
     # Shared handoff pointers. Roles remain the durable fallback when scenes are reopened.
     if stage == STAGE_ALIGNMENT:
@@ -1132,7 +1161,7 @@ def capture_dicom_route_checkpoint(context):
         # Viewer/volume helpers are reproducible from RUNTIME and may be huge;
         # checkpoint only generated clinical meshes.
         role = role_of(obj)
-        if role not in {ROLE_DICOM_TEETH, ROLE_DICOM_BONE, ROLE_DICOM_MANDIBULAR_CANAL, ROLE_DICOM_ALIGNMENT_COMPOSITE}:
+        if role not in {ROLE_DICOM_TEETH, ROLE_DICOM_BONE, ROLE_DICOM_MANDIBULAR_CANAL, ROLE_DICOM_UPPER_CAVITY, ROLE_DICOM_ALIGNMENT_COMPOSITE}:
             continue
         clone = obj.copy(); clone.data = obj.data.copy()
         clone[DICOM_ROUTE_CHECKPOINT_SOURCE] = str(obj.name)
@@ -1171,7 +1200,7 @@ def restore_dicom_route_checkpoint(context):
     for obj in list(scene.objects):
         if any(getattr(col, "name", "") == DICOM_ROUTE_CHECKPOINT_COLLECTION for col in getattr(obj, "users_collection", ())):
             continue
-        if getattr(obj, "type", None) == "MESH" and role_of(obj) in {ROLE_DICOM_TEETH, ROLE_DICOM_BONE, ROLE_DICOM_MANDIBULAR_CANAL, ROLE_DICOM_ALIGNMENT_COMPOSITE}:
+        if getattr(obj, "type", None) == "MESH" and role_of(obj) in {ROLE_DICOM_TEETH, ROLE_DICOM_BONE, ROLE_DICOM_MANDIBULAR_CANAL, ROLE_DICOM_UPPER_CAVITY, ROLE_DICOM_ALIGNMENT_COMPOSITE}:
             _remove_object_and_data(obj)
     col = bpy.data.collections.get(DICOM_ROUTE_CHECKPOINT_COLLECTION)
     if col is not None:
@@ -1247,6 +1276,124 @@ class DSG_SUITE_OT_StartSimpleRoute(Operator):
         return {"FINISHED"}
 
 
+def alignment_ios_candidates(source=None) -> list:
+    """Both intraoral scans (the moving IOS and its antagonist), source first."""
+    result = [source] if source is not None and getattr(source, "type", None) == "MESH" else []
+    for obj in antagonist_objects(source):
+        if obj not in result and obj.name in bpy.data.objects:
+            result.append(obj)
+    return result
+
+
+def _ios_arch_label(scene, obj) -> str:
+    hint = str(obj.get("DSG_ios_arch_hint", "") or "").upper()
+    if hint == "MAXILLA":
+        return tr(scene, "UPPER", "SUPERIOR")
+    if hint == "MANDIBLE":
+        return tr(scene, "LOWER", "INFERIOR")
+    return obj.name
+
+
+def _show_only_alignment_ios(context, props):
+    """Simple route: the 3-point step starts with only the two IOS on screen.
+
+    The coloured CBCT arches and the DICOM viewer stay hidden; the clinician
+    chooses which IOS is aligned (panel buttons or by selecting it) and the
+    picker then swaps to the CBCT composite for the second set of points.
+    """
+    source = getattr(props, "icp_source_obj", None) if props is not None else None
+    if source is None or source.name not in context.view_layer.objects:
+        return
+    keep = set(alignment_ios_candidates(source))
+    for item in list(context.view_layer.objects):
+        try:
+            if item in keep or item.type not in {"MESH", "CURVE", "FONT", "VOLUME", "POINTCLOUD", "EMPTY"}:
+                continue
+            if not item.hide_get():
+                item.hide_set(True)
+        except Exception:
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
+    for item in keep:
+        try:
+            if item.name in context.view_layer.objects:
+                item.hide_viewport = False
+                item.hide_set(False)
+        except Exception:
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
+    try:
+        for item in context.selected_objects:
+            item.select_set(False)
+        source.select_set(True)
+        context.view_layer.objects.active = source
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
+
+
+def set_alignment_ios(context, obj) -> bool:
+    """Make ``obj`` the IOS that moves in the alignment; the other becomes antagonist."""
+    from . import alignment_module
+    scene = context.scene
+    props = getattr(scene, "dicp_props", None)
+    if props is None or obj is None or getattr(obj, "type", None) != "MESH":
+        return False
+    previous = getattr(props, "icp_source_obj", None)
+    if previous is obj:
+        return True
+    if bool(getattr(props, "aligned", False)):
+        return False
+    for item in alignment_ios_candidates(previous) + [obj]:
+        try:
+            if item.parent is not None and item.parent in {previous, obj}:
+                world = item.matrix_world.copy()
+                item.parent = None
+                item.matrix_world = world
+            for key in ("DSG_antagonist_follows_ios", "DSG_antagonist_source"):
+                if key in item:
+                    del item[key]
+        except Exception:
+            _DSG_LOG.debug("suppressed exception", exc_info=True)
+    if previous is not None and previous.name in bpy.data.objects:
+        set_role(previous, ROLE_IOS_ANTAGONIST, rename=False)
+        previous["DSG_antagonist_arch_hint"] = str(previous.get("DSG_ios_arch_hint", "") or "")
+    set_role(obj, ROLE_IOS_SCAN, rename=False)
+    obj["DSG_dental_identity_source"] = "CBCT"
+    if "DSG_antagonist_arch_hint" in obj:
+        del obj["DSG_antagonist_arch_hint"]
+    bind_antagonists_to_source(obj)
+    props.icp_source_obj = obj
+    try:
+        alignment_module._clear_landmark_values(props)
+        alignment_module._clear_markers()
+        props.original_source_matrix = ""
+        props.original_source_name = ""
+        props.ios_source_filepath = str(obj.get("dental_suite_source_path", "") or "")
+        alignment_module.ensure_ios_gray_material(obj, context=context)
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
+    hint = str(obj.get("DSG_ios_arch_hint", "") or "").upper()
+    if hint in {"MAXILLA", "MANDIBLE"}:
+        scene["DSG_active_arch"] = hint
+    _show_only_alignment_ios(context, props)
+    return True
+
+
+class DSG_SUITE_OT_ChooseAlignmentIOS(Operator):
+    bl_idname = "dsg_suite.choose_alignment_ios"
+    bl_label = "IOS a alinear"
+    bl_description = "Elige qué escaneado intraoral se alinea con el CBCT; el otro queda como antagonista"
+    bl_options = {"REGISTER", "UNDO"}
+
+    object_name: bpy.props.StringProperty(default="")
+
+    def execute(self, context):
+        obj = bpy.data.objects.get(self.object_name)
+        if not set_alignment_ios(context, obj):
+            self.report({"ERROR"}, tr(context.scene, "Could not change the IOS to align.", "No se pudo cambiar el IOS a alinear."))
+            return {"CANCELLED"}
+        self.report({"INFO"}, tr(context.scene, f"IOS to align: {obj.name}", f"IOS a alinear: {obj.name}"))
+        return {"FINISHED"}
+
+
 class DSG_SUITE_OT_ConfirmSimpleSTL(Operator):
     bl_idname = "dsg_suite.confirm_simple_stl"
     bl_label = "Confirmar arcadas y alinear"
@@ -1254,6 +1401,8 @@ class DSG_SUITE_OT_ConfirmSimpleSTL(Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
+        from .blender.segmentation_finish import cancel_before_alignment
+        cancel_before_alignment()
         scene = context.scene
         upper = bpy.data.objects.get(str(scene.get("DSG_simple_upper_object", "") or ""))
         lower = bpy.data.objects.get(str(scene.get("DSG_simple_lower_object", "") or ""))
@@ -1267,6 +1416,7 @@ class DSG_SUITE_OT_ConfirmSimpleSTL(Operator):
             props.icp_target_obj = reference
         set_stage(scene, STAGE_ALIGNMENT)
         scene[ROUTE_STEP_KEY] = "ALIGNMENT"
+        _show_only_alignment_ios(context, props)
         try: bpy.ops.ed.undo_push(message="DSG · Arcadas confirmadas · alineamiento")
         except Exception: _DSG_LOG.debug("suppressed exception", exc_info=True)
         self.report({"INFO" if imported else "WARNING"}, f"Arcadas confirmadas · {message}")
@@ -1372,6 +1522,8 @@ class DSG_SUITE_OT_StartImmediateRoute(Operator):
             self.report({"WARNING"}, "Implante inmediato ya se está iniciando")
             return {"CANCELLED"}
 
+        previous_route = clinical_route(scene)
+        previous_step = str(scene.get(ROUTE_STEP_KEY, "CBCT_READY") or "CBCT_READY")
         capture_dicom_route_checkpoint(context)
 
         # Lock synchronously, but DO NOT enter the heavy segmentation operator
@@ -1396,20 +1548,27 @@ class DSG_SUITE_OT_StartImmediateRoute(Operator):
             _DSG_LOG.debug("suppressed exception", exc_info=True)
 
         scene_name = str(scene.name)
+        from . import lifecycle, workflow_history
+        launch_undo_epoch = workflow_history._UNDO_EPOCH
 
         def _deferred_launch():
             global _IMMEDIATE_ROUTE_EXECUTING
+            if workflow_history._UNDO_EPOCH != launch_undo_epoch:
+                _IMMEDIATE_ROUTE_EXECUTING = False
+                return None
             target_scene = bpy.data.scenes.get(scene_name)
             if target_scene is None:
                 _IMMEDIATE_ROUTE_EXECUTING = False
                 return None
+            retry_pending = False
             try:
                 # Revalidate the volume immediately before the expensive call.
                 from . import dicom_module
                 if not bool(dicom_module.RUNTIME.is_loaded()):
                     raise RuntimeError("El CBCT ya no está cargado")
                 if bool(getattr(dicom_module.RUNTIME, "update_lock", False)):
-                    # One more UI tick rather than competing with DICOM updates.
+                    # Keep the re-entry lock for the entire deferred retry.
+                    retry_pending = True
                     return 0.20
                 if bool(dicom_module.semantic_workflow_busy()):
                     raise RuntimeError("Ya hay una segmentación CBCT en curso")
@@ -1425,16 +1584,17 @@ class DSG_SUITE_OT_StartImmediateRoute(Operator):
                 except Exception:
                     _DSG_LOG.debug("suppressed exception", exc_info=True)
             except Exception as exc:
-                target_scene[ROUTE_STEP_KEY] = "CBCT_READY"
+                target_scene[ROUTE_STEP_KEY] = previous_step
                 target_scene[IMMEDIATE_GATE_ARMED_KEY] = False
                 try:
-                    target_scene.dsg_suite_settings.workflow_route = ROUTE_SIMPLE
+                    target_scene.dsg_suite_settings.workflow_route = previous_route
                     target_scene.dicom_wizard_pro.status = f"Error: {exc}"
                 except Exception:
                     _DSG_LOG.debug("suppressed exception", exc_info=True)
                 print(f"[DSG 9.2.71] Immediate launch cancelled: {exc}")
             finally:
-                _IMMEDIATE_ROUTE_EXECUTING = False
+                if not retry_pending:
+                    _IMMEDIATE_ROUTE_EXECUTING = False
                 try:
                     for window in bpy.context.window_manager.windows:
                         if window.screen:
@@ -1445,7 +1605,14 @@ class DSG_SUITE_OT_StartImmediateRoute(Operator):
             return None
 
         # Deliberate short defer: the click handler returns immediately.
-        bpy.app.timers.register(_deferred_launch, first_interval=0.25)
+        try:
+            lifecycle.register_timer(_deferred_launch, first_interval=0.25)
+        except Exception as exc:
+            _IMMEDIATE_ROUTE_EXECUTING = False
+            scene.dsg_suite_settings.workflow_route = previous_route
+            scene[ROUTE_STEP_KEY] = previous_step
+            self.report({"ERROR"}, f"No se pudo programar implante inmediato: {exc}")
+            return {"CANCELLED"}
         self.report({"INFO"}, "Implante inmediato · arranque seguro programado")
         return {"FINISHED"}
 
@@ -1547,6 +1714,7 @@ class DSG_SUITE_OT_FixImmediateExtractionSelection(Operator):
             scene.dsg_suite_settings.target_fdi = str(fdis[0])
         except Exception:
             scene[TARGET_FDI_KEY] = int(fdis[0])
+        scene[ROUTE_STEP_KEY] = "IMMEDIATE_SELECT_TEETH"
         self.report({"INFO"}, "Dientes fijados para extracción: FDI " + ", ".join(map(str, fdis)))
         return {"FINISHED"}
 
@@ -1618,11 +1786,21 @@ class DSG_SUITE_OT_BuildImmediateArchModels(Operator):
 
 class DSG_SUITE_OT_ConfirmImmediateModels(Operator):
     bl_idname = "dsg_suite.confirm_immediate_models"
-    bl_label = "Confirmar y alinear"
+    bl_label = "Confirmar"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
         scene = context.scene
+        if str(scene.get(ROUTE_STEP_KEY, "")) in {"IMMEDIATE_FDI_REVIEW", "IMMEDIATE_SELECT_TEETH"}:
+            from .blender.segmentation_finish import cancel_before_alignment
+            cancel_before_alignment()
+            try:
+                built = bpy.ops.dsg_suite.build_immediate_arch_models()
+            except RuntimeError as exc:
+                self.report({'ERROR'}, str(exc))
+                return {'CANCELLED'}
+            if built != {'FINISHED'}:
+                return {'CANCELLED'}
         upper_name = str(scene.get("DSG_immediate_upper_composite", "") or "")
         lower_name = str(scene.get("DSG_immediate_lower_composite", "") or "")
         upper = bpy.data.objects.get(upper_name) if upper_name else None
@@ -1935,12 +2113,23 @@ class DSG_SUITE_OT_PrepareIOSPostExtraction(Operator):
                 int(obj.get("DSG_fdi_number", 0) or 0) for obj in neighbours
                 if int(obj.get("DSG_fdi_number", 0) or 0) > 0
             ]
+            # DSG v9: crop IOS and jaw once around the teeth; all attempts reuse it.
+            search_started = time.perf_counter()
+            focus = list(teeth) + list(neighbours)
+            ios_proxy, face_map = common_surface_match.build_local_proxy(
+                preview, focus, name="__DSG_ios_local_proxy")
+            if ios_proxy is None:
+                raise RuntimeError("el IOS no tiene superficie cerca de los dientes seleccionados")
+            bone_proxy, _bone_map = common_surface_match.build_local_proxy(
+                jaw_bone, focus, name="__DSG_bone_local_proxy") if jaw_bone is not None else (None, None)
+            search_ios = ios_proxy
+            search_bone = bone_proxy
             try:
                 common_result = common_surface_match.select_anatomy_locked_ios_seed(
-                    preview, teeth,
+                    search_ios, teeth,
                     distance_mm=max(common_surface_match.LEGACY_COMPATIBLE_DISTANCE_MM, distance_mm),
                     max_components=len(fdis), competitor_teeth=neighbours,
-                    bone_guard=jaw_bone,
+                    bone_guard=search_bone,
                 )
                 if int(common_result.get("selected_count", 0) or 0) < common_surface_match.MIN_SELECTED_FACES:
                     raise RuntimeError("la frontera anatómica mesial/distal es insuficiente")
@@ -1951,10 +2140,10 @@ class DSG_SUITE_OT_PrepareIOSPostExtraction(Operator):
                 # still rejects faces won by the selected FDI neighbours.
                 try:
                     common_result = common_surface_match.select_anatomy_locked_ios_seed(
-                        preview, teeth,
+                        search_ios, teeth,
                         distance_mm=min(1.34, max(1.02, distance_mm * 1.18)),
                         max_components=len(fdis), competitor_teeth=neighbours,
-                        bone_guard=jaw_bone,
+                        bone_guard=search_bone,
                         contact_margin_mm=0.10, minimum_normal_angle_deg=80.0,
                         sample_coverage=0.50, curvature_tie_limit=0.055,
                     )
@@ -1967,10 +2156,10 @@ class DSG_SUITE_OT_PrepareIOSPostExtraction(Operator):
                     # mesial/distal ownership.
                     try:
                         common_result = common_surface_match.select_anatomy_locked_ios_seed(
-                            preview, teeth,
+                            search_ios, teeth,
                             distance_mm=min(1.48, max(1.16, distance_mm * 1.32)),
                             max_components=len(fdis), competitor_teeth=neighbours,
-                            bone_guard=jaw_bone,
+                            bone_guard=search_bone,
                             contact_margin_mm=0.08, minimum_normal_angle_deg=86.0,
                             sample_coverage=0.40, curvature_tie_limit=0.075,
                         )
@@ -1983,13 +2172,13 @@ class DSG_SUITE_OT_PrepareIOSPostExtraction(Operator):
                         # matcher receives competitor teeth and is forbidden from
                         # re-growing into a neighbouring crown.
                         common_result = common_surface_match.select_common_ios_surface(
-                            preview, teeth,
+                            search_ios, teeth,
                             distance_mm=min(1.22, max(1.00, distance_mm * 1.12)),
                             normal_angle_deg=min(66.0, common_surface_match.DEFAULT_NORMAL_ANGLE_DEG + 9.0),
                             score_threshold=max(0.52, common_surface_match.DEFAULT_SCORE_THRESHOLD - 0.08),
                             max_components=len(fdis), competitor_teeth=neighbours,
                             competitor_margin_mm=0.08,
-                            bone_guard=jaw_bone,
+                            bone_guard=search_bone,
                         )
                         common_result["anatomy_locked_safe_failure"] = str(safe_exc)
                         common_result["anatomy_locked_relaxed_failure"] = str(relaxed_exc)
@@ -2001,12 +2190,32 @@ class DSG_SUITE_OT_PrepareIOSPostExtraction(Operator):
             common_result["competitor_fdis"] = neighbour_fdis
             common_result["competitor_names"] = [obj.name for obj in neighbours]
             common_result["bone_guard_name"] = str(jaw_bone.name) if jaw_bone is not None else ""
+            common_surface_match.remap_result_to_source(common_result, face_map)
+            common_result["search_seconds"] = round(time.perf_counter() - search_started, 3)
+            common_result["ios_faces_total"] = int(len(preview.data.polygons))
             selected_faces, selected_vertices = common_surface_match.apply_common_surface_selection(
                 preview, common_result)
+            common_surface_match.write_scores(preview.data, common_result.get("scores", {}))
         except Exception as exc:
-            bpy.data.objects.remove(preview, do_unlink=True)
-            self.report({"ERROR"}, "No se detectó una superficie común IOS–CBCT fiable; revisa primero el alineamiento: " + str(exc))
-            return {"CANCELLED"}
+            # DSG v9: no visible crown is a valid clinical case (root remnant or a
+            # tooth partly covered by gingiva). Keep the copy with no selection;
+            # APLICAR + CERRAR then subtracts the CBCT tooth from the closed IOS.
+            _DSG_LOG.warning("Superficie común no encontrada; modo resto radicular: %s", exc)
+            for collection in (preview.data.polygons, preview.data.edges, preview.data.vertices):
+                collection.foreach_set("select", [False] * len(collection))
+            common_result = {
+                "selection_mode": "ROOT_REMNANT_DIRECT_BOOLEAN", "selected_count": 0,
+                "p95_distance_mm": 0.0, "competitor_fdis": [], "reason": str(exc),
+            }
+            preview["DSG_common_surface_stats"] = json.dumps(common_result, ensure_ascii=False)
+            selected_faces = selected_vertices = 0
+        finally:
+            for proxy in (locals().get("ios_proxy"), locals().get("bone_proxy")):
+                try:
+                    from . import common_surface_match as _csm
+                    _csm.remove_local_proxy(proxy)
+                except Exception:
+                    _DSG_LOG.debug("suppressed exception", exc_info=True)
 
         source.hide_set(True)
         source.hide_render = True
@@ -2024,6 +2233,12 @@ class DSG_SUITE_OT_PrepareIOSPostExtraction(Operator):
         bpy.ops.object.mode_set(mode="EDIT")
         bpy.ops.mesh.select_mode(type="FACE")
         selection_mode = str(common_result.get("selection_mode", "PRECISE_GEOMATCH"))
+        if selection_mode == "ROOT_REMNANT_DIRECT_BOOLEAN":
+            self.report({"WARNING"}, (
+                "No hay corona visible en el IOS (resto radicular o diente cubierto): "
+                "APLICAR + CERRAR restará el diente CBCT del IOS cerrado. "
+                "Si quieres retirar superficie del IOS, selecciónala antes."))
+            return {"FINISHED"}
         self.report({"INFO"}, (
             f"Superficie IOS detectada ({selection_mode}): {selected_faces} caras / {selected_vertices} vértices · "
             f"p95 {float(common_result.get('p95_distance_mm', 0.0)):.2f} mm. "
@@ -2726,12 +2941,226 @@ def _delete_selected_ios_region_and_close_local_openings(context, preview) -> di
     return diagnostics
 
 
+# --- DSG v9 · extracción virtual sobre sólidos cerrados ----------------------------
+POSTEXTRACTION_CUTTER_VOXEL_MM = 0.20
+POSTEXTRACTION_CUTTER_DILATE_MM = 0.15
+POSTEXTRACTION_BOOLEAN_SOLVERS = (("MANIFOLD", False), ("EXACT", False), ("EXACT", True))
+
+
+def _mesh_topology_counts(mesh) -> dict:
+    bm = bmesh.new()
+    try:
+        bm.from_mesh(mesh)
+        boundary = sum(1 for edge in bm.edges if edge.is_boundary)
+        non_manifold = sum(1 for edge in bm.edges if not edge.is_manifold)
+        return {"faces": len(bm.faces), "boundary_edges": boundary, "non_manifold_edges": non_manifold}
+    finally:
+        bm.free()
+
+
+EXTRACTION_SMOOTHING_KEY = "DSG_extraction_tooth_smoothing"
+
+
+def extraction_smoothing_wanted(scene) -> bool:
+    """Smoothing of the tooth to extract (on unless the clinician turns it off)."""
+    return bool(scene.get(EXTRACTION_SMOOTHING_KEY, True))
+
+
+def tooth_smoothing_state(context, tooth) -> bool:
+    """True when the measured surface smoothing is shown on this tooth."""
+    try:
+        from . import cbct_dental_module as dental, surface_smoothing, cbct_post_smoothing as post
+    except ImportError:
+        return False
+    if isinstance(tooth.get(post.CACHED_MESH),bpy.types.Mesh) and tooth.data==tooth.get(post.CACHED_MESH):
+        return True
+    if tooth.data.attributes.get(surface_smoothing.OFFSET_ATTRIBUTE) is None:
+        return False
+    modifier = tooth.modifiers.get(dental.ALIGNMENT_VISUAL_SMOOTH_MODIFIER)
+    return modifier is not None and modifier.show_viewport
+
+
+def ensure_extraction_smoothing(context, tooth) -> bool:
+    """Apply (or remove) the smoothing on the tooth to extract so that the
+    preview, the IOS Boolean and the bone carving all use the same shape.
+
+    The full-resolution rebuild done at CONFIRMAR replaces the tooth mesh,
+    which used to drop any smoothing chosen earlier.  Teeth finished with
+    MEJORAR DIENTES already carry a smoothed mesh and are left as they are.
+    """
+    from . import cbct_dental_module as dental, cbct_post_smoothing as post
+    wanted = extraction_smoothing_wanted(context.scene)
+    original=tooth.get(post.ORIGINAL_MESH);cached=tooth.get(post.CACHED_MESH)
+    if isinstance(cached,bpy.types.Mesh) and tooth.data==cached:
+        if wanted:return True
+        if not isinstance(original,bpy.types.Mesh):
+            raise ValueError('No se conserva la malla original para desactivar el suavizado del diente.')
+        post._disable_legacy(tooth)
+        tooth.data=original
+        return False
+    if wanted and isinstance(original,bpy.types.Mesh) and isinstance(cached,bpy.types.Mesh) and tooth.data==original and post.mesh_hash(original)==tooth.get(post.SOURCE_HASH):
+        post._disable_legacy(tooth)
+        tooth.data=cached
+        return True
+    if wanted != tooth_smoothing_state(context, tooth):
+        dental.set_alignment_visual_smoothing(tooth, wanted)
+    return tooth_smoothing_state(context, tooth)
+
+
+def _tooth_cutter_source(context, tooth):
+    """Mesh the extraction cutter is built from: the smoothed shape if the
+    surface-smoothing option is on (its offsets live in a display modifier,
+    which ``tooth.data`` alone would ignore), else the tooth mesh itself.
+    Teeth finished with MEJORAR DIENTES already carry the smoothed mesh."""
+    ensure_extraction_smoothing(context, tooth)
+    from . import cbct_post_smoothing as post
+    if isinstance(tooth.get(post.CACHED_MESH),bpy.types.Mesh) and tooth.data==tooth.get(post.CACHED_MESH):
+        return tooth.data, False  # already baked; there is no offset attribute to add
+    if not tooth_smoothing_state(context, tooth):
+        return tooth.data, False
+    import numpy as np
+    from . import surface_smoothing
+    mesh = tooth.data.copy()
+    attribute = mesh.attributes.get(surface_smoothing.OFFSET_ATTRIBUTE)
+    count = len(mesh.vertices)
+    offsets = np.empty(count * 3, dtype=np.float32)
+    attribute.data.foreach_get('vector', offsets)
+    coords = np.empty(count * 3, dtype=np.float32)
+    mesh.vertices.foreach_get('co', coords)
+    if not np.isfinite(offsets).all():
+        bpy.data.meshes.remove(mesh)
+        return tooth.data, False
+    mesh.vertices.foreach_set('co', coords + offsets)
+    mesh.update()
+    return mesh, True
+
+
+def _prepare_alveolar_cutter(context, tooth):
+    """Watertight, pulp-free, slightly dilated copy of a CBCT tooth.
+
+    Voxel remesh makes the tooth a single closed shell (segmented teeth can
+    carry pulp chambers or small inner shells that survive a Boolean as
+    floating islands). The 0.15 mm outward offset moves the cutter off the
+    IOS surface where scan and CBCT nearly coincide, the classic cause of
+    slivers and non-manifold edges in the Boolean.
+    """
+    scale = tooth.matrix_world.to_scale()
+    mean_scale = max(1.0e-9, (abs(scale.x) + abs(scale.y) + abs(scale.z)) / 3.0)
+    source, temporary_source = _tooth_cutter_source(context, tooth)
+    temp = bpy.data.objects.new("__DSG_alveolar_cutter_tmp", source)
+    temp.matrix_world = tooth.matrix_world.copy()
+    context.scene.collection.objects.link(temp)
+    try:
+        modifier = temp.modifiers.new("DSG_CutterRemesh", "REMESH")
+        modifier.mode = "VOXEL"
+        modifier.voxel_size = POSTEXTRACTION_CUTTER_VOXEL_MM / mean_scale
+        modifier.adaptivity = 0.0
+        context.view_layer.update()
+        mesh = bpy.data.meshes.new_from_object(temp.evaluated_get(context.evaluated_depsgraph_get()))
+    finally:
+        bpy.data.objects.remove(temp, do_unlink=True)
+        if temporary_source and source.users == 0:
+            bpy.data.meshes.remove(source)
+    bm = bmesh.new()
+    try:
+        bm.from_mesh(mesh)
+        components, seen = [], set()
+        for face in bm.faces:
+            if face in seen:
+                continue
+            component, stack = {face}, [face]
+            seen.add(face)
+            while stack:
+                current = stack.pop()
+                for edge in current.edges:
+                    for other in edge.link_faces:
+                        if other not in seen:
+                            seen.add(other)
+                            component.add(other)
+                            stack.append(other)
+            components.append(component)
+        if not components:
+            raise RuntimeError(f"El diente {tooth.name} no tiene volumen para la booleana")
+        components.sort(key=len, reverse=True)
+        if len(components) > 1:
+            bmesh.ops.delete(bm, geom=[face for comp in components[1:] for face in comp], context="FACES")
+        bm.normal_update()
+        offset = POSTEXTRACTION_CUTTER_DILATE_MM / mean_scale
+        for vert in bm.verts:
+            vert.co += vert.normal * offset
+        bm.to_mesh(mesh)
+    finally:
+        bm.free()
+    cutter = bpy.data.objects.new(f"__DSG_AlveolarCutter_{int(tooth.get('DSG_fdi_number', 0) or 0)}", mesh)
+    cutter.matrix_world = tooth.matrix_world.copy()
+    context.scene.collection.objects.link(cutter)
+    cutter.hide_viewport = True
+    cutter.hide_render = True
+    return cutter, len(components) - 1
+
+
+def _remove_cutter(cutter) -> None:
+    if cutter is None:
+        return
+    mesh = cutter.data
+    bpy.data.objects.remove(cutter, do_unlink=True)
+    if mesh is not None and mesh.users == 0:
+        bpy.data.meshes.remove(mesh)
+
+
+def _apply_alveolar_boolean(context, target, cutter) -> dict:
+    """Difference on two closed solids; MANIFOLD first, EXACT as fallback."""
+    attempts = []
+    for solver, hole_tolerant in POSTEXTRACTION_BOOLEAN_SOLVERS:
+        modifier = target.modifiers.new("DSG_AlveolarBoolean", "BOOLEAN")
+        modifier.operation = "DIFFERENCE"
+        modifier.solver = solver
+        modifier.object = cutter
+        if solver == "EXACT":
+            modifier.use_hole_tolerant = bool(hole_tolerant)
+        try:
+            # A hidden target is not evaluated: the Boolean would silently
+            # return the original mesh.
+            from .blender.evaluated_visible import visible
+            with visible(target):
+                context.view_layer.update()
+                mesh = bpy.data.meshes.new_from_object(target.evaluated_get(context.evaluated_depsgraph_get()))
+        except RuntimeError as exc:
+            attempts.append({"solver": solver, "hole_tolerant": hole_tolerant, "error": str(exc)})
+            continue
+        finally:
+            target.modifiers.remove(modifier)
+        topology = _mesh_topology_counts(mesh)
+        attempts.append({"solver": solver, "hole_tolerant": hole_tolerant, **topology})
+        if topology["faces"] and not topology["boundary_edges"] and not topology["non_manifold_edges"]:
+            previous = target.data
+            mesh.name = previous.name
+            target.data = mesh
+            if previous.users == 0:
+                bpy.data.meshes.remove(previous)
+            return {"ok": True, "solver": solver, "hole_tolerant": hole_tolerant, "attempts": attempts}
+        bpy.data.meshes.remove(mesh)
+    return {"ok": False, "attempts": attempts}
+
+
+def _track_postextraction_intermediate(scene, obj) -> None:
+    if obj is None:
+        return
+    try:
+        names = json.loads(str(scene.get("DSG_ios_postextraction_intermediates", "[]") or "[]"))
+    except ValueError:
+        names = []
+    if obj.name not in names:
+        names.append(obj.name)
+    scene["DSG_ios_postextraction_intermediates"] = json.dumps(names)
+
+
 class DSG_SUITE_OT_ConfirmIOSPostExtraction(Operator):
-    """Delete the reviewed IOS crown region, close it, then subtract CBCT teeth."""
+    """Remove the reviewed crown, close the IOS solid, then subtract CBCT teeth."""
 
     bl_idname = "dsg_suite.confirm_ios_postextraction"
     bl_label = "Confirmar IOS postextracción"
-    bl_description = "Elimina la selección IOS, cierra el contorno y aplica la booleana alveolar CBCT"
+    bl_description = "Retira la corona IOS seleccionada (si la hay), cierra el modelo y resta el diente CBCT preparado"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
@@ -2742,117 +3171,116 @@ class DSG_SUITE_OT_ConfirmIOSPostExtraction(Operator):
         if preview is None or preview.type != "MESH":
             self.report({"ERROR"}, "Primero prepara y revisa la selección de superficie IOS")
             return {"CANCELLED"}
+        if not preview.get('DSG_ios_socket_count'):
+            self.report({'ERROR'}, 'La booleana se aplica después de cerrar el hueco del IOS hacia dentro.')
+            return {'CANCELLED'}
         teeth = _immediate_cbct_teeth(context, fdis)
         if not teeth:
             self.report({"ERROR"}, "No hay dientes CBCT para la booleana alveolar")
             return {"CANCELLED"}
-
-        # A failed Boolean or final closure must be retryable without repeating
-        # already completed destructive work.  The preview is a disposable IOS
-        # copy, but each transition is still explicit and idempotent.
-        closure_retry = bool(preview.get("DSG_ios_postextraction_boolean_ready", False))
         state = str(preview.get("DSG_ios_postextraction_state", "SURFACE_SELECTION") or "SURFACE_SELECTION")
-        cleanup = {}
-        if not closure_retry:
-            if state not in {"LOCAL_CROWN_CLOSED", "BOOLEAN_APPLIED"}:
+
+        # 1 · Crown: delete the reviewed IOS selection and cap it. With no
+        # selection (root remnant / covered tooth) the IOS is kept intact.
+        if state == "SURFACE_SELECTION":
+            selected = 0
+            if context.mode == "EDIT_MESH" and context.edit_object is preview:
+                selected = sum(1 for face in bmesh.from_edit_mesh(preview.data).faces if face.select)
+            if selected >= 4:
                 try:
                     local_closure = _delete_selected_ios_region_and_close_local_openings(context, preview)
                 except Exception as exc:
-                    try:
-                        bpy.ops.object.select_all(action="DESELECT")
-                        preview.select_set(True)
-                        context.view_layer.objects.active = preview
-                        bpy.ops.object.mode_set(mode="EDIT")
-                        bpy.ops.mesh.select_mode(type="FACE")
-                    except Exception:
-                        _DSG_LOG.debug("suppressed exception", exc_info=True)
-                    self.report({"ERROR"}, f"No se pudo preparar la extracción virtual: {exc}")
+                    self.report({"ERROR"}, f"No se pudo retirar la corona seleccionada: {exc}")
                     return {"CANCELLED"}
-                preview["DSG_ios_postextraction_state"] = "LOCAL_CROWN_CLOSED"
-                preview["DSG_ios_local_closure_diagnostics"] = json.dumps(local_closure, ensure_ascii=False)
-                state = "LOCAL_CROWN_CLOSED"
-            elif context.mode == "EDIT_MESH":
-                bpy.ops.object.mode_set(mode="OBJECT")
+            else:
+                if context.mode == "EDIT_MESH":
+                    bpy.ops.object.mode_set(mode="OBJECT")
+                local_closure = {"direct_boolean": True, "reason": "sin corona seleccionada"}
+            preview["DSG_ios_local_closure_diagnostics"] = json.dumps(local_closure, ensure_ascii=False)
+            preview["DSG_ios_postextraction_mode"] = "CROWN_REMOVED" if selected >= 4 else "ROOT_REMNANT_DIRECT_BOOLEAN"
+            preview["DSG_ios_postextraction_state"] = state = "LOCAL_CROWN_CLOSED"
+        elif context.mode == "EDIT_MESH":
+            bpy.ops.object.mode_set(mode="OBJECT")
 
-            bpy.ops.object.select_all(action="DESELECT")
-            preview.select_set(True)
-            context.view_layer.objects.active = preview
+        # 2 · Close the IOS into a manifold solid before any Boolean.
+        if state == "LOCAL_CROWN_CLOSED":
             try:
-                applied_fdis = {
-                    int(value) for value in json.loads(
-                        str(preview.get("DSG_ios_postextraction_boolean_fdis_json", "[]") or "[]"))
-                }
-            except Exception:
-                applied_fdis = set()
+                from . import guide_module
+                repaired, _holes = guide_module.close_scanned_model_holes(context, preview)
+                closed, topology = guide_module.close_open_dental_model_base(context, repaired)
+            except Exception as exc:
+                scene["DSG_ios_postextraction_closure_retry_available"] = True
+                self.report({"ERROR"}, f"No se pudo cerrar el IOS antes de la extracción: {exc}. Pulsa REINTENTAR CIERRE.")
+                return {"CANCELLED"}
+            if not bool(topology.get("solid", False)):
+                scene["DSG_ios_postextraction_closure_retry_available"] = True
+                self.report({"ERROR"}, "El IOS cerrado no es un sólido manifold; revisa los huecos del escaneado y pulsa REINTENTAR CIERRE")
+                return {"CANCELLED"}
+            for intermediate in (preview, repaired):
+                if intermediate is not closed:
+                    _track_postextraction_intermediate(scene, intermediate)
+                    try:
+                        intermediate.hide_set(True)
+                    except RuntimeError:
+                        intermediate.hide_viewport = True
+            for key in ("DSG_ios_postextraction_preview", "DSG_ios_postextraction_fdis",
+                        "DSG_ios_postextraction_source", "DSG_ios_postextraction_mode",
+                        "DSG_ios_local_closure_diagnostics", "DSG_common_surface_stats"):
+                if key in preview:
+                    closed[key] = preview[key]
+            closed.name = "Dental_IOS_PostExtraction_Solid"
+            closed["DSG_ios_postextraction_state"] = state = "SOLID_CLOSED"
+            closed["DSG_ios_postextraction_boolean_fdis_json"] = "[]"
+            preview = closed
+            scene["DSG_ios_postextraction_preview_name"] = preview.name
+            scene["DSG_ios_postextraction_closure_retry_available"] = False
 
+        # 3 · Subtract each prepared CBCT tooth from the closed solid.
+        if state == "SOLID_CLOSED":
+            try:
+                applied = {int(v) for v in json.loads(str(preview.get("DSG_ios_postextraction_boolean_fdis_json", "[]") or "[]"))}
+            except ValueError:
+                applied = set()
+            report = []
             for tooth in teeth:
                 fdi = int(tooth.get("DSG_fdi_number", 0) or 0)
-                if fdi in applied_fdis:
+                if fdi in applied:
                     continue
-                modifier = preview.modifiers.new(name=f"DSG_Alveolo_CBCT_FDI_{fdi}", type="BOOLEAN")
-                modifier.operation = "DIFFERENCE"
-                modifier.solver = "EXACT"
-                modifier.object = tooth
+                cutter = None
                 try:
-                    bpy.ops.object.modifier_apply(modifier=modifier.name)
-                except Exception as exc:
-                    try:
-                        preview.modifiers.remove(modifier)
-                    except Exception:
-                        _DSG_LOG.debug("suppressed exception", exc_info=True)
-                    preview["DSG_ios_postextraction_state"] = "LOCAL_CROWN_CLOSED"
-                    preview["DSG_ios_postextraction_boolean_fdis_json"] = json.dumps(sorted(applied_fdis))
+                    cutter, inner_shells = _prepare_alveolar_cutter(context, tooth)
+                    result = _apply_alveolar_boolean(context, preview, cutter)
+                except RuntimeError as exc:
+                    result = {"ok": False, "attempts": [{"error": str(exc)}]}
+                    inner_shells = 0
+                finally:
+                    _remove_cutter(cutter)
+                report.append({"fdi": fdi, "inner_shells_removed": inner_shells, **result})
+                if not result["ok"]:
+                    preview["DSG_postextraction_boolean_report"] = json.dumps(report, ensure_ascii=False)
                     scene["DSG_ios_postextraction_boolean_retry_available"] = True
-                    self.report({"ERROR"}, f"Falló la booleana alveolar FDI {fdi}: {exc}. Pulsa REINTENTAR EXTRACCIÓN.")
+                    self.report({"ERROR"}, f"La booleana alveolar FDI {fdi} no dio un sólido limpio con MANIFOLD ni EXACT. Pulsa REINTENTAR.")
                     return {"CANCELLED"}
-                applied_fdis.add(fdi)
-                preview["DSG_ios_postextraction_boolean_fdis_json"] = json.dumps(sorted(applied_fdis))
-
-            preview["DSG_ios_postextraction_state"] = "BOOLEAN_APPLIED"
+                applied.add(fdi)
+                preview["DSG_ios_postextraction_boolean_fdis_json"] = json.dumps(sorted(applied))
             cleaned, cleanup = _clean_postextraction_boolean_debris(preview)
             if not cleaned:
                 scene["DSG_ios_postextraction_boolean_retry_available"] = True
-                self.report({"ERROR"}, "La booleana terminó, pero no se pudo limpiar el IOS: " + str(cleanup.get("reason", "error topológico")) + ". Pulsa REINTENTAR EXTRACCIÓN.")
+                self.report({"ERROR"}, "La booleana terminó, pero no se pudo limpiar el IOS: " + str(cleanup.get("reason", "error topológico")) + ". Pulsa REINTENTAR.")
                 return {"CANCELLED"}
-            preview["DSG_ios_postextraction_boolean_ready"] = True
-            preview["DSG_ios_postextraction_state"] = "BOOLEAN_READY"
+            preview["DSG_postextraction_boolean_report"] = json.dumps(report, ensure_ascii=False)
             preview["DSG_postextraction_boolean_cleanup"] = json.dumps(cleanup, ensure_ascii=False)
-            scene["DSG_ios_postextraction_boolean_retry_available"] = False
-        else:
-            try:
-                cleanup = json.loads(str(preview.get("DSG_postextraction_boolean_cleanup", "{}") or "{}"))
-            except Exception:
-                cleanup = {"reused_boolean": True}
+            preview["DSG_postextraction_boolean_islands_removed"] = int(cleanup.get("islands_removed", 0))
+            preview["DSG_ios_postextraction_state"] = state = "BOOLEAN_APPLIED"
 
-        # Boolean cleanup and model closure have distinct responsibilities:
-        # this call protects the dental anatomy, preserves the principal basal
-        # opening while closing safe secondary holes, then creates the proper
-        # DSG closed-model base.  It replaces the previous manual red button
-        # for this specific immediate post-extraction route.
-        try:
-            from . import guide_module
-            repaired, hole_diagnostics = guide_module.close_scanned_model_holes(context, preview)
-            closed_model, topology = guide_module.close_open_dental_model_base(context, repaired)
-        except Exception as exc:
-            preview["DSG_ios_postextraction_state"] = "BOOLEAN_READY"
-            scene["DSG_ios_postextraction_closure_retry_available"] = True
-            self.report({"ERROR"}, f"La extracción virtual está aplicada, pero falló el cierre automático del modelo: {exc}. Pulsa REINTENTAR CIERRE.")
+        topology = _mesh_topology_counts(preview.data)
+        if topology["boundary_edges"] or topology["non_manifold_edges"]:
+            scene["DSG_ios_postextraction_boolean_retry_available"] = True
+            self.report({"ERROR"}, f"El IOS postextracción no quedó manifold ({topology['boundary_edges']} bordes, {topology['non_manifold_edges']} aristas no manifold)")
             return {"CANCELLED"}
-        if not bool(topology.get("solid", False)):
-            self.report({"ERROR"}, "El cierre del modelo postextracción no pudo verificarse como manifold")
-            return {"CANCELLED"}
-        preview = closed_model
         preview.name = "Dental_IOS_PostExtraction_Closed"
-        preview["DSG_postextraction_boolean_cleanup"] = json.dumps(cleanup, ensure_ascii=False)
-        preview["DSG_postextraction_boolean_islands_removed"] = int(cleanup.get("islands_removed", 0))
         preview["DSG_postextraction_closed_model"] = True
-        preview["DSG_postextraction_closure_topology"] = json.dumps({
-            "boundary_edges": int(topology.get("boundary_edges", 0) or 0),
-            "branch_edges": int(topology.get("branch_edges", 0) or 0),
-            "wire_edges": int(topology.get("wire_edges", 0) or 0),
-            "solid": bool(topology.get("solid", False)),
-        }, ensure_ascii=False)
-
+        preview["DSG_postextraction_closure_topology"] = json.dumps({**topology, "solid": True}, ensure_ascii=False)
         preview.data.validate(verbose=False)
         preview.data.update()
         preview["DSG_ios_postextraction_state"] = "CLOSED_REVIEW_REQUIRED"
@@ -2867,7 +3295,10 @@ class DSG_SUITE_OT_ConfirmIOSPostExtraction(Operator):
         scene["DSG_ios_postextraction_boolean_retry_available"] = False
         scene["DSG_ios_postextraction_closure_retry_available"] = False
         scene[ROUTE_STEP_KEY] = "IMMEDIATE_IOS_POSTEXTRACTION_READY"
-        self.report({"WARNING"}, f"IOS postextracción cerrado. Se eliminaron {int(cleanup.get('islands_removed', 0))} islas; revisa el alvéolo virtual antes de continuar al diseño de la guía.")
+        mode = str(preview.get("DSG_ios_postextraction_mode", ""))
+        islands = int(preview.get("DSG_postextraction_boolean_islands_removed", 0) or 0)
+        prefix = "Resto radicular: booleana directa sobre el IOS cerrado. " if mode == "ROOT_REMNANT_DIRECT_BOOLEAN" else ""
+        self.report({"WARNING"}, f"{prefix}IOS postextracción cerrado y manifold · {islands} islas eliminadas. Revisa el alvéolo virtual antes de continuar.")
         return {"FINISHED"}
 
 
@@ -2883,6 +3314,15 @@ class DSG_SUITE_OT_RestoreIOSPreExtraction(Operator):
         source = bpy.data.objects.get(str(scene.get("DSG_ios_postextraction_source_name", "") or ""))
         if preview is not None:
             bpy.data.objects.remove(preview, do_unlink=True)
+        try:
+            intermediates = json.loads(str(scene.get("DSG_ios_postextraction_intermediates", "[]") or "[]"))
+        except ValueError:
+            intermediates = []
+        for name in intermediates:
+            leftover = bpy.data.objects.get(name)
+            if leftover is not None and leftover is not source:
+                _remove_object_and_data(leftover)
+        scene["DSG_ios_postextraction_intermediates"] = "[]"
         if source is not None:
             source.hide_set(False)
             source.hide_render = False
@@ -2999,7 +3439,7 @@ def _reset_alignment_stage_internal(context) -> bool:
     props = getattr(context.scene, "dicp_props", None)
     if props is None:
         return False
-    if bool(getattr(props, "alignment_running", False)):
+    if False:  # DSG v9: alineación no modal
         raise RuntimeError("Cancela con Esc el alineamiento en curso antes de reiniciar")
     try:
         result = bpy.ops.dicp.reset("EXEC_DEFAULT")
@@ -3169,7 +3609,7 @@ class DSG_SUITE_OT_BackWorkflow(Operator):
             if props is None:
                 self.report({"ERROR"}, "El estado de alineamiento no está disponible")
                 return {"CANCELLED"}
-            if bool(getattr(props, "alignment_running", False)):
+            if False:  # DSG v9: alineación no modal
                 # A second operator must not tear down another modal timer. Ask
                 # the alignment modal to roll itself back on its next TIMER.
                 scene["DSG_alignment_cancel_requested"] = True
@@ -3516,6 +3956,13 @@ class DSG_SUITE_PT_Main(Panel):
         if settings is not None:
             top.prop(settings, "language", text="")
 
+        # Beginner guide: "PASO n de 12" + what to do in plain words.
+        try:
+            from . import step_guide
+            step_guide.draw(layout, context)
+        except Exception:
+            pass
+
         # Persistent left rail: DICOM / ALIGNMENT / DSG, one above another.
         split = layout.split(factor=0.31)
         rail = split.column(align=True)
@@ -3680,13 +4127,10 @@ class DSG_SUITE_PT_Main(Panel):
         active_route = clinical_route(scene)
         if (
             cbct_dental_module is not None
-            and (current == STAGE_ALIGNMENT or step in {
-                "IMMEDIATE_FDI_REVIEW", "IMMEDIATE_SELECT_TEETH", "IMMEDIATE_ARCH_REVIEW"
-            })
-            and cbct_dental_module.dentition_objects(context)
+            and current == STAGE_DICOM
+            and step in {"IMMEDIATE_FDI_REVIEW", "SIMPLE_REVIEW"}
         ):
-            # Use the full panel width so the choice remains readable beside
-            # the compact workflow rail. It only changes the review surface.
+            # This first review owns the only anatomy-finishing control.
             cbct_dental_module.draw_surface_smoothing(layout, context, show_note=False)
         if active_route == ROUTE_SIMPLE and current == STAGE_DICOM:
             if step == "SIMPLE_SEGMENTING":
@@ -3706,12 +4150,10 @@ class DSG_SUITE_PT_Main(Panel):
                 r1 = ui_style.secondary_action(legend, align=False); r1.label(text=tr(scene, "SAND", "ARENA"), icon_value=icon_manager.icon_id("tone_sand"))
                 r2 = ui_style.secondary_action_alt(legend, align=False); r2.label(text=tr(scene, "SKY BLUE", "CELESTE"), icon_value=icon_manager.icon_id("tone_sky"))
                 confirm = ui_style.primary_action(body)
-                confirm.operator(DSG_SUITE_OT_ConfirmSimpleSTL.bl_idname, text=tr(scene, "CONFIRM + ALIGN", "CONFIRMAR + ALINEAR"), icon_value=icon_manager.icon_id("continue"), depress=True)
+                confirm.operator(DSG_SUITE_OT_ConfirmSimpleSTL.bl_idname, text=tr(scene, "CONFIRM", "CONFIRMAR"), icon_value=icon_manager.icon_id("continue"), depress=True)
                 back = ui_style.tertiary_action(body)
                 back.operator(DSG_SUITE_OT_BackWorkflow.bl_idname, text=tr(scene, "BACK", "ATRÁS"), icon_value=icon_manager.icon_id("back"))
                 return
-            route = ui_style.tertiary_action(body)
-            route.operator(DSG_SUITE_OT_ChangeRoute.bl_idname, text=tr(scene, "CHANGE ROUTE", "CAMBIAR RUTA"), icon_value=icon_manager.icon_id("back"))
             return
 
         if active_route == ROUTE_IMMEDIATE and current == STAGE_DICOM:
@@ -3734,14 +4176,7 @@ class DSG_SUITE_PT_Main(Panel):
                 busy.operator(DSG_SUITE_OT_StartImmediateRoute.bl_idname, text=busy_text, icon_value=icon_manager.icon_id("status_pending"), depress=True)
                 return
 
-            if step == "IMMEDIATE_FDI_REVIEW":
-                set_status_bar(context, f"{len(teeth)} " + tr(scene, "teeth segmented · verify FDI visually.", "dientes segmentados · verifica FDI visualmente."))
-                accept = ui_style.primary_action(body)
-                accept.operator(DSG_SUITE_OT_AcceptFDIAndSelectTeeth.bl_idname, text=tr(scene, "FDI CORRECT", "FDI CORRECTO"), icon_value=icon_manager.icon_id("validate"), depress=True)
-                correction = ui_style.secondary_action_alt(body)
-                correction.operator("dsg.cbct_swap_arches", text=tr(scene, "SWAP FDI ARCHES", "INVERTIR FDI"), icon_value=icon_manager.icon_id("reset"))
-
-            elif step == "IMMEDIATE_SELECT_TEETH":
+            if step in {"IMMEDIATE_FDI_REVIEW", "IMMEDIATE_SELECT_TEETH"}:
                 selected = [obj for obj in teeth if bool(getattr(obj, "select_get", lambda: False)())]
                 selected_fdis = sorted({int(obj.get("DSG_fdi_number", 0) or 0) for obj in selected if int(obj.get("DSG_fdi_number", 0) or 0) > 0})
                 fixed_fdis = _immediate_extraction_fdis(scene)
@@ -3751,23 +4186,25 @@ class DSG_SUITE_PT_Main(Panel):
                 choice.label(text=(tr(scene, "Selected", "Seleccionados") + ": " + (", ".join(map(str, selected_fdis)) if selected_fdis else tr(scene, "none", "ninguno"))) )
                 fix = ui_style.primary_action(choice, enabled=bool(selected_fdis))
                 fix.operator(DSG_SUITE_OT_FixImmediateExtractionSelection.bl_idname, text=tr(scene, "FIX TEETH", "FIJAR DIENTES"), icon="CHECKMARK", depress=True)
+                try:
+                    from .blender import upper_cavity_safety
+                    upper_cavity_safety.draw_toggle(body, context)
+                except Exception:
+                    pass
                 fixed = body.box()
                 fixed.label(text=tr(scene, "2 · Extraction FDI", "2 · FDI de extracción"), icon="PINNED")
                 fixed.label(text=("FDI " + ", ".join(map(str, fixed_fdis))) if fixed_fdis else tr(scene, "Not fixed", "Sin fijar"))
                 next_step = ui_style.primary_action(fixed, enabled=bool(fixed_fdis))
-                next_step.operator(DSG_SUITE_OT_BuildImmediateArchModels.bl_idname, text=tr(scene, "CREATE ALVEOLI", "CREAR ALVÉOLOS"), icon_value=icon_manager.icon_id("model"), depress=True)
+                next_step.operator(DSG_SUITE_OT_ConfirmImmediateModels.bl_idname, text=tr(scene, "CONFIRM", "CONFIRMAR"), icon_value=icon_manager.icon_id("continue"), depress=True)
 
             elif step == "IMMEDIATE_ARCH_REVIEW":
                 fdis = str(scene.get("DSG_immediate_extraction_fdis", "") or "")
                 set_status_bar(context, tr(scene, "Review the two alveolar models.", "Revisa los dos modelos alveolares.") + (f" · FDI {fdis}" if fdis else ""))
                 confirm = ui_style.primary_action(body)
-                confirm.operator(DSG_SUITE_OT_ConfirmImmediateModels.bl_idname, text=tr(scene, "CONFIRM + ALIGN", "CONFIRMAR + ALINEAR"), icon_value=icon_manager.icon_id("continue"), depress=True)
+                confirm.operator(DSG_SUITE_OT_ConfirmImmediateModels.bl_idname, text=tr(scene, "CONFIRM", "CONFIRMAR"), icon_value=icon_manager.icon_id("continue"), depress=True)
                 revise = ui_style.secondary_action_soft(body)
                 revise.operator(DSG_SUITE_OT_AcceptFDIAndSelectTeeth.bl_idname, text=tr(scene, "CHANGE EXTRACTIONS", "CAMBIAR EXTRACCIONES"), icon="RESTRICT_VIEW_OFF")
 
-            if step != "IMMEDIATE_SEGMENTING":
-                route = ui_style.tertiary_action(body)
-                route.operator(DSG_SUITE_OT_ChangeRoute.bl_idname, text=tr(scene, "CHANGE ROUTE", "CAMBIAR RUTA"), icon_value=icon_manager.icon_id("back"))
             return
 
         if current == STAGE_ALIGNMENT:
@@ -3795,59 +4232,11 @@ class DSG_SUITE_PT_Main(Panel):
                     box.label(text=tr(scene, "The saved alignment no longer has its IOS or CBCT reference.", "El alineamiento guardado ya no tiene su IOS o referencia CBCT."))
                     recover = ui_style.primary_action(box)
                     recover.operator(DSG_SUITE_OT_RecoverImmediateInputs.bl_idname, text=tr(scene, "RECOVER WITHOUT RESEGMENTING", "RECUPERAR SIN RESEGMENTAR"), icon="LOOP_BACK", depress=True)
-                elif ready and not confirmed:
+                elif ready:
                     box = body.box()
-                    # The action is intentionally wider than the compact state
-                    # summary.  This reads as a clear “next” step even in the
-                    # narrow N-panel, while the current stage stays visible on
-                    # its right without duplicating controls elsewhere.
-                    content = box.split(factor=0.62, align=True)
-                    actions = content.column(align=True)
-                    status = content.column(align=True)
-                    status.label(text=tr(scene, "4 · IOS", "4 · IOS"), icon="DISCLOSURE_TRI_RIGHT")
-                    status.label(text=tr(scene, "IOS → CBCT socket", "IOS → alvéolo CBCT"))
-                    retry_boolean = bool(scene.get("DSG_ios_postextraction_boolean_retry_available", False))
-                    retry_closure = bool(scene.get("DSG_ios_postextraction_closure_retry_available", False))
-                    if retry_closure:
-                        status.label(text=tr(scene, "Close pending", "Cierre pendiente"), icon="ERROR")
-                        confirm = ui_style.primary_action(actions)
-                        confirm.operator(DSG_SUITE_OT_ConfirmIOSPostExtraction.bl_idname, text=tr(scene, "RETRY CLOSE", "REINTENTAR CIERRE"), icon_value=icon_manager.icon_id("validate"), depress=True)
-                    elif retry_boolean:
-                        status.label(text=tr(scene, "Retry extraction", "Reintentar extracción"), icon="ERROR")
-                        confirm = ui_style.primary_action(actions)
-                        confirm.operator(DSG_SUITE_OT_ConfirmIOSPostExtraction.bl_idname, text=tr(scene, "RETRY", "REINTENTAR"), icon_value=icon_manager.icon_id("validate"), depress=True)
-                    elif step == "IMMEDIATE_IOS_SURFACE_REVIEW":
-                        try:
-                            match_stats = json.loads(str(scene.get("DSG_ios_common_surface_stats", "") or "{}"))
-                        except Exception:
-                            match_stats = {}
-                        if match_stats:
-                            status.label(
-                                text=(
-                                    f"Match · {int(match_stats.get('selected_count', 0))} caras · "
-                                    f"p95 {float(match_stats.get('p95_distance_mm', 0.0)):.2f} mm"
-                                ),
-                                icon="CHECKMARK")
-                            competitor_fdis = match_stats.get("competitor_fdis", [])
-                            if competitor_fdis:
-                                status.label(text="Vecinos FDI · " + ", ".join(str(value) for value in competitor_fdis), icon="MOD_VERTEX_WEIGHT")
-                            valley_faces = int(match_stats.get("negative_curvature_barrier_faces", 0) or 0)
-                            if bool(match_stats.get("negative_curvature_refinement", False)) and valley_faces:
-                                status.label(text=f"Valle proximal · {valley_faces} caras", icon="MOD_SMOOTH")
-                            if bool(match_stats.get("anatomy_boundary_review_required", False)):
-                                status.label(text=tr(scene, "Review contacts", "Revisa contactos"), icon="ERROR")
-                        confirm = ui_style.primary_action(actions)
-                        confirm.operator(DSG_SUITE_OT_ConfirmIOSPostExtraction.bl_idname, text=tr(scene, "APPLY + CLOSE", "APLICAR + CERRAR"), icon_value=icon_manager.icon_id("validate"), depress=True)
-                    else:
-                        prepare = ui_style.primary_action(actions)
-                        prepare.operator(DSG_SUITE_OT_PrepareIOSPostExtraction.bl_idname, text=tr(scene, "FIND SURFACE", "BUSCAR SUPERFICIE"), icon_value=icon_manager.icon_id("model_visibility"), depress=True)
-                    restore = ui_style.tertiary_action(actions)
-                    restore.operator(DSG_SUITE_OT_RestoreIOSPreExtraction.bl_idname, text=tr(scene, "RESTORE", "RESTAURAR"), icon="LOOP_BACK")
-                elif ready and confirmed:
-                    box = body.box()
-                    box.label(text=tr(scene, "Closed post-extraction IOS ready · review virtual socket before Next", "IOS postextracción cerrado · revisa el alvéolo virtual antes de Siguiente"), icon="CHECKMARK")
-                    restore = ui_style.secondary_action_alt(box)
-                    restore.operator(DSG_SUITE_OT_RestoreIOSPreExtraction.bl_idname, text=tr(scene, "REVISE IOS SELECTION", "REVISAR SELECCIÓN IOS"), icon="LOOP_BACK")
+                    box.label(text=tr(scene, "Aligned IOS ready", "IOS alineado listo"), icon="CHECKMARK")
+                    box.label(text=tr(scene, "Next: close the IOS, remove the tooth and close its socket inward.", "Siguiente: cerrar IOS, eliminar el diente y cerrar el hueco hacia dentro."))
+                    box.label(text=tr(scene, "The CBCT-tooth Boolean runs after that closure.", "La booleana del diente CBCT se ejecuta después de ese cierre."))
             return
 
         if current == STAGE_GUIDE:
@@ -3923,6 +4312,7 @@ CLASSES = (
     DSG_SUITE_OT_RestartDSG,
     DSG_SUITE_OT_SetStage,
     DSG_SUITE_OT_UseSelectedIOS,
+    DSG_SUITE_OT_ChooseAlignmentIOS,
     DSG_SUITE_OT_ToggleAntagonist,
     DSG_SUITE_OT_InstallEnginesCore,
     DSG_SUITE_PT_Main,

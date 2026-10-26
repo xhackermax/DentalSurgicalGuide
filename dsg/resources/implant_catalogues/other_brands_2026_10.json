@@ -1,0 +1,1574 @@
+{
+ "schema_version": 2,
+ "units": "mm",
+ "retrieved": "2026-10-15",
+ "note": "Medidas nominales por referencia. No incluye geometría 3D del fabricante. Disponibilidad según mercado.",
+ "catalogues": {
+  "KLOCKNER_VEGA": {
+   "family": "Klockner VEGA",
+   "brand": "Klockner",
+   "connection": "Hexágono interno · cónico",
+   "source": "Klockner VEGA · VEGA+, pp. 5 and 27: https://www.zauchnerdentalprodukte.at/wp-content/uploads/2025/09/VEGA_IM_KLOCKNER_EN.pdf",
+   "note": "20 referencias contrastadas; incluye 16 y 18 mm en Ø3,5 y Ø4,0.",
+   "items": [
+    {
+     "ref": "18 30 08",
+     "diameter_mm": 3.0,
+     "length_mm": 8.0,
+     "platform": "MV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 30 10",
+     "diameter_mm": 3.0,
+     "length_mm": 10.0,
+     "platform": "MV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 30 12",
+     "diameter_mm": 3.0,
+     "length_mm": 12.0,
+     "platform": "MV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 30 14",
+     "diameter_mm": 3.0,
+     "length_mm": 14.0,
+     "platform": "MV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 35 08",
+     "diameter_mm": 3.5,
+     "length_mm": 8.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 35 10",
+     "diameter_mm": 3.5,
+     "length_mm": 10.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 35 12",
+     "diameter_mm": 3.5,
+     "length_mm": 12.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 35 14",
+     "diameter_mm": 3.5,
+     "length_mm": 14.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 35 16",
+     "diameter_mm": 3.5,
+     "length_mm": 16.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 35 18",
+     "diameter_mm": 3.5,
+     "length_mm": 18.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 40 08",
+     "diameter_mm": 4.0,
+     "length_mm": 8.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 40 10",
+     "diameter_mm": 4.0,
+     "length_mm": 10.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 40 12",
+     "diameter_mm": 4.0,
+     "length_mm": 12.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 40 14",
+     "diameter_mm": 4.0,
+     "length_mm": 14.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 40 16",
+     "diameter_mm": 4.0,
+     "length_mm": 16.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 40 18",
+     "diameter_mm": 4.0,
+     "length_mm": 18.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 45 08",
+     "diameter_mm": 4.5,
+     "length_mm": 8.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 45 10",
+     "diameter_mm": 4.5,
+     "length_mm": 10.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 45 12",
+     "diameter_mm": 4.5,
+     "length_mm": 12.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "18 45 14",
+     "diameter_mm": 4.5,
+     "length_mm": 14.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    }
+   ]
+  },
+  "KLOCKNER_VEGA_PLUS": {
+   "family": "Klockner VEGA+",
+   "brand": "Klockner",
+   "connection": "Hexágono interno · cónico",
+   "source": "Klockner VEGA · VEGA+ manufacturer catalogue, pp. 5 and 27: https://www.zauchnerdentalprodukte.at/wp-content/uploads/2025/09/VEGA_IM_KLOCKNER_EN.pdf (verified 2026-10-15)",
+   "note": "Referencias verificadas: Ø3,1/4,6 en 8,10,12,14 mm; Ø3,6/4,1 también en 16 y 18 mm. Modelo nominal DSG; no reproduce la geometría comercial.",
+   "items": [
+    {
+     "ref": "19 31 08",
+     "diameter_mm": 3.1,
+     "length_mm": 8.0,
+     "platform": "MV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 31 10",
+     "diameter_mm": 3.1,
+     "length_mm": 10.0,
+     "platform": "MV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 31 12",
+     "diameter_mm": 3.1,
+     "length_mm": 12.0,
+     "platform": "MV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 31 14",
+     "diameter_mm": 3.1,
+     "length_mm": 14.0,
+     "platform": "MV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 36 08",
+     "diameter_mm": 3.6,
+     "length_mm": 8.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 36 10",
+     "diameter_mm": 3.6,
+     "length_mm": 10.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 36 12",
+     "diameter_mm": 3.6,
+     "length_mm": 12.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 36 14",
+     "diameter_mm": 3.6,
+     "length_mm": 14.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 36 16",
+     "diameter_mm": 3.6,
+     "length_mm": 16.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 36 18",
+     "diameter_mm": 3.6,
+     "length_mm": 18.0,
+     "platform": "NV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 41 08",
+     "diameter_mm": 4.1,
+     "length_mm": 8.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 41 10",
+     "diameter_mm": 4.1,
+     "length_mm": 10.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 41 12",
+     "diameter_mm": 4.1,
+     "length_mm": 12.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 41 14",
+     "diameter_mm": 4.1,
+     "length_mm": 14.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 41 16",
+     "diameter_mm": 4.1,
+     "length_mm": 16.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 41 18",
+     "diameter_mm": 4.1,
+     "length_mm": 18.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 46 08",
+     "diameter_mm": 4.6,
+     "length_mm": 8.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 46 10",
+     "diameter_mm": 4.6,
+     "length_mm": 10.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 46 12",
+     "diameter_mm": 4.6,
+     "length_mm": 12.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "19 46 14",
+     "diameter_mm": 4.6,
+     "length_mm": 14.0,
+     "platform": "RV",
+     "availability": "LISTED"
+    }
+   ]
+  },
+  "MIS_SEVEN": {
+   "family": "MIS SEVEN",
+   "brand": "MIS",
+   "connection": "Hexágono interno",
+   "source": "MIS · Internal Hexagon Product Catalog 2025 (mis-implants.com)",
+   "note": "Ø6 sin fresas XD de un solo uso.",
+   "items": [
+    {
+     "ref": "MF7-D10330",
+     "diameter_mm": 3.3,
+     "length_mm": 10.0,
+     "platform": "NP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D11330",
+     "diameter_mm": 3.3,
+     "length_mm": 11.5,
+     "platform": "NP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D13330",
+     "diameter_mm": 3.3,
+     "length_mm": 13.0,
+     "platform": "NP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D16330",
+     "diameter_mm": 3.3,
+     "length_mm": 16.0,
+     "platform": "NP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D08375",
+     "diameter_mm": 3.75,
+     "length_mm": 8.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D10375",
+     "diameter_mm": 3.75,
+     "length_mm": 10.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D11375",
+     "diameter_mm": 3.75,
+     "length_mm": 11.5,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D13375",
+     "diameter_mm": 3.75,
+     "length_mm": 13.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D16375",
+     "diameter_mm": 3.75,
+     "length_mm": 16.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D06420",
+     "diameter_mm": 4.2,
+     "length_mm": 6.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D08420",
+     "diameter_mm": 4.2,
+     "length_mm": 8.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D10420",
+     "diameter_mm": 4.2,
+     "length_mm": 10.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D11420",
+     "diameter_mm": 4.2,
+     "length_mm": 11.5,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D13420",
+     "diameter_mm": 4.2,
+     "length_mm": 13.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D16420",
+     "diameter_mm": 4.2,
+     "length_mm": 16.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D06500",
+     "diameter_mm": 5.0,
+     "length_mm": 6.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D08500",
+     "diameter_mm": 5.0,
+     "length_mm": 8.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D10500",
+     "diameter_mm": 5.0,
+     "length_mm": 10.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D11500",
+     "diameter_mm": 5.0,
+     "length_mm": 11.5,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D13500",
+     "diameter_mm": 5.0,
+     "length_mm": 13.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-D16500",
+     "diameter_mm": 5.0,
+     "length_mm": 16.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-06600",
+     "diameter_mm": 6.0,
+     "length_mm": 6.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-08600",
+     "diameter_mm": 6.0,
+     "length_mm": 8.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-10600",
+     "diameter_mm": 6.0,
+     "length_mm": 10.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-11600",
+     "diameter_mm": 6.0,
+     "length_mm": 11.5,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "MF7-13600",
+     "diameter_mm": 6.0,
+     "length_mm": 13.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    }
+   ]
+  },
+  "MIS_C1": {
+   "family": "MIS C1",
+   "brand": "MIS",
+   "connection": "Cónica (conical connection)",
+   "source": "MIS · Conical Connection Product Catalog (mis-implants.com), implantes C1 XD",
+   "note": "",
+   "items": [
+    {
+     "ref": "C1-D10330",
+     "diameter_mm": 3.3,
+     "length_mm": 10.0,
+     "platform": "NP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D11330",
+     "diameter_mm": 3.3,
+     "length_mm": 11.5,
+     "platform": "NP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D13330",
+     "diameter_mm": 3.3,
+     "length_mm": 13.0,
+     "platform": "NP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D16330",
+     "diameter_mm": 3.3,
+     "length_mm": 16.0,
+     "platform": "NP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D08375",
+     "diameter_mm": 3.75,
+     "length_mm": 8.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D10375",
+     "diameter_mm": 3.75,
+     "length_mm": 10.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D11375",
+     "diameter_mm": 3.75,
+     "length_mm": 11.5,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D13375",
+     "diameter_mm": 3.75,
+     "length_mm": 13.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D16375",
+     "diameter_mm": 3.75,
+     "length_mm": 16.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D08420",
+     "diameter_mm": 4.2,
+     "length_mm": 8.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D10420",
+     "diameter_mm": 4.2,
+     "length_mm": 10.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D11420",
+     "diameter_mm": 4.2,
+     "length_mm": 11.5,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D13420",
+     "diameter_mm": 4.2,
+     "length_mm": 13.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D16420",
+     "diameter_mm": 4.2,
+     "length_mm": 16.0,
+     "platform": "SP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D08500",
+     "diameter_mm": 5.0,
+     "length_mm": 8.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D10500",
+     "diameter_mm": 5.0,
+     "length_mm": 10.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D11500",
+     "diameter_mm": 5.0,
+     "length_mm": 11.5,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D13500",
+     "diameter_mm": 5.0,
+     "length_mm": 13.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "C1-D16500",
+     "diameter_mm": 5.0,
+     "length_mm": 16.0,
+     "platform": "WP",
+     "availability": "LISTED"
+    }
+   ]
+  },
+  "ASTRA_EV_S": {
+   "family": "Astra Tech OsseoSpeed EV (recto)",
+   "brand": "Astra Tech (Dentsply Sirona)",
+   "connection": "Interna cónica EV",
+   "source": "Dentsply Sirona · Product catalog ASTRA TECH Implant System EV (catálogo de producto, versión del distribuidor Frontdent)",
+   "note": "",
+   "items": [
+    {
+     "ref": "25212",
+     "diameter_mm": 3.0,
+     "length_mm": 8.0,
+     "platform": "EV 3",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25213",
+     "diameter_mm": 3.0,
+     "length_mm": 9.0,
+     "platform": "EV 3",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25214",
+     "diameter_mm": 3.0,
+     "length_mm": 11.0,
+     "platform": "EV 3",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25215",
+     "diameter_mm": 3.0,
+     "length_mm": 13.0,
+     "platform": "EV 3",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25216",
+     "diameter_mm": 3.0,
+     "length_mm": 15.0,
+     "platform": "EV 3",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25221",
+     "diameter_mm": 3.6,
+     "length_mm": 6.0,
+     "platform": "EV 3.6",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25222",
+     "diameter_mm": 3.6,
+     "length_mm": 8.0,
+     "platform": "EV 3.6",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25223",
+     "diameter_mm": 3.6,
+     "length_mm": 9.0,
+     "platform": "EV 3.6",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25224",
+     "diameter_mm": 3.6,
+     "length_mm": 11.0,
+     "platform": "EV 3.6",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25225",
+     "diameter_mm": 3.6,
+     "length_mm": 13.0,
+     "platform": "EV 3.6",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25226",
+     "diameter_mm": 3.6,
+     "length_mm": 15.0,
+     "platform": "EV 3.6",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25227",
+     "diameter_mm": 3.6,
+     "length_mm": 17.0,
+     "platform": "EV 3.6",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25231",
+     "diameter_mm": 4.2,
+     "length_mm": 6.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25232",
+     "diameter_mm": 4.2,
+     "length_mm": 8.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25233",
+     "diameter_mm": 4.2,
+     "length_mm": 9.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25234",
+     "diameter_mm": 4.2,
+     "length_mm": 11.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25235",
+     "diameter_mm": 4.2,
+     "length_mm": 13.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25236",
+     "diameter_mm": 4.2,
+     "length_mm": 15.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25237",
+     "diameter_mm": 4.2,
+     "length_mm": 17.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25241",
+     "diameter_mm": 4.8,
+     "length_mm": 6.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25242",
+     "diameter_mm": 4.8,
+     "length_mm": 8.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25243",
+     "diameter_mm": 4.8,
+     "length_mm": 9.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25244",
+     "diameter_mm": 4.8,
+     "length_mm": 11.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25245",
+     "diameter_mm": 4.8,
+     "length_mm": 13.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25246",
+     "diameter_mm": 4.8,
+     "length_mm": 15.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25247",
+     "diameter_mm": 4.8,
+     "length_mm": 17.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25251",
+     "diameter_mm": 5.4,
+     "length_mm": 6.0,
+     "platform": "EV 5.4",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25252",
+     "diameter_mm": 5.4,
+     "length_mm": 8.0,
+     "platform": "EV 5.4",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25253",
+     "diameter_mm": 5.4,
+     "length_mm": 9.0,
+     "platform": "EV 5.4",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25254",
+     "diameter_mm": 5.4,
+     "length_mm": 11.0,
+     "platform": "EV 5.4",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25255",
+     "diameter_mm": 5.4,
+     "length_mm": 13.0,
+     "platform": "EV 5.4",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25256",
+     "diameter_mm": 5.4,
+     "length_mm": 15.0,
+     "platform": "EV 5.4",
+     "availability": "LISTED"
+    }
+   ]
+  },
+  "ASTRA_EV_C": {
+   "family": "Astra Tech OsseoSpeed EV (cónico)",
+   "brand": "Astra Tech (Dentsply Sirona)",
+   "connection": "Interna cónica EV",
+   "source": "Dentsply Sirona · Product catalog ASTRA TECH Implant System EV (catálogo de producto, versión del distribuidor Frontdent)",
+   "note": "",
+   "items": [
+    {
+     "ref": "25262",
+     "diameter_mm": 4.2,
+     "length_mm": 8.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25263",
+     "diameter_mm": 4.2,
+     "length_mm": 9.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25264",
+     "diameter_mm": 4.2,
+     "length_mm": 11.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25265",
+     "diameter_mm": 4.2,
+     "length_mm": 13.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25266",
+     "diameter_mm": 4.2,
+     "length_mm": 15.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25267",
+     "diameter_mm": 4.2,
+     "length_mm": 17.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25272",
+     "diameter_mm": 4.8,
+     "length_mm": 8.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25273",
+     "diameter_mm": 4.8,
+     "length_mm": 9.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25274",
+     "diameter_mm": 4.8,
+     "length_mm": 11.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25275",
+     "diameter_mm": 4.8,
+     "length_mm": 13.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25276",
+     "diameter_mm": 4.8,
+     "length_mm": 15.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25277",
+     "diameter_mm": 4.8,
+     "length_mm": 17.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    }
+   ]
+  },
+  "ASTRA_PROFILE_EV": {
+   "family": "Astra Tech OsseoSpeed Profile EV",
+   "brand": "Astra Tech (Dentsply Sirona)",
+   "connection": "Interna cónica EV · plataforma inclinada",
+   "source": "Dentsply Sirona · Product catalog ASTRA TECH Implant System EV (catálogo de producto, versión del distribuidor Frontdent)",
+   "note": "Profile EV tiene el cuello inclinado: la envolvente nominal no representa ese bisel. Incluye recto (PS) y cónico (PC) con la misma medida; referencias 25440–25451 = PS, 25452–25463 = PC.",
+   "items": [
+    {
+     "ref": "25440",
+     "diameter_mm": 4.2,
+     "length_mm": 8.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25441",
+     "diameter_mm": 4.2,
+     "length_mm": 9.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25442",
+     "diameter_mm": 4.2,
+     "length_mm": 11.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25443",
+     "diameter_mm": 4.2,
+     "length_mm": 13.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25444",
+     "diameter_mm": 4.2,
+     "length_mm": 15.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25445",
+     "diameter_mm": 4.2,
+     "length_mm": 17.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25446",
+     "diameter_mm": 4.8,
+     "length_mm": 8.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25447",
+     "diameter_mm": 4.8,
+     "length_mm": 9.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25448",
+     "diameter_mm": 4.8,
+     "length_mm": 11.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25449",
+     "diameter_mm": 4.8,
+     "length_mm": 13.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25450",
+     "diameter_mm": 4.8,
+     "length_mm": 15.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25451",
+     "diameter_mm": 4.8,
+     "length_mm": 17.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25452",
+     "diameter_mm": 4.2,
+     "length_mm": 8.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25453",
+     "diameter_mm": 4.2,
+     "length_mm": 9.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25454",
+     "diameter_mm": 4.2,
+     "length_mm": 11.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25455",
+     "diameter_mm": 4.2,
+     "length_mm": 13.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25456",
+     "diameter_mm": 4.2,
+     "length_mm": 15.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25457",
+     "diameter_mm": 4.2,
+     "length_mm": 17.0,
+     "platform": "EV 4.2",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25458",
+     "diameter_mm": 4.8,
+     "length_mm": 8.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25459",
+     "diameter_mm": 4.8,
+     "length_mm": 9.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25460",
+     "diameter_mm": 4.8,
+     "length_mm": 11.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25461",
+     "diameter_mm": 4.8,
+     "length_mm": 13.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25462",
+     "diameter_mm": 4.8,
+     "length_mm": 15.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "25463",
+     "diameter_mm": 4.8,
+     "length_mm": 17.0,
+     "platform": "EV 4.8",
+     "availability": "LISTED"
+    }
+   ]
+  },
+  "STRAUMANN_SP": {
+   "family": "Straumann Standard Plus",
+   "brand": "Straumann",
+   "connection": "Tissue Level · NNC / RN / WN",
+   "source": "Straumann Product Catalog 2021 USA, pp. 18-25 and reference index: https://www.straumann.com/content/dam/media-center/straumann/en-us/documents/brochure/product-catalog/CALIT-007-Product-Catalog-2021-DIGITAL.pdf",
+   "note": "47 referencias verificadas en la edición citada, 16 combinaciones de diámetro/longitud. Incluye plataformas y superficies distintas; el modelo DSG es nominal. La matriz original se conserva como fuente histórica.",
+   "items": [
+    {
+     "ref": "033.043S",
+     "diameter_mm": 4.1,
+     "length_mm": 4.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.044S",
+     "diameter_mm": 4.8,
+     "length_mm": 4.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.045S",
+     "diameter_mm": 4.8,
+     "length_mm": 4.0,
+     "platform": "WN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.416S",
+     "diameter_mm": 3.3,
+     "length_mm": 8.0,
+     "platform": "NNC",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.417S",
+     "diameter_mm": 3.3,
+     "length_mm": 10.0,
+     "platform": "NNC",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.418S",
+     "diameter_mm": 3.3,
+     "length_mm": 12.0,
+     "platform": "NNC",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.419S",
+     "diameter_mm": 3.3,
+     "length_mm": 14.0,
+     "platform": "NNC",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.511S",
+     "diameter_mm": 3.3,
+     "length_mm": 8.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.512S",
+     "diameter_mm": 3.3,
+     "length_mm": 10.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.513S",
+     "diameter_mm": 3.3,
+     "length_mm": 12.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.514S",
+     "diameter_mm": 3.3,
+     "length_mm": 14.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.560S",
+     "diameter_mm": 4.1,
+     "length_mm": 6.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.561S",
+     "diameter_mm": 4.1,
+     "length_mm": 8.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.562S",
+     "diameter_mm": 4.1,
+     "length_mm": 10.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.563S",
+     "diameter_mm": 4.1,
+     "length_mm": 12.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.564S",
+     "diameter_mm": 4.1,
+     "length_mm": 14.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.590S",
+     "diameter_mm": 4.8,
+     "length_mm": 6.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.591S",
+     "diameter_mm": 4.8,
+     "length_mm": 8.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.592S",
+     "diameter_mm": 4.8,
+     "length_mm": 10.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.593S",
+     "diameter_mm": 4.8,
+     "length_mm": 12.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.594S",
+     "diameter_mm": 4.8,
+     "length_mm": 14.0,
+     "platform": "RN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.610S",
+     "diameter_mm": 4.8,
+     "length_mm": 6.0,
+     "platform": "WN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.611S",
+     "diameter_mm": 4.8,
+     "length_mm": 8.0,
+     "platform": "WN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.612S",
+     "diameter_mm": 4.8,
+     "length_mm": 10.0,
+     "platform": "WN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "033.613S",
+     "diameter_mm": 4.8,
+     "length_mm": 12.0,
+     "platform": "WN",
+     "surface": "SLActive®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.066S",
+     "diameter_mm": 4.8,
+     "length_mm": 6.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.067S",
+     "diameter_mm": 4.8,
+     "length_mm": 8.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.068S",
+     "diameter_mm": 4.8,
+     "length_mm": 10.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.069S",
+     "diameter_mm": 4.8,
+     "length_mm": 12.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.070S",
+     "diameter_mm": 4.8,
+     "length_mm": 14.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.161S",
+     "diameter_mm": 4.1,
+     "length_mm": 6.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.162S",
+     "diameter_mm": 4.1,
+     "length_mm": 8.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.163S",
+     "diameter_mm": 4.1,
+     "length_mm": 10.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.164S",
+     "diameter_mm": 4.1,
+     "length_mm": 12.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.165S",
+     "diameter_mm": 4.1,
+     "length_mm": 14.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.260S",
+     "diameter_mm": 3.3,
+     "length_mm": 8.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.261S",
+     "diameter_mm": 3.3,
+     "length_mm": 10.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.262S",
+     "diameter_mm": 3.3,
+     "length_mm": 12.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.263S",
+     "diameter_mm": 3.3,
+     "length_mm": 14.0,
+     "platform": "RN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.416S",
+     "diameter_mm": 3.3,
+     "length_mm": 8.0,
+     "platform": "NNC",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.417S",
+     "diameter_mm": 3.3,
+     "length_mm": 10.0,
+     "platform": "NNC",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.418S",
+     "diameter_mm": 3.3,
+     "length_mm": 12.0,
+     "platform": "NNC",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.419S",
+     "diameter_mm": 3.3,
+     "length_mm": 14.0,
+     "platform": "NNC",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.655S",
+     "diameter_mm": 4.8,
+     "length_mm": 6.0,
+     "platform": "WN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.656S",
+     "diameter_mm": 4.8,
+     "length_mm": 8.0,
+     "platform": "WN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.657S",
+     "diameter_mm": 4.8,
+     "length_mm": 10.0,
+     "platform": "WN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    },
+    {
+     "ref": "043.658S",
+     "diameter_mm": 4.8,
+     "length_mm": 12.0,
+     "platform": "WN",
+     "surface": "SLA®",
+     "material": "Roxolid",
+     "availability": "LISTED"
+    }
+   ]
+  }
+ }
+}

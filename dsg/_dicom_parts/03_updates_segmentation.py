@@ -1433,6 +1433,22 @@ def _semantic_source_signature() -> str:
     return str(hash("||".join(pieces)))
 
 
+def _stable_source_key() -> str:
+    """Like the source signature but identical across Blender sessions
+    (``hash()`` of a string changes every time Python starts)."""
+    import hashlib
+    pieces = [str(tuple(RUNTIME.dims_zyx)), str(tuple(float(v) for v in RUNTIME.spacing_zyx_mm))]
+    files = RUNTIME.source_files or ([RUNTIME.source_path] if RUNTIME.source_path else [])
+    for name in files[:16]:
+        try:
+            fp = Path(name)
+            st = fp.stat()
+            pieces.append(f"{fp.resolve()}|{st.st_size}|{st.st_mtime_ns}")
+        except Exception:
+            pieces.append(str(name))
+    return hashlib.sha256("||".join(pieces).encode("utf-8", "replace")).hexdigest()
+
+
 def _semantic_model_kind_for_structure(structure: str) -> str:
     """Return the primary engine for a requested segmentation structure.
 
@@ -1454,9 +1470,94 @@ def _semantic_model_kind_for_structure(structure: str) -> str:
     return "semantic"
 
 
+SEMANTIC_LABELS_FILE = "semantic_labels.npy"
+SEMANTIC_LABELS_META = "semantic_labels.json"
+
+
+SEMANTIC_LABELS_KEEP = 6
+
+
+def _semantic_labels_dir(create: bool) -> Path:
+    """Stable per-CBCT folder (the pipeline input cache is renamed on every
+    load, so it cannot hold the labelmap)."""
+    root = Path(tempfile.gettempdir()) / "DSG_SEMANTIC_LABELS"
+    folder = root / _stable_source_key()[:32]
+    if create:
+        folder.mkdir(parents=True, exist_ok=True)
+        try:  # keep only the most recent cases
+            others = sorted((p for p in root.iterdir() if p.is_dir() and p != folder),
+                            key=lambda p: p.stat().st_mtime, reverse=True)
+            for stale in others[SEMANTIC_LABELS_KEEP - 1:]:
+                shutil.rmtree(stale, ignore_errors=True)
+        except OSError:
+            pass
+    return folder
+
+
+def persist_semantic_labels(labels_path: str) -> str:
+    """Copy the active labelmap next to the per-source CBCT cache.
+
+    The pipeline job folder is temporary and is removed on reinstall or
+    restart; without this copy every later step that needs the labelmap
+    (full-resolution teeth before the extraction) fails.
+    """
+    import shutil
+    source = Path(str(labels_path or ""))
+    if not RUNTIME.is_loaded() or not source.is_file():
+        return ""
+    cache = _semantic_labels_dir(create=True)
+    target = cache / SEMANTIC_LABELS_FILE
+    if source.resolve() != target.resolve():
+        temporary = cache / (SEMANTIC_LABELS_FILE + ".tmp")
+        shutil.copyfile(source, temporary)
+        import os as _os
+        _os.replace(temporary, target)
+    meta = {
+        "source_key": _stable_source_key(),
+        "kind": str(RUNTIME.semantic_model_kind or ""),
+        "metadata": dict(RUNTIME.semantic_model_metadata or {}),
+        "crop_info": dict(RUNTIME.semantic_crop_info or {}),
+        "dims_zyx": list(RUNTIME.dims_zyx),
+    }
+    (cache / SEMANTIC_LABELS_META).write_text(json.dumps(meta, ensure_ascii=False, default=str), encoding="utf-8")
+    return str(target)
+
+
+def restore_semantic_labels() -> bool:
+    """Reload the persisted labelmap for the current CBCT (never infers)."""
+    if not RUNTIME.is_loaded():
+        return False
+    cache = _semantic_labels_dir(create=False)
+    data, meta_path = cache / SEMANTIC_LABELS_FILE, cache / SEMANTIC_LABELS_META
+    if not data.is_file() or not meta_path.is_file():
+        return False
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if str(meta.get("source_key") or "") != _stable_source_key():
+        return False
+    np = load_numpy()
+    labels = np.load(str(data), mmap_mode="r")
+    if tuple(labels.shape) != tuple(RUNTIME.dims_zyx):
+        return False
+    RUNTIME.semantic_labels = labels
+    RUNTIME.semantic_source_signature = _semantic_source_signature()
+    RUNTIME.semantic_model_kind = str(meta.get("kind") or "universal")
+    RUNTIME.semantic_model_metadata = dict(meta.get("metadata") or {})
+    RUNTIME.semantic_crop_info = dict(meta.get("crop_info") or {})
+    return True
+
+
 def _load_semantic_labels_cached(model_kind: str | None = None):
     """Query the one active semantic labelmap without triggering inference."""
     labels = getattr(RUNTIME, "semantic_labels", None)
+    if labels is None:
+        try:
+            if restore_semantic_labels():
+                labels = RUNTIME.semantic_labels
+        except Exception:
+            _DSG_LOG.debug("semantic labels not restored", exc_info=True)
     if labels is None or tuple(getattr(labels, "shape", ())) != tuple(RUNTIME.dims_zyx):
         return None
     kind = str(model_kind or "").lower()
@@ -1946,7 +2047,8 @@ def build_mandibular_canal_surface(context, labels, *,
 
 def segment_tissue_semantically(context, structure: str | None = None) -> dict:
     np = load_numpy()
-    props = context.scene.dicom_wizard_pro
+    scene = context.scene
+    props = scene.dicom_wizard_pro
     if structure and structure in SEGMENTATION_STRUCTURES:
         props.segmentation_structure = structure
     structure = str(props.segmentation_structure).upper()
@@ -2001,7 +2103,8 @@ def segment_tissue_automatically(context, structure: str | None = None) -> dict:
     np = load_numpy()
     if np is None or not RUNTIME.is_loaded():
         raise RuntimeError("No hay un volumen DICOM cargado")
-    props = context.scene.dicom_wizard_pro
+    scene = context.scene
+    props = scene.dicom_wizard_pro
     if structure and structure in SEGMENTATION_STRUCTURES:
         props.segmentation_structure = structure
     structure = str(props.segmentation_structure).upper()

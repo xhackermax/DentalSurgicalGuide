@@ -1074,6 +1074,11 @@ def _set_segmentation_progress(context, factor: float, phase: str, detail: str =
         )
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
+    try:
+        from .blender import progress_overlay
+        progress_overlay.update(factor * 100.0, phase, detail)
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
     force_ui_redraw()
 
 
@@ -1082,12 +1087,22 @@ def _begin_segmentation_progress(context, phase: str) -> None:
         progress_begin(context, 100)
     except Exception:
         _DSG_LOG.debug("suppressed exception", exc_info=True)
+    try:
+        from .blender import progress_overlay
+        progress_overlay.begin(context, "Segmentación CBCT", blocking=False)
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
     _set_segmentation_progress(context, 0.01, phase)
 
 
 def _end_segmentation_progress(context, *, success: bool) -> None:
     if success:
         _set_segmentation_progress(context, 1.0, "Segmentación terminada")
+    try:
+        from .blender import progress_overlay
+        progress_overlay.end(bool(success), "Segmentación terminada" if success else "Segmentación interrumpida")
+    except Exception:
+        _DSG_LOG.debug("suppressed exception", exc_info=True)
     try:
         progress_end(context)
     except Exception:
@@ -1139,6 +1154,10 @@ def semantic_workflow_busy() -> bool:
 
 
 def _finish_async_segmentation(context, obj, *, detail: str, elapsed: float) -> None:
+    from .blender.segmentation_finish import reset
+    reset(context.scene)
+    context.scene.pop('DSG_protected_neighbor_fdis',None)
+    context.scene.pop('DSG_protected_neighbors_editor',None)
     props = context.scene.dicom_wizard_pro
     context.scene["DSG_last_segmentation_elapsed_s"] = float(elapsed)
     context.scene["DSG_last_segmentation_finished_at"] = float(time.time())
@@ -1317,8 +1336,24 @@ def _poll_async_segmentation():
                 raise RuntimeError("El CBCT cambió durante el pipeline externo")
             route_mode = str(manifest.get("route_mode") or _ASYNC_SEGMENTATION.get("route_mode") or "FULL").upper()
             if route_mode == "SIMPLE_ARCHES":
+                # Keep the current prediction for the shared ITK finishing worker.
+                # This loads existing results; it runs no FDI inference or geometry.
+                np = load_numpy()
+                labels_path = str(manifest.get("normalized_labels_path") or "")
+                labels = np.load(labels_path, mmap_mode="r")
+                if tuple(labels.shape) != tuple(RUNTIME.dims_zyx):
+                    raise RuntimeError("La máscara simple no coincide con el CBCT actual")
+                RUNTIME.semantic_labels = labels
+                RUNTIME.semantic_source_signature = str(manifest.get("source_signature") or "")
+                RUNTIME.semantic_model_kind = "universal"
+                RUNTIME.semantic_model_metadata = dict(manifest.get("semantic_metadata") or {})
+                RUNTIME.semantic_crop_info = dict(manifest.get("semantic_crop_info") or {})
+                persist_semantic_labels(labels_path)
                 prepared = dict(manifest.get("prepared_surfaces") or {})
                 upper, lower, composite = build_simple_arch_pair(context, prepared)
+                from .blender.upper_cavity_safety import import_surfaces
+                import_surfaces(context,prepared.get('upper_cavities'))
+                scene['DSG_upper_cavity_input_nifti']=str(Path(manifest['normalized_labels_path']).parent/'input_cbct.nii.gz')
                 RUNTIME.pipeline_result_dir = str(cbct_pipeline_client.artifact_dir() or "")
                 scene["DSG_pipeline_timings_json"] = json.dumps(manifest.get("timings") or {}, ensure_ascii=False, default=str)
                 engine_name = str(manifest.get("segmentation_engine") or manifest.get("engine_id") or "AI")
@@ -1349,6 +1384,12 @@ def _poll_async_segmentation():
             RUNTIME.semantic_model_kind = "universal"
             RUNTIME.semantic_model_metadata = dict(manifest.get("semantic_metadata") or manifest.get("universal_metadata") or {})
             RUNTIME.semantic_crop_info = dict(manifest.get("semantic_crop_info") or {})
+            # The job folder is temporary (deleted on reinstall/restart): keep
+            # a copy next to the CBCT cache so later steps can still use it.
+            try:
+                persist_semantic_labels(labels_path)
+            except Exception:
+                _DSG_LOG.debug("semantic labels not persisted", exc_info=True)
             path_stats = dict(manifest.get("path_stats") or {})
             scene["DSG_tooth_path_reconciliation_json"] = json.dumps(path_stats, ensure_ascii=False)
             scene["DSG_tooth_path_reconciliation_corrected"] = bool(path_stats.get("corrected", False))
@@ -1536,6 +1577,10 @@ def _poll_async_segmentation():
                 return 0.02
 
             if build_step == "CANAL":
+                from .blender.upper_cavity_safety import import_surfaces
+                prepared_cavities=(_ASYNC_SEGMENTATION.get('prepared_surfaces') or {}).get('upper_cavities')
+                import_surfaces(context,prepared_cavities)
+                scene['DSG_upper_cavity_input_nifti']=str(Path(RUNTIME.pipeline_result_dir)/'input_cbct.nii.gz')
                 try:
                     prepared_surfaces = _ASYNC_SEGMENTATION.get("prepared_surfaces") or {}
                     canal_obj, canal_summary = build_mandibular_canal_surface(

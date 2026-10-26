@@ -272,9 +272,12 @@ def prepare_simple_arches(labels, spacing_zyx, dims_zyx, out_dir: Path, status_c
         if upper is None: missing.append('superior')
         if lower is None: missing.append('inferior')
         raise RuntimeError('El motor seleccionado no devolvió la arcada ' + ' y '.join(missing))
+    from .cbct_upper_cavities import prepare as prepare_cavities
+    cavities=prepare_cavities(labels,spacing_zyx,dims_zyx,out_dir)
     return {
         'upper_arch': upper,
         'lower_arch': lower,
+        'upper_cavities':cavities,
         'simple_route': True,
         'contains_individual_fdi_meshes': False,
         'contains_canal_mesh': False,
@@ -323,7 +326,9 @@ def run_surfaces_task(req,status_cb:StatusCB|None=None):
         surf=_save_binary_surface(refined_canal,refined_o,spacing,dims,out,'canal',55)
         if surf is not None:
             canal={'status':'SEGMENTED','vertices_path':surf['vertices_path'],'faces_array_path':surf['faces_path'],'faces':int(np.load(surf['faces_path'],mmap_mode='r').shape[0]),'voxels':int(refined_canal.sum()),'origin':tuple(int(v) for v in refined_o),'fusion':fusion,'verifier':{'independent':False,'reason':f'single {engine_name} normalized source'}}
-    return {'task':'surfaces','prepared_surfaces':{'maxilla':maxilla,'mandible':mandible,'canal':canal,'maxilla_class':54,'maxilla_source':engine_id,'mandible_class':53,'mandible_source':engine_id,'surface_prepare_s':float(time.perf_counter()-started)},'elapsed_s':float(time.perf_counter()-started)}
+    from .cbct_upper_cavities import prepare as prepare_cavities
+    cavities=prepare_cavities(labels,spacing,dims,out)
+    return {'task':'surfaces','prepared_surfaces':{'maxilla':maxilla,'mandible':mandible,'canal':canal,'upper_cavities':cavities,'maxilla_class':54,'maxilla_source':engine_id,'mandible_class':53,'mandible_source':engine_id,'surface_prepare_s':float(time.perf_counter()-started)},'elapsed_s':float(time.perf_counter()-started)}
 
 
 def run_task(req,status_cb=None):
